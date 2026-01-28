@@ -11,8 +11,8 @@ using SchoolManager.Data;
 namespace SchoolManager.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260128020226_BlankDb")]
-    partial class BlankDb
+    [Migration("20260128052006_Delete-Test-Tables")]
+    partial class DeleteTestTables
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

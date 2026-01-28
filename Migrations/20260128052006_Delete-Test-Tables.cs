@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace SchoolManager.Migrations
 {
     /// <inheritdoc />
-    public partial class BlankDb : Migration
+    public partial class DeleteTestTables : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)

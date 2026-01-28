@@ -12,8 +12,8 @@ using SchoolManager.Data;
 namespace SchoolManager.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260127080533_TestAddEntityTest2")]
-    partial class TestAddEntityTest2
+    [Migration("20260128051811_Initial-Create-Test")]
+    partial class InitialCreateTest
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
