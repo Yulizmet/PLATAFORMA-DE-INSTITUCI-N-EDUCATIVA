@@ -25,5 +25,22 @@ namespace SchoolManager.Data
         public DbSet<ProcedureTypeRequirements> ProcedureTypeRequirements { get; set; }
 
         public DbSet<ProcedureTypes> ProcedureTypes { get; set; }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder);
+
+            modelBuilder.Entity<ProcedureMonitoring>()
+                .HasOne(pm => pm.ProcedureRequest)
+                .WithMany(pr => pr.ProcedureMonitorings)
+                .HasForeignKey(pm => pm.IdProcedure)
+                .OnDelete(DeleteBehavior.Cascade); 
+
+            modelBuilder.Entity<ProcedureMonitoring>()
+                .HasOne(pm => pm.ProcedureStatus)
+                .WithMany()
+                .HasForeignKey(pm => pm.IdStatus)
+                .OnDelete(DeleteBehavior.Restrict); 
+        }
     }
 }
