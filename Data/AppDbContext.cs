@@ -10,7 +10,20 @@ namespace SchoolManager.Data
 
         //Add Entity Sample
 
-        //public DbSet<EntidadTest> EntidadTests { get; set; }
-        //public DbSet<EntidadTest2cs> EntidadTest2cs { get; set; }
+        public DbSet<ProcedureAreas> ProcedureAreas { get; set; }
+
+        public DbSet<ProcedureDocuments> ProcedureDocuments { get; set; }
+
+        public DbSet<ProcedureMonitoring> ProcedureMonitoring { get; set; }
+
+        public DbSet<ProcedureRequest> ProcedureRequest { get; set; }
+
+        public DbSet<ProcedureStatus> ProcedureStatus { get; set; }
+
+        public DbSet<ProcedureTypeDocuments> ProcedureTypeDocuments { get; set; }
+
+        public DbSet<ProcedureTypeRequirements> ProcedureTypeRequirements { get; set; }
+
+        public DbSet<ProcedureTypes> ProcedureTypes { get; set; }
     }
 }
