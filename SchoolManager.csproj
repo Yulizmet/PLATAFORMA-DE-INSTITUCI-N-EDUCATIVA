@@ -21,6 +21,9 @@
   <ItemGroup>
     <Folder Include="Areas\Grades\Controllers\" />
     <Folder Include="Areas\Grades\Views\" />
+    <Folder Include="Areas\Preenrollment\Controllers\" />
+    <Folder Include="Areas\Preenrollment\ViewModels\" />
+    <Folder Include="Areas\Preenrollment\Views\" />
   </ItemGroup>
 
 </Project>
