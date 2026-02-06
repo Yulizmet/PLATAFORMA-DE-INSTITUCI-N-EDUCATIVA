@@ -1,0 +1,125 @@
+﻿@model IEnumerable<SchoolManager.Models.procedure_status>
+
+@{
+    ViewData["Title"] = "Gestión de Estados";
+}
+
+<div id="modalContainer"></div>
+
+<script>
+    async function loadModal(url) {
+        try {
+            const response = await fetch(url);
+            if (!response.ok) throw new Error("Error al cargar el modal");
+
+            const html = await response.text();
+            const container = document.getElementById('modalContainer');
+            container.innerHTML = html;
+
+            const modalElement = container.querySelector('.modal');
+            const myModal = new bootstrap.Modal(modalElement);
+            myModal.show();
+
+            initColorPreview();
+
+        } catch (error) {
+            console.error(error);
+            alert("No se pudo cargar la ventana.");
+        }
+    }
+
+    document.addEventListener("submit", async function (e) {
+        const form = e.target;
+        if (!form.closest(".modal")) return;
+
+        e.preventDefault();
+
+        const response = await fetch(form.action, {
+            method: form.method,
+            body: new FormData(form)
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+            const modalEl = form.closest(".modal");
+            bootstrap.Modal.getInstance(modalEl).hide();
+            location.reload();
+        } else {
+            alert("Errores:\n" + result.errors.join("\n"));
+        }
+    });
+
+    function initColorPreview() {
+        const bgInput = document.getElementById('BackgroundColor');
+        const textInput = document.getElementById('TextColor');
+        const nameInput = document.getElementById('Name');
+        const badge = document.getElementById('previewBadge');
+
+        if (!badge) return;
+
+        const update = () => {
+            badge.style.backgroundColor = bgInput.value;
+            badge.style.color = textInput.value;
+            badge.innerText = nameInput.value || "Vista Previa";
+        };
+
+        [bgInput, textInput, nameInput].forEach(el => {
+            el.addEventListener('input', update);
+        });
+    }
+</script>
+
+<div class="d-flex justify-content-between align-items-center mb-4 p-3 bg-white shadow-sm rounded">
+    <div>
+        <h2 class="mb-0 text-dark">Estados de trámite</h2>
+        <p class="text-muted small mb-0">Configura la progresión visual de los procesos.</p>
+    </div>
+    <button class="btn btn-success shadow-sm px-4" onclick="loadModal('/Procedures/ProcedureStatus/Create')">
+        <i class="bi bi-plus-circle me-2"></i> Agregar estado
+    </button>
+</div>
+
+<table class="table table-hover mt-3 shadow-sm bg-white rounded overflow-hidden">
+    <thead class="burgundy-header text-white">
+        <tr>
+            <th class="text-center" style="width: 80px;">Orden</th>
+            <th>Nombre y Previsualización</th>
+            <th>Última modificación</th>
+            <th class="text-center">Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td class="text-center align-middle">
+                    <span class="badge bg-secondary rounded-pill">#@item.StepOrder</span>
+                </td>
+                <td class="align-middle">
+                    <div style="background-color: @item.BackgroundColor; 
+                                color: @item.TextColor; 
+                                padding: 6px 15px; 
+                                border-radius: 20px; 
+                                text-align: center; 
+                                font-weight: 600; 
+                                display: inline-block; 
+                                min-width: 140px;
+                                border: 1px solid rgba(0,0,0,0.1);
+                                box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+                        @item.Name
+                    </div>
+                </td>
+                <td>@item.DateUpdated.ToString("dd/MM/yyyy hh:mm tt")</td>
+                <td class="text-center align-middle">
+                    <button class="btn btn-sm btn-warning me-1" onclick="loadModal('/Procedures/ProcedureStatus/Edit/@item.Id')">
+                        <i class="bi bi-pencil-square"></i>
+                    </button>
+                    <button class="btn btn-sm btn-danger" onclick="loadModal('/Procedures/ProcedureStatus/Delete/@item.Id')">
+                        <i class="bi bi-trash3-fill"></i>
+                    </button>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
