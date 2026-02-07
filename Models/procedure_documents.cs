@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace SchoolManager.Models
 {
-    public class ProcedureDocuments
+    public class procedure_documents
     {
         [Key]
         public int Id { get; set; }
@@ -16,12 +16,12 @@ namespace SchoolManager.Models
         public string FilePath { get; set; } = null!;
 
         [Required]
-        public DateTime Datetime { get; set; } = DateTime.Now;
+        public DateTime DateUpdated { get; set; } = DateTime.Now;
 
         [Required]
         public int IdProcedure { get; set; }
 
         [ForeignKey("IdProcedure")]
-        public virtual ProcedureRequest ProcedureRequest { get; set; } = null!;
+        public virtual procedure_request ProcedureRequest { get; set; } = null!;
     }
 }

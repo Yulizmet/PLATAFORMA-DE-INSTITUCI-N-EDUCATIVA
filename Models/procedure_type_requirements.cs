@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace SchoolManager.Models
 {
-    public class ProcedureTypeRequirements
+    public class procedure_type_requirements
     {
         [Key]
         public int Id { get; set; }
@@ -18,9 +18,9 @@ namespace SchoolManager.Models
         public bool IsRequired { get; set; }
 
         [ForeignKey("IdTypeProcedure")]
-        public virtual ProcedureTypes ProcedureType { get; set; } = null!;
+        public virtual procedure_types ProcedureType { get; set; } = null!;
 
         [ForeignKey("IdTypeDocument")]
-        public virtual ProcedureTypeDocuments ProcedureTypeDocument { get; set; } = null!;
+        public virtual procedure_type_documents ProcedureTypeDocument { get; set; } = null!;
     }
 }

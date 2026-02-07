@@ -2,7 +2,7 @@
 
 namespace SchoolManager.Models
 {
-    public class ProcedureTypeDocuments
+    public class procedure_type_documents
     {
         [Key]
         public int Id { get; set; }
@@ -15,8 +15,8 @@ namespace SchoolManager.Models
         public string? Description { get; set; }
 
         [Required]
-        public DateTime Datetime { get; set; } = DateTime.Now;
+        public DateTime DateUpdated { get; set; } = DateTime.Now;
 
-        public virtual ICollection<ProcedureTypeRequirements> ProcedureTypeRequirements { get; set; } = new List<ProcedureTypeRequirements>();
+        public virtual ICollection<procedure_type_requirements> ProcedureTypeRequirements { get; set; } = new List<procedure_type_requirements>();
     }
 }

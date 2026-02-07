@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace SchoolManager.Models
 {
-    public class ProcedureRequest
+    public class procedure_request
     {
         [Key]
         public int Id { get; set; }
@@ -13,7 +13,7 @@ namespace SchoolManager.Models
         public string Folio { get; set; } = null!;
 
         [Required]
-        public DateTime Datetime { get; set; } = DateTime.Now;
+        public DateTime DateUpdated { get; set; } = DateTime.Now;
 
         [Required]
         [MaxLength(200)]
@@ -22,7 +22,6 @@ namespace SchoolManager.Models
         [Required]
         public string Message { get; set; } = null!;
 
-        // Relaciones
         [Required]
         public string IdUser { get; set; } = null!;
 
@@ -33,12 +32,12 @@ namespace SchoolManager.Models
         public int IdStatus { get; set; }
 
         [ForeignKey("IdTypeProcedure")]
-        public virtual ProcedureTypes ProcedureType { get; set; } = null!;
+        public virtual procedure_types ProcedureType { get; set; } = null!;
 
         [ForeignKey("IdStatus")]
-        public virtual ProcedureStatus ProcedureStatus { get; set; } = null!;
+        public virtual procedure_status ProcedureStatus { get; set; } = null!;
 
-        public virtual ICollection<ProcedureDocuments> ProcedureDocuments { get; set; } = new List<ProcedureDocuments>();
-        public virtual ICollection<ProcedureMonitoring> ProcedureMonitorings { get; set; } = new List<ProcedureMonitoring>();
+        public virtual ICollection<procedure_documents> ProcedureDocuments { get; set; } = new List<procedure_documents>();
+        public virtual ICollection<procedure_monitoring> ProcedureMonitorings { get; set; } = new List<procedure_monitoring>();
     }
 }

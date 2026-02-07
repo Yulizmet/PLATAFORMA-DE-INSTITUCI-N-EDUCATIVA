@@ -2,7 +2,7 @@
 
 namespace SchoolManager.Models
 {
-    public class ProcedureAreas
+    public class procedure_areas
     {
         [Key]
         public int Id { get; set; }
@@ -15,8 +15,8 @@ namespace SchoolManager.Models
         public string? Description { get; set; }
 
         [Required]
-        public DateTime Datetime { get; set; } = DateTime.Now;
+        public DateTime DateUpdated { get; set; } = DateTime.Now;
 
-        public virtual ICollection<ProcedureTypes> ProcedureTypes { get; set; } = new List<ProcedureTypes>();
+        public virtual ICollection<procedure_types> ProcedureTypes { get; set; } = new List<procedure_types>();
     }
 }

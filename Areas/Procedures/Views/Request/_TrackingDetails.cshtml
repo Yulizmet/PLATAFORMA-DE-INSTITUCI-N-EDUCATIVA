@@ -1,0 +1,97 @@
+﻿@model SchoolManager.Models.procedure_request
+
+<div class="modal-header border-0 pb-0">
+    <h5 class="modal-title fw-bold">Detalles del Folio: <span class="text-primary">@Model.Folio</span></h5>
+    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+</div>
+
+<div class="modal-body px-4">
+    <div class="row mb-3 mt-2">
+        <div class="col-md-7">
+            <label class="text-muted small d-block">Trámite</label>
+            <span class="fw-bold text-dark">@Model.ProcedureType?.Name</span>
+        </div>
+        <div class="col-md-5 text-md-end">
+            <label class="text-muted small d-block">Fecha de Solicitud</label>
+            <span class="text-secondary">@Model.DateUpdated.ToString("f")</span>
+        </div>
+    </div>
+
+    <div class="alert d-flex align-items-center border-0 shadow-sm mb-4"
+         style="background-color: @Model.ProcedureStatus?.BackgroundColor; color: @Model.ProcedureStatus?.TextColor">
+        <i class="bi bi-info-circle-fill me-3 fs-5"></i>
+        <div>
+            <small class="d-block opacity-75">Estado actual</small>
+            <span class="fw-bold">@Model.ProcedureStatus?.Name</span>
+        </div>
+    </div>
+
+    <div class="mb-4">
+        <h6 class="fw-bold border-bottom pb-2 mb-3">
+            <i class="bi bi-chat-left-dots me-2"></i>Mensajes y Observaciones
+        </h6>
+        <div class="bg-light p-3 rounded border">
+            @if (!string.IsNullOrEmpty(Model.Message))
+            {
+                <div class="d-flex mb-2">
+                    <div class="flex-grow-1">
+                        <small class="fw-bold d-block text-primary">Tú (Remitente):</small>
+                        <p class="mb-0 text-dark">@Model.Message</p>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <p class="text-muted italic mb-0 small">No hay mensajes en esta solicitud.</p>
+            }
+
+            @* Aquí podrías iterar un historial de comentarios si decides agregar una tabla de procedure_logs luego *@
+        </div>
+    </div>
+
+    <div class="mb-2">
+        <h6 class="fw-bold border-bottom pb-2 mb-3">
+            <i class="bi bi-paperclip me-2"></i>Documentos Adjuntos
+        </h6>
+        <div class="list-group list-group-flush border rounded">
+            @if (Model.ProcedureDocuments != null && Model.ProcedureDocuments.Any())
+            {
+                foreach (var doc in Model.ProcedureDocuments)
+                {
+                    string ext = System.IO.Path.GetExtension(doc.Name).ToLower();
+
+                    string iconClass = ext switch
+                    {
+                        ".pdf" => "bi-file-earmark-pdf-fill text-danger",
+                        ".jpg" or ".jpeg" or ".png" => "bi-file-earmark-image-fill text-primary",
+                        ".xml" => "bi-file-earmark-code-fill text-warning",
+                        ".txt" => "bi-file-earmark-text-fill text-secondary",
+                        _ => "bi-file-earmark-fill text-muted"
+                    };
+
+                    <a href="@doc.FilePath" target="_blank" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center py-3">
+                        <div class="d-flex align-items-center">
+                            <i class="bi @iconClass fs-4 me-3"></i>
+                            <div>
+                                <span class="d-block fw-bold text-dark">@doc.Name</span>
+                                <small class="text-muted">Ver archivo adjunto</small>
+                            </div>
+                        </div>
+                        <i class="bi bi-box-arrow-up-right text-muted"></i>
+                    </a>
+                }
+            }
+            else
+            {
+                <div class="list-group-item text-center py-4 text-muted">
+                    <i class="bi bi-folder-x d-block fs-2 mb-2"></i>
+                    <span>No hay documentos adjuntos en este trámite.</span>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<div class="modal-footer border-0">
+    <button type="button" class="btn btn-secondary px-4 shadow-sm" data-bs-dismiss="modal">Cerrar</button>
+</div>
