@@ -7,6 +7,7 @@ namespace SchoolManager.Data
     {
         public AppDbContext(DbContextOptions<AppDbContext> options)
             : base(options) { }
+        public DbSet<SchoolManager.Models.preenrollment_general> preenrollment_general { get; set; } = default!;
 
         //Add Entity Sample
 
