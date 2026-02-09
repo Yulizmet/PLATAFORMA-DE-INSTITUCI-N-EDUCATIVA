@@ -26,7 +26,6 @@
     <Folder Include="Areas\Procedures\Views\" />
     <Folder Include="Areas\Grades\Controllers\" />
     <Folder Include="Areas\Procedures\Templates\" />
-    <Folder Include="Migrations\" />
   </ItemGroup>
 
 </Project>

@@ -278,7 +278,18 @@ namespace SchoolManager.Data
             modelBuilder.Entity<procedure_type_requirements>().ToTable("procedure_type_requirements");
             modelBuilder.Entity<procedure_types>().ToTable("procedure_types");
             modelBuilder.Entity<procedure_monitoring>().ToTable("procedure_monitoring");
-
+            // Configurar nombres de tabla para grades
+            modelBuilder.Entity<grades_extraordinary_grades>().ToTable("grades_extraordinary_grades");
+            modelBuilder.Entity<grades_final_grades>().ToTable("grades_final_grades");
+            modelBuilder.Entity<grades_grade_level>().ToTable("grades_grade_level");
+            modelBuilder.Entity<grades_grades>().ToTable("grades_grades");
+            modelBuilder.Entity<grades_group>().ToTable("grades_group");
+            modelBuilder.Entity<grades_school_cycle>().ToTable("grades_school_cycle");
+            modelBuilder.Entity<grades_subject_unit>().ToTable("grades_subject_unit");
+            modelBuilder.Entity<grades_subjects>().ToTable("grades_subjects");
+            modelBuilder.Entity<grades_teacher_subject>().ToTable("grades_teacher_subject");
+            modelBuilder.Entity<grades_teacher_subject_group>().ToTable("grades_teacher_subject_group");
+            modelBuilder.Entity<grades_unit_recovery>().ToTable("grades_unit_recovery");
             modelBuilder.Entity<procedure_monitoring>()
                 .HasOne(pm => pm.ProcedureRequest)
                 .WithMany(pr => pr.ProcedureMonitorings)

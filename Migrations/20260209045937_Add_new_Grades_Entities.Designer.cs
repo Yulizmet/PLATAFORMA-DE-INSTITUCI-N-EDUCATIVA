@@ -12,8 +12,8 @@ using SchoolManager.Data;
 namespace SchoolManager.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260209041251_Add_Grades_Entities")]
-    partial class Add_Grades_Entities
+    [Migration("20260209045937_Add_new_Grades_Entities")]
+    partial class Add_new_Grades_Entities
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -50,7 +50,7 @@ namespace SchoolManager.Migrations
                     b.HasIndex("FinalGradeId")
                         .IsUnique();
 
-                    b.ToTable("grades_ExtraordinaryGrades");
+                    b.ToTable("grades_extraordinary_grades", (string)null);
                 });
 
             modelBuilder.Entity("SchoolManager.Models.grades_final_grades", b =>
@@ -92,7 +92,7 @@ namespace SchoolManager.Migrations
 
                     b.HasIndex("StudentId", "SubjectId", "GroupId");
 
-                    b.ToTable("grades_FinalGrades");
+                    b.ToTable("grades_final_grades", (string)null);
                 });
 
             modelBuilder.Entity("SchoolManager.Models.grades_grade_level", b =>
@@ -110,7 +110,7 @@ namespace SchoolManager.Migrations
 
                     b.HasKey("GradeLevelId");
 
-                    b.ToTable("grades_GradeLevels");
+                    b.ToTable("grades_grade_level", (string)null);
                 });
 
             modelBuilder.Entity("SchoolManager.Models.grades_grades", b =>
@@ -149,7 +149,7 @@ namespace SchoolManager.Migrations
 
                     b.HasIndex("StudentId", "SubjectUnitId", "GroupId");
 
-                    b.ToTable("grades_Grades");
+                    b.ToTable("grades_grades", (string)null);
                 });
 
             modelBuilder.Entity("SchoolManager.Models.grades_group", b =>
@@ -177,7 +177,7 @@ namespace SchoolManager.Migrations
 
                     b.HasIndex("SchoolCycleId");
 
-                    b.ToTable("grades_GradeGroups");
+                    b.ToTable("grades_group", (string)null);
                 });
 
             modelBuilder.Entity("SchoolManager.Models.grades_school_cycle", b =>
@@ -204,7 +204,7 @@ namespace SchoolManager.Migrations
 
                     b.HasKey("SchoolCycleId");
 
-                    b.ToTable("grades_SchoolCycles");
+                    b.ToTable("grades_school_cycle", (string)null);
                 });
 
             modelBuilder.Entity("SchoolManager.Models.grades_subject_unit", b =>
@@ -229,7 +229,7 @@ namespace SchoolManager.Migrations
                     b.HasIndex("SubjectId", "UnitNumber")
                         .IsUnique();
 
-                    b.ToTable("grades_SubjectUnits");
+                    b.ToTable("grades_subject_unit", (string)null);
                 });
 
             modelBuilder.Entity("SchoolManager.Models.grades_subjects", b =>
@@ -252,7 +252,7 @@ namespace SchoolManager.Migrations
 
                     b.HasIndex("GradeLevelId");
 
-                    b.ToTable("grades_Subjects");
+                    b.ToTable("grades_subjects", (string)null);
                 });
 
             modelBuilder.Entity("SchoolManager.Models.grades_teacher_subject", b =>
@@ -273,7 +273,7 @@ namespace SchoolManager.Migrations
 
                     b.HasIndex("SubjectId");
 
-                    b.ToTable("grades_TeacherSubjects");
+                    b.ToTable("grades_teacher_subject", (string)null);
                 });
 
             modelBuilder.Entity("SchoolManager.Models.grades_teacher_subject_group", b =>
@@ -297,7 +297,7 @@ namespace SchoolManager.Migrations
                     b.HasIndex("TeacherSubjectId", "GroupId")
                         .IsUnique();
 
-                    b.ToTable("grades_TeacherSubjectGroups");
+                    b.ToTable("grades_teacher_subject_group", (string)null);
                 });
 
             modelBuilder.Entity("SchoolManager.Models.grades_unit_recovery", b =>
@@ -324,7 +324,7 @@ namespace SchoolManager.Migrations
 
                     b.HasIndex("GradeId");
 
-                    b.ToTable("grades_UnitRecoveries");
+                    b.ToTable("grades_unit_recovery", (string)null);
                 });
 
             modelBuilder.Entity("SchoolManager.Models.procedure_areas", b =>
