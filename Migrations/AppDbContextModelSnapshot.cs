@@ -37,7 +37,7 @@ namespace SchoolManager.Migrations
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
 
-                    b.Property<string>("Name") });
+                    b.Property<string>("Name"); });
             modelBuilder.Entity("SchoolManager.Models.preenrollment_addresses", b =>
                 {
                     b.Property<int>("IdAddress")
@@ -206,7 +206,7 @@ namespace SchoolManager.Migrations
                     b.Property<DateTime>("Datetime")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("Folio")
+                    b.Property<string>("Folio");
                     b.Property<string>("Gender")
                         .IsRequired()
                         .HasMaxLength(20)

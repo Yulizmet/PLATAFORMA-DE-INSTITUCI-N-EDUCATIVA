@@ -101,7 +101,7 @@ namespace SchoolManager.Data
             modelBuilder.Entity<users_rolepermission>()
                 .HasOne(rp => rp.Permission)
                 .WithMany(p => p.RolePermissions)
-                .HasForeignKey(rp => rp.PermissionId);
+                .HasForeignKey(rp => rp.PermissionId)
                 .OnDelete(DeleteBehavior.Restrict); 
 
                  // Configurar la relación entre preenrollment_general y preenrollment_careers
