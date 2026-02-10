@@ -166,6 +166,8 @@ namespace SchoolManager.Data
             modelBuilder.Entity<preenrollment_general>()
                 .HasIndex(p => p.Email)
                 .IsUnique();
+            modelBuilder.Entity<preenrollment_general>()
+                .HasKey(p => p.IdData); // O el nombre que uses
         }
     }
 
