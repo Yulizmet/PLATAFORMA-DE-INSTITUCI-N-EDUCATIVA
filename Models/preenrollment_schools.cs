@@ -1,0 +1,29 @@
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+
+namespace SchoolManager.Models
+{
+    public class preenrollment_schools
+    {
+        [Key]
+        public int IdSchool { get; set; }
+
+
+        public int id_data { get; set; }
+        public preenrollment_general preenrollment_general { get; set; }
+
+        public string school { get; set; }
+        public string degree { get; set; }
+        public string state { get; set; }
+        public string city { get; set; }
+
+        public decimal average { get; set; }
+
+        public DateTime start_date { get; set; }
+        public DateTime end_date { get; set; }
+
+        public string study_system { get; set; }
+        public string high_school_type { get; set; }
+    }
+
+}
