@@ -34,7 +34,7 @@ namespace SchoolManager.Data
 
         public DbSet<procedure_types> ProcedureTypes { get; set; }
 
-        public DbSet<users_person> Persons {  get; set; }
+        public DbSet<users_person> Persons { get; set; }
         public DbSet<users_user> Users { get; set; }
         public DbSet<users_auditlog> AuditLogs { get; set; }
         public DbSet<users_permission> Permissions { get; set; }
@@ -65,6 +65,23 @@ namespace SchoolManager.Data
             modelBuilder.Entity<users_session>().ToTable("users_session");
             modelBuilder.Entity<users_auditlog>().ToTable("users_auditlog");
 
+            modelBuilder.Entity<users_auditlog>()
+                .HasKey(a => a.AuditId);
+
+            modelBuilder.Entity<users_session>()
+                .HasKey(s => s.SessionId);
+            modelBuilder.Entity<users_permission>()
+                .HasKey(s => s.PermissionId);
+            modelBuilder.Entity<users_person>()
+                .HasKey(s => s.PersonId);
+            modelBuilder.Entity<users_role>()
+                .HasKey(s => s.RoleId);
+            modelBuilder.Entity<users_rolepermission>()
+                .HasKey(s => s.RolePermissionId);
+            modelBuilder.Entity<users_user>()
+                .HasKey(s => s.UserId);
+            modelBuilder.Entity<users_userrole>()
+                .HasKey(s => s.UserRoleId);
             modelBuilder.Entity<procedure_monitoring>()
                 .HasOne(pm => pm.ProcedureRequest)
                 .WithMany(pr => pr.ProcedureMonitorings)
@@ -77,7 +94,7 @@ namespace SchoolManager.Data
                 .HasForeignKey(pm => pm.IdStatus)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            ///UsersCategory
+            // Relaciones de Usuarios
             modelBuilder.Entity<users_person>()
                 .HasOne(p => p.User)
                 .WithOne(u => u.Person)
@@ -102,9 +119,11 @@ namespace SchoolManager.Data
                 .HasOne(rp => rp.Permission)
                 .WithMany(p => p.RolePermissions)
                 .HasForeignKey(rp => rp.PermissionId)
-                .OnDelete(DeleteBehavior.Restrict); 
+                .OnDelete(DeleteBehavior.Restrict);
 
-                 // Configurar la relación entre preenrollment_general y preenrollment_careers
+
+
+            // Configurar la relación entre preenrollment_general y preenrollment_careers
             modelBuilder.Entity<preenrollment_general>()
                 .HasOne(p => p.Career)
                 .WithMany(c => c.preenrollment_general)
