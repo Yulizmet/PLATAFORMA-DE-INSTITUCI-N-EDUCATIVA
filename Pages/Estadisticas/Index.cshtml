@@ -16,34 +16,105 @@
     height: 100% !important;
     display: block;
 }
+
+/* Submenu de filtros colapsable */
+.filter-submenu {
+    border: 1px solid #e3e6ea;
+    padding: 12px;
+    border-radius: 6px;
+    background: #f8f9fa;
+}
 </style>
 
 <div class="row mb-3">
+    <div class="col-12 d-flex justify-content-between align-items-center">
+        <div>
+            <h2 id="pageTitle">Estadísticas de alumnos</h2>
+            <p class="text-muted" id="pageSubtitle">Control y seguimiento: inscritos, cursando, aprobados y reprobados.</p>
+        </div>
+        <div>
+            <!-- Pestañas para cambiar entre Alumnos y Empleados -->
+            <div class="btn-group" role="group" aria-label="Vistas">
+                <button id="tabStudents" class="btn btn-primary">Alumnos</button>
+                <button id="tabEmployees" class="btn btn-outline-primary">Empleados</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Submenu de filtros (colapsable) -->
+<div class="row mb-3">
     <div class="col-12">
-        <h2>Estadísticas de estudiantes</h2>
-        <p class="text-muted">Control y seguimiento: inscritos, cursando, aprobados y reprobados.</p>
+        <button id="toggleFilters" class="btn btn-sm btn-secondary mb-2" type="button" aria-expanded="false">Filtros</button>
+        <div id="filtersArea" class="filter-submenu collapse">
+            <!-- Filtros para Alumnos -->
+            <div id="filtersStudents">
+                <div class="row g-2">
+                    <div class="col-md-3">
+                        <input id="filterName" class="form-control" placeholder="Filtrar por nombre..." />
+                    </div>
+                    <div class="col-md-2">
+                        <select id="filterStatus" class="form-select">
+                            <option value="">Todos los estados</option>
+                            <option value="Inscrito">Inscrito</option>
+                            <option value="Cursando">Cursando</option>
+                            <option value="Aprobado">Aprobado</option>
+                            <option value="Reprobado">Reprobado</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <select id="filterGenero" class="form-select">
+                            <option value="">Todos géneros</option>
+                            <option value="M">Masculino</option>
+                            <option value="F">Femenino</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <select id="filterSemestre" class="form-select">
+                            <option value="">Todos semestres</option>
+                            <option value="1">1</option>
+                            <option value="2">2</option>
+                            <option value="3">3</option>
+                            <option value="4">4</option>
+                            <option value="5">5</option>
+                            <option value="6">6</option>
+                            <option value="7">7</option>
+                            <option value="8">8</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3 d-flex gap-2">
+                        <button id="applyStudentFilters" class="btn btn-primary">Aplicar</button>
+                        <button id="resetFilters" class="btn btn-outline-secondary">Reset filtros</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filtros para Empleados (oculto hasta seleccionar la pestaña Empleados) -->
+            <div id="filtersEmployees" class="d-none">
+                <div class="row g-2">
+                    <div class="col-md-3">
+                        <input id="filterEmployeeName" class="form-control" placeholder="Filtrar por nombre..." />
+                    </div>
+                    <div class="col-md-3">
+                        <select id="filterDepartment" class="form-select">
+                            <option value="">Todos departamentos</option>
+                            <option value="Enfermería">Enfermería</option>
+                            <option value="Administración">Administración</option>
+                            <option value="Mantenimiento">Mantenimiento</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3 d-flex gap-2">
+                        <button id="applyEmployeeFilters" class="btn btn-primary">Aplicar</button>
+                        <button id="resetEmployeeFilters" class="btn btn-outline-secondary">Reset filtros</button>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 
-<div class="row mb-4">
-    <div class="col-md-3">
-        <input id="filterName" class="form-control" placeholder="Filtrar por nombre..." />
-    </div>
-    <div class="col-md-3">
-        <select id="filterStatus" class="form-select">
-            <option value="">Todos los estados</option>
-            <option value="Inscrito">Inscrito</option>
-            <option value="Cursando">Cursando</option>
-            <option value="Aprobado">Aprobado</option>
-            <option value="Reprobado">Reprobado</option>
-        </select>
-    </div>
-    <div class="col-md-3">
-        <button id="resetFilters" class="btn btn-outline-secondary">Reset filtros</button>
-    </div>
-</div>
-
-<div class="row mb-4">
+<!-- Estadísticas rápidas (solo alumnos por ahora) -->
+<div class="row mb-4" id="studentStats">
     <div class="col-sm-6 col-md-3 mb-2">
         <div class="card p-3">
             <div class="h6">Total alumnos</div>
@@ -70,51 +141,116 @@
     </div>
 </div>
 
-<div class="row">
-    <div class="col-12">
-        <div class="table-responsive mb-4">
-            <table id="studentsTable" class="table table-striped table-hover">
-                <thead class="table-light">
-                    <tr>
-                        <th>Id</th>
-                        <th>Nombre</th>
-                        <th>Curso</th>
-                        <th>Estado</th>
-                        <th>Nota</th>
-                        <th>Fecha inscripción</th>
-                    </tr>
-                </thead>
-                <tbody>
-                @foreach (var s in Model.Students)
-                {
-                    <tr data-name="@s.Nombre" data-status="@s.Estado">
-                        <td>@s.Id</td>
-                        <td>@s.Nombre</td>
-                        <td>@s.Curso</td>
-                        <td>
-                            @if (s.Estado == "Aprobado")
-                            {
-                                <span class="badge bg-success">Aprobado</span>
-                            }
-                            else if (s.Estado == "Reprobado")
-                            {
-                                <span class="badge bg-danger">Reprobado</span>
-                            }
-                            else if (s.Estado == "Cursando")
-                            {
-                                <span class="badge bg-warning text-dark">Cursando</span>
-                            }
-                            else
-                            {
-                                <span class="badge bg-secondary">Inscrito</span>
-                            }
-                        </td>
-                        <td>@s.Nota</td>
-                        <td>@s.FechaInscripcion.ToString("yyyy-MM-dd")</td>
-                    </tr>
-                }
-                </tbody>
-            </table>
+<!-- Tab Alumnos -->
+<div id="viewStudents">
+    <div class="row">
+        <div class="col-12">
+            <div class="table-responsive mb-4">
+                <table id="studentsTable" class="table table-striped table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Id</th>
+                            <th>Nombre</th>
+                            <th>Genero</th>
+                            <th>Curso</th>
+                            <th>Semestre</th>
+                            <th>Estado</th>
+                            <th>Nota</th>
+                            <th>Fecha inscripción</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    @foreach (var s in Model.Students)
+                    {
+                        <tr data-name="@s.Nombre" data-status="@s.Estado" data-genero="@s.Genero" data-semestre="@s.Semestre">
+                            <td>@s.Id</td>
+                            <td>@s.Nombre</td>
+                            <td>@s.Genero</td>
+                            <td>@s.Curso</td>
+                            <td>@s.Semestre</td>
+                            <td>
+                                @if (s.Estado == "Aprobado")
+                                {
+                                    <span class="badge bg-success">Aprobado</span>
+                                }
+                                else if (s.Estado == "Reprobado")
+                                {
+                                    <span class="badge bg-danger">Reprobado</span>
+                                }
+                                else if (s.Estado == "Cursando")
+                                {
+                                    <span class="badge bg-warning text-dark">Cursando</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary">Inscrito</span>
+                                }
+                            </td>
+                            <td>@s.Nota</td>
+                            <td>@s.FechaInscripcion.ToString("yyyy-MM-dd")</td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Tab Empleados (inicialmente oculto) -->
+<div id="viewEmployees" class="d-none">
+    <div class="row mb-3">
+        <div class="col-12">
+            <div class="card p-3">
+                <div class="h6">Total empleados</div>
+                <div id="statEmployeesTotal" class="display-6">@Model.EmployeesTotal</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="table-responsive mb-4">
+                <table id="employeesTable" class="table table-striped table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Id</th>
+                            <th>Nombre</th>
+                            <th>Género</th>
+                            <th>Departamento</th>
+                            <th>Rol</th>
+                            <th>Actividades hoy</th>
+                            <th>Fecha contratación</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    @foreach (var e in Model.Employees)
+                    {
+                        <tr data-name="@e.Nombre" data-department="@e.Departamento" data-rol="@e.Rol" data-genero="@e.Genero" data-actividades="@e.ActividadesHoy">
+                            <td>@e.Id</td>
+                            <td>@e.Nombre</td>
+                            <td>@e.Genero</td>
+                            <td>@e.Departamento</td>
+                            <td>@e.Rol</td>
+                            <td>@e.ActividadesHoy</td>
+                            <td>@e.FechaContratacion.ToString("yyyy-MM-dd")</td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Gráfica exclusiva para actividades de empleados -->
+    <div class="row mt-3">
+        <div class="col-md-12">
+            <div class="card p-3">
+                <h5>Actividades realizadas hoy (por empleado)</h5>
+                <div class="chart-container">
+                    <canvas id="employeeActivityChart"></canvas>
+                </div>
+            </div>
         </div>
     </div>
 </div>
@@ -140,10 +276,71 @@
 
 @section Scripts {
     <script>
-        // datos serializados para JS
-        window.__estadisticasData = @Html.Raw(Model.JsonStudents);
+        // datos serializados para JS: ahora incluye alumnos y empleados
+        window.__estadisticasData = {
+            students: @Html.Raw(Model.JsonStudents),
+            employees: @Html.Raw(Model.JsonEmployees)
+        };
     </script>
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="~/js/estadisticas.js" asp-append-version="true"></script>
+
+    <script>
+        // Lógica mínima para cambiar pestañas y mostrar filtros correspondientes.
+        (function () {
+            const tabStudents = document.getElementById('tabStudents');
+            const tabEmployees = document.getElementById('tabEmployees');
+            const viewStudents = document.getElementById('viewStudents');
+            const viewEmployees = document.getElementById('viewEmployees');
+            const filtersStudents = document.getElementById('filtersStudents');
+            const filtersEmployees = document.getElementById('filtersEmployees');
+            const filtersArea = document.getElementById('filtersArea');
+            const toggleFilters = document.getElementById('toggleFilters');
+            const pageTitle = document.getElementById('pageTitle');
+            const pageSubtitle = document.getElementById('pageSubtitle');
+
+            function showStudents() {
+                tabStudents.classList.add('btn-primary');
+                tabStudents.classList.remove('btn-outline-primary');
+                tabEmployees.classList.remove('btn-primary');
+                tabEmployees.classList.add('btn-outline-primary');
+                viewStudents.classList.remove('d-none');
+                viewEmployees.classList.add('d-none');
+                filtersStudents.classList.remove('d-none');
+                filtersEmployees.classList.add('d-none');
+                pageTitle.textContent = 'Estadísticas de alumnos';
+                pageSubtitle.textContent = 'Control y seguimiento: inscritos, cursando, aprobados y reprobados.';
+            }
+
+            function showEmployees() {
+                tabEmployees.classList.add('btn-primary');
+                tabEmployees.classList.remove('btn-outline-primary');
+                tabStudents.classList.remove('btn-primary');
+                tabStudents.classList.add('btn-outline-primary');
+                viewEmployees.classList.remove('d-none');
+                viewStudents.classList.add('d-none');
+                filtersEmployees.classList.remove('d-none');
+                filtersStudents.classList.add('d-none');
+                pageTitle.textContent = 'Estadísticas de empleados';
+                pageSubtitle.textContent = 'Listado y filtros por departamento y rol.';
+            }
+
+            tabStudents.addEventListener('click', showStudents);
+            tabEmployees.addEventListener('click', showEmployees);
+
+            toggleFilters.addEventListener('click', function () {
+                if (filtersArea.classList.contains('show')) {
+                    filtersArea.classList.remove('show');
+                    toggleFilters.setAttribute('aria-expanded', 'false');
+                } else {
+                    filtersArea.classList.add('show');
+                    toggleFilters.setAttribute('aria-expanded', 'true');
+                }
+            });
+
+            // Inicio con Alumnos
+            showStudents();
+        })();
+    </script>
 }
