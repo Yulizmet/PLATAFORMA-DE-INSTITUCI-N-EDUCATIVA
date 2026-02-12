@@ -33,13 +33,13 @@ namespace SchoolManager.Pages.Estadisticas
             // Datos de ejemplo; reemplaza por acceso a BD cuando lo tengas
             Students = new List<Student>
             {
-                new Student(1, "Ana Pérez", "Matemáticas", "Cursando", 0, DateTime.Parse("2025-09-01"), "F", 3),
+                new Student(1, "Ana Pérez", "Matemáticas", "Cursando", 9, DateTime.Parse("2025-09-01"), "F", 3),
                 new Student(2, "Juan López", "Física", "Aprobado", 8.5, DateTime.Parse("2024-02-15"), "M", 6),
                 new Student(3, "María García", "Química", "Reprobado", 4.0, DateTime.Parse("2023-11-10"), "F", 2),
-                new Student(4, "Luis Torres", "Matemáticas", "Cursando", 0, DateTime.Parse("2025-09-10"), "M", 1),
-                new Student(5, "Carla Ruiz", "Física", "Inscrito", 0, DateTime.Parse("2026-01-05"), "F", 1),
+                new Student(4, "Luis Torres", "Matemáticas", "Cursando", 8, DateTime.Parse("2025-09-10"), "M", 1),
+                new Student(5, "Carla Ruiz", "Física", "Inscrito", 7, DateTime.Parse("2026-01-05"), "F", 1),
                 new Student(6, "Pedro Gómez", "Química", "Aprobado", 9.2, DateTime.Parse("2024-06-20"), "M", 8),
-                new Student(7, "Sofía Castillo", "Matemáticas", "Reprobado", 3.8, DateTime.Parse("2023-12-01"), "F", 4)
+                new Student(7, "Sofía Castillo", "Matemáticas", "Reprobado", 7.8, DateTime.Parse("2023-12-01"), "F", 4)
             };
 
             // Ejemplos de empleados con ActividadesHoy
