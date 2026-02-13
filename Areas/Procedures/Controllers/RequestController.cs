@@ -64,7 +64,7 @@ namespace SchoolManager.Areas.Procedures.Controllers
         {
             request.DateUpdated = DateTime.Now;
             request.IdStatus = 1;
-            request.IdUser = "TEMP_USER";
+            //request.IdUser = "TEMP_USER";
 
             if (string.IsNullOrEmpty(request.Folio))
             {
