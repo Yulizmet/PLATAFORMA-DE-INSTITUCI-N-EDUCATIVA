@@ -13,7 +13,20 @@ namespace SchoolManager.Areas.UserMng.Controllers
             _context = context;
         }
 
-        public IActionResult Login()
+        [Area("UserMng")]
+        public IActionResult StudentCrud()
+        {
+            return View();
+        }
+        
+        [Area("UserMng")]
+        public IActionResult TeacherCrud()
+        {
+            return View();
+        }
+        
+        [Area("UserMng")]
+        public IActionResult Test()
         {
             return View();
         }
