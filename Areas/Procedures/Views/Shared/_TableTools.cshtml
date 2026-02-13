@@ -1,0 +1,54 @@
+﻿<div class="table-tools mb-4">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+
+        <div class="d-flex flex-wrap gap-2">
+            <button class="btn btn-sm px-3 shadow-none text-white"
+                    style="background-color: #6c757d; border: none;"
+                    onclick="copyTableToClipboard('tableToCopy')" title="Copiar">
+                <i class="bi bi-clipboard me-1"></i> Copiar
+            </button>
+            <button class="btn btn-sm px-3 shadow-none text-white"
+                    style="background-color: #4682B4; border: none;"
+                    onclick="window.location.href='/Procedures/Report/ExportCsv?entity=@ViewBag.EntityName'" title="CSV">
+                <i class="bi bi-filetype-csv me-1"></i> CSV
+            </button>
+            <button class="btn btn-sm px-3 shadow-none text-white"
+                    style="background-color: #2E8B57; border: none;"
+                    onclick="window.location.href='/Procedures/Report/ExportExcel?entity=@ViewBag.EntityName'" title="Excel">
+                <i class="bi bi-file-earmark-excel me-1"></i> Excel
+            </button>
+            <button class="btn btn-sm px-3 shadow-none text-white"
+                    style="background-color: #A52A2A; border: none;"
+                    onclick="window.open('/Procedures/Report/ExportPdf?entity=@ViewBag.EntityName', '_blank')" title="PDF">
+                <i class="bi bi-file-earmark-pdf me-1"></i> PDF
+            </button>
+            <button class="btn btn-sm px-3 shadow-none text-white"
+                    style="background-color: #343a40; border: none;"
+                    onclick="window.print()" title="Imprimir">
+                <i class="bi bi-printer me-1"></i> Imprimir
+            </button>
+        </div>
+
+        <div class="d-flex gap-3 align-items-center">
+            <div class="d-flex align-items-center gap-2">
+                <span class="text-muted small fw-bold text-uppercase">Ordenar:</span>
+                <select id="sortSelector" class="form-select form-select-sm border-0 bg-light shadow-none"
+                        onchange="applyFilters()" style="width: auto; font-size: 0.85rem; border-radius: 20px; padding-left: 15px; padding-right: 30px;">
+                    <option value="name_asc">A-Z</option>
+                    <option value="name_desc">Z-A</option>
+                    <option value="date_desc">Recientes</option>
+                    <option value="date_asc">Antiguos</option>
+                </select>
+            </div>
+
+            <div class="position-relative">
+                <i class="bi bi-search position-absolute top-50 start-0 translate-middle-y ms-3 text-muted" style="font-size: 0.8rem;"></i>
+                <input type="text" id="tableSearch"
+                       class="form-control form-control-sm ps-5 border-0 shadow-none"
+                       placeholder="Buscar registros..." onkeyup="applyFilters()"
+                       style="width: 220px; background-color: #f8f9fa; border-radius: 20px; height: 35px; color: #495057;">
+            </div>
+        </div>
+
+    </div>
+</div>

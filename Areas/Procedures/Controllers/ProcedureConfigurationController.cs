@@ -104,24 +104,37 @@ namespace SchoolManager.Areas.Procedures.Controllers
                 .Include(p => p.Requirements)
                 .FirstOrDefaultAsync(p => p.Id == procedureType.Id);
 
-            if (ptDb == null) return Json(new { success = false });
+            if (ptDb == null) return Json(new { success = false, message = "Trámite no encontrado" });
 
             ptDb.Name = procedureType.Name;
             ptDb.IdArea = procedureType.IdArea;
             ptDb.DateUpdated = DateTime.Now;
 
-            _context.ProcedureTypeRequirements.RemoveRange(ptDb.Requirements);
+            if (ptDb.Requirements != null && ptDb.Requirements.Any())
+            {
+                _context.ProcedureTypeRequirements.RemoveRange(ptDb.Requirements);
+            }
 
-            if (requirementsList != null)
+            if (requirementsList != null && requirementsList.Any())
             {
                 foreach (var req in requirementsList)
                 {
-                    ptDb.Requirements.Add(req);
+                    req.IdTypeProcedure = ptDb.Id;
+                    req.Id = 0;
+
+                    _context.ProcedureTypeRequirements.Add(req);
                 }
             }
 
-            await _context.SaveChangesAsync();
-            return Json(new { success = true });
+            try
+            {
+                await _context.SaveChangesAsync();
+                return Json(new { success = true });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, errors = new[] { ex.Message } });
+            }
         }
 
         [HttpGet]

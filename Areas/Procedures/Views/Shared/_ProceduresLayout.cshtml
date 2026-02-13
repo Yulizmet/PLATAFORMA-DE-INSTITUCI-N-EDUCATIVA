@@ -13,12 +13,26 @@
     <link rel="stylesheet" href="~/SchoolManager.styles.css" asp-append-version="true" />
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
+
+        @@media print {
+            .table-tools, nav, .sidebar, .btn, .toast-container, header, footer {
+                display: none !important;
+            }
+            .actions, th:last-child, td:last-child {
+                display: none !important;
+            }
+
+            tr {
+                page-break-inside: avoid;
+            }
+        }
+
         body {
             background-color: #f8f9fa;
         }
 
         .sidebar {
-            background-color: #4D0217 !important;
+            background-color: #620900 !important;
             min-height: 100vh;
             color: white;
             padding-top: 2rem;
@@ -26,11 +40,11 @@
         }
 
         .burgundy-header {
-            background-color: #4D0217 !important;
+            background-color: #620900 !important;
         }
 
         .burgundy-color {
-            color: #4D0217 !important;
+            color: #620900 !important;
         }
 
             .sidebar h5 {
@@ -94,7 +108,7 @@
                 <div class="position-sticky">
                     <div class="text-center mb-4">
                         <i class="bi bi-person-badge fs-1 text-white opacity-50"></i>
-                        @* <div class="text-white fw-bold mt-2">Sistema Integral Escolar </div> *@
+                        <div class="text-white fw-bold mt-2">Sistema Integral Escolar </div>
                     </div>
 
                     <h5 class="mb-3">Gestión de Trámites</h5>
@@ -105,6 +119,14 @@
                                asp-area="Procedures" asp-controller="Dashboard" asp-action="Index">
                                 <i class="bi bi-clipboard-data"></i>
                                 <span>Panel de control</span>
+                            </a>
+                        </li>
+
+                        <li class="nav-item">
+                            <a class="nav-link @(currentController == "ProcedureManagement" ? "active-item" : "")"
+                               asp-area="Procedures" asp-controller="ProcedureManagement" asp-action="Index">
+                                <i class="bi bi-folder2-open"></i>
+                                <span>Seguimiento</span>
                             </a>
                         </li>
 
@@ -144,6 +166,11 @@
             </nav>
 
             <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 py-4 main-content">
+                <div class="print-only-header d-none d-print-block text-center mb-4">
+                    <h1 class="fw-bold" style="color: #620900; text-transform: uppercase;">SCHOOL MANAGER</h1>
+                    <h3>Reporte de @(ViewData["Title"] ?? "SISTEMA GENERAL")</h3>
+                    <hr style="border: 2px solid #8C1B1B;" />
+                </div>
                 @RenderBody()
 
                 @* <footer class="pt-5 pb-4 text-muted small text-center">
@@ -157,5 +184,16 @@
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
+
+    <div class="toast-container position-fixed bottom-0 end-0 p-3">
+      <div id="copyToast" class="toast align-items-center text-white bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="d-flex">
+          <div class="toast-body">
+            <i class="bi bi-check-circle-fill me-2"></i> ¡Tabla copiada al portapapeles con éxito!
+          </div>
+          <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+      </div>
+    </div>
 </body>
 </html>

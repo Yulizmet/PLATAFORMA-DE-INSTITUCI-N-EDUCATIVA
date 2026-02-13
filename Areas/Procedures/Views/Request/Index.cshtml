@@ -1,39 +1,172 @@
 ﻿@{
-    ViewData["Title"] = "Solicitudes";
+    ViewData["Title"] = "Centro de Trámites";
     Layout = "/Pages/Shared/_Layout.cshtml";
 }
 
-<div class="container d-flex align-items-center justify-content-center" style="min-height: 80vh;">
-    <div class="row g-4 w-100 justify-content-center">
-        <div class="col-md-5 col-lg-4">
-            <a asp-action="Requests" class="card h-100 text-center shadow-sm text-decoration-none transition-hover border-success border-top border-4">
-                <div class="card-body py-5">
-                    <i class="bi bi-file-earmark-plus text-success" style="font-size: 4rem;"></i>
-                    <h4 class="card-title mt-3 text-dark">Solicitar Documento</h4>
-                    <p class="text-muted">Inicia un nuevo trámite y sube tus requisitos.</p>
-                </div>
-            </a>
+<style>
+    :root {
+        --burgundy: #620900;
+        --burgundy-light: #8C1B1B;
+    }
+
+    .main-bg {
+        /*background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);*/
+        min-height: 85vh;
+        display: flex;
+        align-items: center;
+    }
+
+    .header-section {
+        margin-bottom: 3rem;
+    }
+
+        .header-section h1 {
+            color: var(--burgundy);
+            font-weight: 800;
+            letter-spacing: -1px;
+        }
+
+    .card-horizontal {
+        border: none;
+        border-radius: 20px;
+        overflow: hidden;
+        background: white;
+        transition: all 0.4s ease;
+        display: flex;
+        flex-direction: row;
+        height: 250px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+    }
+
+        .card-horizontal:hover {
+            transform: scale(1.02);
+            box-shadow: 0 20px 40px rgba(77, 2, 23, 0.15);
+        }
+
+    .img-side {
+        width: 40%;
+        position: relative;
+        overflow: hidden;
+    }
+
+        .img-side img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+    .content-side {
+        width: 60%;
+        padding: 2rem;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        position: relative;
+    }
+
+    .img-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(to right, rgba(77, 2, 23, 0.1), rgba(77, 2, 23, 0.6));
+    }
+
+    .btn-burgundy {
+        background-color: var(--burgundy);
+        color: white;
+        border-radius: 50px;
+        padding: 0.6rem 1.5rem;
+        font-weight: 600;
+        transition: all 0.3s;
+        border: none;
+        text-align: center;
+        display: inline-block;
+        width: fit-content;
+    }
+
+        .btn-burgundy:hover {
+            background-color: var(--burgundy-light);
+            color: white;
+            transform: translateX(5px);
+        }
+
+    .icon-float {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        color: var(--burgundy);
+        opacity: 0.2;
+        font-size: 2rem;
+    }
+
+    @@media (max-width: 992px) {
+        .card-horizontal {
+            flex-direction: column;
+            height: auto;
+        }
+
+        .img-side, .content-side {
+            width: 100%;
+        }
+
+        .img-side {
+            height: 150px;
+        }
+    }
+</style>
+
+<div class="">
+    <div class="container">
+        <div class="text-center header-section">
+            <h1 class="display-4">Centro de Trámites</h1>
+            <p class="lead text-muted">Gestiona tus requerimientos y consulta el progreso de tus solicitudes ante las diversas áreas institucionales.</p>
+            <div class="mx-auto" style="width: 80px; height: 4px; background: var(--burgundy); border-radius: 2px;"></div>
         </div>
 
-        <div class="col-md-5 col-lg-4">
-            <a asp-action="Tracking" class="card h-100 text-center shadow-sm text-decoration-none transition-hover border-primary border-top border-4">
-                <div class="card-body py-5">
-                    <i class="bi bi-search text-primary" style="font-size: 4rem;"></i>
-                    <h4 class="card-title mt-3 text-dark">Consultar Trámite</h4>
-                    <p class="text-muted">Revisa el folio y el estado actual de tus solicitudes.</p>
+        <div class="row g-4">
+            <div class="col-lg-6">
+                <div class="card-horizontal">
+                    <div class="img-side">
+                        @*<img src="https://images.unsplash.com/photo-1517842644466-41b7c474426d?auto=format&fit=crop&q=80&w=600" alt="Nueva Solicitud">*@
+                        <img src="https://images.unsplash.com/photo-1586281380349-632531db7ed4?q=80&w=2070&auto=format&fit=crop" alt="Nueva Solicitud">
+                        <div class="img-overlay"></div>
+                        <div class="img-overlay"></div>
+                    </div>
+                    <div class="content-side">
+                        <i class="bi bi-file-earmark-text icon-float"></i>
+                        <h3 class="fw-bold h4">Nueva Solicitud</h3>
+                        <p class="text-muted small">Registra trámites generales dirigidos a las áreas administrativas. Prepara tu documentación en formato PDF.</p>
+                        <a asp-action="Requests" class="btn btn-burgundy mt-2">
+                            <i class="bi bi-plus-circle me-2"></i>Comenzar Trámite
+                        </a>
+                    </div>
                 </div>
-            </a>
+            </div>
+
+            <div class="col-lg-6">
+                <div class="card-horizontal shadow-lg">
+                    <div class="img-side">
+                        <img src="https://images.unsplash.com/photo-1507925921958-8a62f3d1a50d?auto=format&fit=crop&q=80&w=600" alt="Seguimiento">
+                        <div class="img-overlay"></div>
+                    </div>
+                    <div class="content-side">
+                        <i class="bi bi-search icon-float"></i>
+                        <h3 class="fw-bold h4">Seguimiento</h3>
+                        <p class="text-muted small">Monitorea el estatus de tus trámites en tiempo real, revisa las observaciones del personal y descarga tus resultados.</p>
+                        <a asp-action="Tracking" class="btn btn-burgundy mt-2">
+                            <i class="bi bi-eye me-2"></i>Ver Mis Trámites
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-5 pb-3 text-center">
+            <small class="text-muted">
+                <i class="bi bi-info-circle me-1"></i> El tiempo de respuesta es determinado por el área responsable de atender cada tipo de trámite.
+            </small>
         </div>
     </div>
 </div>
-
-<style>
-    .transition-hover {
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
-    }
-
-    .transition-hover:hover {
-        transform: translateY(-10px);
-        box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
-    }        
-</style>

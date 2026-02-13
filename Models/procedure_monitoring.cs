@@ -9,13 +9,15 @@ namespace SchoolManager.Models
         public int Id { get; set; }
 
         [Required]
+        [Display(Name = "Mensaje")]
         public string Comment { get; set; } = null!;
 
         [Required]
+        [Display(Name = "Última modificación")]
         public DateTime DateUpdated { get; set; } = DateTime.Now;
 
         [Required]
-        public string IdUser { get; set; } = null!;
+        public int IdUser { get; set; }
 
         [Required]
         public int IdProcedure { get; set; }

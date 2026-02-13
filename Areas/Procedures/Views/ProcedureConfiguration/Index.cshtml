@@ -2,87 +2,165 @@
 
 @{
     ViewData["Title"] = "Gestión de Trámites";
+    ViewBag.EntityName = "tramites";
 }
 
 <div id="modalContainer"></div>
 
+<div class="container-fluid px-4 pt-5">
+
+    <div class="d-flex justify-content-between align-items-start mb-4">
+        <div>
+            <h2 class="fw-bold mb-1">
+                <i class="bi bi-pencil-square"></i> Trámites
+            </h2>
+            <p class="text-muted small mb-0">Configura los documentos necesarios y el área responsable para cada trámite.</p>
+        </div>
+        <button class="btn btn-success shadow-sm px-4" onclick="loadModal('/Procedures/ProcedureConfiguration/Create')">
+            <i class="bi bi-plus-circle me-2"></i> Agregar trámite
+        </button>
+    </div>
+    <partial name="_TableTools" />
+    <div class="card shadow-sm border-0 overflow-hidden">
+        <div class="card-body p-0">
+            <table id="tableToCopy" class="table table-hover align-middle mb-0">
+                <thead class="burgundy-header text-white">
+                    <tr>
+                        <th class="ms-4 ps-4" style="width: 25%;">Nombre del Trámite</th>
+                        <th style="width: 23%;">Documentos Requeridos</th>
+                        <th style="width: 17%;">Área</th>
+                        <th style="width: 20%;">Última modificación</th>
+                        <th class="actions text-center pe-4" style="width: 15%;">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td class="ps-4 fw-bold text-dark">@item.Name</td>
+                            <td>
+                                <div class="d-flex flex-wrap gap-1">
+                                    @if (item.Requirements != null && item.Requirements.Any())
+                                    {
+                                        foreach (var req in item.Requirements)
+                                        {
+                                            <span class="badge border text-dark bg-light d-flex align-items-center"
+                                                  style="font-size: 0.7rem; font-weight: 500; border-radius: 50px;"
+                                                  title="@(req.IsRequired ? "Obligatorio" : "Opcional")">
+                                                <i class="bi @(req.IsRequired ? "bi-asterisk text-danger" : "bi-file-earmark text-muted") me-1"></i>
+                                                @(req.ProcedureTypeDocument?.Name ?? "Doc")
+                                            </span>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted small"><em>Sin requisitos</em></span>
+                                    }
+                                </div>
+                            </td>
+                            <td>
+                                <span class="badge bg-secondary-subtle text-secondary border rounded-pill px-3">
+                                    @(item.ProcedureArea?.Name ?? "General")
+                                </span>
+                            </td>
+                            <td class="text-muted small">
+                                <i class="bi bi-clock-history me-1"></i> @item.DateUpdated.ToString("dd/MM/yyyy hh:mm tt")
+                            </td>
+                            <td class="actions text-center pe-4">
+                                <div class="btn-group">
+                                    <button class="btn btn-sm btn-warning me-2"
+                                            style="width:32px; height:32px; padding:0;"
+                                            onclick="loadModal('/Procedures/ProcedureConfiguration/Edit/@item.Id')"
+                                            title="Editar">
+                                        <i class="bi bi-pencil-square"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-danger"
+                                            style="width:32px; height:32px; padding:0;"
+                                            onclick="loadModal('/Procedures/ProcedureConfiguration/Delete/@item.Id')"
+                                            title="Eliminar">
+                                        <i class="bi bi-trash-fill"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
 @section Scripts {
-<script>
-    async function loadModal(url) {
-        console.log("Iniciando petición a:", url);
-        try {
-            const response = await fetch(url);
+    <script>
+      async function loadModal(url) {
+            try {
+                const response = await fetch(url);
+                if (!response.ok) throw new Error("Error en el servidor");
 
-            if (!response.ok) {
-                throw new Error(`Error en el servidor: ${response.status} ${response.statusText}`);
+                const html = await response.text();
+                const container = document.getElementById('modalContainer');
+                container.innerHTML = html;
+
+                const modalElement = container.querySelector('.modal');
+                if (modalElement) {
+                    const myModal = new bootstrap.Modal(modalElement);
+                    myModal.show();
+
+                    reqIndex = $('#pillsContainer .badge').length;
+                    console.log("Contador inicializado en: " + reqIndex);
+                }
+            } catch (error) {
+                Swal.fire('Error', 'Hubo un fallo en la carga: ' + error.message, 'error');
             }
-
-            const html = await response.text();
-            console.log("HTML recibido con éxito.");
-
-            const container = document.getElementById('modalContainer');
-            container.innerHTML = html;
-
-            const modalElement = container.querySelector('.modal');
-            if (modalElement) {
-                const myModal = new bootstrap.Modal(modalElement);
-                myModal.show();
-                console.log("Modal mostrado correctamente.");
-            } else {
-                console.error("Error: El HTML recibido no contiene la clase 'modal'.");
-            }
-        } catch (error) {
-            console.error("Hubo un fallo en la carga:", error);
-            alert("Error crítico: " + error.message);
         }
-    }
 
         let reqIndex = 0;
 
-    $(document).on('click', '#btnAddReq', function() {
-        const docId = $('#tempDocument').val();
-        const docText = $("#tempDocument option:selected").text();
-        const isReq = $('#tempRequired').val() === "true";
+        $(document).on('click', '#btnAddReq', function() {
+            const docId = $('#tempDocument').val();
+            const docText = $("#tempDocument option:selected").text();
+            const isReq = $('#tempRequired').val() === "true";
 
-        if (!docId) {
-            alert("Por favor, selecciona un documento.");
-            return;
-        }
+            if (!docId) {
+                Swal.fire('Atención', 'Selecciona un documento de la lista.', 'warning');
+                return;
+            }
 
-        const pill = `
-            <div class="badge border text-dark d-flex align-items-center shadow-sm bg-white"
-                 style="border-radius: 50px; font-size: 0.75rem; padding: 2px 8px; font-weight: 500;">
-                <i class="bi ${isReq ? 'bi-asterisk text-danger' : 'bi-file-earmark-text text-muted'} me-1" style="font-size: 0.65rem;"></i>
-                <span class="me-1">${docText}</span>
-                <button type="button" class="btn-close btn-remove-pill" style="width: 0.4em; height: 0.4em; margin-left: 4px;"></button>
+            const pill = `
+                <div class="badge border text-dark d-flex align-items-center shadow-sm bg-white mb-1 me-1"
+                     style="border-radius: 50px; font-size: 0.75rem; padding: 4px 10px; font-weight: 500;">
+                    <i class="bi ${isReq ? 'bi-asterisk text-danger' : 'bi-file-earmark-text text-muted'} me-2"></i>
+                    <span class="me-2">${docText}</span>
+                    <button type="button" class="btn-close btn-remove-pill" style="font-size: 0.5rem;"></button>
 
-                <input type="hidden" name="requirementsList[${reqIndex}].IdTypeDocument" value="${docId}" />
-                <input type="hidden" name="requirementsList[${reqIndex}].IsRequired" value="${isReq}" />
-            </div>`;
+                    <input type="hidden" name="requirementsList[${reqIndex}].IdTypeDocument" value="${docId}" />
+                    <input type="hidden" name="requirementsList[${reqIndex}].IsRequired" value="${isReq}" />
+                </div>`;
 
-        $('#pillsContainer').append(pill);
-        reqIndex++;
-    });
-
-    $(document).on('click', '.btn-remove-pill', function() {
-        $(this).closest('.badge').remove();
-        reorderIndices();
-    });
-
-    function reorderIndices() {
-        $('#pillsContainer .badge').each(function(i) {
-            $(this).find('input').each(function() {
-                const name = $(this).attr('name');
-                if(name) {
-                    const newName = name.replace(/\[\d+\]/, `[${i}]`);
-                    $(this).attr('name', newName);
-                }
-            });
+            $('#pillsContainer').append(pill);
+            reqIndex++;
         });
-        reqIndex = $('#pillsContainer .badge').length;
-    }
 
-            $(document).on("submit", "#formProcedureMaster", async function (e) {
+          function reorderIndices() {
+              $('#pillsContainer .badge').each(function(i) {
+                  $(this).find('input').each(function() {
+                      const name = $(this).attr('name');
+                      if(name) {
+                          const newName = name.replace(/\[\d+\]/, `[${i}]`);
+                          $(this).attr('name', newName);
+                      }
+                  });
+              });
+              reqIndex = $('#pillsContainer .badge').length;
+          }
+
+
+        $(document).on('click', '.btn-remove-pill', function() {
+            $(this).closest('.badge').remove();
+            reorderIndices();
+        });
+
+        $(document).on("submit", "#formProcedureMaster", async function (e) {
             e.preventDefault();
             const form = e.target;
 
@@ -92,85 +170,20 @@
                     body: new FormData(form)
                 });
 
-                if (!response.ok) throw new Error("Error en la respuesta del servidor");
-
                 const result = await response.json();
 
                 if (result.success) {
                     const modalElement = document.querySelector('.modal.show');
                     if (modalElement) {
-                        const modalInstance = bootstrap.Modal.getInstance(modalElement);
-                        if (modalInstance) modalInstance.hide();
+                        bootstrap.Modal.getInstance(modalElement).hide();
                     }
                     location.reload();
                 } else {
-                    let msg = result.errors ? result.errors.join("\n") : "La operación no pudo completarse.";
-                    alert(msg);
+                    Swal.fire('Error', result.errors ? result.errors.join("\n") : "Error al guardar.", 'error');
                 }
             } catch (error) {
-                console.error("Error:", error);
-                alert("Ocurrió un error crítico al enviar el formulario.");
+                Swal.fire('Error', 'Error crítico en el servidor.', 'error');
             }
         });
-</script>
+    </script>
 }
-
-<div class="d-flex justify-content-between align-items-center mb-4 p-3 bg-white shadow-sm rounded">
-    <div>
-        <h2 class="mb-0 text-dark">Trámites</h2>
-        <p class="text-muted small mb-0">Configura los documentos necesarios para cada trámite.</p>
-    </div>
-    <button class="btn btn-success shadow-sm px-4" onclick="loadModal('/Procedures/ProcedureConfiguration/Create')">
-        <i class="bi bi-plus-circle me-2"></i> Agregar trámite
-    </button>
-</div>
-
-<table class="table table-hover mt-3 shadow-sm align-middle">
-    <thead class="burgundy-header text-white">
-        <tr>
-            <th style="width: 25%;">Trámite</th>
-            <th style="width: 20%;">Documentos</th>
-            <th style="width: 20%;">Área</th>
-            <th style="width: 20%;">Última modificación</th>
-            <th class="text-center" style="width: 15%;">Acciones</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var item in Model)
-        {
-            <tr>
-                <td>@item.Name</td>
-                <td>
-                    @if (item.Requirements != null && item.Requirements.Any())
-                    {
-                        foreach (var req in item.Requirements)
-                        {
-                            <span class="badge border text-dark mb-1"
-                                  style="background-color: #f8f9fa;"
-                                  title="@(req.IsRequired ? "Obligatorio" : "Opcional")">
-                                <i class="bi @(req.IsRequired ? "bi-asterisk text-danger" : "bi-file-earmark text-dark")"></i>
-                                <span class="ms-1">@(req.ProcedureTypeDocument?.Name ?? "Doc. Desconocido")</span>
-                            </span>
-                        }
-                    }
-                    else
-                    {
-                        <span class="text-muted small"><em>Sin documentos configurados</em></span>
-                    }
-                </td>
-                <td>
-                   @(item.ProcedureArea?.Name ?? "Sin Área")
-                </td>
-                <td class="small">@item.DateUpdated.ToString("dd/MM/yyyy hh:mm tt")</td>
-                <td class="text-center">
-                    <button class="btn btn-sm btn-warning" onclick="loadModal('/Procedures/ProcedureConfiguration/Edit/@item.Id')">
-                        <i class="bi bi-pencil-square"></i>
-                    </button>
-                    <button class="btn btn-sm btn-danger" onclick="loadModal('/Procedures/ProcedureConfiguration/Delete/@item.Id')">
-                        <i class="bi bi-trash-fill"></i>
-                    </button>
-                </td>
-            </tr>
-        }
-    </tbody>
-</table>

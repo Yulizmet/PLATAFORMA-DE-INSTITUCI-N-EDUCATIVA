@@ -9,6 +9,7 @@ namespace SchoolManager.Models
 
         [Required]
         [MaxLength(50)]
+        [Display(Name = "Nombre y previsualización")]
         public string Name { get; set; } = null!;
 
         [Required]
@@ -25,6 +26,7 @@ namespace SchoolManager.Models
         public int StepOrder { get; set; }
 
         [Required]
+        [Display(Name = "Última modificación")]
         public DateTime DateUpdated { get; set; } = DateTime.Now;
 
         public virtual ICollection<procedure_request> ProcedureRequests { get; set; } = new List<procedure_request>();

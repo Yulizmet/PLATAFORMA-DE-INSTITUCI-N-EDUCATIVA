@@ -4,93 +4,167 @@
     Layout = "/Pages/Shared/_Layout.cshtml";
 }
 
+<style>
+    :root {
+        --burgundy: #620900;
+        --burgundy-light: #8C1B1B;
+    }
 
-<div class="container py-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="text-dark fw-bold">Mis Trámites</h2>
-        <a asp-action="Requests" class="btn btn-success shadow-sm">
-            <i class="bi bi-plus-circle"></i> Nueva Solicitud
-        </a>
-    </div>
-    @Html.AntiForgeryToken()
-    <div class="card shadow-sm border-0">
-        <div class="card-body p-0">
-            <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0">
-                    <thead class="table-light">
-                        <tr>
-                            <th class="ps-4">Folio</th>
-                            <th>Fecha</th>
-                            <th>Trámite</th>
-                            <th>Asunto</th>
-                            <th>Estado</th>
-                            <th class="text-center pe-4">Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (var item in Model)
-                        {
+    .tracking-container {
+        /*background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);*/
+        min-height: 90vh;
+        padding-top: 3rem;
+    }
+
+    .burgundy-color {
+        color: var(--burgundy) !important;
+    }
+
+    .table-custom {
+        background: white;
+        border-radius: 15px;
+        overflow: hidden;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+    }
+
+        .table-custom thead {
+            background-color: var(--burgundy);
+            color: white;
+        }
+
+            .table-custom thead th {
+                font-weight: 600;
+                letter-spacing: 0.5px;
+                border: none;
+                padding: 1.2rem 1rem;
+            }
+
+    .btn-action {
+        width: 35px;
+        height: 35px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 10px;
+        transition: all 0.2s;
+    }
+
+        .btn-action:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+    .status-badge {
+        padding: 0.5em 1.2em;
+        border-radius: 50px;
+        font-weight: 600;
+        font-size: 0.75rem;
+        border: 1px solid rgba(0,0,0,0.05);
+        box-shadow: 0 2px 4px rgba(0,0,0,0.03);
+    }
+</style>
+
+<div class="tracking-container">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-end mb-4">
+            <div>
+                <h2 class="burgundy-color fw-bold mb-1">
+                    <i class="bi bi-journal-text me-2"></i>Mis Trámites
+                </h2>
+                <p class="text-muted small mb-0">Consulta el historial y estado de tus solicitudes vigentes.</p>
+            </div>
+            <a asp-action="Requests" class="btn btn-burgundy px-4 shadow-sm" style="background-color: var(--burgundy); color: white; border-radius: 50px; font-weight: 600;">
+                <i class="bi bi-plus-lg me-2"></i>Nueva Solicitud
+            </a>
+        </div>
+
+        @Html.AntiForgeryToken()
+
+        <div class="card table-custom border-0">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead>
                             <tr>
-                                <td class="ps-4 fw-bold text-primary">@item.Folio</td>
-                                <td class="small">@item.DateUpdated.ToString("dd/MM/yyyy")</td>
-                                <td>@item.ProcedureType?.Name</td>
-                                <td class="text-truncate" style="max-width: 200px;" title="@item.Message">
-                                    <strong>@item.Subject</strong>
-                                </td>
-                                <td>
-                                    @if (item.ProcedureStatus != null)
-                                    {
-                                        <span class="badge" 
-                                              style="background-color: @item.ProcedureStatus.BackgroundColor; 
-                                                     color: @item.ProcedureStatus.TextColor;
-                                                     padding: 0.5em 1em;
-                                                     border-radius: 50px;
-                                                     font-weight: 600;
-                                                     border: 1px solid rgba(0,0,0,0.1);">
-                                            @item.ProcedureStatus.Name
-                                        </span>
-                                    }
-                                    else
-                                    {
-                                        <span class="badge bg-light text-dark border">N/A</span>
-                                    }
-                                </td>
-                                <td class="text-center pe-4">
-                                    <div class="d-flex justify-content-center gap-2">
-                                        <button class="btn btn-sm btn-info text-white shadow-sm"
-                                                title="Ver Detalles"
-                                                onclick="loadModal('/Procedures/Request/TrackingDetails/@item.Id')">
-                                            <i class="bi bi-info-circle-fill"></i>
-                                        </button>
-
-                                        @{
-                                            var tieneDocs = item.ProcedureDocuments != null && item.ProcedureDocuments.Any();
-                                            var primerDoc = tieneDocs ? item.ProcedureDocuments!.First() : null;
-                                        }
-
-                                        <a href="@(tieneDocs && primerDoc != null ? primerDoc.FilePath : "#")"
-                                           download="@(tieneDocs && primerDoc != null ? primerDoc.Name : "")"
-                                           target="_blank"
-                                           class="btn btn-sm @(tieneDocs ? "btn-warning text-white" : "btn-light text-muted opacity-50") shadow-sm"
-                                           title="@(tieneDocs && primerDoc != null ? "Descargar: " + primerDoc.Name : "Sin archivos adjuntos")"
-                                           style="@(tieneDocs ? "" : "pointer-events: none; cursor: default;")">
-                                            <i class="bi bi-file-earmark-arrow-down-fill"></i>
-                                        </a>
-
-                                        @if (item.IdStatus != 3 && item.IdStatus != 5)
-                                        {
-                                            <button type="button" class="btn btn-sm btn-danger shadow-sm"
-                                                    onclick="confirmCancel(@item.Id, '@item.Folio')"
-                                                    title="Cancelar Trámite">
-                                                <i class="bi bi-trash-fill"></i>
-                                            </button>
-                                        }
-                                    </div>
-                                </td>
+                                <th class="ps-4">Folio</th>
+                                <th>Fecha Registro</th>
+                                <th>Tipo de Trámite</th>
+                                <th>Asunto</th>
+                                <th>Estado</th>
+                                <th class="text-center pe-4">Acciones</th>
                             </tr>
-                        }
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            @if (!Model.Any())
+                            {
+                                <tr>
+                                    <td colspan="6" class="text-center py-5 text-muted">
+                                        <i class="bi bi-inbox fs-1 d-block mb-3 opacity-25"></i>
+                                        Aún no has realizado ninguna solicitud.
+                                    </td>
+                                </tr>
+                            }
+                            @foreach (var item in Model)
+                            {
+                                <tr>
+                                    <td class="ps-4">
+                                        <span class="fw-bold text-dark">@item.Folio</span>
+                                    </td>
+                                    <td class="text-muted small">
+                                        <i class="bi bi-calendar3 me-1"></i> @item.DateUpdated.ToString("dd/MM/yyyy")
+                                    </td>
+                                    <td>
+                                        <div class="fw-bold small text-dark">@item.ProcedureType?.Name</div>
+                                    </td>
+                                    <td>
+                                        <div class="text-truncate small" style="max-width: 180px;" title="@item.Subject">
+                                            @item.Subject
+                                        </div>
+                                    </td>
+                                    <td>
+                                        @if (item.ProcedureStatus != null)
+                                        {
+                                            <span class="status-badge shadow-sm"
+                                                  style="background-color: @item.ProcedureStatus.BackgroundColor; color: @item.ProcedureStatus.TextColor;">
+                                                @item.ProcedureStatus.Name
+                                            </span>
+                                        }
+                                    </td>
+                                    <td class="text-center pe-4">
+                                        <div class="d-flex justify-content-center gap-2">
+                                            <button class="btn btn-action btn-info text-white"
+                                                    title="Ver Detalles"
+                                                    onclick="loadModal('/Procedures/Request/TrackingDetails/@item.Id')">
+                                                <i class="bi bi-eye-fill"></i>
+                                            </button>
+
+                                            @{
+                                                var tieneDocs = item.ProcedureDocuments != null && item.ProcedureDocuments.Any();
+                                                var primerDoc = tieneDocs ? item.ProcedureDocuments!.First() : null;
+                                            }
+                                            <a href="@(tieneDocs && primerDoc != null ? primerDoc.FilePath : "#")"
+                                               download="@(tieneDocs && primerDoc != null ? primerDoc.Name : "")"
+                                               class="btn btn-action @(tieneDocs ? "btn-warning text-white" : "btn-light text-muted opacity-50")"
+                                               title="@(tieneDocs ? "Descargar respuesta" : "Sin archivos")"
+                                               style="@(tieneDocs ? "" : "pointer-events: none;")">
+                                                <i class="bi bi-cloud-download-fill"></i>
+                                            </a>
+
+                                            @if (item.IdStatus != 3 && item.IdStatus != 5)
+                                            {
+                                                <button type="button" class="btn btn-action btn-danger"
+                                                        onclick="confirmCancel(@item.Id, '@item.Folio')"
+                                                        title="Cancelar Trámite">
+                                                    <i class="bi bi-x-circle-fill"></i>
+                                                </button>
+                                            }
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
@@ -144,7 +218,8 @@
                 icon: 'warning',
                 showCancelButton: true,
                 confirmButtonColor: '#dc3545',
-                confirmButtonText: 'Sí, cancelar'
+                confirmButtonText: 'Sí, cancelar',
+                cancelButtonText: 'Salir'
             });
 
             if (result.isConfirmed) {

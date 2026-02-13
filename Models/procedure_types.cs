@@ -10,12 +10,15 @@ namespace SchoolManager.Models
 
         [Required]
         [MaxLength(150)]
+        [Display(Name = "Nombre del trámite")]
         public string Name { get; set; } = null!;
 
         [Required]
+        [Display(Name = "Última modificación")]
         public DateTime DateUpdated { get; set; } = DateTime.Now;
 
         [Required]
+        [Display(Name = "Área responsable")]
         public int IdArea { get; set; }
 
         [ForeignKey("IdArea")]
