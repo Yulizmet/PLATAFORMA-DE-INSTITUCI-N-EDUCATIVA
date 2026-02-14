@@ -15,7 +15,6 @@ builder.Services.AddScoped<IStorageService, AzureStorageService>();
 
 var app = builder.Build();
 
-//Views
 
 app.MapControllerRoute(
     name: "ProceduresArea",
