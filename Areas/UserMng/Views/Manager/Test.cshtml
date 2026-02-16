@@ -1,5 +1,40 @@
 @{
-    ViewData["Title"] = "Panel de Control";
+    ViewData["Title"] = "Prueba Autocomplete";
     Layout = "_UserLayout";
+
 }
-<h1>PAPUPRO</h1>
+
+<h2>Prueba de Autocomplete</h2>
+
+<div class="mb-3">
+    <label class="form-label">Buscar Persona</label>
+    <input type="text" id="searchPerson">
+</div>
+
+<div id="personInfo" class="alert alert-info mt-2" style="display: none;">
+    <strong>Seleccionado:</strong> <span id="selectedName"></span><br>
+    <strong>Email:</strong> <span id="selectedEmail"></span>
+</div>
+
+@section Scripts {
+    <script src="~/js/autocomplete.js"></script>
+    <script>
+$(document).ready(function() {
+    
+    var personAutocomplete = initAutocomplete('#searchPerson', 'persons', function(data) {
+        if (data) {
+            $('#selectedName').text(data.fullName);
+            $('#selectedEmail').text(data.email);
+            $('#personInfo').show();
+        } else {
+            $('#personInfo').hide();
+        }
+    }, 'Escribe para buscar persona...');
+
+    // Métodos disponibles:
+    // personAutocomplete.clear();      // Limpiar
+    // personAutocomplete.getValue();   // Obtener ID
+    // personAutocomplete.getData();    // Obtener todos los datos
+});
+</script>
+}
