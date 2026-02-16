@@ -1,10 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using SchoolManager.Areas.Enrollment.ViewModels;
 using SchoolManager.Data;
 using SchoolManager.Models;
 
@@ -20,28 +19,23 @@ namespace SchoolManager.Areas.Enrollment.Controllers
             _context = context;
         }
 
+        // 🔥 AHORA Index REDIRIGE a Create
         // GET: Enrollment/PreEnrollment
-        public async Task<IActionResult> Index()
+        public IActionResult Index()
         {
-            var appDbContext = _context.preenrollment_general.Include(p => p.Career);
-            return View(await appDbContext.ToListAsync());
+            return RedirectToAction("Create");
         }
 
         // GET: Enrollment/PreEnrollment/Details/5
         public async Task<IActionResult> Details(int? id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
+            if (id == null) return NotFound();
 
             var preenrollment_general = await _context.preenrollment_general
                 .Include(p => p.Career)
                 .FirstOrDefaultAsync(m => m.IdData == id);
-            if (preenrollment_general == null)
-            {
-                return NotFound();
-            }
+
+            if (preenrollment_general == null) return NotFound();
 
             return View(preenrollment_general);
         }
@@ -49,95 +43,121 @@ namespace SchoolManager.Areas.Enrollment.Controllers
         // GET: Enrollment/PreEnrollment/Create
         public IActionResult Create()
         {
-            ViewData["IdCareer"] = new SelectList(_context.Set<preenrollment_careers>(), "IdCareer", "IdCareer");
-            return View();
+            var model = new PreEnrollmentViewModel
+            {
+                DatosGenerales = new preenrollment_general(),
+                DatosEscolares = new preenrollment_schools(),
+                Domicilio = new preenrollment_addresses(),
+                Tutor = new preenrollment_tutors(),
+                Otros = new preenrollment_infos()
+            };
+
+            ViewData["IdCareer"] = new SelectList(
+                _context.Set<preenrollment_careers>(),
+                "IdCareer",
+                "IdCareer"
+            );
+
+            return View(model);
         }
 
         // POST: Enrollment/PreEnrollment/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("IdData,IdCareer,PaternalLastName,MaternalLastName,Gender,BirthDate,Email,Curp")] preenrollment_general preenrollment_general)
+        public async Task<IActionResult> Create(PreEnrollmentViewModel model)
         {
             if (ModelState.IsValid)
             {
-                _context.Add(preenrollment_general);
+                _context.Add(model.DatosGenerales);
                 await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+
+                // 🔥 Después de guardar vuelve al formulario
+                // (Si quieres que vaya a otro paso luego lo cambiamos)
+                return RedirectToAction("Create");
             }
-            ViewData["IdCareer"] = new SelectList(_context.Set<preenrollment_careers>(), "IdCareer", "IdCareer", preenrollment_general.IdCareer);
-            return View(preenrollment_general);
+
+            ViewData["IdCareer"] = new SelectList(
+                _context.Set<preenrollment_careers>(),
+                "IdCareer",
+                "IdCareer",
+                model.DatosGenerales.IdCareer
+            );
+
+            return View(model);
         }
 
         // GET: Enrollment/PreEnrollment/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
+            if (id == null) return NotFound();
 
             var preenrollment_general = await _context.preenrollment_general.FindAsync(id);
-            if (preenrollment_general == null)
+            if (preenrollment_general == null) return NotFound();
+
+            var model = new PreEnrollmentViewModel
             {
-                return NotFound();
-            }
-            ViewData["IdCareer"] = new SelectList(_context.Set<preenrollment_careers>(), "IdCareer", "IdCareer", preenrollment_general.IdCareer);
-            return View(preenrollment_general);
+                DatosGenerales = preenrollment_general,
+                DatosEscolares = new preenrollment_schools(),
+                Domicilio = new preenrollment_addresses(),
+                Tutor = new preenrollment_tutors(),
+                Otros = new preenrollment_infos()
+            };
+
+            ViewData["IdCareer"] = new SelectList(
+                _context.Set<preenrollment_careers>(),
+                "IdCareer",
+                "IdCareer",
+                preenrollment_general.IdCareer
+            );
+
+            return View(model);
         }
 
         // POST: Enrollment/PreEnrollment/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("IdData,IdCareer,PaternalLastName,MaternalLastName,Gender,BirthDate,Email,Curp")] preenrollment_general preenrollment_general)
+        public async Task<IActionResult> Edit(int id, PreEnrollmentViewModel model)
         {
-            if (id != preenrollment_general.IdData)
-            {
-                return NotFound();
-            }
+            if (id != model.DatosGenerales.IdData) return NotFound();
 
             if (ModelState.IsValid)
             {
                 try
                 {
-                    _context.Update(preenrollment_general);
+                    _context.Update(model.DatosGenerales);
                     await _context.SaveChangesAsync();
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!preenrollment_generalExists(preenrollment_general.IdData))
-                    {
+                    if (!preenrollment_generalExists(model.DatosGenerales.IdData))
                         return NotFound();
-                    }
                     else
-                    {
                         throw;
-                    }
                 }
-                return RedirectToAction(nameof(Index));
+
+                return RedirectToAction("Create");
             }
-            ViewData["IdCareer"] = new SelectList(_context.Set<preenrollment_careers>(), "IdCareer", "IdCareer", preenrollment_general.IdCareer);
-            return View(preenrollment_general);
+
+            ViewData["IdCareer"] = new SelectList(
+                _context.Set<preenrollment_careers>(),
+                "IdCareer",
+                "IdCareer",
+                model.DatosGenerales.IdCareer
+            );
+
+            return View(model);
         }
 
         // GET: Enrollment/PreEnrollment/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
+            if (id == null) return NotFound();
 
             var preenrollment_general = await _context.preenrollment_general
                 .Include(p => p.Career)
                 .FirstOrDefaultAsync(m => m.IdData == id);
-            if (preenrollment_general == null)
-            {
-                return NotFound();
-            }
+
+            if (preenrollment_general == null) return NotFound();
 
             return View(preenrollment_general);
         }
@@ -151,10 +171,10 @@ namespace SchoolManager.Areas.Enrollment.Controllers
             if (preenrollment_general != null)
             {
                 _context.preenrollment_general.Remove(preenrollment_general);
+                await _context.SaveChangesAsync();
             }
 
-            await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
+            return RedirectToAction("Create");
         }
 
         private bool preenrollment_generalExists(int id)

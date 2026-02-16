@@ -1,62 +1,57 @@
-﻿@model SchoolManager.Models.preenrollment_general
-
+﻿@model SchoolManager.Areas.Enrollment.ViewModels.PreEnrollmentViewModel
 @{
-    ViewData["Title"] = "Create";
+    Layout = "~/Areas/Enrollment/Views/_Layout.cshtml";
+    ViewData["Title"] = "Preinscripción";
 }
 
-<h1>Create</h1>
+<main class="content">
 
-<h4>preenrollment_general</h4>
-<hr />
-<div class="row">
-    <div class="col-md-4">
-        <form asp-action="Create">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <div class="form-group">
-                <label asp-for="IdCareer" class="control-label"></label>
-                <select asp-for="IdCareer" class ="form-control" asp-items="ViewBag.IdCareer"></select>
-            </div>
-            <div class="form-group">
-                <label asp-for="PaternalLastName" class="control-label"></label>
-                <input asp-for="PaternalLastName" class="form-control" />
-                <span asp-validation-for="PaternalLastName" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="MaternalLastName" class="control-label"></label>
-                <input asp-for="MaternalLastName" class="form-control" />
-                <span asp-validation-for="MaternalLastName" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Gender" class="control-label"></label>
-                <input asp-for="Gender" class="form-control" />
-                <span asp-validation-for="Gender" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="BirthDate" class="control-label"></label>
-                <input asp-for="BirthDate" class="form-control" />
-                <span asp-validation-for="BirthDate" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Email" class="control-label"></label>
-                <input asp-for="Email" class="form-control" />
-                <span asp-validation-for="Email" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Curp" class="control-label"></label>
-                <input asp-for="Curp" class="form-control" />
-                <span asp-validation-for="Curp" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <input type="submit" value="Create" class="btn btn-primary" />
-            </div>
-        </form>
+    <div class="container-fluid p-0">
+        <h1 class="h3 mb-3"><strong>Datos del Aspirante</strong></h1>
     </div>
-</div>
 
-<div>
-    <a asp-action="Index">Back to List</a>
-</div>
+    <div class="container my-5">
+
+        <form asp-action="Create" method="post">
+
+            <!-- Carrera -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <label asp-for="DatosGenerales.IdCareer" class="form-label">
+                        Carrera solicitada
+                    </label>
+
+                    <select asp-for="DatosGenerales.IdCareer"
+                            asp-items="ViewBag.IdCareer"
+                            class="form-select"
+                            required>
+                        <option value="">Sin selección</option>
+                    </select>
+
+                    <span asp-validation-for="DatosGenerales.IdCareer" class="text-danger"></span>
+                </div>
+            </div>
+
+            <!-- 🔥 IMPORTANTE: pasar el Model COMPLETO -->
+            <partial name="Partials/_DatosGenerales" model="Model" />
+            <partial name="Partials/_DatosEscolares" model="Model" />
+            <partial name="Partials/_Domicilio" model="Model" />
+            <partial name="Partials/_Tutor" model="Model" />
+            <partial name="Partials/_OtrosDatos" model="Model" />
+
+            <div class="d-flex justify-content-end">
+                <button type="submit" class="btn btn-primary">
+                    Continuar
+                </button>
+            </div>
+
+        </form>
+
+    </div>
+</main>
 
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
 }

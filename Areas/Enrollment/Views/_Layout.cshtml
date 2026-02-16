@@ -1,0 +1,220 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>@ViewData["Title"] - SchoolManager</title>
+
+    <!-- Favicon -->
+    <link rel="shortcut icon" href="~/enrollment/static/img/icons/icono-Itace.png" />
+
+    <!-- Bootstrap -->
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+
+    <!-- AdminKit -->
+    <link rel="stylesheet" href="~/enrollment/static/css/app.css" />
+
+    <!-- FontAwesome (CDN lista para usar) -->
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+
+    <!-- ===== ESTILOS DEL WIZARD ===== -->
+    <style>
+        .steps-vertical {
+            padding: 12px 14px 12px 18px;
+            margin: 8px 10px;
+            border-left: 3px solid rgba(255,255,255,.2);
+        }
+
+        .step-vertical {
+            position: relative;
+            display: flex;
+            gap: 12px;
+            padding: 10px;
+            margin-bottom: 12px;
+            border-radius: .4rem;
+            text-decoration: none;
+            color: rgba(255,255,255,.9);
+            opacity: .55;
+            cursor: pointer;
+            transition: all .2s ease;
+        }
+
+            .step-vertical:hover {
+                background: rgba(255,255,255,.05);
+                opacity: .85;
+            }
+
+            .step-vertical::before {
+                content: "";
+                position: absolute;
+                left: -11px;
+                top: 18px;
+                width: 12px;
+                height: 12px;
+                border-radius: 50%;
+                background: rgba(255,255,255,.3);
+            }
+
+        .step-vertical-icon {
+            width: 34px;
+            height: 34px;
+            display: grid;
+            place-items: center;
+            border-radius: .5rem;
+            background: rgba(255,255,255,.1);
+            flex: 0 0 34px;
+        }
+
+            .step-vertical-icon i {
+                font-size: 15px;
+                color: rgba(255,255,255,.95);
+            }
+
+        .step-vertical-title {
+            font-size: .95rem;
+            font-weight: 600;
+            line-height: 1.1;
+        }
+
+        .step-vertical-desc {
+            font-size: .78rem;
+            opacity: .8;
+            margin-top: 2px;
+        }
+
+        .step-vertical.active {
+            opacity: 1;
+            background: rgba(255,255,255,.06);
+            border: 1px solid rgba(255,255,255,.12);
+        }
+
+            .step-vertical.active::before {
+                background: #4D0218;
+            }
+
+        .step-vertical.complete {
+            opacity: 1;
+        }
+
+            .step-vertical.complete::before {
+                background: #198754;
+            }
+
+            .step-vertical.complete .step-vertical-icon i {
+                color: #198754;
+            }
+
+        .step-vertical.locked {
+            cursor: not-allowed;
+            opacity: .35;
+            pointer-events: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="wrapper">
+
+        <!-- SIDEBAR -->
+        <nav id="sidebar" class="sidebar js-sidebar">
+            <div class="sidebar-content js-simplebar">
+
+                <a class="sidebar-brand"
+                   href="@Url.Action("Index", "PreEnrollment", new { area = "Enrollment" })">
+
+                    <div style="position: relative; height: 110px; overflow: hidden;">
+                        <img src="~/enrollment/static/img/icons/ITACE.png"
+                             alt="Escuela logo"
+                             style="position:absolute; top:-50px; left:50%;
+                         transform:translateX(-50%);
+                         height:150px; width:auto;">
+                    </div>
+
+                </a>
+
+                <ul class="sidebar-nav">
+                    <li class="sidebar-item">
+
+                        <div class="steps-vertical" id="wizardSteps">
+
+                            <a class="step-vertical"
+                               href="@Url.Action("Index", "PreEnrollment", new { area = "Enrollment" })">
+                                <div class="step-vertical-icon">
+                                    <i class="fa-solid fa-check"></i>
+                                </div>
+                                <div class="step-vertical-content">
+                                    <div class="step-vertical-title">Preinscripción</div>
+                                    <div class="step-vertical-desc">Datos iniciales</div>
+                                </div>
+                            </a>
+
+                            <a class="step-vertical"
+                               href="@Url.Action("Alumno", "PreEnrollment", new { area = "Enrollment" })">
+                                <div class="step-vertical-icon">
+                                    <i class="fa-solid fa-user-check"></i>
+                                </div>
+                                <div class="step-vertical-content">
+                                    <div class="step-vertical-title">Confirmar datos</div>
+                                    <div class="step-vertical-desc">Verifica tu información</div>
+                                </div>
+                            </a>
+
+                            <a class="step-vertical"
+                               href="@Url.Action("Finalizar", "PreEnrollment", new { area = "Enrollment" })">
+                                <div class="step-vertical-icon">
+                                    <i class="fa-solid fa-flag-checkered"></i>
+                                </div>
+                                <div class="step-vertical-content">
+                                    <div class="step-vertical-title">Finalizar</div>
+                                    <div class="step-vertical-desc">Enviar solicitud</div>
+                                </div>
+                            </a>
+
+                        </div>
+
+                    </li>
+                </ul>
+            </div>
+        </nav>
+
+        <!-- MAIN -->
+        <div class="main">
+
+            <nav class="navbar navbar-expand navbar-light navbar-bg">
+                <a class="sidebar-toggle js-sidebar-toggle">
+                    <i class="hamburger align-self-center"></i>
+                </a>
+            </nav>
+
+            <main class="content">
+                <div class="container-fluid p-4">
+                    @RenderBody()
+                </div>
+            </main>
+
+            <footer class="footer">
+                <div class="container-fluid text-muted text-center py-3">
+                    <a class="text-muted" href="https://itace.edu.mx/" target="_blank">
+                        <strong>Instituto Tamaulipeco de Capacitación para el Empleo</strong>
+                    </a>
+                </div>
+            </footer>
+
+        </div>
+    </div>
+
+    <!-- Bootstrap -->
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- AdminKit JS -->
+    <script src="~/enrollment/static/js/app.js"></script>
+
+    @RenderSection("Scripts", required: false)
+
+</body>
+</html>

@@ -1,0 +1,106 @@
+﻿@model SchoolManager.Areas.Enrollment.ViewModels.PreEnrollmentViewModel
+
+<div class="card mb-4">
+    <div class="card-header fw-bold text-uppercase">
+        Datos Generales
+    </div>
+
+    <div class="card-body row g-3">
+
+        <!-- Apellido Paterno -->
+        <div class="col-md-4">
+            <label asp-for="DatosGenerales.PaternalLastName" class="form-label">
+                Apellido Paterno
+            </label>
+            <input asp-for="DatosGenerales.PaternalLastName" class="form-control" required />
+            <span asp-validation-for="DatosGenerales.PaternalLastName" class="text-danger"></span>
+        </div>
+
+        <!-- Apellido Materno -->
+        <div class="col-md-4">
+            <label asp-for="DatosGenerales.MaternalLastName" class="form-label">
+                Apellido Materno
+            </label>
+            <input asp-for="DatosGenerales.MaternalLastName" class="form-control" required />
+            <span asp-validation-for="DatosGenerales.MaternalLastName" class="text-danger"></span>
+        </div>
+
+        <!-- Género -->
+        <div class="col-md-4">
+            <label asp-for="DatosGenerales.Gender" class="form-label">
+                Género
+            </label>
+            <select asp-for="DatosGenerales.Gender" class="form-select" required>
+                <option value="">Sin selección</option>
+                <option value="Femenino">Femenino</option>
+                <option value="Masculino">Masculino</option>
+            </select>
+            <span asp-validation-for="DatosGenerales.Gender" class="text-danger"></span>
+        </div>
+
+        <!-- Fecha de nacimiento -->
+        <div class="col-md-4">
+            <label asp-for="DatosGenerales.BirthDate" class="form-label">
+                Fecha de nacimiento
+            </label>
+            <input asp-for="DatosGenerales.BirthDate" type="date" class="form-control" required />
+            <span asp-validation-for="DatosGenerales.BirthDate" class="text-danger"></span>
+        </div>
+
+        <!-- Correo -->
+        <div class="col-md-4">
+            <label asp-for="DatosGenerales.Email" class="form-label">
+                Correo electrónico
+            </label>
+            <input asp-for="DatosGenerales.Email"
+                   type="email"
+                   class="form-control"
+                   placeholder="ejemplo@correo.com"
+                   required />
+            <span asp-validation-for="DatosGenerales.Email" class="text-danger"></span>
+        </div>
+
+        <!-- CURP -->
+        <div class="col-md-4">
+            <label asp-for="DatosGenerales.Curp" class="form-label">
+                CURP
+            </label>
+
+            <div class="input-group">
+                <input asp-for="DatosGenerales.Curp"
+                       class="form-control"
+                       maxlength="18"
+                       style="text-transform: uppercase;"
+                       oninput="this.value = this.value.toUpperCase()"
+                       required />
+
+                <a href="https://www.gob.mx/curp/" target="_blank" class="btn btn-outline-primary">
+                    Consultar
+                </a>
+            </div>
+
+            <small class="text-muted">
+                La CURP debe contener exactamente 18 caracteres.
+            </small>
+
+            <span asp-validation-for="DatosGenerales.Curp" class="text-danger"></span>
+        </div>
+
+        <!-- Carrera solicitada -->
+        <div class="col-md-6">
+            <label asp-for="DatosGenerales.IdCareer" class="form-label">
+                Carrera solicitada
+            </label>
+
+            <select asp-for="DatosGenerales.IdCareer"
+                    asp-items="ViewBag.IdCareer"
+                    class="form-select"
+                    required>
+                <option value="">Sin selección</option>
+            </select>
+
+            <span asp-validation-for="DatosGenerales.IdCareer" class="text-danger"></span>
+        </div>
+
+    </div>
+</div>

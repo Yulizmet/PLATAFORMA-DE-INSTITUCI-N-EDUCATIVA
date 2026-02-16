@@ -1,71 +1,79 @@
-﻿@model IEnumerable<SchoolManager.Models.preenrollment_general>
+﻿@model List<SchoolManager.Models.preenrollment_general>
 
 @{
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = "Preinscripciones";
 }
 
-<h1>Index</h1>
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold">Preinscripciones Registradas</h2>
 
-<p>
-    <a asp-action="Create">Create New</a>
-</p>
-<table class="table">
-    <thead>
-        <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.Career)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.PaternalLastName)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.MaternalLastName)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Gender)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.BirthDate)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Email)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Curp)
-            </th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-@foreach (var item in Model) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.Career.IdCareer)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.PaternalLastName)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.MaternalLastName)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Gender)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.BirthDate)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Email)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Curp)
-            </td>
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.IdData">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.IdData">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.IdData">Delete</a>
-            </td>
-        </tr>
-}
-    </tbody>
-</table>
+    <a asp-area="Enrollment"
+       asp-controller="PreEnrollment"
+       asp-action="Create"
+       class="btn btn-success">
+        <i class="fa-solid fa-plus me-2"></i>
+        Nueva Preinscripción
+    </a>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-body">
+
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>Apellido Paterno</th>
+                        <th>Apellido Materno</th>
+                        <th>Género</th>
+                        <th>Correo</th>
+                        <th class="text-center">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td>@item.PaternalLastName</td>
+                            <td>@item.MaternalLastName</td>
+                            <td>
+                                <span class="badge bg-info">
+                                    @item.Gender
+                                </span>
+                            </td>
+                            <td>@item.Email</td>
+                            <td class="text-center">
+
+                                <a asp-area="Enrollment"
+                                   asp-controller="PreEnrollment"
+                                   asp-action="Edit"
+                                   asp-route-id="@item.IdData"
+                                   class="btn btn-sm btn-outline-primary me-1">
+                                    <i class="fa-solid fa-pen"></i>
+                                </a>
+
+                                <a asp-area="Enrollment"
+                                   asp-controller="PreEnrollment"
+                                   asp-action="Details"
+                                   asp-route-id="@item.IdData"
+                                   class="btn btn-sm btn-outline-secondary me-1">
+                                    <i class="fa-solid fa-eye"></i>
+                                </a>
+
+                                <a asp-area="Enrollment"
+                                   asp-controller="PreEnrollment"
+                                   asp-action="Delete"
+                                   asp-route-id="@item.IdData"
+                                   class="btn btn-sm btn-outline-danger">
+                                    <i class="fa-solid fa-trash"></i>
+                                </a>
+
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+</div>
