@@ -2,8 +2,8 @@
 {
     public interface IStorageService
     {
-        Task<string> UploadFileAsync(IFormFile file, string containerName);
-        Task DeleteFileAsync(string fileName, string containerName);
-        string GetSecureUrl(string fileUrl, string originalName);
+        Task<string> UploadFileAsync(IFormFile file, string containerName, string connectionName = "AzureStorageProcedures");
+        Task DeleteFileAsync(string fileUrl, string containerName, string connectionName = "AzureStorageProcedures");
+        string GetSecureUrl(string fileUrl, string originalName, string connectionName = "AzureStorageProcedures");
     }
 }

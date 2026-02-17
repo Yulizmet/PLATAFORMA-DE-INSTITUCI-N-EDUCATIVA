@@ -40,7 +40,11 @@
                                     <small class="text-muted">@item.DateUpdated.ToString("dd/MM/yyyy HH:mm")</small>
                                 </td>
                                 <td>
-                                    <div class="fw-bold">@item.IdUser</div>
+                                    <div class="fw-bold">
+                                        @(item.User?.Person != null 
+                                            ? $"{item.User.Person.FirstName} {item.User.Person.LastNamePaternal}" 
+                                            : "Usuario sin datos personales")
+                                    </div>
                                     <small class="text-muted">Matrícula: @item.Id</small>
                                 </td>
                                 <td>
@@ -67,7 +71,7 @@
                                 </td>
                                 <td class="text-center pe-4">
                                     <button class="btn btn-sm btn-secondary px-3 shadow-sm rounded-pill"
-                                            onclick="openSeguimiento(@item.Id)">
+                                            onclick="openMonitoring(@item.Id)">
                                         <i class="bi bi-gear-fill me-1"></i> Gestionar
                                     </button>
                                 </td>
@@ -90,7 +94,7 @@
 
 @section Scripts {
     <script>
-        function openSeguimiento(id) {
+        function openMonitoring(id) {
             $('#dynamicModalContent').html('');
 
             Swal.fire({
@@ -101,7 +105,7 @@
                 didOpen: () => { Swal.showLoading(); }
             });
 
-            $.get(`/Procedures/ProcedureManagement/Seguimiento/${id}`, function (data) {
+            $.get(`/Procedures/ProcedureManagement/Monitoring/${id}`, function (data) {
                 Swal.close();
 
                 $('#dynamicModalContent').html(data);
@@ -114,6 +118,19 @@
                 Swal.close();
                 console.error("Error al cargar:", xhr.responseText);
                 Swal.fire('Error', 'No se pudo cargar el seguimiento. Verifique que la ruta sea correcta.', 'error');
+            });
+        }
+    function submitStep() {
+            const formData = $('#formUpdateStatus').serialize();
+
+            $.post('/Procedures/ProcedureManagement/UpdateStatus', formData, function (response) {
+                if (response.success) {
+                    Swal.fire('¡Éxito!', response.message, 'success').then(() => {
+                        location.reload();
+                    });
+                } else {
+                    Swal.fire('Error', response.message, 'error');
+                }
             });
         }
     </script>

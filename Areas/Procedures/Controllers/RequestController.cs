@@ -13,6 +13,8 @@ namespace SchoolManager.Areas.Procedures.Controllers
         private readonly AppDbContext _context;
         private readonly IStorageService _storageService;
 
+        private const string STORAGE_CONNECTION = "AzureStorageProcedures";
+
         public RequestController(AppDbContext context, IStorageService storageService)
         {
             _context = context;
@@ -64,18 +66,17 @@ namespace SchoolManager.Areas.Procedures.Controllers
         {
             request.DateUpdated = DateTime.Now;
             request.IdStatus = 1;
-            //request.IdUser = "TEMP_USER";
+            request.IdUser = 1;
 
             if (string.IsNullOrEmpty(request.Folio))
             {
-                request.Folio = "FOL-" + DateTime.Now.Ticks.ToString().Substring(10);
+                request.Folio = "FOL-" + DateTime.Now.Ticks.ToString().Substring(10).ToUpper();
             }
 
             ModelState.Remove("IdUser");
             ModelState.Remove("ProcedureStatus");
             ModelState.Remove("ProcedureType");
             ModelState.Remove("User");
-            ModelState.Remove("Datetime");
             ModelState.Remove("Folio");
 
             if (ModelState.IsValid)
@@ -83,21 +84,19 @@ namespace SchoolManager.Areas.Procedures.Controllers
                 using var transaction = await _context.Database.BeginTransactionAsync();
                 try
                 {
-                    _context.Add(request);
+                    _context.ProcedureRequest.Add(request);
                     await _context.SaveChangesAsync();
 
                     foreach (var file in form.Files)
                     {
                         if (file.Length > 0)
                         {
-                            string fileUrl = await _storageService.UploadFileAsync(file, "proceduresfiles");
-
-                            string documentName = file.FileName;
+                            string fileUrl = await _storageService.UploadFileAsync(file, "proceduresfiles", STORAGE_CONNECTION);
 
                             var document = new procedure_documents
                             {
                                 IdProcedure = request.Id,
-                                Name = documentName,
+                                Name = file.FileName,
                                 FilePath = fileUrl,
                                 DateUpdated = DateTime.Now
                             };
@@ -115,7 +114,7 @@ namespace SchoolManager.Areas.Procedures.Controllers
                 {
                     await transaction.RollbackAsync();
                     var message = ex.InnerException != null ? ex.InnerException.Message : ex.Message;
-                    return Json(new { success = false, errors = new[] { "Error en la transacción: " + message } });
+                    return Json(new { success = false, errors = new[] { "Error: " + message } });
                 }
             }
 
@@ -136,20 +135,11 @@ namespace SchoolManager.Areas.Procedures.Controllers
             {
                 foreach (var doc in req.ProcedureDocuments)
                 {
-                    doc.FilePath = _storageService.GetSecureUrl(doc.FilePath, doc.Name);
+                    doc.FilePath = _storageService.GetSecureUrl(doc.FilePath, doc.Name, STORAGE_CONNECTION);
                 }
             }
 
             return View(requests);
-        }
-
-        [HttpGet]
-        public async Task<IActionResult> DownloadFile(string url, string originalName)
-        {
-            using var httpClient = new HttpClient();
-            var buffer = await httpClient.GetByteArrayAsync(url);
-
-            return File(buffer, "application/octet-stream", originalName);
         }
 
         [HttpGet]
@@ -165,7 +155,7 @@ namespace SchoolManager.Areas.Procedures.Controllers
 
             foreach (var doc in request.ProcedureDocuments)
             {
-                doc.FilePath = _storageService.GetSecureUrl(doc.FilePath, doc.Name);
+                doc.FilePath = _storageService.GetSecureUrl(doc.FilePath, doc.Name, STORAGE_CONNECTION);
             }
 
             return PartialView("_TrackingDetails", request);

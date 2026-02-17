@@ -31,6 +31,9 @@ namespace SchoolManager.Models
         [Required]
         public int IdStatus { get; set; }
 
+        [ForeignKey("IdUser")]
+        public virtual users_user User { get; set; } = null!;
+
         [ForeignKey("IdTypeProcedure")]
         public virtual procedure_types ProcedureType { get; set; } = null!;
 
