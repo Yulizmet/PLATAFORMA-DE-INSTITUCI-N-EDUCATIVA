@@ -32,5 +32,4 @@
     <Folder Include="Areas\Tutorship\Views\" />
     <Folder Include="Migrations\" />
   </ItemGroup>
-
 </Project>
