@@ -4,6 +4,7 @@ using SchoolManager.Data;
 
 namespace SchoolManager.Areas.UserMng.Controllers
 {
+    [Area("UserMng")]
     public class ManagerController : Controller
     {
         private readonly AppDbContext _context;
@@ -13,7 +14,17 @@ namespace SchoolManager.Areas.UserMng.Controllers
             _context = context;
         }
 
-        public IActionResult Login()
+        
+        public IActionResult StudentCrud()
+        {
+            return View();
+        }
+        public IActionResult TeacherCrud()
+        {
+            return View();
+        }
+        
+        public IActionResult Test()
         {
             return View();
         }

@@ -8,7 +8,7 @@ namespace SchoolManager.Models
 
         public int UserId { get; set; }
         public int RoleId { get; set; }
-        public string Status { get; set; }
+        public bool IsActive { get; set; }
         public DateTime CreatedDate { get; set; }
 
         public users_user User { get; set; }
