@@ -9,6 +9,9 @@ namespace SchoolManager.Models
         public int InterviewId { get; set; }
         public int StudentId { get; set; } 
         public DateTime DateCompleted { get; set; }
-        public string Status { get; set; } 
+        public string Status { get; set; }
+
+        [Required(ErrorMessage = "La foto de perfil es obligatoria")]
+        public string FilePath { get; set; } = null!;
     }
 }
