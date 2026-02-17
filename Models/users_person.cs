@@ -15,7 +15,7 @@
         public string Email { get; set; }
         public string Phone { get; set; }
 
-        public string Status { get; set; }
+        public bool IsActive { get; set; }
         public DateTime CreatedDate { get; set; }
 
         public users_user User { get; set; }

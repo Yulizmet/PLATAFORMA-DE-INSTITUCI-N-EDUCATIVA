@@ -1,0 +1,148 @@
+﻿@{
+    string currentController = ViewContext.RouteData.Values["controller"]?.ToString() ?? "";
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - SchoolManager</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/SchoolManager.styles.css" asp-append-version="true" />
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+
+        .sidebar {
+            background-color: #4D0217 !important;
+            min-height: 100vh;
+            color: white;
+            padding-top: 2rem;
+            z-index: 1000;
+        }
+
+        .burgundy-header {
+            background-color: #4D0217 !important;
+        }
+
+        .burgundy-color {
+            color: #4D0217 !important;
+        }
+
+            .sidebar h5 {
+                color: rgba(255, 255, 255, 0.6) !important;
+                font-size: 0.85rem;
+                text-transform: uppercase;
+                letter-spacing: 1px;
+                padding-left: 1rem;
+            }
+
+            .sidebar .nav-link {
+                color: rgba(255, 255, 255, 0.8) !important;
+                border-left: 4px solid transparent;
+                border-radius: 0;
+                transition: all 0.2s ease;
+                margin-bottom: 5px;
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                padding: 0.75rem 1rem;
+            }
+
+                .sidebar .nav-link:hover {
+                    background-color: rgba(255, 255, 255, 0.1);
+                    color: white !important;
+                }
+
+                .sidebar .nav-link.active-item {
+                    background-color: rgba(255, 255, 255, 0.15) !important;
+                    border-left: 4px solid #ffffff !important;
+                    font-weight: bold;
+                    color: white !important;
+                }
+
+                .sidebar .nav-link i {
+                    font-size: 1.1rem;
+                    width: 25px;
+                }
+
+        .main-content {
+            margin-left: 16.666667%;
+        }
+
+        @@media (max-width: 767.98px) {
+            .sidebar {
+                position: relative;
+                min-height: auto;
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container-fluid">
+        <div class="row">
+            <nav class="col-md-3 col-lg-2 d-md-block sidebar shadow-lg position-fixed">
+                <div class="position-sticky">
+                    <div class="text-center mb-4">
+                        <i class="bi bi-person-fill-gear fs-1 text-white opacity-50"></i>
+                        @* <div class="text-white fw-bold mt-2">Sistema Integral Escolar </div> *@
+                    </div>
+
+                    <h5 class="mb-3">Gestión de Cuentas</h5>
+
+                    <ul class="nav flex-column">
+
+                        <li class="nav-item">
+                            <a class="nav-link @(currentController == "ProcedureAreas" ? "active-item" : "")"
+                               asp-area="UserMng" asp-controller="Manager" asp-action="StudentCrud">
+                                <i class="bi bi-people-fill fs-5"></i>
+                                <span>Usuarios</span>
+                            </a>
+                        </li>
+
+                        <li class="nav-item">
+                            <a class="nav-link @(currentController == "DocumentsCatalog" ? "active-item" : "")"
+                               asp-area="UserMng" asp-controller="Manager" asp-action="TeacherCrud">
+                                <i class="bi bi-briefcase-fill fs-5"></i>
+                                <span>Maestros</span>
+                            </a>
+                        </li>
+                        
+                        <li class="nav-item">
+                            <a class="nav-link @(string.Equals(currentController, "Dashboard", StringComparison.OrdinalIgnoreCase) ? "active-item" : "")"
+                               asp-area="UserMng" asp-controller="Manager" asp-action="Test">
+                                <i class="bi bi-clipboard-data"></i>
+                                <span>Panel de control</span>
+                            </a>
+                        </li>
+
+                    </ul>
+                </div>
+            </nav>
+
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 py-4 main-content">
+                @RenderBody()
+
+                @* <footer class="pt-5 pb-4 text-muted small text-center">
+                    &copy; 2026 - SchoolManager - <a asp-area="" asp-page="/Privacy" class="text-decoration-none text-muted">Privacy</a>
+                </footer> *@
+            </main>
+        </div>
+    </div>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/autocomplete.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>
