@@ -27,6 +27,8 @@
     <Folder Include="Areas\Grades\Controllers\" />
     <Folder Include="Areas\Grades\Views\" />
     <Folder Include="Areas\Procedures\Templates\" />
+    <Folder Include="Areas\Tutorship\Controllers\" />
+    <Folder Include="Areas\Tutorship\Views\" />
     <Folder Include="Migrations\" />
   </ItemGroup>
 
