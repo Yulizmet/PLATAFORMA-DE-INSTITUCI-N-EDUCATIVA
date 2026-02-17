@@ -5,17 +5,14 @@ using SchoolManager.Services;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+builder.Services.AddScoped<ISearchService, SearchService > ();
+builder.Services.AddScoped<IStorageService, AzureStorageService>();
 builder.Services.AddRazorPages();
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(
         builder.Configuration.GetConnectionString("DefaultConnection")));
 
-//Procedures
-builder.Services.AddScoped<IStorageService, AzureStorageService>();
-
 var app = builder.Build();
-
-//Views
 
 app.MapControllerRoute(
     name: "ProceduresArea",
