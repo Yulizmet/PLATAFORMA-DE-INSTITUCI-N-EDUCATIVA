@@ -1,15 +1,26 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace SchoolManager.Models
 {
-    public class TutorshipInterviewAnswer
+    public class tutorship_interview_answer
     {
         [Key]
         public int AnswerId { get; set; }
-        public int InterviewId { get; set; } 
 
-        public string QuestionCategory { get; set; } 
-        public string QuestionText { get; set; } 
-        public string AnswerText { get; set; } 
+        [Required]
+        public int InterviewId { get; set; }
+
+        [Required]
+        public string QuestionCategory { get; set; } = null!;
+
+        [Required]
+        public string QuestionText { get; set; } = null!;
+
+        [Required]
+        public string AnswerText { get; set; } = null!;
+
+        [ForeignKey("InterviewId")]
+        public virtual tutorship_interview Interview { get; set; } = null!;
     }
 }
