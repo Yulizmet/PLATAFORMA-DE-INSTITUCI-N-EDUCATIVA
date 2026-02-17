@@ -26,6 +26,7 @@
     <Folder Include="Areas\Procedures\Views\" />
     <Folder Include="Areas\Grades\Controllers\" />
     <Folder Include="Areas\Grades\Views\" />
+    <Folder Include="Migrations\" />
     <Folder Include="Areas\Procedures\Templates\" />
     <Folder Include="Areas\Tutorship\Controllers\" />
     <Folder Include="Areas\Tutorship\Views\" />
