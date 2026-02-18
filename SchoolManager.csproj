@@ -28,6 +28,7 @@
     <Folder Include="Areas\Grades\Views\" />
     <Folder Include="Areas\Procedures\Templates\" />
     <Folder Include="Migrations\" />
+    <Folder Include="Views\Entrevista\" />
   </ItemGroup>
 
 </Project>

@@ -1,0 +1,78 @@
+﻿@{
+    ViewData["Title"] = "Seguimiento Académico";
+}
+
+<div class="container mt-4">
+
+    <div class="row justify-content-center mb-5">
+        <div class="col-md-8">
+            <div class="input-group input-group-lg shadow-sm">
+                <input type="text" class="form-control" placeholder="Buscar por Nombre o Matrícula..."
+                       style="border-color: var(--utt-red);">
+                <button class="btn btn-utt-primary" type="button">
+                    Buscar Alumno
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm" style="background-color: var(--utt-light);">
+                <div class="card-header bg-transparent border-0 pt-3">
+                    <h5 class="fw-bold" style="color: var(--utt-dark-red);">Nuevo Feedback</h5>
+                    <li class="nav-item">
+                        <a class="nav-link text-dark" asp-area="" asp-controller="Entrevista" asp-action="DetalleEntrevista">i</a>
+                    </li>
+                </div>
+                <div class="card-body">
+                    <h6 class="mb-3 text-muted">Alumno: Ana karen</h6>
+                    <form asp-action="GuardarSeguimiento" method="post">
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Tipo</label>
+                            <select class="form-select" style="border-color: var(--utt-beige);">
+                                <option>Académico</option>
+                                <option>Conductual</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Observaciones</label>
+                            <textarea class="form-control" rows="6" style="border-color: var(--utt-beige);"></textarea>
+                        </div>
+
+                        <button type="submit" class="btn btn-utt-primary w-100">Guardar</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-8">
+            <h4 class="mb-3 fw-bold" style="color: var(--utt-black);">Historial de Seguimiento</h4>
+
+            <div class="card mb-3 shadow-sm border-0" style="border-left: 5px solid var(--utt-red) !important;">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h6 class="mb-0 fw-bold" style="color: var(--utt-red);">Revisión de Calificaciones</h6>
+                        <small class="text-muted">05 Feb 2026</small>
+                        <small class="text-muted">Academico</small>
+                    </div>
+                    <p class="card-text text-secondary">El alumno presenta dificultades en Matemáticas...</p>
+                </div>
+            </div>
+
+            <div class="card mb-3 shadow-sm border-0" style="border-left: 5px solid var(--utt-beige) !important;">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h6 class="mb-0 fw-bold" style="color: var(--utt-black);">Justificante Médico</h6>
+                        <small class="text-muted">05 Feb 2026</small>
+                        <small class="text-muted">Conductual</small>
+                    </div>
+                    <p class="card-text text-secondary">Se entregó receta médica por inasistencia.</p>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
