@@ -23,7 +23,7 @@ namespace SchoolManager.Areas.Enrollment.Controllers
         // GET: Enrollment/PreEnrollment
         public async Task<IActionResult> Index()
         {
-            var appDbContext = _context.preenrollment_general.Include(p => p.Career);
+            var appDbContext = _context.PreenrollmentGenerals.Include(p => p.Career);
             return View(await appDbContext.ToListAsync());
         }
 
@@ -35,7 +35,7 @@ namespace SchoolManager.Areas.Enrollment.Controllers
                 return NotFound();
             }
 
-            var preenrollment_general = await _context.preenrollment_general
+            var preenrollment_general = await _context.PreenrollmentGenerals
                 .Include(p => p.Career)
                 .FirstOrDefaultAsync(m => m.IdData == id);
             if (preenrollment_general == null)
@@ -78,7 +78,7 @@ namespace SchoolManager.Areas.Enrollment.Controllers
                 return NotFound();
             }
 
-            var preenrollment_general = await _context.preenrollment_general.FindAsync(id);
+            var preenrollment_general = await _context.PreenrollmentGenerals.FindAsync(id);
             if (preenrollment_general == null)
             {
                 return NotFound();
@@ -131,7 +131,7 @@ namespace SchoolManager.Areas.Enrollment.Controllers
                 return NotFound();
             }
 
-            var preenrollment_general = await _context.preenrollment_general
+            var preenrollment_general = await _context.PreenrollmentGenerals
                 .Include(p => p.Career)
                 .FirstOrDefaultAsync(m => m.IdData == id);
             if (preenrollment_general == null)
@@ -147,10 +147,10 @@ namespace SchoolManager.Areas.Enrollment.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var preenrollment_general = await _context.preenrollment_general.FindAsync(id);
+            var preenrollment_general = await _context.PreenrollmentGenerals.FindAsync(id);
             if (preenrollment_general != null)
             {
-                _context.preenrollment_general.Remove(preenrollment_general);
+                _context.PreenrollmentGenerals.Remove(preenrollment_general);
             }
 
             await _context.SaveChangesAsync();
@@ -159,7 +159,7 @@ namespace SchoolManager.Areas.Enrollment.Controllers
 
         private bool preenrollment_generalExists(int id)
         {
-            return _context.preenrollment_general.Any(e => e.IdData == id);
+            return _context.PreenrollmentGenerals.Any(e => e.IdData == id);
         }
     }
 }

@@ -10,14 +10,19 @@ namespace SchoolManager.Data
     {
         public AppDbContext(DbContextOptions<AppDbContext> options)
             : base(options) { }
-        public DbSet<SchoolManager.Models.preenrollment_general> preenrollment_general { get; set; } = default!;
-        public DbSet<SchoolManager.Models.preenrollment_addresses> preenrollment_addresses { get; set; } = default!;
-        public DbSet<SchoolManager.Models.preenrollment_careers> preenrollment_careers { get; set; } = default!;
-        public DbSet<SchoolManager.Models.preenrollment_infos> preenrollment_infos { get; set; } = default!;
-        public DbSet<SchoolManager.Models.preenrollment_schools> preenrollment_schools { get; set; } = default!;
-        public DbSet<SchoolManager.Models.preenrollment_tutors> preenrollment_tutors { get; set; } = default!;
-        //Add Entity Sample
+        
 
+        //Add Entity Sample
+    
+        public DbSet<preenrollment_general> PreenrollmentGenerals { get; set; } = default!;
+        public DbSet<preenrollment_addresses> PreenrollmentAddresses { get; set; } = default!;
+        public DbSet<preenrollment_careers> PreenrollmentCareers { get; set; } = default!;
+        public DbSet<preenrollment_infos> PreenrollmentInfos { get; set; } = default!;
+        public DbSet<preenrollment_schools> PreenrollmentSchools { get; set; } = default!;
+        public DbSet<preenrollment_tutors> PreenrollmentTutors { get; set; } = default!;
+        
+        //Preenrollment
+        
         public DbSet<procedure_areas> ProcedureAreas { get; set; }
 
         public DbSet<procedure_documents> ProcedureDocuments { get; set; }
@@ -42,6 +47,8 @@ namespace SchoolManager.Data
         public DbSet<users_userrole> UserRoles { get; set; }
         public DbSet<users_rolepermission> RolePermissions { get; set; }
         public DbSet<users_session> Sessions { get; set; }
+        
+        //grades
         public DbSet<grades_extraordinary_grades> grades_ExtraordinaryGrades { get; set; }
         public DbSet<grades_final_grades> grades_FinalGrades { get; set; }
         public DbSet<grades_grade_level> grades_GradeLevels { get; set; }
@@ -284,8 +291,7 @@ namespace SchoolManager.Data
                 .Property(u => u.CreatedAt)
                 .HasDefaultValueSql("GETDATE()");
 
-
-
+            //Procedures
             modelBuilder.Entity<procedure_status>().ToTable("procedure_status");
             modelBuilder.Entity<procedure_areas>().ToTable("procedure_areas");
             modelBuilder.Entity<procedure_documents>().ToTable("procedure_documents");
@@ -304,6 +310,14 @@ namespace SchoolManager.Data
             modelBuilder.Entity<users_rolepermission>().ToTable("users_rolepermission");
             modelBuilder.Entity<users_session>().ToTable("users_session");
             modelBuilder.Entity<users_auditlog>().ToTable("users_auditlog");
+            
+            //preenrollment
+            modelBuilder.Entity<preenrollment_general>().ToTable("preenrollment_general");
+            modelBuilder.Entity<preenrollment_addresses>().ToTable("preenrollment_addresses");
+            modelBuilder.Entity<preenrollment_careers>().ToTable("preenrollment_careers");
+            modelBuilder.Entity<preenrollment_infos>().ToTable("preenrollment_infos");
+            modelBuilder.Entity<preenrollment_schools>().ToTable("preenrollment_schools");
+            modelBuilder.Entity<preenrollment_tutors>().ToTable("preenrollment_tutors");
 
             modelBuilder.Entity<users_auditlog>()
                 .HasKey(a => a.AuditId);
@@ -418,8 +432,6 @@ namespace SchoolManager.Data
             modelBuilder.Entity<preenrollment_general>()
                 .HasIndex(p => p.Email)
                 .IsUnique();
-            modelBuilder.Entity<preenrollment_general>()
-                .HasKey(p => p.IdData); // O el nombre que uses
         }
     }
 
