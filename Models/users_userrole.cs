@@ -1,4 +1,5 @@
-﻿using System.Data;
+﻿using System.ComponentModel;
+using System.Data;
 
 namespace SchoolManager.Models
 {
@@ -8,7 +9,9 @@ namespace SchoolManager.Models
 
         public int UserId { get; set; }
         public int RoleId { get; set; }
-        public string Status { get; set; }
+        [DefaultValue(true)]
+
+        public bool IsActive { get; set; }
         public DateTime CreatedDate { get; set; }
 
         public users_user User { get; set; }

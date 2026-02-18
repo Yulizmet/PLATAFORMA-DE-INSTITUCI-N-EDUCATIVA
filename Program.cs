@@ -5,16 +5,14 @@ using SchoolManager.Services;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+builder.Services.AddScoped<ISearchService, SearchService > ();
+builder.Services.AddScoped<IStorageService, AzureStorageService>();
 builder.Services.AddRazorPages();
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(
         builder.Configuration.GetConnectionString("DefaultConnection")));
 
-//Procedures
-builder.Services.AddScoped<IStorageService, AzureStorageService>();
-
 var app = builder.Build();
-
 
 app.MapControllerRoute(
     name: "ProceduresArea",
@@ -41,6 +39,14 @@ app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}"
 );
+
+app.MapControllerRoute(
+    name: "areas",
+    pattern: "{area:exists}/{controller=MainScreen}/{action=SistemaEscolar}/{id?}");
+
+app.MapControllerRoute(
+    name: "default",
+    pattern: "{controller=Home}/{action=Index}/{id?}");
 
 
 app.MapRazorPages();

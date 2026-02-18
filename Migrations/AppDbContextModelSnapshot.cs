@@ -22,255 +22,22 @@ namespace SchoolManager.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("SchoolManager.Models.preenrollment_addresses", b =>
+            modelBuilder.Entity("SchoolManager.Models.Generation", b =>
                 {
-                    b.Property<int>("IdAddress")
+                    b.Property<int>("IdGeneration")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IdAddress"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IdGeneration"));
 
-                    b.Property<string>("city")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("exterior_number")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("id_data")
+                    b.Property<int>("Year")
                         .HasColumnType("int");
 
-                    b.Property<string>("interior_number")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.HasKey("IdGeneration");
 
-                    b.Property<string>("neighborhood")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("phone")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("postal_code")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("state")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("street")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("IdAddress");
-
-                    b.HasIndex("id_data");
-
-                    b.ToTable("preenrollment_addresses");
+                    b.ToTable("Generation", (string)null);
                 });
 
-            modelBuilder.Entity("SchoolManager.Models.preenrollment_careers", b =>
-                {
-                    b.Property<int>("IdCareer")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IdCareer"));
-
-                    b.Property<string>("name_career")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("IdCareer");
-
-                    b.ToTable("preenrollment_careers");
-                });
-
-            modelBuilder.Entity("SchoolManager.Models.preenrollment_general", b =>
-                {
-                    b.Property<int>("IdData")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IdData"));
-
-                    b.Property<DateTime>("BirthDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Curp")
-                        .IsRequired()
-                        .HasMaxLength(18)
-                        .HasColumnType("nvarchar(18)");
-
-                    b.Property<string>("Email")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<string>("Gender")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
-
-                    b.Property<int>("IdCareer")
-                        .HasColumnType("int");
-
-                    b.Property<string>("MaternalLastName")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<string>("PaternalLastName")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.HasKey("IdData");
-
-                    b.HasIndex("Curp")
-                        .IsUnique();
-
-                    b.HasIndex("Email")
-                        .IsUnique();
-
-                    b.HasIndex("IdCareer");
-
-                    b.ToTable("preenrollment_general");
-                });
-
-            modelBuilder.Entity("SchoolManager.Models.preenrollment_infos", b =>
-                {
-                    b.Property<int>("IdInfo")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IdInfo"));
-
-                    b.Property<string>("beca")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("comment")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<bool>("comu_indi")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("disease")
-                        .HasColumnType("bit");
-
-                    b.Property<int>("id_data")
-                        .HasColumnType("int");
-
-                    b.Property<bool>("incapa")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("lengu_indi")
-                        .HasColumnType("bit");
-
-                    b.HasKey("IdInfo");
-
-                    b.HasIndex("id_data");
-
-                    b.ToTable("preenrollment_infos");
-                });
-
-            modelBuilder.Entity("SchoolManager.Models.preenrollment_schools", b =>
-                {
-                    b.Property<int>("IdSchool")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IdSchool"));
-
-                    b.Property<decimal>("average")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<string>("city")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("degree")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("end_date")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("high_school_type")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("id_data")
-                        .HasColumnType("int");
-
-                    b.Property<string>("school")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("start_date")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("state")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("study_system")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("IdSchool");
-
-                    b.HasIndex("id_data");
-
-                    b.ToTable("preenrollment_schools");
-                });
-
-            modelBuilder.Entity("SchoolManager.Models.preenrollment_tutors", b =>
-                {
-                    b.Property<int>("IdTutor")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IdTutor"));
-
-                    b.Property<string>("home_phone")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("id_data")
-                        .HasColumnType("int");
-
-                    b.Property<string>("maternal_last_name")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("name")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("paternal_last_name")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("relationship")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("work_phone")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("IdTutor");
-
-                    b.HasIndex("id_data");
-
-                    b.ToTable("preenrollment_tutors");
-                    });
             modelBuilder.Entity("SchoolManager.Models.grades_extraordinary_grades", b =>
                 {
                     b.Property<int>("ExtraordinaryGradeId")
@@ -573,6 +340,306 @@ namespace SchoolManager.Migrations
                     b.ToTable("grades_unit_recovery", (string)null);
                 });
 
+            modelBuilder.Entity("SchoolManager.Models.preenrollment_addresses", b =>
+                {
+                    b.Property<int>("IdAddress")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IdAddress"));
+
+                    b.Property<string>("city")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("exterior_number")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("id_data")
+                        .HasColumnType("int");
+
+                    b.Property<string>("interior_number")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("neighborhood")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("phone")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("postal_code")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("state")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("street")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("IdAddress");
+
+                    b.HasIndex("id_data");
+
+                    b.ToTable("preenrollment_addresses", (string)null);
+                });
+
+            modelBuilder.Entity("SchoolManager.Models.preenrollment_careers", b =>
+                {
+                    b.Property<int>("IdCareer")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IdCareer"));
+
+                    b.Property<string>("name_career")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("IdCareer");
+
+                    b.ToTable("preenrollment_careers", (string)null);
+                });
+
+            modelBuilder.Entity("SchoolManager.Models.preenrollment_general", b =>
+                {
+                    b.Property<int>("IdData")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IdData"));
+
+                    b.Property<DateTime>("BirthDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("BloodType")
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.Property<int>("CareerIdCareer")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("CreateStat")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Curp")
+                        .IsRequired()
+                        .HasMaxLength(18)
+                        .HasColumnType("nvarchar(18)");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("Folio")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("Gender")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<int>("IdCareer")
+                        .HasColumnType("int");
+
+                    b.Property<int>("IdGeneration")
+                        .HasColumnType("int");
+
+                    b.Property<string>("MaritalStatus")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.Property<string>("MaternalLastName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("Matricula")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.Property<string>("Nationality")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("Occupation")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("PaternalLastName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<bool>("Work")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("WorkAddress")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("WorkPhone")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.HasKey("IdData");
+
+                    b.HasIndex("CareerIdCareer");
+
+                    b.HasIndex("Curp")
+                        .IsUnique();
+
+                    b.HasIndex("Email")
+                        .IsUnique();
+
+                    b.HasIndex("IdGeneration");
+
+                    b.ToTable("preenrollment_general", (string)null);
+                });
+
+            modelBuilder.Entity("SchoolManager.Models.preenrollment_infos", b =>
+                {
+                    b.Property<int>("IdInfo")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IdInfo"));
+
+                    b.Property<string>("beca")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("comment")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("comu_indi")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("disease")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("id_data")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("incapa")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("lengu_indi")
+                        .HasColumnType("bit");
+
+                    b.HasKey("IdInfo");
+
+                    b.HasIndex("id_data");
+
+                    b.ToTable("preenrollment_infos", (string)null);
+                });
+
+            modelBuilder.Entity("SchoolManager.Models.preenrollment_schools", b =>
+                {
+                    b.Property<int>("IdSchool")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IdSchool"));
+
+                    b.Property<decimal>("average")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("city")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("degree")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("end_date")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("high_school_type")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("id_data")
+                        .HasColumnType("int");
+
+                    b.Property<string>("school")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("start_date")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("state")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("study_system")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("IdSchool");
+
+                    b.HasIndex("id_data");
+
+                    b.ToTable("preenrollment_schools", (string)null);
+                });
+
+            modelBuilder.Entity("SchoolManager.Models.preenrollment_tutors", b =>
+                {
+                    b.Property<int>("IdTutor")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IdTutor"));
+
+                    b.Property<string>("home_phone")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("id_data")
+                        .HasColumnType("int");
+
+                    b.Property<string>("maternal_last_name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("paternal_last_name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("relationship")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("work_phone")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("IdTutor");
+
+                    b.HasIndex("id_data");
+
+                    b.ToTable("preenrollment_tutors", (string)null);
+                });
+
             modelBuilder.Entity("SchoolManager.Models.procedure_areas", b =>
                 {
                     b.Property<int>("Id")
@@ -817,6 +884,170 @@ namespace SchoolManager.Migrations
                     b.ToTable("procedure_types", (string)null);
                 });
 
+            modelBuilder.Entity("SchoolManager.Models.tutorship", b =>
+                {
+                    b.Property<int>("TutorshipId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("TutorshipId"));
+
+                    b.Property<DateTime>("Date")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("StudentId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TeacherId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Topic")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("TutorshipId");
+
+                    b.HasIndex("StudentId");
+
+                    b.HasIndex("TeacherId");
+
+                    b.ToTable("tutorship_sessions", (string)null);
+                });
+
+            modelBuilder.Entity("SchoolManager.Models.tutorship_attendance", b =>
+                {
+                    b.Property<int>("AttendanceId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("AttendanceId"));
+
+                    b.Property<DateTime>("Date")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("GroupName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsPresent")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("StudentId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TeacherId")
+                        .HasColumnType("int");
+
+                    b.HasKey("AttendanceId");
+
+                    b.HasIndex("StudentId");
+
+                    b.HasIndex("TeacherId");
+
+                    b.ToTable("tutorship_attendances", (string)null);
+                });
+
+            modelBuilder.Entity("SchoolManager.Models.tutorship_interview", b =>
+                {
+                    b.Property<int>("InterviewId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("InterviewId"));
+
+                    b.Property<DateTime>("DateCompleted")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("FilePath")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("StudentId")
+                        .HasColumnType("int");
+
+                    b.HasKey("InterviewId");
+
+                    b.HasIndex("StudentId");
+
+                    b.ToTable("tutorship_interviews", (string)null);
+                });
+
+            modelBuilder.Entity("SchoolManager.Models.tutorship_interview_answer", b =>
+                {
+                    b.Property<int>("AnswerId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("AnswerId"));
+
+                    b.Property<string>("AnswerText")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("InterviewId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("QuestionCategory")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("QuestionText")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("AnswerId");
+
+                    b.HasIndex("InterviewId");
+
+                    b.ToTable("tutorship_interview_answers", (string)null);
+                });
+
+            modelBuilder.Entity("SchoolManager.Models.tutorship_monitoring", b =>
+                {
+                    b.Property<int>("MonitoringId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("MonitoringId"));
+
+                    b.Property<string>("ActionPlan")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("Date")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("DetailedObservations")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("FilePath")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("PerformanceLevel")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("StudentId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TeacherId")
+                        .HasColumnType("int");
+
+                    b.HasKey("MonitoringId");
+
+                    b.HasIndex("StudentId");
+
+                    b.HasIndex("TeacherId");
+
+                    b.ToTable("tutorship_monitorings", (string)null);
+                });
+
             modelBuilder.Entity("SchoolManager.Models.users_auditlog", b =>
                 {
                     b.Property<int>("AuditId")
@@ -861,11 +1092,10 @@ namespace SchoolManager.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("Key")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
 
-                    b.Property<string>("Status")
+                    b.Property<string>("Key")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
@@ -904,6 +1134,9 @@ namespace SchoolManager.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
                     b.Property<string>("LastNameMaternal")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -913,10 +1146,6 @@ namespace SchoolManager.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Phone")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Status")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
@@ -940,11 +1169,10 @@ namespace SchoolManager.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
 
-                    b.Property<string>("Status")
+                    b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
@@ -964,15 +1192,14 @@ namespace SchoolManager.Migrations
                     b.Property<DateTime>("CreatedTime")
                         .HasColumnType("datetime2");
 
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
                     b.Property<int>("PermissionId")
                         .HasColumnType("int");
 
                     b.Property<int>("RoleId")
                         .HasColumnType("int");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("RolePermissionId");
 
@@ -1030,6 +1257,9 @@ namespace SchoolManager.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
                     b.Property<bool>("IsLocked")
                         .HasColumnType("bit");
 
@@ -1046,10 +1276,6 @@ namespace SchoolManager.Migrations
 
                     b.Property<int>("PersonId")
                         .HasColumnType("int");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Username")
                         .IsRequired()
@@ -1074,12 +1300,11 @@ namespace SchoolManager.Migrations
                     b.Property<DateTime>("CreatedDate")
                         .HasColumnType("datetime2");
 
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
                     b.Property<int>("RoleId")
                         .HasColumnType("int");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("UserId")
                         .HasColumnType("int");
@@ -1093,59 +1318,6 @@ namespace SchoolManager.Migrations
                     b.ToTable("users_userrole", (string)null);
                 });
 
-            modelBuilder.Entity("SchoolManager.Models.preenrollment_addresses", b =>
-                {
-                    b.HasOne("SchoolManager.Models.preenrollment_general", "preenrollment_general")
-                        .WithMany("Addresses")
-                        .HasForeignKey("id_data")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("preenrollment_general");
-                });
-
-            modelBuilder.Entity("SchoolManager.Models.preenrollment_general", b =>
-                {
-                    b.HasOne("SchoolManager.Models.preenrollment_careers", "Career")
-                        .WithMany("preenrollment_general")
-                        .HasForeignKey("IdCareer")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Career");
-                });
-
-            modelBuilder.Entity("SchoolManager.Models.preenrollment_infos", b =>
-                {
-                    b.HasOne("SchoolManager.Models.preenrollment_general", "preenrollment_general")
-                        .WithMany()
-                        .HasForeignKey("id_data")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("preenrollment_general");
-                });
-
-            modelBuilder.Entity("SchoolManager.Models.preenrollment_schools", b =>
-                {
-                    b.HasOne("SchoolManager.Models.preenrollment_general", "preenrollment_general")
-                        .WithMany("Schools")
-                        .HasForeignKey("id_data")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("preenrollment_general");
-                });
-
-            modelBuilder.Entity("SchoolManager.Models.preenrollment_tutors", b =>
-                {
-                    b.HasOne("SchoolManager.Models.preenrollment_general", "preenrollment_general")
-                        .WithMany()
-                        .HasForeignKey("id_data")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("preenrollment_general");});
             modelBuilder.Entity("SchoolManager.Models.grades_extraordinary_grades", b =>
                 {
                     b.HasOne("SchoolManager.Models.grades_final_grades", "FinalGrade")
@@ -1277,6 +1449,69 @@ namespace SchoolManager.Migrations
                     b.Navigation("Grade");
                 });
 
+            modelBuilder.Entity("SchoolManager.Models.preenrollment_addresses", b =>
+                {
+                    b.HasOne("SchoolManager.Models.preenrollment_general", "preenrollment_general")
+                        .WithMany("Addresses")
+                        .HasForeignKey("id_data")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("preenrollment_general");
+                });
+
+            modelBuilder.Entity("SchoolManager.Models.preenrollment_general", b =>
+                {
+                    b.HasOne("SchoolManager.Models.preenrollment_careers", "Career")
+                        .WithMany("preenrollment_general")
+                        .HasForeignKey("CareerIdCareer")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("SchoolManager.Models.Generation", "Generation")
+                        .WithMany("Students")
+                        .HasForeignKey("IdGeneration")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Career");
+
+                    b.Navigation("Generation");
+                });
+
+            modelBuilder.Entity("SchoolManager.Models.preenrollment_infos", b =>
+                {
+                    b.HasOne("SchoolManager.Models.preenrollment_general", "preenrollment_general")
+                        .WithMany()
+                        .HasForeignKey("id_data")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("preenrollment_general");
+                });
+
+            modelBuilder.Entity("SchoolManager.Models.preenrollment_schools", b =>
+                {
+                    b.HasOne("SchoolManager.Models.preenrollment_general", "preenrollment_general")
+                        .WithMany("Schools")
+                        .HasForeignKey("id_data")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("preenrollment_general");
+                });
+
+            modelBuilder.Entity("SchoolManager.Models.preenrollment_tutors", b =>
+                {
+                    b.HasOne("SchoolManager.Models.preenrollment_general", "preenrollment_general")
+                        .WithMany()
+                        .HasForeignKey("id_data")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("preenrollment_general");
+                });
+
             modelBuilder.Entity("SchoolManager.Models.procedure_documents", b =>
                 {
                     b.HasOne("SchoolManager.Models.procedure_request", "ProcedureRequest")
@@ -1356,6 +1591,85 @@ namespace SchoolManager.Migrations
                     b.Navigation("ProcedureArea");
                 });
 
+            modelBuilder.Entity("SchoolManager.Models.tutorship", b =>
+                {
+                    b.HasOne("SchoolManager.Models.users_user", "Student")
+                        .WithMany()
+                        .HasForeignKey("StudentId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("SchoolManager.Models.users_user", "Teacher")
+                        .WithMany()
+                        .HasForeignKey("TeacherId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Student");
+
+                    b.Navigation("Teacher");
+                });
+
+            modelBuilder.Entity("SchoolManager.Models.tutorship_attendance", b =>
+                {
+                    b.HasOne("SchoolManager.Models.users_user", "Student")
+                        .WithMany()
+                        .HasForeignKey("StudentId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("SchoolManager.Models.users_user", "Teacher")
+                        .WithMany()
+                        .HasForeignKey("TeacherId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Student");
+
+                    b.Navigation("Teacher");
+                });
+
+            modelBuilder.Entity("SchoolManager.Models.tutorship_interview", b =>
+                {
+                    b.HasOne("SchoolManager.Models.users_user", "Student")
+                        .WithMany()
+                        .HasForeignKey("StudentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Student");
+                });
+
+            modelBuilder.Entity("SchoolManager.Models.tutorship_interview_answer", b =>
+                {
+                    b.HasOne("SchoolManager.Models.tutorship_interview", "Interview")
+                        .WithMany("Answers")
+                        .HasForeignKey("InterviewId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Interview");
+                });
+
+            modelBuilder.Entity("SchoolManager.Models.tutorship_monitoring", b =>
+                {
+                    b.HasOne("SchoolManager.Models.users_user", "Student")
+                        .WithMany()
+                        .HasForeignKey("StudentId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("SchoolManager.Models.users_user", "Teacher")
+                        .WithMany()
+                        .HasForeignKey("TeacherId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Student");
+
+                    b.Navigation("Teacher");
+                });
+
             modelBuilder.Entity("SchoolManager.Models.users_auditlog", b =>
                 {
                     b.HasOne("SchoolManager.Models.users_user", "User")
@@ -1372,7 +1686,7 @@ namespace SchoolManager.Migrations
                     b.HasOne("SchoolManager.Models.users_permission", "Permission")
                         .WithMany("RolePermissions")
                         .HasForeignKey("PermissionId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("SchoolManager.Models.users_role", "Role")
@@ -1427,16 +1741,11 @@ namespace SchoolManager.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("SchoolManager.Models.preenrollment_careers", b =>
+            modelBuilder.Entity("SchoolManager.Models.Generation", b =>
                 {
-                    b.Navigation("preenrollment_general");
+                    b.Navigation("Students");
                 });
 
-            modelBuilder.Entity("SchoolManager.Models.preenrollment_general", b =>
-                {
-                    b.Navigation("Addresses");
-
-                    b.Navigation("Schools");});
             modelBuilder.Entity("SchoolManager.Models.grades_final_grades", b =>
                 {
                     b.Navigation("ExtraordinaryGrade");
@@ -1462,6 +1771,18 @@ namespace SchoolManager.Migrations
             modelBuilder.Entity("SchoolManager.Models.grades_subjects", b =>
                 {
                     b.Navigation("Units");
+                });
+
+            modelBuilder.Entity("SchoolManager.Models.preenrollment_careers", b =>
+                {
+                    b.Navigation("preenrollment_general");
+                });
+
+            modelBuilder.Entity("SchoolManager.Models.preenrollment_general", b =>
+                {
+                    b.Navigation("Addresses");
+
+                    b.Navigation("Schools");
                 });
 
             modelBuilder.Entity("SchoolManager.Models.procedure_areas", b =>
@@ -1491,6 +1812,11 @@ namespace SchoolManager.Migrations
                     b.Navigation("ProcedureRequests");
 
                     b.Navigation("Requirements");
+                });
+
+            modelBuilder.Entity("SchoolManager.Models.tutorship_interview", b =>
+                {
+                    b.Navigation("Answers");
                 });
 
             modelBuilder.Entity("SchoolManager.Models.users_permission", b =>

@@ -1,7 +1,196 @@
 ﻿@{
-    ViewData["Title"] = "Index";
-    Layout = "~/Pages/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Inicio";
+    Layout = "~/Areas/MainScreen/Views/Shared/_Layout.cshtml";
 }
 
-<h1>Si</h1>
-<a href="/MainScreen/MainScreen/View2">Redirect</a>
+<!-- HERO -->
+<section class="hero-section">
+    <div class="container">
+        <div class="row align-items-center">
+
+            <!-- TEXTO -->
+            <div class="col-md-6">
+                <h1 class="display-4 fw-bold">
+                    Sistema Integral <br />
+                    de Educación
+                </h1>
+
+                <p class="lead mt-4">
+                    Tu plataforma completa para acceder a calificaciones,
+                    trámites, tutorías y más, todo en un solo lugar.
+                </p>
+
+                <div class="mt-4">
+                    <a href="#" class="btn btn-hero-primary btn-lg me-3">
+                        Acceder Ahora →
+                    </a>
+
+                    <a href="#" class="btn btn-hero-outline btn-lg">
+                        Conocer más
+                    </a>
+                </div>
+            </div>
+
+            <!-- CARD DERECHA -->
+            <div class="col-md-6">
+                <div class="hero-card text-center">
+
+                    <div class="mb-4">
+                        <hr class="bg-light" />
+                        <hr class="bg-light" />
+                        <hr class="bg-light" />
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <div class="p-3 rounded" style="background: rgba(255,255,255,0.2);">
+                                <h2 class="fw-bold">5000+</h2>
+                                <p>Estudiantes Activos</p>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <div class="p-3 rounded" style="background: rgba(255,255,255,0.2);">
+                                <h2 class="fw-bold">100%</h2>
+                                <p>Disponible 24/7</p>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+</section>
+
+<!-- ===== SECCIÓN USUARIOS ===== -->
+<section class="users-section">
+    <div class="container text-center">
+
+        <!-- TÍTULO -->
+        <h2 class="users-title mb-3">
+            Para Todos los Usuarios
+        </h2>
+
+        <p class="users-subtitle mb-5">
+            Una plataforma diseñada especialmente para estudiantes, docentes y personal administrativo
+        </p>
+
+        <!-- CARDS -->
+        <div class="row justify-content-center g-5 users-cards-row">
+
+            <!-- ESTUDIANTES -->
+            <div class="col-lg-4 col-md-6">
+                <div class="user-card border-estudiantes text-start">
+
+                    <div class="icon-box icon-estudiantes">
+                        <i class="bi bi-mortarboard-fill"></i>
+                    </div>
+
+                    <h4>Estudiantes</h4>
+
+                    <p class="text-muted mt-3">
+                        Accede a tus calificaciones, inscripciones, tutorías y servicios en línea de manera rápida y sencilla.
+                    </p>
+
+                    <a href="#" class="portal-link">
+                        Ir a Portal →
+                    </a>
+                </div>
+            </div>
+
+            <!-- DOCENTES -->
+            <div class="col-lg-4 col-md-6">
+                <div class="user-card border-docentes text-start">
+
+                    <div class="icon-box icon-docentes">
+                        <i class="bi bi-journal-text"></i>
+                    </div>
+
+                    <h4>Docentes</h4>
+
+                    <p class="text-muted mt-3">
+                        Gestiona calificaciones, brinda tutorías, organiza servicios sociales y comunícate con estudiantes.
+                    </p>
+
+                    <a href="#" class="portal-link">
+                        Ir a Portal →
+                    </a>
+                </div>
+            </div>
+
+            <!-- ADMINISTRATIVO -->
+            <div class="col-lg-4 col-md-6">
+                <div class="user-card border-admin text-start">
+
+                    <div class="icon-box icon-admin">
+                        <i class="bi bi-people-fill"></i>
+                    </div>
+
+                    <h4>Personal Administrativo</h4>
+
+                    <p class="text-muted mt-3">
+                        Administra usuarios, procesa trámites y genera reportes de toda la institución.
+                    </p>
+
+                    <a href="#" class="portal-link">
+                        Ir a Portal →
+                    </a>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</section>
+
+
+
+<!-- CTA -->
+<section class="cta-section ">
+    <div class="container">
+        <h2 class="display-5 fw-bold">¿Listo para comenzar?</h2>
+        <p class="lead mt-3">
+            Únete a miles de usuarios que confían en nuestro sistema educativo
+        </p>
+
+        <a href="#" class="btn btn-light btn-lg mt-3">
+            Acceder
+        </a>
+    </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="footer-custom">
+    <div class="container">
+        <div class="row">
+
+            <div class="col-md-3">
+                <h5>Sistema Escolar</h5>
+                <p>Plataforma integral para gestionar tu educación</p>
+            </div>
+
+            <div class="col-md-3">
+                <h5>Módulos</h5>
+                <p>Sistema Escolar<br />Extensión<br />Trámites</p>
+            </div>
+
+            <div class="col-md-3">
+                <h5>Comunidad</h5>
+                <p>Foro<br />Sobre Nosotros</p>
+            </div>
+
+            <div class="col-md-3">
+                <h5>Soporte</h5>
+                <p>Contacto<br />Preguntas Frecuentes</p>
+            </div>
+
+        </div>
+
+        <hr class="bg-secondary" />
+
+        <div class="text-center">
+            © 2026 UTTN-TI-DYGS 10C. Todos los derechos reservados.
+        </div>
+    </div>
+</footer>
