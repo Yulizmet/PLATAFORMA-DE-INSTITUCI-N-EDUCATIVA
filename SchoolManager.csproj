@@ -7,6 +7,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Azure.Storage.Blobs" Version="12.27.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.23">
       <PrivateAssets>all</PrivateAssets>
@@ -21,6 +25,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Areas\Enrollment\Controllers\" />
+    <Folder Include="Areas\Enrollment\Views\" />
     <Folder Include="Areas\Grades\JS\" />
     <Folder Include="Areas\Procedures\Controllers\" />
     <Folder Include="Areas\Procedures\Views\" />
@@ -28,7 +34,9 @@
     <Folder Include="Areas\Preenrollment\Controllers\" />
     <Folder Include="Areas\Preenrollment\ViewModels\" />
     <Folder Include="Areas\Preenrollment\Views\" />
+    <Folder Include="Areas\Grades\Views\" />
     <Folder Include="Areas\Procedures\Templates\" />
+    <Folder Include="Areas\Tutorship\Controllers\" />
+    <Folder Include="Areas\Tutorship\Views\" />
   </ItemGroup>
-
 </Project>

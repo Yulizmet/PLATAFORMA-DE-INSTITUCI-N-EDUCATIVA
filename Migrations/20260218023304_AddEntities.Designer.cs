@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SchoolManager.Data;
 
@@ -11,9 +12,11 @@ using SchoolManager.Data;
 namespace SchoolManager.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260218023304_AddEntities")]
+    partial class AddEntities
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -371,7 +374,7 @@ namespace SchoolManager.Migrations
 
                     b.HasIndex("id_data");
 
-                    b.ToTable("preenrollment_addresses", (string)null);
+                    b.ToTable("preenrollment_addresses");
                 });
 
             modelBuilder.Entity("SchoolManager.Models.preenrollment_careers", b =>
@@ -388,7 +391,7 @@ namespace SchoolManager.Migrations
 
                     b.HasKey("IdCareer");
 
-                    b.ToTable("preenrollment_careers", (string)null);
+                    b.ToTable("preenrollment_careers");
                 });
 
             modelBuilder.Entity("SchoolManager.Models.preenrollment_general", b =>
@@ -399,9 +402,6 @@ namespace SchoolManager.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IdData"));
 
-                    b.Property<DateTime>("BirthDate")
-                        .HasColumnType("datetime2");
-
                     b.Property<string>("BloodType")
                         .HasMaxLength(10)
                         .HasColumnType("nvarchar(10)");
@@ -409,43 +409,13 @@ namespace SchoolManager.Migrations
                     b.Property<DateTime?>("CreateStat")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("Curp")
-                        .IsRequired()
-                        .HasMaxLength(18)
-                        .HasColumnType("nvarchar(18)");
-
-                    b.Property<string>("Email")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
                     b.Property<string>("Folio")
                         .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
-                    b.Property<string>("Gender")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
-
                     b.Property<int>("IdCareer")
                         .HasColumnType("int");
-
-                    b.Property<string>("MaritalStatus")
-                        .IsRequired()
-                        .HasMaxLength(30)
-                        .HasColumnType("nvarchar(30)");
-
-                    b.Property<string>("MaternalLastName")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<string>("Matricula")
-                        .IsRequired()
-                        .HasMaxLength(10)
-                        .HasColumnType("nvarchar(10)");
 
                     b.Property<string>("Nationality")
                         .IsRequired()
@@ -453,11 +423,6 @@ namespace SchoolManager.Migrations
                         .HasColumnType("nvarchar(50)");
 
                     b.Property<string>("Occupation")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<string>("PaternalLastName")
-                        .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
@@ -472,17 +437,14 @@ namespace SchoolManager.Migrations
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
 
+                    b.Property<int?>("preenrollment_careersIdCareer")
+                        .HasColumnType("int");
+
                     b.HasKey("IdData");
 
-                    b.HasIndex("Curp")
-                        .IsUnique();
+                    b.HasIndex("preenrollment_careersIdCareer");
 
-                    b.HasIndex("Email")
-                        .IsUnique();
-
-                    b.HasIndex("IdCareer");
-
-                    b.ToTable("preenrollment_general", (string)null);
+                    b.ToTable("preenrollment_general");
                 });
 
             modelBuilder.Entity("SchoolManager.Models.preenrollment_infos", b =>
@@ -520,7 +482,7 @@ namespace SchoolManager.Migrations
 
                     b.HasIndex("id_data");
 
-                    b.ToTable("preenrollment_infos", (string)null);
+                    b.ToTable("preenrollment_infos");
                 });
 
             modelBuilder.Entity("SchoolManager.Models.preenrollment_schools", b =>
@@ -571,7 +533,7 @@ namespace SchoolManager.Migrations
 
                     b.HasIndex("id_data");
 
-                    b.ToTable("preenrollment_schools", (string)null);
+                    b.ToTable("preenrollment_schools");
                 });
 
             modelBuilder.Entity("SchoolManager.Models.preenrollment_tutors", b =>
@@ -613,7 +575,7 @@ namespace SchoolManager.Migrations
 
                     b.HasIndex("id_data");
 
-                    b.ToTable("preenrollment_tutors", (string)null);
+                    b.ToTable("preenrollment_tutors");
                 });
 
             modelBuilder.Entity("SchoolManager.Models.procedure_areas", b =>
@@ -1438,13 +1400,9 @@ namespace SchoolManager.Migrations
 
             modelBuilder.Entity("SchoolManager.Models.preenrollment_general", b =>
                 {
-                    b.HasOne("SchoolManager.Models.preenrollment_careers", "Career")
+                    b.HasOne("SchoolManager.Models.preenrollment_careers", null)
                         .WithMany("preenrollment_general")
-                        .HasForeignKey("IdCareer")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Career");
+                        .HasForeignKey("preenrollment_careersIdCareer");
                 });
 
             modelBuilder.Entity("SchoolManager.Models.preenrollment_infos", b =>
