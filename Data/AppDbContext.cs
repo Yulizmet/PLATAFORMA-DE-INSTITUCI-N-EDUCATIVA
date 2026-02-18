@@ -56,7 +56,6 @@ namespace SchoolManager.Data
         public DbSet<grades_grade_level> grades_GradeLevels { get; set; }
         public DbSet<grades_grades> grades_Grades { get; set; }
         public DbSet<grades_group> grades_GradeGroups { get; set; }
-        public DbSet<grades_school_cycle> grades_SchoolCycles { get; set; }
         public DbSet<grades_subject_unit> grades_SubjectUnits { get; set; }
         public DbSet<grades_subjects> grades_Subjects { get; set; }
         public DbSet<grades_teacher_subject> grades_TeacherSubjects { get; set; }
@@ -88,9 +87,6 @@ namespace SchoolManager.Data
 
             modelBuilder.Entity<grades_group>()
                 .HasKey(g => g.GroupId);
-
-            modelBuilder.Entity<grades_school_cycle>()
-                .HasKey(s => s.SchoolCycleId);
 
             modelBuilder.Entity<grades_subject_unit>()
                 .HasKey(s => s.UnitId);
@@ -172,19 +168,18 @@ namespace SchoolManager.Data
                 .HasForeignKey(g => g.GradeLevelId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // 10. grades_group -> grades_school_cycle
-            modelBuilder.Entity<grades_group>()
-                .HasOne(g => g.SchoolCycle)
-                .WithMany(sc => sc.Groups)
-                .HasForeignKey(g => g.SchoolCycleId)
-                .OnDelete(DeleteBehavior.Restrict);
 
-            // 11. grades_school_cycle -> grades_group
-            modelBuilder.Entity<grades_school_cycle>()
-                .HasMany(s => s.Groups)
-                .WithOne(g => g.SchoolCycle)
-                .HasForeignKey(g => g.SchoolCycleId)
-                .OnDelete(DeleteBehavior.Restrict);
+            modelBuilder.Entity<grades_grade_level>()
+                .Property(g => g.StartDate)
+                .IsRequired();
+
+            modelBuilder.Entity<grades_grade_level>()
+                .Property(g => g.EndDate)
+                .IsRequired();
+
+            modelBuilder.Entity<grades_grade_level>()
+                .Property(g => g.IsOpen)
+                .HasDefaultValue(true);
 
             // 12. grades_subject_unit -> grades_subjects
             modelBuilder.Entity<grades_subject_unit>()
@@ -258,8 +253,7 @@ namespace SchoolManager.Data
             modelBuilder.Entity<grades_group>()
                 .HasIndex(g => g.GradeLevelId);
 
-            modelBuilder.Entity<grades_group>()
-                .HasIndex(g => g.SchoolCycleId);
+
 
             // Configuración de tipos de datos y límites
             modelBuilder.Entity<grades_grade_level>()
@@ -277,10 +271,7 @@ namespace SchoolManager.Data
                 .HasMaxLength(100)
                 .IsRequired();
 
-            modelBuilder.Entity<grades_school_cycle>()
-                .Property(s => s.Name)
-                .HasMaxLength(100)
-                .IsRequired();
+
 
             // Configuración de valores por defecto
             modelBuilder.Entity<grades_final_grades>()
@@ -400,7 +391,6 @@ namespace SchoolManager.Data
             modelBuilder.Entity<grades_grade_level>().ToTable("grades_grade_level");
             modelBuilder.Entity<grades_grades>().ToTable("grades_grades");
             modelBuilder.Entity<grades_group>().ToTable("grades_group");
-            modelBuilder.Entity<grades_school_cycle>().ToTable("grades_school_cycle");
             modelBuilder.Entity<grades_subject_unit>().ToTable("grades_subject_unit");
             modelBuilder.Entity<grades_subjects>().ToTable("grades_subjects");
             modelBuilder.Entity<grades_teacher_subject>().ToTable("grades_teacher_subject");
