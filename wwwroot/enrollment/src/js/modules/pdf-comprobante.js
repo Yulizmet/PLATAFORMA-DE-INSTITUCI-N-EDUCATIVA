@@ -478,6 +478,22 @@
       });
 
       // ====== Caja certificado ======
+
+      function segundoViernesDeSeptiembreTexto(year = new Date().getFullYear()) {
+        const sept1 = new Date(year, 8, 1);
+
+        const day = sept1.getDay();
+
+        const offsetToFirstFriday = (5 - day + 7) % 7;
+
+        const firstFridayDate = 1 + offsetToFirstFriday;
+        const secondFridayDate = firstFridayDate + 7;
+
+        return `${String(secondFridayDate).padStart(2, "0")} de septiembre de ${year}`;
+      }
+
+      const fechaCompromiso = segundoViernesDeSeptiembreTexto();
+
       const boxW = 85;
       const boxH = 58;
       const boxX = pageW - right - boxW;
@@ -512,9 +528,9 @@
       doc.setFontSize(8);
 
       const p1 =
-        "por el motivo anterior me comprometo a entregar el certificado de mi hijo(a) el 12 septiembre 2025, por lo cual " +
-        "me doy por enterado (a) de que en caso de no cumplir con dicho compromiso será dado de baja de manera automática " +
-        "quedando mi lugar o espacio a disposición del plantel.";
+      `por el motivo anterior me comprometo a entregar el certificado de mi hijo(a) el ${segundoViernesDeSeptiembreTexto()}, por lo cual ` +
+      "me doy por enterado (a) de que en caso de no cumplir con dicho compromiso será dado de baja de manera automática " +
+      "quedando mi lugar o espacio a disposición del plantel.";
 
       const paraTop = innerY + 22;
       const paraH = 16;
@@ -533,6 +549,7 @@
       );
 
       // ====== Cuadro inferior ======
+      
       const bigW2 = pageW - left - right;
       const bigX2 = left;
 

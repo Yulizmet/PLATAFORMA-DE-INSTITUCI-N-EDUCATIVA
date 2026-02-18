@@ -19,8 +19,9 @@ namespace SchoolManager.Models
 
         public decimal average { get; set; }
 
-        public DateTime start_date { get; set; }
-        public DateTime end_date { get; set; }
+        public DateTime? start_date { get; set; }
+        public DateTime? end_date { get; set; }
+
 
         public string study_system { get; set; }
         public string high_school_type { get; set; }

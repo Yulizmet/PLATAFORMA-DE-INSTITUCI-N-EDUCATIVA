@@ -1,11 +1,11 @@
-using Microsoft.EntityFrameworkCore;
+ï»¿using Microsoft.EntityFrameworkCore;
 using SchoolManager.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews(); // MVC con controladores y vistas
-builder.Services.AddRazorPages();           // Si quieres seguir usando Razor Pages también
+builder.Services.AddRazorPages();           // Si quieres seguir usando Razor Pages tambiÃ©n
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(
         builder.Configuration.GetConnectionString("DefaultConnection")));
@@ -26,7 +26,7 @@ app.UseRouting();
 
 app.UseAuthorization();
 
-// Configuración de rutas para áreas
+// ConfiguraciÃ³n de rutas para Ã¡reas
 app.MapControllerRoute(
     name: "areas",
     pattern: "{area:exists}/{controller=Home}/{action=Index}/{id?}");
@@ -36,7 +36,7 @@ app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
 
-// Si aún usas Razor Pages
+// Si aÃºn usas Razor Pages
 app.MapRazorPages();
 
 app.Run();

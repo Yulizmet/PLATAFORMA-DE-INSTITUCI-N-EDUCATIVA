@@ -1,71 +1,83 @@
 ﻿@model SchoolManager.Areas.Enrollment.ViewModels.PreEnrollmentViewModel
 
 <div class="card mb-4">
-    <div class="card-header fw-bold text-uppercase">Datos escolares</div>
+    <div class="card-header fw-bold text-uppercase">
+        Datos escolares
+    </div>
 
     <div class="card-body row g-3">
 
+        <!-- ESCUELA Y CARRERA -->
         <div class="col-md-8">
             <label asp-for="DatosEscolares.school" class="form-label">Escuela de procedencia</label>
-            <input asp-for="DatosEscolares.school" class="form-control" placeholder="Nombre de la escuela" />
+            <input asp-for="DatosEscolares.school" class="form-control" id="escProcedencia" required />
+            <div class="invalid-feedback">Campo obligatorio.</div>
         </div>
 
         <div class="col-md-4">
             <label asp-for="DatosEscolares.degree" class="form-label">Carrera cursada</label>
-            <input asp-for="DatosEscolares.degree" class="form-control" placeholder="Nombre de la carrera" />
+            <input asp-for="DatosEscolares.degree" class="form-control" id="escCarrera" required />
+            <div class="invalid-feedback">Campo obligatorio.</div>
         </div>
 
+        <!-- ESTADO Y MUNICIPIO -->
         <div class="col-md-4">
             <label asp-for="DatosEscolares.state" class="form-label">Estado</label>
-            <select asp-for="DatosEscolares.state" class="form-select">
+            <select asp-for="DatosEscolares.state" class="form-select" id="escEstado" required>
                 <option value="">Sin selección</option>
-                <!-- Aquí puedes cargar los estados dinámicamente -->
             </select>
+            <div class="invalid-feedback">Selecciona un estado.</div>
         </div>
 
         <div class="col-md-4">
             <label asp-for="DatosEscolares.city" class="form-label">Municipio</label>
-            <select asp-for="DatosEscolares.city" class="form-select" disabled>
+            <select asp-for="DatosEscolares.city" class="form-select" id="escMunicipio" disabled required>
                 <option value="">Sin selección</option>
-                <!-- Municipios dinámicos según el estado -->
             </select>
+            <div class="invalid-feedback">Selecciona un municipio.</div>
         </div>
 
+        <!-- PROMEDIO -->
         <div class="col-md-2">
             <label asp-for="DatosEscolares.average" class="form-label">Promedio</label>
-            <input asp-for="DatosEscolares.average" type="number" step="0.1" min="0" max="10" class="form-control" placeholder="0.0" />
+            <input asp-for="DatosEscolares.average" type="number" step="0.1" min="0" max="10" class="form-control" placeholder="0.0" id="escPromedio" required />
+            <div class="invalid-feedback">Campo obligatorio.</div>
         </div>
 
+        <!-- FECHAS -->
         <div class="col-md-2">
             <label asp-for="DatosEscolares.start_date" class="form-label">Fecha de inicio</label>
-            <input asp-for="DatosEscolares.start_date" type="date" class="form-control" />
+            <input asp-for="DatosEscolares.start_date" type="date" class="form-control" id="escFechaInicio" required />
+            <div class="invalid-feedback">Campo obligatorio.</div>
         </div>
 
         <div class="col-md-2">
             <label asp-for="DatosEscolares.end_date" class="form-label">Fecha de terminación</label>
-            <input asp-for="DatosEscolares.end_date" type="date" class="form-control" />
+            <input asp-for="DatosEscolares.end_date" type="date" class="form-control" id="escFechaFin" required />
+            <div class="invalid-feedback">Campo obligatorio.</div>
         </div>
 
+        <!-- SISTEMA DE ESTUDIO Y TIPO DE SECUNDARIA -->
         <div class="col-md-3">
             <label asp-for="DatosEscolares.study_system" class="form-label">Sistema de estudio</label>
-            <select asp-for="DatosEscolares.study_system" class="form-select">
+            <select asp-for="DatosEscolares.study_system" class="form-select" id="escSistema" required>
                 <option value="">Sin selección</option>
-                <option value="Por cooperación">Por cooperación</option>
-                <option value="Privada">Privada</option>
-                <option value="Pública">Pública</option>
+                <option>Por cooperación</option>
+                <option>Privada</option>
+                <option>Pública</option>
             </select>
         </div>
 
         <div class="col-md-3">
             <label asp-for="DatosEscolares.high_school_type" class="form-label">Tipo de secundaria</label>
-            <select asp-for="DatosEscolares.high_school_type" class="form-select">
+            <select asp-for="DatosEscolares.high_school_type" class="form-select" id="escTipoPrepa" required>
                 <option value="">Sin selección</option>
-                <option value="Secundaria General">Secundaria General</option>
-                <option value="Secundaria Técnica">Secundaria Técnica</option>
-                <option value="Telesecundaria">Telesecundaria</option>
-                <option value="Secundaria para Trabajadores">Secundaria para Trabajadores</option>
-                <option value="Secundaria para Adultos">Secundaria para Adultos</option>
-                <option value="Otro">Otro</option>
+                <option>Secundaria General</option>
+                <option>Secundaria Técnica</option>
+                <option>Telesecundaria</option>
+                <option>Secundaria para Trabajadores</option>
+                <option>Secundaria para Adultos</option>
+                <option>Otro</option>
             </select>
         </div>
 
