@@ -40,6 +40,14 @@ app.MapControllerRoute(
     pattern: "{controller=Home}/{action=Index}/{id?}"
 );
 
+app.MapControllerRoute(
+    name: "areas",
+    pattern: "{area:exists}/{controller=MainScreen}/{action=SistemaEscolar}/{id?}");
+
+app.MapControllerRoute(
+    name: "default",
+    pattern: "{controller=Home}/{action=Index}/{id?}");
+
 
 app.MapRazorPages();
 
