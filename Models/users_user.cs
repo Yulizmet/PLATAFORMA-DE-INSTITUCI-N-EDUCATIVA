@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel;
 
 namespace SchoolManager.Models
 {
@@ -12,6 +13,8 @@ namespace SchoolManager.Models
         public bool IsLocked { get; set; }
         public string LockReason { get; set; }
         public DateTime? LastLoginDate { get; set; }
+        [DefaultValue(true)]
+
         public bool IsActive { get; set; }
         public DateTime CreatedDate { get; set; }
         public users_person Person { get; set; }

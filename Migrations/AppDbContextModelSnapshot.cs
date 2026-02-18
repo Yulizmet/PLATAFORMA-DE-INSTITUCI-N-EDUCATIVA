@@ -22,6 +22,22 @@ namespace SchoolManager.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.Entity("SchoolManager.Models.Generation", b =>
+                {
+                    b.Property<int>("IdGeneration")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IdGeneration"));
+
+                    b.Property<int>("Year")
+                        .HasColumnType("int");
+
+                    b.HasKey("IdGeneration");
+
+                    b.ToTable("Generation", (string)null);
+                });
+
             modelBuilder.Entity("SchoolManager.Models.grades_extraordinary_grades", b =>
                 {
                     b.Property<int>("ExtraordinaryGradeId")
@@ -406,6 +422,9 @@ namespace SchoolManager.Migrations
                         .HasMaxLength(10)
                         .HasColumnType("nvarchar(10)");
 
+                    b.Property<int>("CareerIdCareer")
+                        .HasColumnType("int");
+
                     b.Property<DateTime?>("CreateStat")
                         .HasColumnType("datetime2");
 
@@ -430,6 +449,9 @@ namespace SchoolManager.Migrations
                         .HasColumnType("nvarchar(20)");
 
                     b.Property<int>("IdCareer")
+                        .HasColumnType("int");
+
+                    b.Property<int>("IdGeneration")
                         .HasColumnType("int");
 
                     b.Property<string>("MaritalStatus")
@@ -474,13 +496,15 @@ namespace SchoolManager.Migrations
 
                     b.HasKey("IdData");
 
+                    b.HasIndex("CareerIdCareer");
+
                     b.HasIndex("Curp")
                         .IsUnique();
 
                     b.HasIndex("Email")
                         .IsUnique();
 
-                    b.HasIndex("IdCareer");
+                    b.HasIndex("IdGeneration");
 
                     b.ToTable("preenrollment_general", (string)null);
                 });
@@ -1440,11 +1464,19 @@ namespace SchoolManager.Migrations
                 {
                     b.HasOne("SchoolManager.Models.preenrollment_careers", "Career")
                         .WithMany("preenrollment_general")
-                        .HasForeignKey("IdCareer")
+                        .HasForeignKey("CareerIdCareer")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("SchoolManager.Models.Generation", "Generation")
+                        .WithMany("Students")
+                        .HasForeignKey("IdGeneration")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Career");
+
+                    b.Navigation("Generation");
                 });
 
             modelBuilder.Entity("SchoolManager.Models.preenrollment_infos", b =>
@@ -1654,7 +1686,7 @@ namespace SchoolManager.Migrations
                     b.HasOne("SchoolManager.Models.users_permission", "Permission")
                         .WithMany("RolePermissions")
                         .HasForeignKey("PermissionId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("SchoolManager.Models.users_role", "Role")
@@ -1707,6 +1739,11 @@ namespace SchoolManager.Migrations
                     b.Navigation("Role");
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("SchoolManager.Models.Generation", b =>
+                {
+                    b.Navigation("Students");
                 });
 
             modelBuilder.Entity("SchoolManager.Models.grades_final_grades", b =>

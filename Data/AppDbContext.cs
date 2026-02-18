@@ -299,6 +299,8 @@ namespace SchoolManager.Data
                 .Property(u => u.CreatedAt)
                 .HasDefaultValueSql("GETDATE()");
 
+            modelBuilder.Entity<Generation>().ToTable("Generation");
+
             //Procedures
             modelBuilder.Entity<procedure_status>().ToTable("procedure_status");
             modelBuilder.Entity<procedure_areas>().ToTable("procedure_areas");
@@ -420,28 +422,49 @@ namespace SchoolManager.Data
             modelBuilder.Entity<users_person>()
                 .HasOne(p => p.User)
                 .WithOne(u => u.Person)
-                .HasForeignKey<users_user>(u => u.PersonId);
+                .HasForeignKey<users_user>(u => u.PersonId)
+                .OnDelete(DeleteBehavior.Cascade);  
+
+
+
+
+
+
+
+
+
+
+
 
             modelBuilder.Entity<users_userrole>()
                 .HasOne(ur => ur.User)
                 .WithMany(u => u.UserRoles)
-                .HasForeignKey(ur => ur.UserId);
+                .HasForeignKey(ur => ur.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder.Entity<users_userrole>()
                 .HasOne(ur => ur.Role)
                 .WithMany(r => r.UserRoles)
-                .HasForeignKey(ur => ur.RoleId);
+                .HasForeignKey(ur => ur.RoleId)
+                .OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder.Entity<users_rolepermission>()
                 .HasOne(rp => rp.Role)
                 .WithMany(r => r.RolePermissions)
-                .HasForeignKey(rp => rp.RoleId);
+                .HasForeignKey(rp => rp.RoleId)
+                .OnDelete(DeleteBehavior.Cascade);
 
-            modelBuilder.Entity<users_rolepermission>()
-                .HasOne(rp => rp.Permission)
-                .WithMany(p => p.RolePermissions)
-                .HasForeignKey(rp => rp.PermissionId)
-                .OnDelete(DeleteBehavior.Restrict);
+            modelBuilder.Entity<users_session>()
+                .HasOne(s => s.User)
+                .WithMany(u => u.Sessions)
+                .HasForeignKey(s => s.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<users_auditlog>()
+                .HasOne(a => a.User)
+                .WithMany(u => u.AuditLogs)
+                .HasForeignKey(a => a.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
 
 
 
