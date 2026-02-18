@@ -185,15 +185,13 @@ namespace SchoolManager.Areas.Procedures.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> CreatePaymentValidation(string identifier, int procedureTypeId, IFormCollection form)
+        public async Task<IActionResult> CreatePaymentValidation(int personId, int procedureTypeId, IFormCollection form)
         {
-            var personData = await _context.Set<preenrollment_general>()
-                .FirstOrDefaultAsync(p => p.Folio == identifier || p.Matricula == identifier);
-
-            if (personData == null)
-            {
-                return Json(new { success = false, errors = new[] { "El Folio o Matrícula no existe en el sistema." } });
-            }
+            /* LOGICA COMENTADA PARA EL FUTURO (Equipp Pre-enrollment):
+               var personData = await _context.Set<prenrollment_general>()
+                   .FirstOrDefaultAsync(p => p.Folio == identifier || p.Matricula == identifier);
+               if (personData == null) return Json(new { success = false, errors = new[] { "No encontrado" } });
+            */
 
             var request = new procedure_request
             {
@@ -201,9 +199,9 @@ namespace SchoolManager.Areas.Procedures.Controllers
                 IdStatus = 3,
                 IdUser = 1,
                 DateUpdated = DateTime.Now,
-                Subject = procedureTypeId == 10 ? "Validación de Pago: Preinscripción" : "Validación de Pago: Inscripción",
-                Message = $"Registro automático para el identificador: {identifier}",
-                Folio = "PAY-" + DateTime.Now.Ticks.ToString().Substring(10).ToUpper()
+                Subject = "Validación de pago",
+                Message = $"Validación para folio: {personId}",
+                Folio = DateTime.Now.Ticks.ToString().Substring(10).ToUpper()
             };
 
             ModelState.Remove("IdUser");
@@ -229,7 +227,7 @@ namespace SchoolManager.Areas.Procedures.Controllers
                             var document = new procedure_documents
                             {
                                 IdProcedure = request.Id,
-                                Name = "Voucher_" + identifier + "_" + file.FileName,
+                                Name = "Boucher_" + personId + "_" + file.FileName,
                                 FilePath = fileUrl,
                                 DateUpdated = DateTime.Now
                             };
@@ -241,7 +239,7 @@ namespace SchoolManager.Areas.Procedures.Controllers
                     {
                         IdProcedure = request.Id,
                         IdStatus = 3,
-                        Comment = "Pago registrado por el aspirante/alumno. Pendiente de revisión por Finanzas (Área 5).",
+                        Comment = "El usuario cargó su comprobante. Esperando validación de Finanzas.",
                         IdUser = 1,
                         DateUpdated = DateTime.Now
                     };
@@ -255,7 +253,8 @@ namespace SchoolManager.Areas.Procedures.Controllers
                 catch (Exception ex)
                 {
                     await transaction.RollbackAsync();
-                    return Json(new { success = false, errors = new[] { "Error en el servidor: " + ex.Message } });
+                    var message = ex.InnerException != null ? ex.InnerException.Message : ex.Message;
+                    return Json(new { success = false, errors = new[] { "Error: " + message } });
                 }
             }
 

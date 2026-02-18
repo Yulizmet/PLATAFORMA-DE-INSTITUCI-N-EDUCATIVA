@@ -9,7 +9,7 @@ namespace SchoolManager.Models
 
         [Required]
         [MaxLength(50)]
-        [Display(Name = "Nombre y previsualización")]
+        [Display(Name = "Estado")]
         public string Name { get; set; } = null!;
 
         [Required]
@@ -23,6 +23,7 @@ namespace SchoolManager.Models
         public string TextColor { get; set; } = "#000000";
 
         [Required]
+        [Display(Name = "Niveles de orden")]
         public int StepOrder { get; set; }
 
         [Required]
