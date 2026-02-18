@@ -1,0 +1,39 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>@ViewData["Title"]</title>
+    <link rel="stylesheet" href="~/css/site.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <nav class="navbar">
+
+        <!-- Botón volver (izquierda) -->
+        <div class="nav-left">
+            <a href="javascript:history.back()" class="btn-logout" aria-label="Volver">Volver</a>
+        </div>
+
+        <!-- Nombre centrado -->
+        <div class="brand-center">
+            Sistema Escolar
+        </div>
+
+        <!-- Botón cerrar sesión (derecha) -->
+        <div class="nav-right">
+            <a asp-controller="Account"
+               asp-action="Logout"
+               class="btn-logout">
+                Cerrar sesión
+            </a>
+        </div>
+
+    </nav>
+
+    <div class="container content-wrapper">
+        @RenderBody()
+    </div>
+
+</body>
+</html>
