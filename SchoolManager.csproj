@@ -37,7 +37,6 @@
   <ItemGroup>
     <Folder Include="Areas\Grades\JS\" />
     <Folder Include="Areas\Procedures\Controllers\" />
-    <Folder Include="Areas\Procedures\Views\" />
     <Folder Include="Areas\Grades\Controllers\" />
     <Folder Include="Areas\Grades\Views\" />
     <Folder Include="Migrations\" />
@@ -45,7 +44,6 @@
     <Folder Include="Areas\Preenrollment\ViewModels\" />
     <Folder Include="Areas\Preenrollment\Views\" />
     <Folder Include="Areas\Procedures\Templates\" />
-  </ItemGroup>
     <Folder Include="Migrations\" />
 
 	  <None Update="libwkhtmltox.dll">

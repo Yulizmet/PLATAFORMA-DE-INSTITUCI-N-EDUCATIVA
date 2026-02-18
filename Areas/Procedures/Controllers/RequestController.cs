@@ -161,6 +161,108 @@ namespace SchoolManager.Areas.Procedures.Controllers
             return PartialView("_TrackingDetails", request);
         }
 
+        [HttpGet]
+        public IActionResult PaymentRegistration()
+        {
+            return View();
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetPaymentRequirements(int procedureTypeId)
+        {
+            var requirements = await _context.ProcedureTypeRequirements
+                .Include(r => r.ProcedureTypeDocument)
+                .Where(r => r.IdTypeProcedure == procedureTypeId)
+                .Select(r => new {
+                    documentName = r.ProcedureTypeDocument.Name,
+                    isRequired = r.IsRequired,
+                    isPaymentDoc = r.ProcedureTypeDocument.Name.ToLower().Contains("pago") ||
+                                   r.ProcedureTypeDocument.Name.ToLower().Contains("boucher")
+                }).ToListAsync();
+
+            return Json(requirements);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CreatePaymentValidation(string identifier, int procedureTypeId, IFormCollection form)
+        {
+            var personData = await _context.Set<preenrollment_general>()
+                .FirstOrDefaultAsync(p => p.Folio == identifier || p.Matricula == identifier);
+
+            if (personData == null)
+            {
+                return Json(new { success = false, errors = new[] { "El Folio o Matrícula no existe en el sistema." } });
+            }
+
+            var request = new procedure_request
+            {
+                IdTypeProcedure = procedureTypeId,
+                IdStatus = 3,
+                IdUser = 1,
+                DateUpdated = DateTime.Now,
+                Subject = procedureTypeId == 10 ? "Validación de Pago: Preinscripción" : "Validación de Pago: Inscripción",
+                Message = $"Registro automático para el identificador: {identifier}",
+                Folio = "PAY-" + DateTime.Now.Ticks.ToString().Substring(10).ToUpper()
+            };
+
+            ModelState.Remove("IdUser");
+            ModelState.Remove("ProcedureStatus");
+            ModelState.Remove("ProcedureType");
+            ModelState.Remove("User");
+            ModelState.Remove("Folio");
+
+            if (ModelState.IsValid)
+            {
+                using var transaction = await _context.Database.BeginTransactionAsync();
+                try
+                {
+                    _context.ProcedureRequest.Add(request);
+                    await _context.SaveChangesAsync();
+
+                    foreach (var file in form.Files)
+                    {
+                        if (file.Length > 0)
+                        {
+                            string fileUrl = await _storageService.UploadFileAsync(file, "proceduresfiles", STORAGE_CONNECTION);
+
+                            var document = new procedure_documents
+                            {
+                                IdProcedure = request.Id,
+                                Name = "Voucher_" + identifier + "_" + file.FileName,
+                                FilePath = fileUrl,
+                                DateUpdated = DateTime.Now
+                            };
+                            _context.ProcedureDocuments.Add(document);
+                        }
+                    }
+
+                    var monitoring = new procedure_monitoring
+                    {
+                        IdProcedure = request.Id,
+                        IdStatus = 3,
+                        Comment = "Pago registrado por el aspirante/alumno. Pendiente de revisión por Finanzas (Área 5).",
+                        IdUser = 1,
+                        DateUpdated = DateTime.Now
+                    };
+                    _context.ProcedureMonitoring.Add(monitoring);
+
+                    await _context.SaveChangesAsync();
+                    await transaction.CommitAsync();
+
+                    return Json(new { success = true, folio = request.Folio });
+                }
+                catch (Exception ex)
+                {
+                    await transaction.RollbackAsync();
+                    return Json(new { success = false, errors = new[] { "Error en el servidor: " + ex.Message } });
+                }
+            }
+
+            var modelErrors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToArray();
+            return Json(new { success = false, errors = modelErrors });
+        }
+
         [HttpPost]
         public async Task<IActionResult> CancelRequest(int id)
         {

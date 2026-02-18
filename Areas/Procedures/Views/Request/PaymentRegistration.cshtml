@@ -1,0 +1,201 @@
+﻿@model IEnumerable<SchoolManager.Models.procedure_request>
+@{
+    ViewData["Title"] = "Registro de pago";
+    Layout = "/Pages/Shared/_Layout.cshtml";
+}
+
+<style>
+    :root {
+        --burgundy: #620900;
+        --burgundy-light: #8C1B1B;
+    }
+
+    .card-header-burgundy { background-color: var(--burgundy) !important; color: white !important; }
+
+    .btn-burgundy {
+        background-color: var(--burgundy);
+        color: white;
+        border-radius: 50px;
+        padding: 0.8rem 2.5rem;
+        font-weight: 600;
+        border: none;
+        transition: all 0.3s;
+    }
+
+    .btn-burgundy:hover { background-color: var(--burgundy-light); transform: translateY(-2px); }
+
+    /* Área punteada y redondeada */
+    .drop-zone {
+        border: 2px dashed #ced4da;
+        border-radius: 20px;
+        padding: 40px;
+        text-align: center;
+        background: #fff;
+        transition: all 0.3s;
+        cursor: pointer;
+    }
+
+    .drop-zone:hover { border-color: var(--burgundy); background: rgba(98, 9, 0, 0.02); }
+
+    #file-preview {
+        display: none;
+        margin-top: 15px;
+        padding: 15px;
+        border-radius: 15px;
+        background: #f8f9fa;
+        border: 1px solid #dee2e6;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .file-icon { font-size: 2.5rem; color: var(--burgundy); }
+</style>
+
+<div class="container py-5">
+    <div class="card shadow-lg border-0 rounded-4 overflow-hidden">
+        <div class="card-header-burgundy p-4">
+            <h4 class="mb-0"><i class="bi bi-patch-check-fill me-2"></i>Validación de Pago Institucional</h4>
+        </div>
+        <div class="card-body p-4 bg-light">
+            <form id="paymentForm" enctype="multipart/form-data">
+                @Html.AntiForgeryToken()
+
+                <div class="row g-4">
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold text-dark">Folio o Matrícula:</label>
+                        <input type="text" name="identifier" class="form-control" placeholder="Ej. PRE-12345" required>
+                        <small class="text-muted">Ingresa tu folio de preinscripción o matrícula.</small>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold text-dark">Concepto de Pago:</label>
+                        <select name="procedureTypeId" class="form-select" required>
+                            <option value="">Seleccione concepto...</option>
+                            <option value="10">Preinscripción (Aspirantes)</option>
+                            <option value="9">Inscripción (Alumnos)</option>
+                        </select>
+                    </div>
+
+                    <div class="col-12" id="upload-section" style="display: none;">
+                        <label class="form-label fw-bold text-dark">Comprobante de Pago (Boucher):</label>
+                        <div class="drop-zone" onclick="document.getElementById('fileInput').click()">
+                            <input type="file" name="formFiles" id="fileInput" class="d-none" accept=".pdf,.jpg,.png" onchange="handleFileSelect(this)">
+
+                            <div id="upload-prompt">
+                                <i class="bi bi-cloud-arrow-up-fill fs-1 text-muted"></i>
+                                <h5 class="mt-2">Haz clic para buscar tu comprobante</h5>
+                                <p class="small text-muted mb-0">PDF, JPG o PNG (Máximo 2MB)</p>
+                            </div>
+
+                            <div id="file-preview" class="animate__animated animate__fadeIn">
+                                <div class="file-icon"><i id="type-icon" class="bi bi-file-earmark-text"></i></div>
+                                <div class="text-start">
+                                    <div id="file-name" class="fw-bold text-dark text-truncate" style="max-width: 250px;"></div>
+                                    <div id="file-size" class="small text-muted"></div>
+                                </div>
+                                <button type="button" class="btn btn-sm btn-outline-danger ms-auto" onclick="removeFile(event)">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="no-requirements-msg" class="col-12" style="display: none;">
+                        <div class="alert alert-warning border-0 shadow-sm">
+                            <i class="bi bi-exclamation-triangle-fill me-2"></i> Este concepto no requiere boucher de pago actualmente.
+                        </div>
+                    </div>
+
+                    <div class="col-12 text-center mt-4">
+                        <button type="button" onclick="submitPayment()" class="btn btn-burgundy btn-lg shadow-sm">
+                            <i class="bi bi-send-check me-2"></i>Registrar Pago
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Lógica de visualización de archivo
+        function handleFileSelect(input) {
+            const file = input.files[0];
+            if (file) {
+                const preview = document.getElementById('file-preview');
+                const prompt = document.getElementById('upload-prompt');
+
+                document.getElementById('file-name').innerText = file.name;
+                document.getElementById('file-size').innerText = (file.size / 1024).toFixed(2) + ' KB';
+
+                const icon = document.getElementById('type-icon');
+                const ext = file.name.split('.').pop().toLowerCase();
+                if (ext === 'pdf') icon.className = 'bi bi-file-earmark-pdf-fill text-danger';
+                else icon.className = 'bi bi-file-earmark-image-fill text-primary';
+
+                prompt.style.display = 'none';
+                preview.style.display = 'flex';
+            }
+        }
+
+        function removeFile(e) {
+            e.stopPropagation();
+            document.getElementById('fileInput').value = '';
+            document.getElementById('file-preview').style.display = 'none';
+            document.getElementById('upload-prompt').style.display = 'block';
+        }
+
+        // Lógica reactiva al Concepto de Pago
+        $('select[name="procedureTypeId"]').on('change', function() {
+            const id = $(this).val();
+            if (!id) {
+                $('#upload-section').hide();
+                $('#no-requirements-msg').hide();
+                return;
+            }
+
+            // Llamamos a tu nuevo endpoint dinámico
+            $.get(`/Procedures/Request/GetPaymentRequirements?procedureTypeId=${id}`, function(data) {
+                const hasPaymentReq = data.some(r => r.isPaymentDoc && r.isRequired);
+
+                if (hasPaymentReq) {
+                    $('#upload-section').fadeIn();
+                    $('#no-requirements-msg').hide();
+                } else {
+                    $('#upload-section').hide();
+                    $('#no-requirements-msg').fadeIn();
+                }
+            });
+        });
+
+        // Envío del Formulario
+        function submitPayment() {
+            const form = document.getElementById('paymentForm');
+            const formData = new FormData(form);
+
+            Swal.fire({
+                title: 'Registrando...',
+                text: 'Subiendo comprobante a Azure.',
+                allowOutsideClick: false,
+                didOpen: () => { Swal.showLoading(); }
+            });
+
+            $.ajax({
+                url: '/Procedures/Request/CreatePaymentValidation',
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function(response) {
+                    Swal.close();
+                    if (response.success) {
+                        Swal.fire({ icon: 'success', title: '¡Éxito!', text: 'Folio: ' + response.folio });
+                    } else {
+                        Swal.fire('Error', response.errors.join('<br>'), 'error');
+                    }
+                }
+            });
+        }
+    </script>
+}
