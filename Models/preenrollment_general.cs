@@ -11,6 +11,12 @@ namespace SchoolManager.Models
         [Required]
         public int IdCareer { get; set; }
 
+        [Required]
+        public int IdGeneration { get; set; }
+
+        public Generation Generation { get; set; } = null!;
+
+
         [Required, MaxLength(100)]
         public string PaternalLastName { get; set; } = null!;
 
@@ -54,6 +60,10 @@ namespace SchoolManager.Models
 
         [MaxLength(20)]
         public string? WorkPhone { get; set; }
+
+        [Required, MaxLength(10)]
+        public string Matricula { get; set; } = null!;
+
 
         public preenrollment_careers Career { get; set; } = null!;
 

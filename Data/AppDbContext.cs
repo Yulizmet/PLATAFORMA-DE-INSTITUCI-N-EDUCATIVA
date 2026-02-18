@@ -17,6 +17,8 @@ namespace SchoolManager.Data
         public DbSet<preenrollment_general> PreenrollmentGenerals { get; set; } = default!;
         public DbSet<preenrollment_addresses> PreenrollmentAddresses { get; set; } = default!;
         public DbSet<preenrollment_careers> PreenrollmentCareers { get; set; } = default!;
+        public DbSet<Generation> Generations { get; set; } = default!;
+
         public DbSet<preenrollment_infos> PreenrollmentInfos { get; set; } = default!;
         public DbSet<preenrollment_schools> PreenrollmentSchools { get; set; } = default!;
         public DbSet<preenrollment_tutors> PreenrollmentTutors { get; set; } = default!;
@@ -395,6 +397,14 @@ namespace SchoolManager.Data
                 .WithMany(c => c.preenrollment_general)
                 .HasForeignKey(p => p.IdCareer)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            // Configurar la relación entre preenrollment_general y Generations
+            modelBuilder.Entity<preenrollment_general>()
+                .HasOne(p => p.Generation)
+                .WithMany(g => g.Students)
+                .HasForeignKey(p => p.IdGeneration)
+                .OnDelete(DeleteBehavior.Restrict);
+
 
             // Configurar la relación uno-a-muchos entre preenrollment_general y preenrollment_addresses
             modelBuilder.Entity<preenrollment_addresses>()
