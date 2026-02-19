@@ -1,0 +1,33 @@
+﻿@model SchoolManager.Models.procedure_type_documents
+@{
+    Layout = null;
+}
+<div class="modal fade" id="editModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="post" action="/Procedures/DocumentsCatalog/Edit">
+                @Html.AntiForgeryToken()
+                <div class="modal-header bg-warning text-dark">
+                    <h5 class="modal-title"><i class="bi bi-pencil-square me-2"></i>Editar documentos</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" asp-for="Id" />
+                    <input type="hidden" asp-for="DateUpdated" />
+                    <div class="mb-3">
+                        <label class="form-label">Nombre</label>
+                        <input asp-for="Name" class="form-control"/>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Descripción</label>
+                        <textarea asp-for="Description" id="Description" class="form-control"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light border-top-0">
+                    <button type="button" class="btn btn-outline-secondary px-4" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-warning px-4 shadow-sm"> Guardar </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

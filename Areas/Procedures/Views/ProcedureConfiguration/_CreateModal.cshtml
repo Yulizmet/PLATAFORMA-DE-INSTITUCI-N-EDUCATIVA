@@ -1,0 +1,77 @@
+﻿@model SchoolManager.Models.procedure_types
+@{
+    Layout = null;
+}
+
+<div class="modal fade" id="createModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content shadow-lg">
+            <form id="formProcedureMaster" method="post" action="/Procedures/ProcedureConfiguration/CreateWithRequirements">
+                @Html.AntiForgeryToken()
+
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title">
+                        <i class="bi bi-file-earmark-arrow-up me-2"></i>Nuevo trámite
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body">
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Nombre del trámite</label>
+                            <input asp-for="Name" class="form-control shadow-sm" required placeholder="Ej: Constancia de estudios" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Área responsable</label>
+                            <select asp-for="IdArea" class="form-select shadow-sm" asp-items="ViewBag.IdArea" required>
+                                <option value="">-- Seleccione área --</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <hr />
+
+                    <h6 class="text-secondary fw-bold mb-3"><i class="bi bi-file-earmark-plus me-1"></i> Asignar Documentos</h6>
+                    <div class="row g-2 align-items-end mb-4 bg-light p-3 rounded border shadow-sm">
+                        <div class="col-md-6">
+                            <label class="small fw-bold text-muted">Documento</label>
+                            <select id="tempDocument" class="form-select shadow-sm">
+                                <option value="">-- Seleccionar documento --</option>
+                                @if (ViewBag.IdTypeDocument != null)
+                                {
+                                    foreach (var doc in (SelectList)ViewBag.IdTypeDocument)
+                                    {
+                                        <option value="@doc.Value">@doc.Text</option>
+                                    }
+                                }
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="small fw-bold text-muted">¿Es obligatorio?</label>
+                            <select id="tempRequired" class="form-select shadow-sm">
+                                <option value="true">Sí (Requerido)</option>
+                                <option value="false">No (Opcional)</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <button type="button" id="btnAddReq" class="btn btn-success w-100 fw-bold shadow-sm">
+                                <i class="bi bi-plus-lg"></i> Añadir
+                            </button>
+                        </div>
+                    </div>
+
+                    <label class="small fw-bold text-muted mb-2">Resumen de documentos asignados:</label>
+                    <div id="pillsContainer" class="form-control d-flex flex-wrap gap-2 p-2 shadow-sm"
+                         style="min-height: 60px; background-color: #fafafa; border-style: dashed;">
+                    </div>
+                    <small class="text-muted mt-2 d-block">* Los iconos <i class="bi bi-asterisk text-danger"></i> indican documentos obligatorios.</small>
+                </div>
+                <div class="modal-footer bg-light border-top-0">
+                    <button type="button" class="btn btn-outline-secondary px-4" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-success px-4 shadow-sm">Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

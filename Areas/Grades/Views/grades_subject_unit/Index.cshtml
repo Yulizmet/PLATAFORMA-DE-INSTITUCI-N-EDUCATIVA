@@ -1,0 +1,48 @@
+﻿@model IEnumerable<SchoolManager.Models.grades_subject_unit>
+
+@{
+    ViewData["Title"] = "Index";
+    Layout = "~/Pages/Shared/_Layout.cshtml";
+}
+
+<h1>Index</h1>
+
+<p>
+    <a asp-action="Create">Create New</a>
+</p>
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.UnitNumber)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.IsOpen)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Subject)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model) {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.UnitNumber)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.IsOpen)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Subject.Name)
+            </td>
+            <td>
+                <a asp-action="Edit" asp-route-id="@item.UnitId">Edit</a> |
+                <a asp-action="Details" asp-route-id="@item.UnitId">Details</a> |
+                <a asp-action="Delete" asp-route-id="@item.UnitId">Delete</a>
+            </td>
+        </tr>
+}
+    </tbody>
+</table>

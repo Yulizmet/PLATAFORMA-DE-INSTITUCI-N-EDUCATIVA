@@ -1,22 +1,26 @@
 using Microsoft.EntityFrameworkCore;
 using SchoolManager.Data;
+using SchoolManager.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+builder.Services.AddScoped<ISearchService, SearchService > ();
+builder.Services.AddScoped<IStorageService, AzureStorageService>();
 builder.Services.AddRazorPages();
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(
         builder.Configuration.GetConnectionString("DefaultConnection")));
 
-
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+app.MapControllerRoute(
+    name: "ProceduresArea",
+    pattern: "{area:exists}/{controller=Dashboard}/{action=Index}/{id?}");
+
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Error");
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
 
@@ -26,6 +30,24 @@ app.UseStaticFiles();
 app.UseRouting();
 
 app.UseAuthorization();
+app.MapControllerRoute(
+    name: "areas",
+    pattern: "{area:exists}/{controller=Home}/{action=Index}/{id?}"
+);
+
+app.MapControllerRoute(
+    name: "default",
+    pattern: "{controller=Home}/{action=Index}/{id?}"
+);
+
+app.MapControllerRoute(
+    name: "areas",
+    pattern: "{area:exists}/{controller=MainScreen}/{action=SistemaEscolar}/{id?}");
+
+app.MapControllerRoute(
+    name: "default",
+    pattern: "{controller=Home}/{action=Index}/{id?}");
+
 
 app.MapRazorPages();
 

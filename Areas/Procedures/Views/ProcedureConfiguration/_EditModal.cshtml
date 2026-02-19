@@ -1,0 +1,93 @@
+﻿@model SchoolManager.Models.procedure_types
+@{
+    Layout = null;
+    int indexCounter = 0;
+}
+
+<div class="modal fade" id="editModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content shadow-lg">
+            <form id="formProcedureMaster" method="post" action="/Procedures/ProcedureConfiguration/EditWithRequirements">
+                @Html.AntiForgeryToken()
+                <div class="modal-header bg-warning text-dark">
+                    <h5 class="modal-title"><i class="bi bi-pencil-square me-2"></i>Editar configuración de trámite</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" asp-for="Id" />
+                    <input type="hidden" asp-for="DateUpdated" />
+
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Nombre del trámite</label>
+                            <input asp-for="Name" class="form-control shadow-sm" required />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Área responsable</label>
+                            <select asp-for="IdArea" class="form-select shadow-sm" asp-items="ViewBag.IdArea" required>
+                                <option value="">-- Seleccione área --</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <hr />
+
+                    <h6 class="text-secondary fw-bold mb-3"><i class="bi bi-file-earmark-plus me-1"></i> Asignar Documentos</h6>
+                    <div class="row g-2 align-items-end mb-4 bg-light p-3 rounded border shadow-sm">
+                        <div class="col-md-6">
+                            <label class="small fw-bold text-muted">Documento</label>
+                            <select id="tempDocument" class="form-select shadow-sm">
+                                <option value="">-- Seleccionar documento --</option>
+                                @foreach (var doc in (SelectList)ViewBag.IdTypeDocument)
+                                {
+                                    <option value="@doc.Value">@doc.Text</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="small fw-bold text-muted">¿Es obligatorio?</label>
+                            <select id="tempRequired" class="form-select shadow-sm">
+                                <option value="true">Sí (Requerido)</option>
+                                <option value="false">No (Opcional)</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <button type="button" id="btnAddReq" class="btn btn-success w-100 fw-bold shadow-sm">
+                                <i class="bi bi-plus-lg"></i> Añadir
+                            </button>
+                        </div>
+                    </div>
+
+                    <label class="small fw-bold text-muted mb-2">Resumen de documentos asignados:</label>
+                    <div id="pillsContainer" class="form-control d-flex flex-wrap gap-2 p-2 shadow-sm"
+                         style="min-height: 60px; background-color: #fafafa; border-style: dashed;">
+
+                        @if (Model.Requirements != null)
+                        {
+                            foreach (var req in Model.Requirements)
+                            {
+                                <div class="badge border text-dark d-flex align-items-center p-1 px-2 shadow-sm bg-white"
+                                     style="border-radius: 15px; font-size: 0.85rem; font-weight: normal;">
+
+                                    <i class="bi @(req.IsRequired ? "bi-asterisk text-danger" : "bi-file-earmark text-muted") me-1" style="font-size: 0.75rem;"></i>
+                                    <span class="me-1">@(req.ProcedureTypeDocument?.Name ?? "Documento")</span>
+
+                                    <button type="button" class="btn-close btn-remove-pill" style="width: 0.4em; height: 0.4em; margin-left: 4px;"></button>
+
+                                    <input type="hidden" name="requirementsList[@indexCounter].IdTypeDocument" value="@req.IdTypeDocument" />
+                                    <input type="hidden" name="requirementsList[@indexCounter].IsRequired" value="@req.IsRequired.ToString().ToLower()" />
+                                </div>
+                                indexCounter++;
+                            }
+                        }
+                    </div>
+                    <small class="text-muted mt-2 d-block">* Los iconos <i class="bi bi-asterisk text-danger"></i> indican documentos obligatorios.</small>
+                </div>
+                <div class="modal-footer bg-light border-top-0">
+                    <button type="button" class="btn btn-outline-secondary px-4" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-warning px-4 shadow-sm">Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

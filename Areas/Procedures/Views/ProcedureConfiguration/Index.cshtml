@@ -1,0 +1,176 @@
+﻿@model IEnumerable<SchoolManager.Models.procedure_types>
+
+@{
+    ViewData["Title"] = "Gestión de Trámites";
+}
+
+<div id="modalContainer"></div>
+
+@section Scripts {
+<script>
+    async function loadModal(url) {
+        console.log("Iniciando petición a:", url);
+        try {
+            const response = await fetch(url);
+
+            if (!response.ok) {
+                throw new Error(`Error en el servidor: ${response.status} ${response.statusText}`);
+            }
+
+            const html = await response.text();
+            console.log("HTML recibido con éxito.");
+
+            const container = document.getElementById('modalContainer');
+            container.innerHTML = html;
+
+            const modalElement = container.querySelector('.modal');
+            if (modalElement) {
+                const myModal = new bootstrap.Modal(modalElement);
+                myModal.show();
+                console.log("Modal mostrado correctamente.");
+            } else {
+                console.error("Error: El HTML recibido no contiene la clase 'modal'.");
+            }
+        } catch (error) {
+            console.error("Hubo un fallo en la carga:", error);
+            alert("Error crítico: " + error.message);
+        }
+    }
+
+        let reqIndex = 0;
+
+    $(document).on('click', '#btnAddReq', function() {
+        const docId = $('#tempDocument').val();
+        const docText = $("#tempDocument option:selected").text();
+        const isReq = $('#tempRequired').val() === "true";
+
+        if (!docId) {
+            alert("Por favor, selecciona un documento.");
+            return;
+        }
+
+        const pill = `
+            <div class="badge border text-dark d-flex align-items-center shadow-sm bg-white"
+                 style="border-radius: 50px; font-size: 0.75rem; padding: 2px 8px; font-weight: 500;">
+                <i class="bi ${isReq ? 'bi-asterisk text-danger' : 'bi-file-earmark-text text-muted'} me-1" style="font-size: 0.65rem;"></i>
+                <span class="me-1">${docText}</span>
+                <button type="button" class="btn-close btn-remove-pill" style="width: 0.4em; height: 0.4em; margin-left: 4px;"></button>
+
+                <input type="hidden" name="requirementsList[${reqIndex}].IdTypeDocument" value="${docId}" />
+                <input type="hidden" name="requirementsList[${reqIndex}].IsRequired" value="${isReq}" />
+            </div>`;
+
+        $('#pillsContainer').append(pill);
+        reqIndex++;
+    });
+
+    $(document).on('click', '.btn-remove-pill', function() {
+        $(this).closest('.badge').remove();
+        reorderIndices();
+    });
+
+    function reorderIndices() {
+        $('#pillsContainer .badge').each(function(i) {
+            $(this).find('input').each(function() {
+                const name = $(this).attr('name');
+                if(name) {
+                    const newName = name.replace(/\[\d+\]/, `[${i}]`);
+                    $(this).attr('name', newName);
+                }
+            });
+        });
+        reqIndex = $('#pillsContainer .badge').length;
+    }
+
+            $(document).on("submit", "#formProcedureMaster", async function (e) {
+            e.preventDefault();
+            const form = e.target;
+
+            try {
+                const response = await fetch(form.action, {
+                    method: form.method,
+                    body: new FormData(form)
+                });
+
+                if (!response.ok) throw new Error("Error en la respuesta del servidor");
+
+                const result = await response.json();
+
+                if (result.success) {
+                    const modalElement = document.querySelector('.modal.show');
+                    if (modalElement) {
+                        const modalInstance = bootstrap.Modal.getInstance(modalElement);
+                        if (modalInstance) modalInstance.hide();
+                    }
+                    location.reload();
+                } else {
+                    let msg = result.errors ? result.errors.join("\n") : "La operación no pudo completarse.";
+                    alert(msg);
+                }
+            } catch (error) {
+                console.error("Error:", error);
+                alert("Ocurrió un error crítico al enviar el formulario.");
+            }
+        });
+</script>
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4 p-3 bg-white shadow-sm rounded">
+    <div>
+        <h2 class="mb-0 text-dark">Trámites</h2>
+        <p class="text-muted small mb-0">Configura los documentos necesarios para cada trámite.</p>
+    </div>
+    <button class="btn btn-success shadow-sm px-4" onclick="loadModal('/Procedures/ProcedureConfiguration/Create')">
+        <i class="bi bi-plus-circle me-2"></i> Agregar trámite
+    </button>
+</div>
+
+<table class="table table-hover mt-3 shadow-sm align-middle">
+    <thead class="burgundy-header text-white">
+        <tr>
+            <th style="width: 25%;">Trámite</th>
+            <th style="width: 20%;">Documentos</th>
+            <th style="width: 20%;">Área</th>
+            <th style="width: 20%;">Última modificación</th>
+            <th class="text-center" style="width: 15%;">Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@item.Name</td>
+                <td>
+                    @if (item.Requirements != null && item.Requirements.Any())
+                    {
+                        foreach (var req in item.Requirements)
+                        {
+                            <span class="badge border text-dark mb-1"
+                                  style="background-color: #f8f9fa;"
+                                  title="@(req.IsRequired ? "Obligatorio" : "Opcional")">
+                                <i class="bi @(req.IsRequired ? "bi-asterisk text-danger" : "bi-file-earmark text-dark")"></i>
+                                <span class="ms-1">@(req.ProcedureTypeDocument?.Name ?? "Doc. Desconocido")</span>
+                            </span>
+                        }
+                    }
+                    else
+                    {
+                        <span class="text-muted small"><em>Sin documentos configurados</em></span>
+                    }
+                </td>
+                <td>
+                   @(item.ProcedureArea?.Name ?? "Sin Área")
+                </td>
+                <td class="small">@item.DateUpdated.ToString("dd/MM/yyyy hh:mm tt")</td>
+                <td class="text-center">
+                    <button class="btn btn-sm btn-warning" onclick="loadModal('/Procedures/ProcedureConfiguration/Edit/@item.Id')">
+                        <i class="bi bi-pencil-square"></i>
+                    </button>
+                    <button class="btn btn-sm btn-danger" onclick="loadModal('/Procedures/ProcedureConfiguration/Delete/@item.Id')">
+                        <i class="bi bi-trash-fill"></i>
+                    </button>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
