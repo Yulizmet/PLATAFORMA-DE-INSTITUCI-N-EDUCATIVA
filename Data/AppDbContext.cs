@@ -121,7 +121,7 @@ namespace SchoolManager.Data
 
             // 3. grades_final_grades -> grades_group
             modelBuilder.Entity<grades_final_grades>()
-                .HasOne(f => f.grades_group)
+                .HasOne<grades_group>()  
                 .WithMany()
                 .HasForeignKey(f => f.GroupId)
                 .OnDelete(DeleteBehavior.Restrict);
@@ -142,7 +142,7 @@ namespace SchoolManager.Data
 
             // 6. grades_grades -> grades_group
             modelBuilder.Entity<grades_grades>()
-                .HasOne(g => g.grades_group)
+                .HasOne<grades_group>()
                 .WithMany()
                 .HasForeignKey(g => g.GroupId)
                 .OnDelete(DeleteBehavior.Restrict);
@@ -211,7 +211,7 @@ namespace SchoolManager.Data
 
             // 16. grades_teacher_subject_group -> grades_group
             modelBuilder.Entity<grades_teacher_subject_group>()
-                .HasOne(t => t.grades_group)
+                .HasOne<grades_group>()
                 .WithMany()
                 .HasForeignKey(t => t.GroupId)
                 .OnDelete(DeleteBehavior.Cascade);
