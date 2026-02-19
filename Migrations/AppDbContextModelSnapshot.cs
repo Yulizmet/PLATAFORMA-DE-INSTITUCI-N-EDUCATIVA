@@ -22,6 +22,22 @@ namespace SchoolManager.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.Entity("SchoolManager.Models.Generation", b =>
+                {
+                    b.Property<int>("IdGeneration")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IdGeneration"));
+
+                    b.Property<int>("Year")
+                        .HasColumnType("int");
+
+                    b.HasKey("IdGeneration");
+
+                    b.ToTable("Generation", (string)null);
+                });
+
             modelBuilder.Entity("SchoolManager.Models.grades_extraordinary_grades", b =>
                 {
                     b.Property<int>("ExtraordinaryGradeId")
@@ -79,6 +95,9 @@ namespace SchoolManager.Migrations
                         .HasPrecision(5, 2)
                         .HasColumnType("decimal(5,2)");
 
+                    b.Property<int?>("grades_groupGroupId")
+                        .HasColumnType("int");
+
                     b.HasKey("FinalGradeId");
 
                     b.HasIndex("GroupId");
@@ -86,6 +105,8 @@ namespace SchoolManager.Migrations
                     b.HasIndex("StudentId");
 
                     b.HasIndex("SubjectId");
+
+                    b.HasIndex("grades_groupGroupId");
 
                     b.HasIndex("StudentId", "SubjectId", "GroupId");
 
@@ -100,10 +121,21 @@ namespace SchoolManager.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("GradeLevelId"));
 
+                    b.Property<DateOnly>("EndDate")
+                        .HasColumnType("date");
+
+                    b.Property<bool>("IsOpen")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(true);
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateOnly>("StartDate")
+                        .HasColumnType("date");
 
                     b.HasKey("GradeLevelId");
 
@@ -136,6 +168,9 @@ namespace SchoolManager.Migrations
                         .HasPrecision(5, 2)
                         .HasColumnType("decimal(5,2)");
 
+                    b.Property<int?>("grades_groupGroupId")
+                        .HasColumnType("int");
+
                     b.HasKey("GradeId");
 
                     b.HasIndex("GroupId");
@@ -143,6 +178,8 @@ namespace SchoolManager.Migrations
                     b.HasIndex("StudentId");
 
                     b.HasIndex("SubjectUnitId");
+
+                    b.HasIndex("grades_groupGroupId");
 
                     b.HasIndex("StudentId", "SubjectUnitId", "GroupId");
 
@@ -165,43 +202,11 @@ namespace SchoolManager.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
-                    b.Property<int>("SchoolCycleId")
-                        .HasColumnType("int");
-
                     b.HasKey("GroupId");
 
                     b.HasIndex("GradeLevelId");
 
-                    b.HasIndex("SchoolCycleId");
-
                     b.ToTable("grades_group", (string)null);
-                });
-
-            modelBuilder.Entity("SchoolManager.Models.grades_school_cycle", b =>
-                {
-                    b.Property<int>("SchoolCycleId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("SchoolCycleId"));
-
-                    b.Property<DateOnly>("EndDate")
-                        .HasColumnType("date");
-
-                    b.Property<bool>("IsOpen")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<DateOnly>("StartDate")
-                        .HasColumnType("date");
-
-                    b.HasKey("SchoolCycleId");
-
-                    b.ToTable("grades_school_cycle", (string)null);
                 });
 
             modelBuilder.Entity("SchoolManager.Models.grades_subject_unit", b =>
@@ -287,9 +292,14 @@ namespace SchoolManager.Migrations
                     b.Property<int>("TeacherSubjectId")
                         .HasColumnType("int");
 
+                    b.Property<int?>("grades_groupGroupId")
+                        .HasColumnType("int");
+
                     b.HasKey("TeacherSubjectGroupId");
 
                     b.HasIndex("GroupId");
+
+                    b.HasIndex("grades_groupGroupId");
 
                     b.HasIndex("TeacherSubjectId", "GroupId")
                         .IsUnique();
@@ -406,6 +416,9 @@ namespace SchoolManager.Migrations
                         .HasMaxLength(10)
                         .HasColumnType("nvarchar(10)");
 
+                    b.Property<int>("CareerIdCareer")
+                        .HasColumnType("int");
+
                     b.Property<DateTime?>("CreateStat")
                         .HasColumnType("datetime2");
 
@@ -430,6 +443,9 @@ namespace SchoolManager.Migrations
                         .HasColumnType("nvarchar(20)");
 
                     b.Property<int>("IdCareer")
+                        .HasColumnType("int");
+
+                    b.Property<int>("IdGeneration")
                         .HasColumnType("int");
 
                     b.Property<string>("MaritalStatus")
@@ -474,13 +490,15 @@ namespace SchoolManager.Migrations
 
                     b.HasKey("IdData");
 
+                    b.HasIndex("CareerIdCareer");
+
                     b.HasIndex("Curp")
                         .IsUnique();
 
                     b.HasIndex("Email")
                         .IsUnique();
 
-                    b.HasIndex("IdCareer");
+                    b.HasIndex("IdGeneration");
 
                     b.ToTable("preenrollment_general", (string)null);
                 });
@@ -1307,7 +1325,7 @@ namespace SchoolManager.Migrations
 
             modelBuilder.Entity("SchoolManager.Models.grades_final_grades", b =>
                 {
-                    b.HasOne("SchoolManager.Models.grades_group", "grades_group")
+                    b.HasOne("SchoolManager.Models.grades_group", null)
                         .WithMany()
                         .HasForeignKey("GroupId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -1319,14 +1337,16 @@ namespace SchoolManager.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.Navigation("Subject");
+                    b.HasOne("SchoolManager.Models.grades_group", null)
+                        .WithMany("FinalGrades")
+                        .HasForeignKey("grades_groupGroupId");
 
-                    b.Navigation("grades_group");
+                    b.Navigation("Subject");
                 });
 
             modelBuilder.Entity("SchoolManager.Models.grades_grades", b =>
                 {
-                    b.HasOne("SchoolManager.Models.grades_group", "grades_group")
+                    b.HasOne("SchoolManager.Models.grades_group", null)
                         .WithMany()
                         .HasForeignKey("GroupId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -1338,9 +1358,11 @@ namespace SchoolManager.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.Navigation("SubjectUnit");
+                    b.HasOne("SchoolManager.Models.grades_group", null)
+                        .WithMany("Grades")
+                        .HasForeignKey("grades_groupGroupId");
 
-                    b.Navigation("grades_group");
+                    b.Navigation("SubjectUnit");
                 });
 
             modelBuilder.Entity("SchoolManager.Models.grades_group", b =>
@@ -1351,15 +1373,7 @@ namespace SchoolManager.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("SchoolManager.Models.grades_school_cycle", "SchoolCycle")
-                        .WithMany("Groups")
-                        .HasForeignKey("SchoolCycleId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
                     b.Navigation("GradeLevel");
-
-                    b.Navigation("SchoolCycle");
                 });
 
             modelBuilder.Entity("SchoolManager.Models.grades_subject_unit", b =>
@@ -1397,7 +1411,7 @@ namespace SchoolManager.Migrations
 
             modelBuilder.Entity("SchoolManager.Models.grades_teacher_subject_group", b =>
                 {
-                    b.HasOne("SchoolManager.Models.grades_group", "grades_group")
+                    b.HasOne("SchoolManager.Models.grades_group", null)
                         .WithMany()
                         .HasForeignKey("GroupId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1409,9 +1423,11 @@ namespace SchoolManager.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("TeacherSubject");
+                    b.HasOne("SchoolManager.Models.grades_group", null)
+                        .WithMany("TeacherSubjectGroups")
+                        .HasForeignKey("grades_groupGroupId");
 
-                    b.Navigation("grades_group");
+                    b.Navigation("TeacherSubject");
                 });
 
             modelBuilder.Entity("SchoolManager.Models.grades_unit_recovery", b =>
@@ -1440,11 +1456,19 @@ namespace SchoolManager.Migrations
                 {
                     b.HasOne("SchoolManager.Models.preenrollment_careers", "Career")
                         .WithMany("preenrollment_general")
-                        .HasForeignKey("IdCareer")
+                        .HasForeignKey("CareerIdCareer")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("SchoolManager.Models.Generation", "Generation")
+                        .WithMany("Students")
+                        .HasForeignKey("IdGeneration")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Career");
+
+                    b.Navigation("Generation");
                 });
 
             modelBuilder.Entity("SchoolManager.Models.preenrollment_infos", b =>
@@ -1654,7 +1678,7 @@ namespace SchoolManager.Migrations
                     b.HasOne("SchoolManager.Models.users_permission", "Permission")
                         .WithMany("RolePermissions")
                         .HasForeignKey("PermissionId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("SchoolManager.Models.users_role", "Role")
@@ -1709,6 +1733,11 @@ namespace SchoolManager.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("SchoolManager.Models.Generation", b =>
+                {
+                    b.Navigation("Students");
+                });
+
             modelBuilder.Entity("SchoolManager.Models.grades_final_grades", b =>
                 {
                     b.Navigation("ExtraordinaryGrade");
@@ -1726,9 +1755,13 @@ namespace SchoolManager.Migrations
                     b.Navigation("Recoveries");
                 });
 
-            modelBuilder.Entity("SchoolManager.Models.grades_school_cycle", b =>
+            modelBuilder.Entity("SchoolManager.Models.grades_group", b =>
                 {
-                    b.Navigation("Groups");
+                    b.Navigation("FinalGrades");
+
+                    b.Navigation("Grades");
+
+                    b.Navigation("TeacherSubjectGroups");
                 });
 
             modelBuilder.Entity("SchoolManager.Models.grades_subjects", b =>

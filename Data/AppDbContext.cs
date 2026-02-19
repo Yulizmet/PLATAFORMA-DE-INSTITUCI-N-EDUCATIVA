@@ -56,7 +56,6 @@ namespace SchoolManager.Data
         public DbSet<grades_grade_level> grades_GradeLevels { get; set; }
         public DbSet<grades_grades> grades_Grades { get; set; }
         public DbSet<grades_group> grades_GradeGroups { get; set; }
-        public DbSet<grades_school_cycle> grades_SchoolCycles { get; set; }
         public DbSet<grades_subject_unit> grades_SubjectUnits { get; set; }
         public DbSet<grades_subjects> grades_Subjects { get; set; }
         public DbSet<grades_teacher_subject> grades_TeacherSubjects { get; set; }
@@ -88,9 +87,6 @@ namespace SchoolManager.Data
 
             modelBuilder.Entity<grades_group>()
                 .HasKey(g => g.GroupId);
-
-            modelBuilder.Entity<grades_school_cycle>()
-                .HasKey(s => s.SchoolCycleId);
 
             modelBuilder.Entity<grades_subject_unit>()
                 .HasKey(s => s.UnitId);
@@ -125,7 +121,7 @@ namespace SchoolManager.Data
 
             // 3. grades_final_grades -> grades_group
             modelBuilder.Entity<grades_final_grades>()
-                .HasOne(f => f.grades_group)
+                .HasOne<grades_group>()  
                 .WithMany()
                 .HasForeignKey(f => f.GroupId)
                 .OnDelete(DeleteBehavior.Restrict);
@@ -146,7 +142,7 @@ namespace SchoolManager.Data
 
             // 6. grades_grades -> grades_group
             modelBuilder.Entity<grades_grades>()
-                .HasOne(g => g.grades_group)
+                .HasOne<grades_group>()
                 .WithMany()
                 .HasForeignKey(g => g.GroupId)
                 .OnDelete(DeleteBehavior.Restrict);
@@ -172,19 +168,18 @@ namespace SchoolManager.Data
                 .HasForeignKey(g => g.GradeLevelId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // 10. grades_group -> grades_school_cycle
-            modelBuilder.Entity<grades_group>()
-                .HasOne(g => g.SchoolCycle)
-                .WithMany(sc => sc.Groups)
-                .HasForeignKey(g => g.SchoolCycleId)
-                .OnDelete(DeleteBehavior.Restrict);
 
-            // 11. grades_school_cycle -> grades_group
-            modelBuilder.Entity<grades_school_cycle>()
-                .HasMany(s => s.Groups)
-                .WithOne(g => g.SchoolCycle)
-                .HasForeignKey(g => g.SchoolCycleId)
-                .OnDelete(DeleteBehavior.Restrict);
+            modelBuilder.Entity<grades_grade_level>()
+                .Property(g => g.StartDate)
+                .IsRequired();
+
+            modelBuilder.Entity<grades_grade_level>()
+                .Property(g => g.EndDate)
+                .IsRequired();
+
+            modelBuilder.Entity<grades_grade_level>()
+                .Property(g => g.IsOpen)
+                .HasDefaultValue(true);
 
             // 12. grades_subject_unit -> grades_subjects
             modelBuilder.Entity<grades_subject_unit>()
@@ -216,7 +211,7 @@ namespace SchoolManager.Data
 
             // 16. grades_teacher_subject_group -> grades_group
             modelBuilder.Entity<grades_teacher_subject_group>()
-                .HasOne(t => t.grades_group)
+                .HasOne<grades_group>()
                 .WithMany()
                 .HasForeignKey(t => t.GroupId)
                 .OnDelete(DeleteBehavior.Cascade);
@@ -258,8 +253,7 @@ namespace SchoolManager.Data
             modelBuilder.Entity<grades_group>()
                 .HasIndex(g => g.GradeLevelId);
 
-            modelBuilder.Entity<grades_group>()
-                .HasIndex(g => g.SchoolCycleId);
+
 
             // Configuración de tipos de datos y límites
             modelBuilder.Entity<grades_grade_level>()
@@ -277,10 +271,7 @@ namespace SchoolManager.Data
                 .HasMaxLength(100)
                 .IsRequired();
 
-            modelBuilder.Entity<grades_school_cycle>()
-                .Property(s => s.Name)
-                .HasMaxLength(100)
-                .IsRequired();
+
 
             // Configuración de valores por defecto
             modelBuilder.Entity<grades_final_grades>()
@@ -298,6 +289,8 @@ namespace SchoolManager.Data
             modelBuilder.Entity<grades_unit_recovery>()
                 .Property(u => u.CreatedAt)
                 .HasDefaultValueSql("GETDATE()");
+
+            modelBuilder.Entity<Generation>().ToTable("Generation");
 
             //Procedures
             modelBuilder.Entity<procedure_status>().ToTable("procedure_status");
@@ -398,7 +391,6 @@ namespace SchoolManager.Data
             modelBuilder.Entity<grades_grade_level>().ToTable("grades_grade_level");
             modelBuilder.Entity<grades_grades>().ToTable("grades_grades");
             modelBuilder.Entity<grades_group>().ToTable("grades_group");
-            modelBuilder.Entity<grades_school_cycle>().ToTable("grades_school_cycle");
             modelBuilder.Entity<grades_subject_unit>().ToTable("grades_subject_unit");
             modelBuilder.Entity<grades_subjects>().ToTable("grades_subjects");
             modelBuilder.Entity<grades_teacher_subject>().ToTable("grades_teacher_subject");
@@ -420,28 +412,49 @@ namespace SchoolManager.Data
             modelBuilder.Entity<users_person>()
                 .HasOne(p => p.User)
                 .WithOne(u => u.Person)
-                .HasForeignKey<users_user>(u => u.PersonId);
+                .HasForeignKey<users_user>(u => u.PersonId)
+                .OnDelete(DeleteBehavior.Cascade);  
+
+
+
+
+
+
+
+
+
+
+
 
             modelBuilder.Entity<users_userrole>()
                 .HasOne(ur => ur.User)
                 .WithMany(u => u.UserRoles)
-                .HasForeignKey(ur => ur.UserId);
+                .HasForeignKey(ur => ur.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder.Entity<users_userrole>()
                 .HasOne(ur => ur.Role)
                 .WithMany(r => r.UserRoles)
-                .HasForeignKey(ur => ur.RoleId);
+                .HasForeignKey(ur => ur.RoleId)
+                .OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder.Entity<users_rolepermission>()
                 .HasOne(rp => rp.Role)
                 .WithMany(r => r.RolePermissions)
-                .HasForeignKey(rp => rp.RoleId);
+                .HasForeignKey(rp => rp.RoleId)
+                .OnDelete(DeleteBehavior.Cascade);
 
-            modelBuilder.Entity<users_rolepermission>()
-                .HasOne(rp => rp.Permission)
-                .WithMany(p => p.RolePermissions)
-                .HasForeignKey(rp => rp.PermissionId)
-                .OnDelete(DeleteBehavior.Restrict);
+            modelBuilder.Entity<users_session>()
+                .HasOne(s => s.User)
+                .WithMany(u => u.Sessions)
+                .HasForeignKey(s => s.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<users_auditlog>()
+                .HasOne(a => a.User)
+                .WithMany(u => u.AuditLogs)
+                .HasForeignKey(a => a.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
 
 
 

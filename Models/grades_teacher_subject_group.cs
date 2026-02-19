@@ -10,6 +10,6 @@ namespace SchoolManager.Models
         public int GroupId { get; set; }
 
         public grades_teacher_subject TeacherSubject { get; set; } = null!;
-        public grades_group grades_group { get; set; } = null!;
+        //public grades_group grades_group { get; set; } = null!;
     }
 }

@@ -1,4 +1,5 @@
-﻿using System.Data;
+﻿using System.ComponentModel;
+using System.Data;
 using System.Security;
 
 namespace SchoolManager.Models
@@ -8,6 +9,8 @@ namespace SchoolManager.Models
         public int RolePermissionId { get; set; }
         public int RoleId { get; set; }
         public int PermissionId { get; set; }
+        [DefaultValue(true)]
+
         public bool IsActive { get; set; }
 
         public DateTime CreatedTime { get; set; }
