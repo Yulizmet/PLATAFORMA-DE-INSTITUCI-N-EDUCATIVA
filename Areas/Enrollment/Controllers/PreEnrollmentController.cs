@@ -208,5 +208,59 @@ namespace SchoolManager.Areas.Enrollment.Controllers
         {
             return _context.PreenrollmentGenerals.Any(e => e.IdData == id);
         }
+
+        // GET: Enrollment/PreEnrollment/Complete
+        public IActionResult Complete()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Complete(string folio)
+        {
+            var pre = await _context.PreenrollmentGenerals
+                .FirstOrDefaultAsync(p => p.Folio == folio);
+
+            if (pre == null)
+            {
+                ModelState.AddModelError("", "Folio no encontrado");
+                return View();
+            }
+
+            return RedirectToAction("CreateAccount", new { id = pre.IdData });
+        }
+
+        public async Task<IActionResult> CreateAccount(int id)
+        {
+            var pre = await _context.PreenrollmentGenerals.FindAsync(id);
+
+            if (pre == null)
+                return NotFound();
+
+            var person = new users_person
+            {
+            };
+
+            _context.Add(person);
+            await _context.SaveChangesAsync();
+
+            var user = new users_user
+            {
+                PersonId = person.PersonId,
+                Username = pre.Matricula,
+                IsActive = true,
+                CreatedDate = DateTime.Now
+            };
+
+            _context.Add(user);
+            await _context.SaveChangesAsync();
+
+            pre.UserId = user.UserId;
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction("Success");
+        }
+
+
     }
 }
