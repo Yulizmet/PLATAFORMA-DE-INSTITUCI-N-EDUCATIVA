@@ -1325,7 +1325,7 @@ namespace SchoolManager.Migrations
 
             modelBuilder.Entity("SchoolManager.Models.grades_final_grades", b =>
                 {
-                    b.HasOne("SchoolManager.Models.grades_group", "grades_group")
+                    b.HasOne("SchoolManager.Models.grades_group", null)
                         .WithMany()
                         .HasForeignKey("GroupId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -1342,13 +1342,11 @@ namespace SchoolManager.Migrations
                         .HasForeignKey("grades_groupGroupId");
 
                     b.Navigation("Subject");
-
-                    b.Navigation("grades_group");
                 });
 
             modelBuilder.Entity("SchoolManager.Models.grades_grades", b =>
                 {
-                    b.HasOne("SchoolManager.Models.grades_group", "grades_group")
+                    b.HasOne("SchoolManager.Models.grades_group", null)
                         .WithMany()
                         .HasForeignKey("GroupId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -1365,8 +1363,6 @@ namespace SchoolManager.Migrations
                         .HasForeignKey("grades_groupGroupId");
 
                     b.Navigation("SubjectUnit");
-
-                    b.Navigation("grades_group");
                 });
 
             modelBuilder.Entity("SchoolManager.Models.grades_group", b =>
@@ -1415,7 +1411,7 @@ namespace SchoolManager.Migrations
 
             modelBuilder.Entity("SchoolManager.Models.grades_teacher_subject_group", b =>
                 {
-                    b.HasOne("SchoolManager.Models.grades_group", "grades_group")
+                    b.HasOne("SchoolManager.Models.grades_group", null)
                         .WithMany()
                         .HasForeignKey("GroupId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1432,8 +1428,6 @@ namespace SchoolManager.Migrations
                         .HasForeignKey("grades_groupGroupId");
 
                     b.Navigation("TeacherSubject");
-
-                    b.Navigation("grades_group");
                 });
 
             modelBuilder.Entity("SchoolManager.Models.grades_unit_recovery", b =>

@@ -23,7 +23,7 @@ namespace SchoolManager.Areas.Grades.Controllers
         // GET: Grades/grades_grades
         public async Task<IActionResult> Index()
         {
-            var appDbContext = _context.grades_Grades.Include(g => g.SubjectUnit).Include(g => g.grades_group);
+            var appDbContext = _context.grades_Grades.Include(g => g.SubjectUnit);
             return View(await appDbContext.ToListAsync());
         }
 
@@ -37,7 +37,7 @@ namespace SchoolManager.Areas.Grades.Controllers
 
             var grades_grades = await _context.grades_Grades
                 .Include(g => g.SubjectUnit)
-                .Include(g => g.grades_group)
+                
                 .FirstOrDefaultAsync(m => m.GradeId == id);
             if (grades_grades == null)
             {
@@ -138,7 +138,7 @@ namespace SchoolManager.Areas.Grades.Controllers
 
             var grades_grades = await _context.grades_Grades
                 .Include(g => g.SubjectUnit)
-                .Include(g => g.grades_group)
+              
                 .FirstOrDefaultAsync(m => m.GradeId == id);
             if (grades_grades == null)
             {
