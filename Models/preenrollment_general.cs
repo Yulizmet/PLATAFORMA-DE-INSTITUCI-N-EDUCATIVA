@@ -11,47 +11,45 @@ namespace SchoolManager.Models
         [Required]
         public int IdCareer { get; set; }
 
-        [ForeignKey("IdCareer")]
-        public virtual preenrollment_careers Career { get; set; } = null!;
-
         [Required]
-        [MaxLength(100)]
+        public int IdGeneration { get; set; }
+
+        public Generation Generation { get; set; } = null!;
+        public preenrollment_careers Career { get; set; } = null!;
+
+        [Required, MaxLength(100)]
         public string PaternalLastName { get; set; } = null!;
 
-        [Required]
-        [MaxLength(100)]
+        [Required, MaxLength(100)]
         public string MaternalLastName { get; set; } = null!;
 
-        [Required]
-        [MaxLength(20)]
+        [Required, MaxLength(20)]
         public string Gender { get; set; } = null!;
 
         [Required]
-        public DateTime? BirthDate { get; set; }
+        public DateTime BirthDate { get; set; }
 
-        [Required]
-        [MaxLength(30)]
-        public string MaritalStatus { get; set; } = null!;
-
-        [Required]
-        [MaxLength(50)]
-        public string Nationality { get; set; } = null!;
-
-        [Required]
-        [MaxLength(100)]
+        [Required, MaxLength(100)]
         [EmailAddress]
         public string Email { get; set; } = null!;
 
-        [Required]
-        [MaxLength(18)]
+        [Required, MaxLength(18)]
         public string Curp { get; set; } = null!;
 
-        [Required]
-        [Column(TypeName = "bit")]
-        public bool Work { get; set; }
+        [MaxLength(10)]
+        public string? BloodType { get; set; }
+
+        [Required, MaxLength(50)]
+        public string MaritalStatus { get; set; } = null!;
+
+        [Required, MaxLength(50)]
+        public string Nationality { get; set; } = null!;
 
         [MaxLength(100)]
         public string? Occupation { get; set; }
+
+        [Required]
+        public bool Work { get; set; }
 
         [MaxLength(200)]
         public string? WorkAddress { get; set; }
@@ -59,19 +57,18 @@ namespace SchoolManager.Models
         [MaxLength(20)]
         public string? WorkPhone { get; set; }
 
-        [Required]
-        [MaxLength(50)]
+        [Required, MaxLength(50)]
         public string Folio { get; set; } = null!;
 
         public DateTime? CreateStat { get; set; }
 
-        [MaxLength(10)]
-        public string? BloodType { get; set; }
+        [Required, MaxLength(10)]
+        public string Matricula { get; set; } = null!;
 
-        public virtual ICollection<preenrollment_schools> Schools { get; set; }
+        public ICollection<preenrollment_schools> Schools { get; set; }
             = new List<preenrollment_schools>();
 
-        public virtual ICollection<preenrollment_addresses> Addresses { get; set; }
+        public ICollection<preenrollment_addresses> Addresses { get; set; }
             = new List<preenrollment_addresses>();
     }
 }

@@ -1,0 +1,42 @@
+﻿@model SchoolManager.Models.procedure_status
+
+<div class="modal fade" id="createModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content border-0 shadow">
+            <form method="post" action="/Procedures/ProcedureStatus/Create">
+                @Html.AntiForgeryToken()
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title"><i class="bi bi-file-earmark-plus me-2"></i>Nuevo estado</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label asp-for="Name" class="form-label fw-bold">Nombre del Estado</label>
+                        <input asp-for="Name" class="form-control" required placeholder="Ej: Pendiente, Aprobado..." />
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="StepOrder" class="form-label fw-bold">Orden en el Proceso</label>
+                        <input type="number" asp-for="StepOrder" class="form-control" min="1" value="1" />
+                        <div class="form-text">Define la posición jerárquica del estado.</div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="BackgroundColor" class="form-label fw-bold">Fondo (Hex)</label>
+                            <input type="color" asp-for="BackgroundColor" class="form-control form-control-color w-100" value="#198754" />
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="TextColor" class="form-label fw-bold">Texto (Hex)</label>
+                            <input type="color" asp-for="TextColor" class="form-control form-control-color w-100" value="#FFFFFF" />
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light border-top-0">
+                    <button type="button" class="btn btn-outline-secondary px-4" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-success px-4 shadow-sm">Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

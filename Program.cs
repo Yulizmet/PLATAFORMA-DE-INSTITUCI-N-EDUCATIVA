@@ -1,9 +1,13 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using SchoolManager.Data;
+using SchoolManager.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+builder.Services.AddScoped<ISearchService, SearchService > ();
+builder.Services.AddScoped<IStorageService, AzureStorageService>();
+builder.Services.AddRazorPages();
 builder.Services.AddControllersWithViews(); // MVC con controladores y vistas
 builder.Services.AddRazorPages();           // Si quieres seguir usando Razor Pages también
 builder.Services.AddDbContext<AppDbContext>(options =>
@@ -12,7 +16,10 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+app.MapControllerRoute(
+    name: "ProceduresArea",
+    pattern: "{area:exists}/{controller=Dashboard}/{action=Index}/{id?}");
+
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Error");
@@ -25,8 +32,26 @@ app.UseStaticFiles();
 app.UseRouting();
 
 app.UseAuthorization();
+app.MapControllerRoute(
+    name: "areas",
+    pattern: "{area:exists}/{controller=Home}/{action=Index}/{id?}"
+);
 
-// Configuración de rutas para áreas
+app.MapControllerRoute(
+    name: "default",
+    pattern: "{controller=Home}/{action=Index}/{id?}"
+);
+
+app.MapControllerRoute(
+    name: "areas",
+    pattern: "{area:exists}/{controller=MainScreen}/{action=SistemaEscolar}/{id?}");
+
+app.MapControllerRoute(
+    name: "default",
+    pattern: "{controller=Home}/{action=Index}/{id?}");
+
+
+// Configuraci�n de rutas para �reas
 app.MapControllerRoute(
     name: "areas",
     pattern: "{area:exists}/{controller=Home}/{action=Index}/{id?}");
@@ -36,7 +61,7 @@ app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
 
-// Si aún usas Razor Pages
+// Si a�n usas Razor Pages
 app.MapRazorPages();
 
 app.Run();
