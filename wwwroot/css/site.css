@@ -1,612 +1,331 @@
-/* ================================
-   PALETA CLARA PROFESIONAL (TONOS ROJOS)
-   Colores claros, contrastes accesibles y acentos en rojo
-================================ */
-:root {
-    --color-principal: #0a6b5a; /* Firebrick red */
-    --topbar-color: #0fa68f; /* teal for topbar like example */
-    --color-acento: #ff6b6b; /* Claro, para hover y badges */
-    --color-fondo: #fbfbfc; /* Muy claro */
-    --color-card: #ffffff; /* Cartas blancas */
-    --color-borde: #efebeb; /* Borde sutil */
-    --color-texto: #2b2b2b; /* Texto principal */
-    --color-texto-suave: #6b6b6b; /* Texto secundario */
-    --color-success: #2ea44f; /* Verde para presente */
-    --color-danger: #e85a5a; /* Rojo para ausente */
+html {
+    font-size: 14px;
 }
 
-/* ================================
-   BASE GENERAL
-================================ */
-html, body {
-    height: 100%;
+@media (min-width: 768px) {
+    html {
+        font-size: 16px;
+    }
+}
+
+.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
+    box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
+}
+
+html {
+    position: relative;
+    min-height: 100%;
 }
 
 body {
-    margin: 0;
-    font-family: 'Inter', 'Segoe UI', Roboto, sans-serif;
-    background-color: var(--color-fondo);
-    color: var(--color-texto);
+    background-color: #f3f3f3;
+    margin-bottom: 60px;
+    font-family: 'Merriweather', serif;
 }
 
-/* Space for fixed topbar */
-body {
-    padding-top: 86px;
+h1 {
+    font-weight: 900;
 }
 
-h1, h2, h3, h4, h5 {
-    color: var(--color-principal);
+h2 {
     font-weight: 700;
-    margin-bottom: 18px;
 }
 
 p {
-    color: var(--color-texto-suave);
+    font-weight: 300;
 }
 
-/* ================================
-   CONTENEDOR GENERAL
-================================ */
-.container {
-    max-width: 1150px;
-    margin: auto;
-    padding: 28px 20px;
+/* ====== PALETA ====== */
+:root {
+    --rojo-principal: #8C1B1B;
+    --rojo-claro: #D42D2D;
+    --rojo-oscuro: #620900;
+    --beige: #B1A596;
 }
 
-/* ================================
-   NAVBAR LIMPIO Y CENTRADO
-================================ */
 
-.navbar {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 70px;
-    background-color: var(--topbar-color);
-    display: flex;
-    align-items: center;
-    justify-content: center; /* centra el título */
-    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-    z-index: 1000;
+.navbar-custom {
+    background-color: var(--rojo-principal);
 }
 
-/* Nombre centrado */
-.brand-center {
-    font-size: 1.2rem;
-    font-weight: 700;
+
+.hero-section {
+    background: linear-gradient(135deg, var(--rojo-principal), var(--rojo-claro));
     color: white;
-    letter-spacing: 0.5px;
+    padding: 100px 0;
+    border-radius: 28px;
+    border-radius: 28px;
 }
 
-/* Contenedor botón derecha */
-.nav-right {
-    position: absolute;
-    right: 40px;
+/* ===== BOTONES ===== */
+.btn-hero-primary {
+    background-color: white;
+    color: var(--rojo-principal);
+    font-weight: 600;
 }
 
-.nav-left {
-    position: absolute;
-    left: 40px;
+    .btn-hero-primary:hover {
+        background-color: #f2f2f2;
+    }
+
+.btn-hero-outline {
+    border: 2px solid white;
+    color: white;
 }
 
-/* Botón cerrar sesión */
-.btn-logout {
-    background-color: #ffffff;
-    color: var(--topbar-color);
-    padding: 8px 18px;
-    border-radius: 10px;
+    .btn-hero-outline:hover {
+        background-color: white;
+        color: var(--rojo-principal);
+    }
+
+/* ===== CARD TRANSPARENTE ===== */
+.hero-card {
+    background: rgba(255,255,255,0.1);
+    border-radius: 20px;
+    padding: 30px;
+    backdrop-filter: blur(10px);
+}
+
+/* ===== SECCI�N USUARIOS ===== */
+
+.users-section {
+    background-color: #f3f3f3;
+    padding: 120px 0;
+}
+
+.users-title {
+    font-family: 'Merriweather', serif;
+    font-weight: 700;
+    font-size: 42px;
+    color: #1f2937;
+}
+
+.users-subtitle {
+    font-size: 18px;
+    color: #6b7280;
+    max-width: 700px;
+    margin: 0 auto;
+}
+
+/* ===== CARDS ===== */
+
+.user-card {
+    background: white;
+    border-radius: 16px;
+    padding: 30px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+    transition: 0.3s ease;
+    height: 100%;
+}
+
+    .user-card:hover {
+        transform: translateY(-5px);
+    }
+
+/* Bordes superiores personalizados */
+.border-estudiantes {
+    border-top: 5px solid #8C1B1B;
+}
+
+.border-docentes {
+    border-top: 5px solid #D42D2D;
+}
+
+.border-admin {
+    border-top: 5px solid #B1A596;
+}
+
+/* T�tulos card */
+.user-card h4 {
+    font-family: 'Merriweather', serif;
+    font-weight: 700;
+    margin-top: 15px;
+}
+
+/* Bot�n link */
+.portal-link {
+    color: #8C1B1B;
     font-weight: 600;
     text-decoration: none;
-    transition: all 0.25s ease;
 }
 
-    .btn-logout:hover {
-        background-color: #f3f3f3;
-        transform: translateY(-2px);
-    }
-
-/* Ajuste espacio por navbar fijo */
-body {
-    padding-top: 90px;
-}
-
-
-/* ================================
-   LOGIN CENTRADO (DEFINITIVO)
-================================ */
-.login-container {
-    min-height: 100vh;
-    width: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background-color: var(--color-fondo);
-}
-
-.login-card {
-    width: 100%;
-    max-width: 460px;
-}
-
-    .login-card .card-body {
-        padding: 36px;
-    }
-
-/* ================================
-   CARDS GENERALES
-================================ */
-.card {
-    background-color: var(--color-card);
-    border-radius: 12px;
-    border: 1px solid var(--color-borde);
-    box-shadow: 0 10px 30px rgba(16,24,40,0.04);
-    padding: 28px;
-}
-
-.card-body {
-    padding: 30px;
-}
-
-/* ================================
-   DASHBOARDS
-================================ */
-.dashboard-cards {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-    gap: 35px;
-    margin-top: 40px;
-}
-
-.dashboard-card {
-    text-align: center;
-}
-
-    .dashboard-card h5 {
-        margin-bottom: 15px;
-    }
-
-    .dashboard-card p {
-        margin-bottom: 15px;
-    }
-
-/* ================================
-   BOTONES
-================================ */
-
-/* Botones tipo link (ver alumnos, tomar lista, etc.) */
-.btn-primary,
-.btn-outline-primary {
-    background-color: transparent;
-    border: none;
-    color: var(--color-principal);
-    font-weight: 600;
-    padding: 0;
-}
-
-    .btn-primary:hover,
-    .btn-outline-primary:hover {
-        color: var(--color-acento);
+    .portal-link:hover {
         text-decoration: underline;
     }
 
-/* Botón principal (login, guardar) */
-.btn-full {
-    width: 100%;
-    margin-top: 18px;
-    padding: 12px 0;
-    background-color: var(--color-principal);
-    color: #fff;
-    border-radius: 10px;
-    border: none;
-    font-size: 1rem;
-    font-weight: 700;
-    cursor: pointer;
-}
-
-    .btn-full:hover {
-        background-color: var(--color-acento);
-    }
-
-/* ================================
-   FORMULARIOS
-================================ */
-.form-control,
-.form-select {
-    border-radius: 8px;
-    border: 1px solid var(--color-borde);
-    padding: 10px 12px;
-}
-
-    .form-control:focus,
-    .form-select:focus {
-        border-color: var(--color-principal);
-        box-shadow: 0 0 0 0.12rem rgba(178,34,34,0.12);
-    }
-
-/* ================================
-   HORAS (SEPARADAS)
-================================ */
-.horas-container {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 50px;
-    margin-top: 40px;
-}
-
-.horas-card {
-    padding: 35px;
-    text-align: center;
-}
-
-    .horas-card h5 {
-        margin-bottom: 20px;
-    }
-
-    .horas-card p {
-        margin-bottom: 14px;
-    }
-
-/* ================================
-   PROGRESO
-================================ */
-.progress {
-    height: 16px;
-    background-color: #e9ecef;
-    border-radius: 8px;
-    margin-top: 20px;
-}
-
-.progress-bar {
-    background-color: var(--color-principal);
-}
-
-/* ================================
-   BITÁCORAS
-================================ */
-.bitacora-container {
-    max-width: 850px;
-    margin: auto;
-}
-
-.bitacora-item {
-    background-color: #ffffff;
-    border: 1px solid var(--color-borde);
-    border-radius: 14px;
-    padding: 30px;
-    margin-bottom: 40px;
-}
-
-    .bitacora-item h6 {
-        color: var(--color-principal);
-        font-weight: 600;
-        margin-bottom: 15px;
-    }
-
-    .bitacora-item p {
-        margin-bottom: 10px;
-    }
-
-/* ================================
-   TABLAS
-================================ */
-.table {
-    background-color: var(--color-card);
-    border-radius: 10px;
-    overflow: hidden;
-    border: 1px solid var(--color-borde);
-}
-
-    .table th,
-    .table td {
-        padding: 12px 14px;
-        vertical-align: middle;
-        border-bottom: 1px solid #f4f4f6;
-    }
-
-    .table thead {
-        background-color: #fff5f5;
-        color: var(--color-principal);
-        font-weight: 700;
-    }
-
-        /* Round header corners and give subtle border separation */
-        .table thead th:first-child {
-            border-top-left-radius: 10px;
-        }
-
-        .table thead th:last-child {
-            border-top-right-radius: 10px;
-        }
-
-/* Keep table compact inside a centered card */
-.card .table {
-    max-width: 860px;
-    margin: 6px auto;
-    box-shadow: none;
-    border: none;
-    background: transparent;
-}
-
-    /* Header cell style */
-    .card .table thead th {
-        background-color: #fff1f1;
-        border-bottom: 1px solid #f4eaea;
-        text-align: left;
-        padding: 14px 18px;
-    }
-
-    /* Slight row separators and lighter fonts */
-    .card .table tbody td {
-        color: var(--color-texto);
-    }
-
-    .card .table tbody tr {
-        border-bottom: 1px solid rgba(0,0,0,0.03);
-    }
-
-        .card .table tbody tr:last-child {
-            border-bottom: none;
-        }
-
-    .card .table tbody td:nth-child(2) {
-        color: var(--color-texto-suave);
-        font-weight: 600;
-    }
-
-    /* Round bottom corners of table to match card */
-    .card .table tbody tr:last-child td:first-child {
-        border-bottom-left-radius: 10px;
-    }
-
-    .card .table tbody tr:last-child td:last-child {
-        border-bottom-right-radius: 10px;
-    }
-
-/* Make headings inside the card sit nicely */
-.card h3 {
-    margin-top: 0;
-    margin-bottom: 18px;
-}
-
-/* Platforms card on Index */
-.platforms-wrapper {
-    max-width: 680px;
-    margin: 12px auto;
-}
-
-.platforms-title {
-    text-align: center;
-    font-size: 1.6rem;
-    font-weight: 800;
-    margin-bottom: 18px;
-}
-
-.platforms-sep {
-    height: 1px;
-    background: rgba(0,0,0,0.06);
-    margin: 18px 0;
-}
-
-.platforms-wrapper .card {
-    padding: 36px 48px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
-
-.platform-box {
-    border: 2px solid var(--topbar-color);
+.icon-box {
+    width: 60px;
+    height: 60px;
     border-radius: 12px;
-    padding: 18px 22px;
-    margin: 14px 0;
-    text-align: center;
-    color: var(--topbar-color);
-    cursor: pointer;
-    background: #fff;
-    display: inline-flex;
-    flex-direction: column;
+    display: flex;
     align-items: center;
     justify-content: center;
-    width: 180px;
-    text-decoration: none;
+    margin-bottom: 15px;
 }
 
-.platform-box:hover {
-    background: #f7fffb;
-    transform: translateY(-4px);
+/* Colores suaves de fondo */
+.icon-estudiantes {
+    background-color: rgba(140, 27, 27, 0.1);
+    color: #8C1B1B;
 }
 
-.platform-icon {
-    font-size: 48px;
-    margin-bottom: 8px;
+.icon-docentes {
+    background-color: rgba(212, 45, 45, 0.1);
+    color: #D42D2D;
 }
 
-.platform-label {
+.icon-admin {
+    background-color: rgba(177, 165, 150, 0.2);
+    color: #8C1B1B;
+}
+
+.icon-box i {
+    font-size: 24px;
+}
+
+
+/* ===== CTA SECTION ===== */
+.cta-section {
+    background: linear-gradient(135deg, var(--rojo-principal), var(--rojo-oscuro));
+    color: white;
+    padding: 80px 0;
+    text-align: center;
+    margin-top: 80px;
+    border-top-left-radius: 28px;
+    border-top-right-radius: 28px;
+}
+
+
+.footer-custom {
+    background-color: #0c1b2a;
+    color: #dcdcdc;
+    padding: 60px 0 20px 0;
+    border-bottom-left-radius: 28px;
+    border-bottom-right-radius: 28px;
+}
+
+    .footer-custom h5 {
+        color: white;
+    }
+
+.sistema-card:focus,
+.sistema-card:active {
+    outline: none;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.08);
+}
+
+/* ===== SISTEMA ESCOLAR ===== */
+
+.sistema-section {
+    padding: 120px 0;
+    background-color: #f3f3f3;
+}
+
+.sistema-title {
+    font-family: 'Merriweather', serif;
+    font-size: 40px;
     font-weight: 700;
-    margin-top: 6px;
-    color: var(--topbar-color);
+    color: #1f2937;
 }
 
-.platform-icon {
-    font-size: 34px;
-    margin-bottom: 8px;
+.sistema-subtitle {
+    color: #6b7280;
+    font-size: 18px;
+    max-width: 600px;
+    margin: 0 auto;
 }
 
-.platform-label {
-    font-weight: 700;
-    color: #0a6b5a;
+/* Centrar cards y limitar ancho */
+.sistema-section .row {
+    max-width: 1100px;
+    margin: 0 auto;
 }
 
-.table tbody tr:hover {
-    background-color: #fffaf9;
+/* ===== CARD BASE ===== */
+
+.sistema-card {
+    background-color: #ffffff;
+    border-radius: 20px;
+    padding: 50px;
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.08);
+    transition: all 0.3s ease;
+    height: 100%;
 }
 
-/* Badges para asistencia */
-.badge-present {
-    display: inline-block;
-    padding: 6px 8px;
-    border-radius: 999px;
-    background-color: var(--color-success);
-    color: #fff;
-    font-weight: 600;
-    font-size: 0.85rem;
-}
-
-.badge-absent {
-    display: inline-block;
-    padding: 6px 8px;
-    border-radius: 999px;
-    background-color: var(--color-danger);
-    color: #fff;
-    font-weight: 600;
-    font-size: 0.85rem;
-}
-
-.attendance-history {
-    font-size: 0.9rem;
-    color: var(--color-texto-suave);
-}
-
-/* Ajuste para checkboxes en la tabla */
-.table input[type="checkbox"] {
-    width: 18px;
-    height: 18px;
-}
-
-/* Buttons inside tables */
-
-.table a.btn {
-    display: inline-block;
-    background-color: var(--color-principal);
-    color: #fff !important;
-    padding: 6px 10px;
-    border-radius: 8px;
-    text-decoration: none;
-    font-weight: 600;
-    box-shadow: 0 3px 8px rgba(178,34,34,0.12);
-}
-
-    .table a.btn:hover {
-        background-color: var(--color-acento);
+    .sistema-card:hover {
+        transform: translateY(-8px);
     }
 
-/* Ensure the main container places the card inside a clear white area */
-.container > .card {
-    background: #fff;
-    padding: 22px;
-}
-
-/* Tighter spacing for table rows */
-.card .table tbody td {
-    padding: 12px 18px;
-}
-
-/* Improve the overall page spacing so the content sits inside the white box */
-.content-wrapper {
-    padding: 30px 0 80px 0;
-}
-
-/* ================================
-   TEXTOS
-================================ */
-.text-muted {
-    color: var(--color-texto-suave) !important;
-}
-
-/* ================================
-   IMPRESIÓN
-================================ */
-@media print {
-    body {
-        background-color: #fff;
+    /* Quitar focus azul del navegador */
+    .sistema-card:focus,
+    .sistema-card:active {
+        outline: none;
     }
 
-    .navbar,
-    .btn,
-    .btn-full {
-        display: none !important;
-    }
+/* ===== BORDES SUPERIORES ===== */
 
-    .card {
-        box-shadow: none;
-        border: 1px solid #ccc;
-    }
+.border-calificaciones {
+    border-top: 8px solid #D42D2D;
 }
 
-/* ================================
-   CREAR BITÁCORA
-================================ */
-
-.bitacora-form-container {
-    max-width: 900px;
-    margin: 40px auto;
+.border-servicio {
+    border-top: 8px solid #B1A596;
 }
 
-.form-label {
-    font-weight: 500;
-    margin-bottom: 8px;
-    display: block;
-}
+/* ===== ICONOS ===== */
 
-/* Campo pequeño (semana / horas) */
-.input-small {
-    max-width: 260px;
-}
-
-/* Textareas grandes */
-.textarea-large {
-    resize: vertical;
-    min-height: 140px;
-}
-
-/* Inputs de horas en fila */
-.horas-inputs {
-    display: flex;
-    gap: 40px;
-    flex-wrap: wrap;
-}
-
-/* Semana en línea */
-.form-group-inline {
+.sistema-icon {
+    width: 70px;
+    height: 70px;
+    border-radius: 16px;
     display: flex;
     align-items: center;
-    gap: 20px;
+    justify-content: center;
+    margin-bottom: 20px;
 }
 
-/* Botón guardar estilo link */
-.bitacora-form-container .btn-primary {
-    margin-top: 10px;
+.icon-calificaciones {
+    background-color: rgba(212, 45, 45, 0.1);
+    color: #D42D2D;
 }
 
-/* ================================
-   BITÁCORA – TEXTAREAS ANCHAS
-================================ */
-
-/* Forzar que actividades y observaciones ocupen todo el ancho */
-.bitacora-form-container textarea {
-    width: 100%;
-    max-width: 100%;
+.icon-servicio {
+    background-color: rgba(177, 165, 150, 0.25);
+    color: #8C1B1B;
 }
 
-/* Dar más presencia horizontal */
-.textarea-large {
-    min-height: 160px;
+.sistema-icon i {
+    font-size: 28px;
 }
 
-/* Asegurar que los bloques no estén en columnas */
-.bitacora-form-container .mb-4 {
-    width: 100%;
-}
-/* Separación general entre cards */
-.card {
-    margin-bottom: 40px;
+/* ===== BOTONES ===== */
+
+/* Calificaciones */
+.btn-calificaciones {
+    background-color: #D42D2D;
+    color: white;
+    font-weight: 600;
+    border-radius: 8px;
+    padding: 10px 20px;
+    border: none;
 }
 
-a,
-a:visited,
-a:hover,
-a:focus,
-a:active {
-    color: var(--color-principal) !important;
+    .btn-calificaciones:hover {
+        background-color: #8C1B1B;
+        color: white;
+    }
+
+/* Servicio Social */
+.btn-servicio {
+    background-color: #B1A596;
+    color: white;
+    font-weight: 600;
+    border-radius: 8px;
+    padding: 10px 20px;
+    border: none;
 }
+
+    .btn-servicio:hover {
+        background-color: #8C1B1B;
+        color: white;
+    }
