@@ -24,6 +24,8 @@ namespace SchoolManager.Models
         [ForeignKey("IdArea")]
         public virtual procedure_areas ProcedureArea { get; set; } = null!;
 
+        public virtual ICollection<procedure_flow> ProcedureFlow { get; set; } = new List<procedure_flow>();
+
         public virtual ICollection<procedure_type_requirements> Requirements { get; set; } = new List<procedure_type_requirements>();
 
         public virtual ICollection<procedure_request> ProcedureRequests { get; set; } = new List<procedure_request>();

@@ -5,6 +5,236 @@
     ViewBag.EntityName = "tramites";
 }
 
+@section Scripts {
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+
+    <script>
+        let reqIndex = 0;
+        let flowIndex = 0;
+
+        // 1. CARGA DE MODALES
+        async function loadModal(url) {
+            try {
+                const response = await fetch(url);
+                const html = await response.text();
+                const container = document.getElementById('modalContainer');
+                container.innerHTML = html;
+                const modalElement = container.querySelector('.modal');
+
+                if (modalElement) {
+                    const myModal = new bootstrap.Modal(modalElement);
+                    myModal.show();
+
+                    // Reiniciamos contadores basados en lo que ya existe en el modal cargado
+                    reqIndex = $('#pillsContainer .badge').length;
+                    flowIndex = $('#flowContainer .flow-item').length;
+                }
+            } catch (error) {
+                Swal.fire('Error', 'Fallo en la carga: ' + error.message, 'error');
+            }
+        }
+
+        // 2. INICIALIZACIÓN DE DATATABLE
+        $(document).ready(function() {
+            if ($.fn.DataTable.isDataTable('#mainTable')) {
+                $('#mainTable').DataTable().destroy();
+            }
+
+            $('#mainTable').DataTable({
+                "language": { "url": "//cdn.datatables.net/plug-ins/1.10.24/i18n/Spanish.json" },
+                "pageLength": 10,
+                "responsive": true,
+                "autoWidth": false,
+                "dom": `<"dt-top row mb-3"<"col-md-6 d-flex align-items-center"l><"col-md-6 d-flex justify-content-end align-items-center"f>>rt<"dt-bottom row mt-3"<"col-md-6"i><"col-md-6 d-flex justify-content-end"p>>`,
+                "columnDefs": [
+                    { "targets": [0, 6], "orderable": false }
+                ],
+                "order": [[1, "asc"]]
+            });
+        });
+
+        // 3. LÓGICA DE SELECCIÓN (CHECKBOXES) Y BARRA BULK
+        $(document).on('change', '#checkAll', function() {
+            const isChecked = $(this).is(':checked');
+            $('.row-checkbox').prop('checked', isChecked);
+            $('.row-checkbox').closest('tr').toggleClass('table-active', isChecked);
+            updateBulkBar();
+        });
+
+        $(document).on('change', '.row-checkbox', function() {
+            const total = $('.row-checkbox').length;
+            const selected = $('.row-checkbox:checked').length;
+            $('#checkAll').prop('checked', total === selected);
+            $(this).closest('tr').toggleClass('table-active', $(this).is(':checked'));
+            updateBulkBar();
+        });
+
+        function updateBulkBar() {
+            const count = $('.row-checkbox:checked').length;
+            const bar = $('#bulkActionsBar');
+            if (count > 0) {
+                $('#selectedCount').text(count + (count === 1 ? ' seleccionado' : ' seleccionados'));
+                bar.removeClass('d-none').addClass('animate__animated animate__fadeInUp');
+            } else {
+                bar.addClass('d-none');
+                $('#checkAll').prop('checked', false);
+            }
+        }
+
+        function deselectAll() {
+            $('.row-checkbox, #checkAll').prop('checked', false).closest('tr').removeClass('table-active');
+            $('#bulkActionsBar').addClass('d-none');
+        }
+
+        // 4. ELIMINACIÓN MASIVA
+        async function bulkDelete() {
+            const ids = $('.row-checkbox:checked').map((_, el) => parseInt(el.value)).get();
+            const result = await Swal.fire({
+                title: '¿Eliminar seleccionados?',
+                text: `Borrarás ${ids.length} trámites permanentemente.`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#620900',
+                confirmButtonText: 'Sí, borrar todo'
+            });
+
+            if (result.isConfirmed) {
+                const response = await fetch('/Procedures/ProcedureConfiguration/BulkDelete', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(ids)
+                });
+                if (response.ok) location.reload();
+            }
+        }
+
+        function bulkEdit() {
+            loadModal('/Procedures/ProcedureConfiguration/BulkEdit');
+        }
+
+        // 5. GESTIÓN DE REQUISITOS (PILLS)
+        $(document).off('click', '#btnAddReq').on('click', '#btnAddReq', function (e) {
+            e.preventDefault();
+            const docId = $('#tempDocument').val();
+            const docText = $("#tempDocument option:selected").text();
+            const isReq = $('#tempRequired').val() === "true";
+            if (!docId) return;
+
+            const pill = `<div class="badge border text-dark d-flex align-items-center p-2 bg-light mb-1" style="border-radius:50px;">
+                            <i class="bi ${isReq ? 'bi-asterisk text-danger' : 'bi-file-earmark'} me-2"></i>
+                            <span class="me-2">${docText}</span>
+                            <button type="button" class="btn-close btn-remove-pill" style="font-size:0.5rem;"></button>
+                            <input type="hidden" name="requirementsList[${reqIndex}].IdTypeDocument" value="${docId}" />
+                            <input type="hidden" name="requirementsList[${reqIndex}].IsRequired" value="${isReq}" />
+                         </div>`;
+            $('#pillsContainer').append(pill);
+            reorderAll();
+        });
+
+        // 6. GESTIÓN DE FLUJO (CON ORDEN PERSONALIZADO)
+        $(document).off('click', '#btnAddStatus').on('click', '#btnAddStatus', function (e) {
+            e.preventDefault();
+            const statusId = $('#tempStatus').val();
+            const statusText = $("#tempStatus option:selected").text();
+            const suggestedOrder = (flowIndex + 1) * 10;
+            const order = $('#tempOrder').val() || suggestedOrder;
+
+            if (!statusId) return;
+
+            const flowRow = `<div class="flow-item d-flex align-items-center bg-light border rounded-3 p-2 mb-2" style="border-left:5px solid #620900!important;">
+                                <div class="me-2" style="width:60px;">
+                                    <input type="number" class="form-control form-control-sm step-order-input" name="flowList[${flowIndex}].StepOrder" value="${order}" />
+                                </div>
+                                <div class="flex-grow-1">${statusText}</div>
+                                <button type="button" class="btn btn-sm btn-outline-danger btn-remove-flow"><i class="bi bi-trash"></i></button>
+                                <input type="hidden" name="flowList[${flowIndex}].IdStatus" value="${statusId}" />
+                             </div>`;
+
+            $('#flowContainer').append(flowRow);
+            flowIndex++;
+            $('#tempOrder').val(parseInt(order) + 10);
+            $('#tempStatus').val("");
+            reorderAll();
+        });
+
+        // 7. REORDENACIÓN CRÍTICA
+        function reorderAll() {
+            $('#pillsContainer .badge').each(function(i) {
+                $(this).find('input[name*="IdTypeDocument"]').attr('name', `requirementsList[${i}].IdTypeDocument`);
+                $(this).find('input[name*="IsRequired"]').attr('name', `requirementsList[${i}].IsRequired`);
+            });
+            $('#flowContainer .flow-item').each(function(i) {
+                $(this).find('input.step-order-input').attr('name', `flowList[${i}].StepOrder`);
+                $(this).find('input[type="hidden"]').attr('name', `flowList[${i}].IdStatus`);
+            });
+            reqIndex = $('#pillsContainer .badge').length;
+            flowIndex = $('#flowContainer .flow-item').length;
+        }
+
+        $(document).on('click', '.btn-remove-pill', function() { $(this).closest('.badge').remove(); reorderAll(); });
+        $(document).on('click', '.btn-remove-flow', function() { $(this).closest('.flow-item').remove(); reorderAll(); });
+
+        // 8. ENVÍO DE FORMULARIOS
+        $(document).off("submit", "#formProcedureMaster, #formBulkProcedure").on("submit", "#formProcedureMaster, #formBulkProcedure", async function (e) {
+            e.preventDefault();
+            const form = e.target;
+            let bodyData;
+            let isJson = false;
+
+            if (form.id === "formBulkProcedure") {
+                isJson = true;
+                const ids = $('.row-checkbox:checked').map((_, el) => parseInt(el.value)).get();
+                const reqs = [];
+                $('#pillsContainer .badge').each(function() {
+                    reqs.push({
+                        IdTypeDocument: parseInt($(this).find('input[name*="IdTypeDocument"]').val()),
+                        IsRequired: $(this).find('input[name*="IsRequired"]').val() === "true"
+                    });
+                });
+                const flows = [];
+                $('#flowContainer .flow-item').each(function() {
+                    flows.push({
+                        IdStatus: parseInt($(this).find('input[name*="IdStatus"]').val()),
+                        StepOrder: parseInt($(this).find('input.step-order-input').val())
+                    });
+                });
+
+                bodyData = JSON.stringify({
+                    Ids: ids,
+                    Name: $(form).find('input[name="Name"]').val(),
+                    IdArea: parseInt($(form).find('select[name="IdArea"]').val()) || 0,
+                    RequirementsList: reqs,
+                    FlowList: flows
+                });
+            } else {
+                bodyData = new FormData(form);
+            }
+
+            const response = await fetch(form.action, {
+                method: 'POST',
+                headers: isJson ? { 'Content-Type': 'application/json' } : {},
+                body: bodyData
+            });
+
+            const result = await response.json();
+            if (result.success) {
+                Swal.fire({
+                    icon: 'success',
+                    title: '¡Éxito!',
+                    text: 'Cambios guardados correctamente.',
+                    timer: 1500,
+                    showConfirmButton: false
+                }).then(() => {
+                    location.reload();
+                });
+            } else {
+                Swal.fire('Error', result.errors ? result.errors.join("\n") : "Error al guardar.", 'error');
+            }
+        });
+    </script>
+}
+
 <div id="modalContainer"></div>
 
 <div class="container-fluid px-4 pt-5">
@@ -14,29 +244,51 @@
             <h2 class="fw-bold mb-1">
                 <i class="bi bi-pencil-square"></i> Trámites
             </h2>
-            <p class="text-muted small mb-0">Configura los documentos necesarios y el área responsable para cada trámite.</p>
+            <p class="text-muted small mb-0">Configura los documentos necesarios, el área responsable y la ruta de estados para cada trámite.</p>
         </div>
         <button class="btn btn-success shadow-sm px-4" onclick="loadModal('/Procedures/ProcedureConfiguration/Create')">
             <i class="bi bi-plus-circle me-2"></i> Agregar trámite
         </button>
     </div>
     <partial name="_TableTools" />
+
+    <div id="bulkActionsBar" class="position-fixed bottom-0 start-50 translate-middle-x mb-4 shadow-lg bg-dark text-white p-3 rounded-pill d-none animate__animated animate__fadeInUp" style="z-index: 1050; min-width: 300px;">
+        <div class="d-flex align-items-center justify-content-between px-3">
+            <span id="selectedCount" class="fw-bold me-4">0 seleccionados</span>
+            <div class="btn-group">
+                <button class="btn btn-bulk-edit btn-sm rounded-pill me-2" onclick="bulkEdit()">
+                    <i class="bi bi-pencil-square me-1"></i> Editar
+                </button>
+                <button class="btn btn-danger btn-sm rounded-pill" onclick="bulkDelete()">
+                    <i class="bi bi-trash-fill me-1"></i> Eliminar
+                </button>
+            </div>
+            <button type="button" class="btn-close btn-close-white ms-3" onclick="deselectAll()"></button>
+        </div>
+    </div>
     <div class="card shadow-sm border-0 overflow-hidden">
         <div class="card-body p-0">
-            <table id="tableToCopy" class="table table-hover align-middle mb-0">
+            <table id="mainTable" class="table table-hover align-middle mb-0">
                 <thead class="burgundy-header text-white">
                     <tr>
-                        <th class="ms-4 ps-4" style="width: 25%;">Nombre del Trámite</th>
-                        <th style="width: 23%;">Documentos Requeridos</th>
-                        <th style="width: 17%;">Área</th>
-                        <th style="width: 20%;">Última modificación</th>
-                        <th class="actions text-center pe-4" style="width: 15%;">Acciones</th>
+                        <th class="text-center" style="width: 40px;">
+                            <input type="checkbox" class="form-check-input" id="checkAll" />
+                        </th>
+                        <th style="width: 20%;">Nombre del Trámite</th>
+                        <th style="width: 20%;">Documentos</th>
+                        <th style="width: 15%;">Área</th>
+                        <th style="width: 20%;">Ruta de Proceso</th>
+                        <th style="width: 15%;">Modificación</th>
+                        <th class="text-center" style="width: 10%;">Acciones</th>
                     </tr>
                 </thead>
                 <tbody>
                     @foreach (var item in Model)
                     {
                         <tr>
+                            <td class="text-center">
+                                <input type="checkbox" class="form-check-input row-checkbox" value="@item.Id" />
+                            </td>
                             <td class="ps-4 fw-bold text-dark">@item.Name</td>
                             <td>
                                 <div class="d-flex flex-wrap gap-1">
@@ -62,6 +314,42 @@
                                 <span class="badge bg-secondary-subtle text-secondary border rounded-pill px-3">
                                     @(item.ProcedureArea?.Name ?? "General")
                                 </span>
+                            </td>
+                            <td>
+                                <div class="d-flex flex-column gap-2">
+                                    @if (item.ProcedureFlow != null && item.ProcedureFlow.Any())
+                                    {
+                                        var sortedFlow = item.ProcedureFlow.OrderBy(f => f.StepOrder).ToList();
+
+                                        <div class="d-flex align-items-center flex-wrap gap-1">
+                                            @foreach (var step in sortedFlow.Where(f => f.StepOrder < 90))
+                                            {
+                                                <span class="badge rounded-pill"
+                                                      style="background-color: @(step.ProcedureStatus?.BackgroundColor ?? "#eee"); color: @(step.ProcedureStatus?.TextColor ?? "#666"); font-size: 0.6rem; opacity: 0.8;">
+                                                    <i class="bi bi-check-all me-1"></i>@step.ProcedureStatus?.Name
+                                                </span>
+                                                @if (step != sortedFlow.Where(f => f.StepOrder < 90).LastOrDefault())
+                                                {
+                                                    <i class="bi bi-chevron-right text-muted" style="font-size: 0.6rem;"></i>
+                                                }
+                                            }
+                                        </div>
+
+                                        <div class="d-flex flex-wrap gap-1 mt-1 ps-2 border-start border-2">
+                                            @foreach (var step in sortedFlow.Where(f => f.StepOrder >= 90))
+                                            {
+                                                <span class="badge rounded-pill"
+                                                      style="background-color: @(step.ProcedureStatus?.BackgroundColor ?? "#eee"); color: @(step.ProcedureStatus?.TextColor ?? "#666"); font-size: 0.6rem; opacity: 0.8;">
+                                                    <i class="bi bi-signpost-split me-1"></i>@step.ProcedureStatus?.Name
+                                                </span>
+                                            }
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted small"><em>No configurado</em></span>
+                                    }
+                                </div>
                             </td>
                             <td class="text-muted small">
                                 <i class="bi bi-clock-history me-1"></i> @item.DateUpdated.ToString("dd/MM/yyyy hh:mm tt")
@@ -89,101 +377,3 @@
         </div>
     </div>
 </div>
-
-@section Scripts {
-    <script>
-      async function loadModal(url) {
-            try {
-                const response = await fetch(url);
-                if (!response.ok) throw new Error("Error en el servidor");
-
-                const html = await response.text();
-                const container = document.getElementById('modalContainer');
-                container.innerHTML = html;
-
-                const modalElement = container.querySelector('.modal');
-                if (modalElement) {
-                    const myModal = new bootstrap.Modal(modalElement);
-                    myModal.show();
-
-                    reqIndex = $('#pillsContainer .badge').length;
-                    console.log("Contador inicializado en: " + reqIndex);
-                }
-            } catch (error) {
-                Swal.fire('Error', 'Hubo un fallo en la carga: ' + error.message, 'error');
-            }
-        }
-
-        let reqIndex = 0;
-
-        $(document).on('click', '#btnAddReq', function() {
-            const docId = $('#tempDocument').val();
-            const docText = $("#tempDocument option:selected").text();
-            const isReq = $('#tempRequired').val() === "true";
-
-            if (!docId) {
-                Swal.fire('Atención', 'Selecciona un documento de la lista.', 'warning');
-                return;
-            }
-
-            const pill = `
-                <div class="badge border text-dark d-flex align-items-center shadow-sm bg-white mb-1 me-1"
-                     style="border-radius: 50px; font-size: 0.75rem; padding: 4px 10px; font-weight: 500;">
-                    <i class="bi ${isReq ? 'bi-asterisk text-danger' : 'bi-file-earmark-text text-muted'} me-2"></i>
-                    <span class="me-2">${docText}</span>
-                    <button type="button" class="btn-close btn-remove-pill" style="font-size: 0.5rem;"></button>
-
-                    <input type="hidden" name="requirementsList[${reqIndex}].IdTypeDocument" value="${docId}" />
-                    <input type="hidden" name="requirementsList[${reqIndex}].IsRequired" value="${isReq}" />
-                </div>`;
-
-            $('#pillsContainer').append(pill);
-            reqIndex++;
-        });
-
-          function reorderIndices() {
-              $('#pillsContainer .badge').each(function(i) {
-                  $(this).find('input').each(function() {
-                      const name = $(this).attr('name');
-                      if(name) {
-                          const newName = name.replace(/\[\d+\]/, `[${i}]`);
-                          $(this).attr('name', newName);
-                      }
-                  });
-              });
-              reqIndex = $('#pillsContainer .badge').length;
-          }
-
-
-        $(document).on('click', '.btn-remove-pill', function() {
-            $(this).closest('.badge').remove();
-            reorderIndices();
-        });
-
-        $(document).on("submit", "#formProcedureMaster", async function (e) {
-            e.preventDefault();
-            const form = e.target;
-
-            try {
-                const response = await fetch(form.action, {
-                    method: form.method,
-                    body: new FormData(form)
-                });
-
-                const result = await response.json();
-
-                if (result.success) {
-                    const modalElement = document.querySelector('.modal.show');
-                    if (modalElement) {
-                        bootstrap.Modal.getInstance(modalElement).hide();
-                    }
-                    location.reload();
-                } else {
-                    Swal.fire('Error', result.errors ? result.errors.join("\n") : "Error al guardar.", 'error');
-                }
-            } catch (error) {
-                Swal.fire('Error', 'Error crítico en el servidor.', 'error');
-            }
-        });
-    </script>
-}

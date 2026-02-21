@@ -5,69 +5,60 @@
     int indexFlow = 0;
 }
 
-<div class="modal fade" id="createModal" tabindex="-1">
+<div class="modal fade" id="bulkEditModal" tabindex="-1">
     <div class="modal-dialog modal-lg">
         <div class="modal-content shadow-lg border-0 rounded-4">
-            <form id="formProcedureMaster" method="post" action="/Procedures/ProcedureConfiguration/SaveProcedureMaster">
+            <form id="formBulkProcedure" method="post" action="/Procedures/ProcedureConfiguration/SaveBulkUpdate">
                 @Html.AntiForgeryToken()
-
-                <div class="modal-header bg-success text-white py-3">
-                    <h5 class="modal-title fw-bold">
-                        <i class="bi bi-file-earmark-plus-fill me-2"></i>Nuevo Trámite Institucional
-                    </h5>
+                <div class="modal-header bg-dark text-white py-3">
+                    <h5 class="modal-title fw-bold"><i class="bi bi-stack me-2"></i>Edición Masiva de Trámite</h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
-
                 <div class="modal-body p-4">
+                    <div class="alert alert-warning border-0 shadow-sm mb-4">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                        <strong>Atención:</strong> Los cambios aquí definidos sobrescribirán la configuración de todos los trámites seleccionados.
+                    </div>
+
                     <div class="row g-3 mb-4">
                         <div class="col-md-6">
-                            <label class="form-label fw-bold">Nombre del trámite</label>
-                            <input asp-for="Name" class="form-control shadow-sm border-2" required placeholder="Ej: Constancia de Estudios" />
+                            <label class="form-label fw-bold">Nuevo nombre común (opcional)</label>
+                            <input type="text" name="Name" class="form-control shadow-sm" placeholder="Dejar vacío para no cambiar" />
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label fw-bold">Área responsable</label>
-                            <select asp-for="IdArea" class="form-select shadow-sm border-2" asp-items="ViewBag.IdArea" required>
-                                <option value="">-- Seleccione área --</option>
+                            <label class="form-label fw-bold">Área responsable común</label>
+                            <select name="IdArea" class="form-select shadow-sm" asp-items="ViewBag.IdArea">
+                                <option value="0">-- No cambiar área --</option>
                             </select>
                         </div>
                     </div>
 
-                    <div class="card border-0 bg-light rounded-4 mb-4 shadow-sm">
+                    <div class="card border-0 bg-light rounded-4 mb-4">
                         <div class="card-body p-3">
-                            <h6 class="text-secondary fw-bold mb-3"><i class="bi bi-file-earmark-check me-2"></i>1. Definir Requisitos</h6>
-                            <div class="row g-2 align-items-end mb-3">
+                            <h6 class="fw-bold mb-3"><i class="bi bi-file-earmark-check me-2"></i>1. Nuevos Requisitos Masivos</h6>
+                            <div class="row g-2 mb-3">
                                 <div class="col-md-6">
-                                    <select id="tempDocument" class="form-select form-select-sm border-0 shadow-sm" asp-items="ViewBag.IdTypeDocument">
+                                    <select id="tempDocument" class="form-select form-select-sm" asp-items="ViewBag.IdTypeDocument">
                                         <option value="">-- Seleccionar documento --</option>
                                     </select>
                                 </div>
                                 <div class="col-md-3">
-                                    <select id="tempRequired" class="form-select form-select-sm border-0 shadow-sm">
+                                    <select id="tempRequired" class="form-select form-select-sm">
                                         <option value="true">Obligatorio</option>
                                         <option value="false">Opcional</option>
                                     </select>
                                 </div>
                                 <div class="col-md-3">
-                                    <button type="button" id="btnAddReq" class="btn bg-success text-white btn-sm w-100 fw-bold">
-                                        <i class="bi bi-plus-lg"></i> Añadir
-                                    </button>
+                                    <button type="button" id="btnAddReq" class="btn btn-dark btn-sm w-100 fw-bold">Añadir</button>
                                 </div>
                             </div>
-                            <div id="pillsContainer" class="d-flex flex-wrap gap-2 p-2 bg-white rounded-3 border-dashed" style="min-height: 50px;">
-                            </div>
+                            <div id="pillsContainer" class="d-flex flex-wrap gap-2 p-2 bg-white rounded-3 border-dashed" style="min-height: 50px;"></div>
                         </div>
                     </div>
 
-                    <div class="card border-0 bg-light rounded-4 shadow-sm">
+                    <div class="card border-0 bg-light rounded-4">
                         <div class="card-body p-3">
-                            <h6 class="text-secondary fw-bold mb-3"><i class="bi bi-diagram-3-fill me-2"></i>2. Definir Ruta de Proceso</h6>
-
-                            @* Mini Guía de ayuda *@
-                            <div class="alert alert-info py-1 px-2 mb-3 border-0 shadow-xs" style="font-size: 0.7rem;">
-                                <i class="bi bi-info-circle me-1"></i>
-                                <strong>Tip:</strong> Usa 10-80 para pasos secuenciales. Usa 90-99 para estados finales (Rechazado/Cancelado).
-                            </div>
-
+                            <h6 class="fw-bold mb-3"><i class="bi bi-diagram-3-fill me-2"></i>2. Nueva Ruta de Estados Masiva</h6>
                             <div class="row g-2 align-items-end mb-3">
                                 <div class="col-md-7">
                                     <label class="small text-muted fw-bold">Estado:</label>
@@ -87,14 +78,15 @@
                             </div>
 
                             <div id="flowContainer" class="d-flex flex-column gap-2 p-2 bg-white rounded-3 border-dashed" style="min-height: 80px;">
+                                
                             </div>
+                            <small class="text-muted mt-2 d-block">El orden de los pasos se define según como los agregues.</small>
                         </div>
                     </div>
                 </div>
-
-                <div class="modal-footer bg-light border-top-0 rounded-bottom-4">
-                    <button type="button" class="btn btn-outline-secondary px-4 fw-bold" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="submit" class="btn btn-success px-5 fw-bold shadow-sm">Crear Trámite</button>
+                <div class="modal-footer bg-light rounded-bottom-4">
+                    <button type="button" class="btn btn-outline-secondary px-4 fw-bold" data-bs-dismiss="modal">Cerrar</button>
+                    <button type="submit" class="btn btn-warning px-5 fw-bold shadow-sm">Actualizar Seleccionados</button>
                 </div>
             </form>
         </div>

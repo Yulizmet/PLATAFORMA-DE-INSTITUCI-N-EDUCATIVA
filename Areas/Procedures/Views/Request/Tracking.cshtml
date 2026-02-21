@@ -1,7 +1,7 @@
 ﻿@model IEnumerable<SchoolManager.Models.procedure_request>
 @{
     ViewData["Title"] = "Mis trámites";
-    Layout = "/Pages/Shared/_Layout.cshtml";
+    Layout = "/Areas/MainScreen/Views/Shared/_Layout.cshtml";
 }
 
 <style>
@@ -14,6 +14,17 @@
         /*background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);*/
         min-height: 90vh;
         padding-top: 3rem;
+    }
+
+    .table-custom .custom-table-header,
+    .table-custom .custom-table-header th {
+        background-color: #620900 !important;
+        color: white !important;
+        border: none !important;
+    }
+
+    .table-custom thead {
+        border-bottom: none !important;
     }
 
     .burgundy-color {
@@ -84,7 +95,7 @@
             <div class="card-body p-0">
                 <div class="table-responsive">
                     <table class="table table-hover align-middle mb-0">
-                        <thead>
+                        <thead class="custom-table-header">
                             <tr>
                                 <th class="ps-4">Folio</th>
                                 <th>Fecha Registro</th>
@@ -122,11 +133,12 @@
                                         </div>
                                     </td>
                                     <td>
-                                        @if (item.ProcedureStatus != null)
+                                        @if (item.ProcedureFlow?.ProcedureStatus != null)
                                         {
                                             <span class="status-badge shadow-sm"
-                                                  style="background-color: @item.ProcedureStatus.BackgroundColor; color: @item.ProcedureStatus.TextColor;">
-                                                @item.ProcedureStatus.Name
+                                                  style="background-color: @(item.ProcedureFlow.ProcedureStatus.BackgroundColor ?? "#6c757d");
+                                     color: @(item.ProcedureFlow.ProcedureStatus.TextColor ?? "#ffffff");">
+                                                @item.ProcedureFlow.ProcedureStatus.Name
                                             </span>
                                         }
                                     </td>
@@ -140,17 +152,20 @@
 
                                             @{
                                                 var tieneDocs = item.ProcedureDocuments != null && item.ProcedureDocuments.Any();
-                                                var primerDoc = tieneDocs ? item.ProcedureDocuments!.First() : null;
+                                                var ultimoDoc = tieneDocs ? item.ProcedureDocuments!.Last() : null;
                                             }
-                                            <a href="@(tieneDocs && primerDoc != null ? primerDoc.FilePath : "#")"
-                                               download="@(tieneDocs && primerDoc != null ? primerDoc.Name : "")"
+
+                                            <a href="@(tieneDocs? ultimoDoc!.FilePath : "javascript:void(0)")"
+                                               target="@(tieneDocs ? "_blank" : "")"
                                                class="btn btn-action @(tieneDocs ? "btn-warning text-white" : "btn-light text-muted opacity-50")"
-                                               title="@(tieneDocs ? "Descargar respuesta" : "Sin archivos")"
-                                               style="@(tieneDocs ? "" : "pointer-events: none;")">
+                                               title="@(tieneDocs ? "Descargar respuesta/archivo" : "No hay archivos adjuntos")"
+                                               style="@(tieneDocs ? "" : "cursor: not-allowed;")"
+                                               @(tieneDocs ? "" : "disabled")>
                                                 <i class="bi bi-cloud-download-fill"></i>
                                             </a>
 
-                                            @if (item.IdStatus != 3 && item.IdStatus != 5)
+                                            @if (item.ProcedureFlow?.ProcedureStatus?.Name != "Finalizado" &&
+                                                                                    item.ProcedureFlow?.ProcedureStatus?.Name != "Cancelado")
                                             {
                                                 <button type="button" class="btn btn-action btn-danger"
                                                         onclick="confirmCancel(@item.Id, '@item.Folio')"

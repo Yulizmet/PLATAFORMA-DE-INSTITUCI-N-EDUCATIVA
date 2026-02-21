@@ -65,8 +65,8 @@
                                 </td>
                                 <td>
                                     <span class="badge rounded-pill shadow-sm"
-                                          style="background-color: @item.ProcedureStatus?.BackgroundColor; color: @item.ProcedureStatus?.TextColor; padding: 0.5em 1em;">
-                                        @item.ProcedureStatus?.Name
+                                          style="background-color: @(item.ProcedureFlow?.ProcedureStatus?.BackgroundColor ?? "#6c757d"); color: @(item.ProcedureFlow?.ProcedureStatus?.TextColor ?? "#fff"); padding: 0.5em 1em;">
+                                        @item.ProcedureFlow?.ProcedureStatus?.Name
                                     </span>
                                 </td>
                                 <td class="text-center pe-4">

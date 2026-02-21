@@ -20,10 +20,9 @@ namespace SchoolManager.Areas.Procedures.Controllers
         {
             var requests = await _context.ProcedureRequest
                 .Include(r => r.ProcedureType)
-                .Include(r => r.ProcedureStatus)
+                .Include(r => r.ProcedureFlow)
+                    .ThenInclude(f => f.ProcedureStatus)
                 .Include(r => r.ProcedureDocuments)
-                //.Include(r => r.User)
-                    //.ThenInclude(u => u.Person)
                 .OrderByDescending(r => r.DateUpdated)
                 .ToListAsync();
 
@@ -33,37 +32,49 @@ namespace SchoolManager.Areas.Procedures.Controllers
         public async Task<IActionResult> Monitoring(int id)
         {
             var request = await _context.ProcedureRequest
-        .Include(r => r.ProcedureType)
-        .Include(r => r.ProcedureStatus)
-        .Include(r => r.ProcedureDocuments)
-        .Include(r => r.ProcedureMonitorings)
-            .ThenInclude(m => m.ProcedureStatus)
-        .Include(r => r.ProcedureMonitorings)
-            .ThenInclude(m => m.User)
-        .FirstOrDefaultAsync(r => r.Id == id);
+                .Include(r => r.ProcedureType)
+                .Include(r => r.ProcedureFlow)
+                    .ThenInclude(f => f.ProcedureStatus)
+                .Include(r => r.ProcedureDocuments)
+                .Include(r => r.ProcedureMonitorings)
+                    .ThenInclude(m => m.ProcedureFlow)
+                        .ThenInclude(f => f.ProcedureStatus)
+                .Include(r => r.ProcedureMonitorings)
+                    .ThenInclude(m => m.User)
+                .FirstOrDefaultAsync(r => r.Id == id);
 
             if (request == null) return NotFound();
 
-            ViewBag.Statuses = new SelectList(await _context.ProcedureStatus.ToListAsync(), "Id", "Name", request.IdStatus);
+            var possibleSteps = await _context.ProcedureFlow
+                .Include(f => f.ProcedureStatus)
+                .Where(f => f.IdTypeProcedure == request.IdTypeProcedure)
+                .OrderBy(f => f.StepOrder)
+                .Select(f => new {
+                    Id = f.Id,
+                    DisplayName = $"[{f.StepOrder}] - {f.ProcedureStatus.Name}"
+                })
+                .ToListAsync();
+
+            ViewBag.Statuses = new SelectList(possibleSteps, "Id", "DisplayName", request.IdProcedureFlow);
 
             return PartialView("_Monitoring", request);
         }
 
         [HttpPost]
-        public async Task<IActionResult> UpdateStatus(int requestId, int newStatusId, string adminComment)
+        public async Task<IActionResult> UpdateStatus(int requestId, int newFlowId, string adminComment)
         {
             try
             {
                 var request = await _context.ProcedureRequest.FindAsync(requestId);
                 if (request == null) return Json(new { success = false, message = "Solicitud no encontrada" });
 
-                request.IdStatus = newStatusId;
+                request.IdProcedureFlow = newFlowId;
                 request.DateUpdated = DateTime.Now;
 
                 var monitoring = new procedure_monitoring
                 {
                     IdProcedure = requestId,
-                    IdStatus = newStatusId,
+                    IdProcedureFlow = newFlowId,
                     Comment = adminComment,
                     DateUpdated = DateTime.Now,
                     IdUser = 1

@@ -13,7 +13,7 @@ namespace SchoolManager.Models
         public string Comment { get; set; } = null!;
 
         [Required]
-        [Display(Name = "Última modificación")]
+        [Display(Name = "Fecha de Movimiento")]
         public DateTime DateUpdated { get; set; } = DateTime.Now;
 
         [Required]
@@ -23,7 +23,7 @@ namespace SchoolManager.Models
         public int IdProcedure { get; set; }
 
         [Required]
-        public int IdStatus { get; set; }
+        public int IdProcedureFlow { get; set; }
 
         [ForeignKey("IdUser")]
         public virtual users_user User { get; set; } = null!;
@@ -31,7 +31,7 @@ namespace SchoolManager.Models
         [ForeignKey("IdProcedure")]
         public virtual procedure_request ProcedureRequest { get; set; } = null!;
 
-        [ForeignKey("IdStatus")]
-        public virtual procedure_status ProcedureStatus { get; set; } = null!;
+        [ForeignKey("IdProcedureFlow")]
+        public virtual procedure_flow ProcedureFlow { get; set; } = null!;
     }
 }

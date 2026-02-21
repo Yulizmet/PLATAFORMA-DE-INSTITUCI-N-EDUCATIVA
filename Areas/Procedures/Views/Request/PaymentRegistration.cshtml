@@ -1,7 +1,8 @@
 ﻿@model IEnumerable<SchoolManager.Models.procedure_request>
 @{
     ViewData["Title"] = "Registro de pago";
-    Layout = "/Pages/Shared/_Layout.cshtml";
+    Layout = "/Areas/MainScreen/Views/Shared/_Layout.cshtml";
+    var tramitesPago = ViewBag.TramitesPago as List<SchoolManager.Models.procedure_types> ?? new List<SchoolManager.Models.procedure_types>();
 }
 
 <style>
@@ -70,8 +71,10 @@
                         <label class="form-label fw-bold text-dark">Concepto de Pago:</label>
                         <select name="procedureTypeId" class="form-select" required>
                             <option value="">Seleccione concepto...</option>
-                            <option value="10">Preinscripción (Aspirantes)</option>
-                            <option value="9">Inscripción (Alumnos)</option>
+                            @foreach (var item in tramitesPago)
+                            {
+                                <option value="@item.Id">@item.Name</option>
+                            }
                         </select>
                     </div>
 
@@ -115,7 +118,6 @@
         </div>
     </div>
 </div>
-
 @section Scripts {
     <script>
         function handleFileSelect(input) {
@@ -123,15 +125,11 @@
             if (file) {
                 const preview = document.getElementById('file-preview');
                 const prompt = document.getElementById('upload-prompt');
-
                 document.getElementById('file-name').innerText = file.name;
                 document.getElementById('file-size').innerText = (file.size / 1024).toFixed(2) + ' KB';
-
                 const icon = document.getElementById('type-icon');
                 const ext = file.name.split('.').pop().toLowerCase();
-                if (ext === 'pdf') icon.className = 'bi bi-file-earmark-pdf-fill text-danger';
-                else icon.className = 'bi bi-file-earmark-image-fill text-primary';
-
+                icon.className = ext === 'pdf' ? 'bi bi-file-earmark-pdf-fill text-danger' : 'bi bi-file-earmark-image-fill text-primary';
                 prompt.style.display = 'none';
                 preview.style.display = 'flex';
             }
@@ -144,35 +142,59 @@
             document.getElementById('upload-prompt').style.display = 'block';
         }
 
-        $('select[name="procedureTypeId"]').on('change', function() {
-            const id = $(this).val();
-            if (!id) {
-                $('#upload-section').hide();
-                $('#no-requirements-msg').hide();
-                return;
-            }
-
-            $.get(`/Procedures/Request/GetPaymentRequirements?procedureTypeId=${id}`, function(data) {
-                const hasPaymentReq = data.some(r => r.isPaymentDoc && r.isRequired);
-
-                if (hasPaymentReq) {
-                    $('#upload-section').fadeIn();
-                    $('#no-requirements-msg').hide();
-                } else {
-                    $('#upload-section').hide();
-                    $('#no-requirements-msg').fadeIn();
+        document.addEventListener('DOMContentLoaded', function() {
+            var checkjQuery = setInterval(function() {
+                if (window.jQuery) {
+                    clearInterval(checkjQuery);
+                    initPageLogic();
                 }
-            });
+            }, 100);
         });
 
-                function submitPayment() {
+        function initPageLogic() {
+            console.log("jQuery detectado correctamente. Inicializando...");
+
+            $('select[name="procedureTypeId"]').on('change', function() {
+                const id = $(this).val();
+                if (!id) {
+                    $('#upload-section').hide();
+                    $('#no-requirements-msg').hide();
+                    return;
+                }
+
+                $.get(`/Procedures/Request/GetPaymentRequirements?procedureTypeId=${id}`, function(data) {
+                    const hasPaymentReq = data && data.length > 0 && data.some(r => r.isPaymentDoc === true);
+                    if (hasPaymentReq) {
+                        $('#upload-section').fadeIn();
+                        $('#no-requirements-msg').hide();
+                    } else {
+                        $('#upload-section').hide();
+                        $('#no-requirements-msg').fadeIn();
+                    }
+                });
+            });
+        }
+
+        function submitPayment() {
             const form = document.getElementById('paymentForm');
-            const formData = new FormData(form);
 
             if (!form.checkValidity()) {
                 form.reportValidity();
                 return;
             }
+
+            const fileInput = document.getElementById('fileInput');
+            if (fileInput.files.length === 0) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Falta el comprobante',
+                    text: 'Por favor, adjunta tu boucher o comprobante de pago para continuar.',
+                    confirmButtonColor: '#620900'
+                });
+                return;
+            }
+
+            const formData = new FormData(form);
 
             Swal.fire({
                 title: 'Registrando Pago',
@@ -180,9 +202,7 @@
                 allowOutsideClick: false,
                 showConfirmButton: false,
                 color: '#620900',
-                didOpen: () => {
-                    Swal.showLoading();
-                }
+                didOpen: () => { Swal.showLoading(); }
             });
 
             $.ajax({
@@ -199,7 +219,7 @@
                             title: '<span style="color:#620900">¡Registro Exitoso!</span>',
                             html: `
                                 <div class="mt-3">
-                                    <p>Tu comprobante ha sido recibido correctamente.</p>
+                                    <p>Tu comprobante ha sido enviado correctamente.</p>
                                     <div class="p-3 mb-3" style="background-color:#f8f9fa; border-radius:10px; border: 1px solid #dee2e6">
                                         <small class="text-muted d-block">TU FOLIO DE SEGUIMIENTO:</small>
                                         <strong style="font-size: 1.5rem; color:#620900;">${response.folio}</strong>
@@ -207,12 +227,12 @@
                                     <p class="small text-muted">Conserva este folio para consultar el estatus de tu validación en la sección de seguimiento.</p>
                                 </div>
                             `,
-                            confirmButtonText: '<i class="bi bi-house-door me-2"></i>Ir a Inicio de Trámites',
+                            confirmButtonText: '<i class="bi bi-house-door me-2"></i>Ir a Mis Trámites',
                             confirmButtonColor: '#620900',
                             allowOutsideClick: false
                         }).then((result) => {
                             if (result.isConfirmed) {
-                                window.location.href = '/Procedures/Request/Index';
+                                window.location.href = '/Procedures/Request/Tracking';
                             }
                         });
                     } else {

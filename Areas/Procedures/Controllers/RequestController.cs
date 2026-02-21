@@ -24,7 +24,7 @@ namespace SchoolManager.Areas.Procedures.Controllers
         public async Task<IActionResult> Index()
         {
             var requests = await _context.ProcedureRequest
-                .Include(r => r.ProcedureStatus)
+                .Include(r => r.ProcedureFlow)
                 .OrderByDescending(r => r.DateUpdated)
                 .ToListAsync();
 
@@ -34,48 +34,60 @@ namespace SchoolManager.Areas.Procedures.Controllers
         [HttpGet]
         public async Task<IActionResult> Requests()
         {
-            var procedures = await _context.ProcedureTypes.OrderBy(p => p.Name).ToListAsync();
-            ViewBag.Procedures = new SelectList(procedures, "Id", "Name");
-
-            var list = await _context.ProcedureRequest
-                .Include(r => r.ProcedureStatus)
-                .OrderByDescending(r => r.DateUpdated)
+            var procedures = await _context.ProcedureTypes
+                .Where(p => !p.Name.Contains("Preinscripción") && !p.Name.Contains("Inscripción"))
+                .OrderBy(p => p.Name)
                 .ToListAsync();
 
-            return View(list);
+            ViewBag.Procedures = new SelectList(procedures, "Id", "Name");
+            return View();
         }
 
         [HttpGet]
         public async Task<IActionResult> GetRequirements(int procedureId)
         {
-            var requirements = await _context.ProcedureTypeRequirements
+            var data = await _context.ProcedureTypeRequirements
                 .Include(r => r.ProcedureTypeDocument)
                 .Where(r => r.IdTypeProcedure == procedureId)
-                .Select(r => new {
-                    documentName = r.ProcedureTypeDocument.Name,
-                    documentId = r.IdTypeDocument,
-                    isRequired = r.IsRequired
-                }).ToListAsync();
+                .ToListAsync();
 
-            return Json(requirements);
+            var results = data.Select(r => new {
+                documentName = r.ProcedureTypeDocument.Name,
+                documentId = r.IdTypeDocument,
+                isRequired = r.IsRequired
+            }).ToList();
+
+            return Json(results);
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> CreateRequest(procedure_request request, IFormCollection form)
         {
+            var initialFlow = await _context.ProcedureFlow
+                .Where(f => f.IdTypeProcedure == request.IdTypeProcedure)
+                .OrderBy(f => f.StepOrder)
+                .FirstOrDefaultAsync();
+
+            if (initialFlow == null)
+            {
+                return Json(new { success = false, errors = new[] { "Este trámite no tiene un flujo de pasos configurado. Por favor, contacta al administrador." } });
+            }
+
+            request.DateCreated = DateTime.Now;
             request.DateUpdated = DateTime.Now;
-            request.IdStatus = 1;
+            request.IdProcedureFlow = initialFlow.Id;
             request.IdUser = 1;
 
             if (string.IsNullOrEmpty(request.Folio))
             {
-                request.Folio = "FOL-" + DateTime.Now.Ticks.ToString().Substring(10).ToUpper();
+                request.Folio = DateTime.Now.Ticks.ToString().Substring(10).ToUpper();
             }
 
             ModelState.Remove("IdUser");
             ModelState.Remove("ProcedureStatus");
             ModelState.Remove("ProcedureType");
+            ModelState.Remove("ProcedureFlow");
             ModelState.Remove("User");
             ModelState.Remove("Folio");
 
@@ -93,15 +105,13 @@ namespace SchoolManager.Areas.Procedures.Controllers
                         {
                             string fileUrl = await _storageService.UploadFileAsync(file, "proceduresfiles", STORAGE_CONNECTION);
 
-                            var document = new procedure_documents
+                            _context.ProcedureDocuments.Add(new procedure_documents
                             {
                                 IdProcedure = request.Id,
                                 Name = file.FileName,
                                 FilePath = fileUrl,
                                 DateUpdated = DateTime.Now
-                            };
-
-                            _context.ProcedureDocuments.Add(document);
+                            });
                         }
                     }
 
@@ -114,7 +124,7 @@ namespace SchoolManager.Areas.Procedures.Controllers
                 {
                     await transaction.RollbackAsync();
                     var message = ex.InnerException != null ? ex.InnerException.Message : ex.Message;
-                    return Json(new { success = false, errors = new[] { "Error: " + message } });
+                    return Json(new { success = false, errors = new[] { "Error al guardar: " + message } });
                 }
             }
 
@@ -126,7 +136,8 @@ namespace SchoolManager.Areas.Procedures.Controllers
         {
             var requests = await _context.ProcedureRequest
                 .Include(r => r.ProcedureType)
-                .Include(r => r.ProcedureStatus)
+                .Include(r => r.ProcedureFlow)
+                    .ThenInclude(f => f.ProcedureStatus)
                 .Include(r => r.ProcedureDocuments)
                 .OrderByDescending(r => r.DateUpdated)
                 .ToListAsync();
@@ -147,11 +158,29 @@ namespace SchoolManager.Areas.Procedures.Controllers
         {
             var request = await _context.ProcedureRequest
                 .Include(r => r.ProcedureType)
-                .Include(r => r.ProcedureStatus)
+                .Include(r => r.ProcedureFlow)
+                    .ThenInclude(f => f.ProcedureStatus)
                 .Include(r => r.ProcedureDocuments)
+                .Include(r => r.ProcedureMonitorings)
+                    .ThenInclude(m => m.ProcedureFlow)
+                        .ThenInclude(f => f.ProcedureStatus)
                 .FirstOrDefaultAsync(m => m.Id == id);
 
             if (request == null) return NotFound();
+
+            var possibleFlows = await _context.ProcedureFlow
+                .Include(f => f.ProcedureStatus)
+                .Where(f => f.IdTypeProcedure == request.IdTypeProcedure)
+                .OrderBy(f => f.StepOrder)
+                .Select(f => new {
+                    IdFlow = f.Id,
+                    StatusName = f.ProcedureStatus.Name,
+                    Order = f.StepOrder,
+                    IsCurrent = f.Id == request.IdProcedureFlow
+                })
+                .ToListAsync();
+
+            ViewBag.PossibleFlows = possibleFlows;
 
             foreach (var doc in request.ProcedureDocuments)
             {
@@ -161,52 +190,64 @@ namespace SchoolManager.Areas.Procedures.Controllers
             return PartialView("_TrackingDetails", request);
         }
 
-        [HttpGet]
-        public IActionResult PaymentRegistration()
+        public async Task<IActionResult> PaymentRegistration()
         {
+            ViewBag.TramitesPago = await _context.ProcedureTypes
+                .Where(p => p.Name.Contains("Preinscripción") || p.Name.Contains("Inscripción"))
+                .ToListAsync();
+
             return View();
         }
 
         [HttpGet]
         public async Task<IActionResult> GetPaymentRequirements(int procedureTypeId)
         {
-            var requirements = await _context.ProcedureTypeRequirements
+            var data = await _context.ProcedureTypeRequirements
                 .Include(r => r.ProcedureTypeDocument)
                 .Where(r => r.IdTypeProcedure == procedureTypeId)
-                .Select(r => new {
-                    documentName = r.ProcedureTypeDocument.Name,
-                    isRequired = r.IsRequired,
-                    isPaymentDoc = r.ProcedureTypeDocument.Name.ToLower().Contains("pago") ||
-                                   r.ProcedureTypeDocument.Name.ToLower().Contains("boucher")
-                }).ToListAsync();
+                .ToListAsync();
 
-            return Json(requirements);
+            var results = data.Select(r => new {
+                documentName = r.ProcedureTypeDocument.Name,
+                isRequired = r.IsRequired,
+                isPaymentDoc = r.ProcedureTypeDocument.Name.ToLower().Contains("pago") ||
+                               r.ProcedureTypeDocument.Name.ToLower().Contains("boucher") ||
+                               r.ProcedureTypeDocument.Name.ToLower().Contains("comprobante") ||
+                               r.ProcedureTypeDocument.Name.ToLower().Contains("recibo")
+            }).ToList();
+
+            return Json(results);
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> CreatePaymentValidation(int personId, int procedureTypeId, IFormCollection form)
         {
-            /* LOGICA COMENTADA PARA EL FUTURO (Equipp Pre-enrollment):
-               var personData = await _context.Set<prenrollment_general>()
-                   .FirstOrDefaultAsync(p => p.Folio == identifier || p.Matricula == identifier);
-               if (personData == null) return Json(new { success = false, errors = new[] { "No encontrado" } });
-            */
+            var flow = await _context.ProcedureFlow
+                .Include(f => f.ProcedureStatus)
+                .FirstOrDefaultAsync(f => f.IdTypeProcedure == procedureTypeId &&
+                                         (f.ProcedureStatus.Name.Contains("Pago") || f.ProcedureStatus.Name.Contains("Validación")));
+
+            if (flow == null)
+            {
+                return Json(new { success = false, errors = new[] { "No se encontró un flujo de 'Validación de Pago' para este trámite." } });
+            }
 
             var request = new procedure_request
             {
                 IdTypeProcedure = procedureTypeId,
-                IdStatus = 3,
+                IdProcedureFlow = flow.Id,
                 IdUser = 1,
                 DateUpdated = DateTime.Now,
-                Subject = "Validación de pago",
-                Message = $"Validación para folio: {personId}",
+                Subject = "Validación de pago institucional",
+                Message = $"Validación para identificador: {personId}",
                 Folio = DateTime.Now.Ticks.ToString().Substring(10).ToUpper()
             };
 
             ModelState.Remove("IdUser");
             ModelState.Remove("ProcedureStatus");
             ModelState.Remove("ProcedureType");
+            ModelState.Remove("ProcedureFlow");
             ModelState.Remove("User");
             ModelState.Remove("Folio");
 
@@ -223,43 +264,27 @@ namespace SchoolManager.Areas.Procedures.Controllers
                         if (file.Length > 0)
                         {
                             string fileUrl = await _storageService.UploadFileAsync(file, "proceduresfiles", STORAGE_CONNECTION);
-
-                            var document = new procedure_documents
+                            _context.ProcedureDocuments.Add(new procedure_documents
                             {
                                 IdProcedure = request.Id,
-                                Name = "Boucher_" + personId + "_" + file.FileName,
+                                Name = $"Voucher_{personId}_{file.FileName}",
                                 FilePath = fileUrl,
                                 DateUpdated = DateTime.Now
-                            };
-                            _context.ProcedureDocuments.Add(document);
+                            });
                         }
                     }
 
-                    var monitoring = new procedure_monitoring
-                    {
-                        IdProcedure = request.Id,
-                        IdStatus = 3,
-                        Comment = "El usuario cargó su comprobante. Esperando validación de Finanzas.",
-                        IdUser = 1,
-                        DateUpdated = DateTime.Now
-                    };
-                    _context.ProcedureMonitoring.Add(monitoring);
-
                     await _context.SaveChangesAsync();
                     await transaction.CommitAsync();
-
                     return Json(new { success = true, folio = request.Folio });
                 }
                 catch (Exception ex)
                 {
                     await transaction.RollbackAsync();
-                    var message = ex.InnerException != null ? ex.InnerException.Message : ex.Message;
-                    return Json(new { success = false, errors = new[] { "Error: " + message } });
+                    return Json(new { success = false, errors = new[] { ex.Message } });
                 }
             }
-
-            var modelErrors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToArray();
-            return Json(new { success = false, errors = modelErrors });
+            return Json(new { success = false, errors = new[] { "Datos inválidos" } });
         }
 
         [HttpPost]
@@ -269,11 +294,11 @@ namespace SchoolManager.Areas.Procedures.Controllers
             if (request == null) return Json(new { success = false });
 
             var cancelledStatus = await _context.ProcedureStatus
-                .FirstOrDefaultAsync(s => s.Name.Contains("Cancelado") || s.StepOrder == 0);
+                .FirstOrDefaultAsync(s => s.Name.Contains("Cancelado"));
 
             if (cancelledStatus != null)
             {
-                request.IdStatus = cancelledStatus.Id;
+                request.IdProcedureFlow = cancelledStatus.Id;
                 await _context.SaveChangesAsync();
                 return Json(new { success = true });
             }

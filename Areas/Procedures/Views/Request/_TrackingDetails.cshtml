@@ -28,11 +28,11 @@
     </div>
 
     <div class="alert d-flex align-items-center border-0 shadow-sm mb-4"
-         style="background-color: @Model.ProcedureStatus?.BackgroundColor; color: @Model.ProcedureStatus?.TextColor; border-radius: 15px;">
+         style="background-color: @Model.ProcedureFlow?.ProcedureStatus?.BackgroundColor; color: @Model.ProcedureFlow?.ProcedureStatus?.TextColor; border-radius: 15px;">
         <i class="bi bi-info-circle-fill me-3 fs-4"></i>
         <div>
             <small class="d-block opacity-75 fw-bold text-uppercase" style="font-size: 0.65rem;">Estatus del proceso</small>
-            <span class="fw-bold fs-5">@Model.ProcedureStatus?.Name</span>
+            <span class="fw-bold fs-5">@Model.ProcedureFlow?.ProcedureStatus?.Name</span>
         </div>
     </div>
 
@@ -55,14 +55,14 @@
                 @foreach (var step in Model.ProcedureMonitorings.OrderByDescending(s => s.DateUpdated))
                 {
                     <div class="p-3 bg-white rounded shadow-sm border-start border-4 mb-2"
-                         style="border-color: @step.ProcedureStatus?.BackgroundColor !important;">
+                         style="border-color: @step.ProcedureFlow?.ProcedureStatus?.BackgroundColor !important;">
                         <div class="d-flex justify-content-between align-items-center mb-1">
                             <small class="fw-bold burgundy-color text-uppercase">Respuesta Administrativa</small>
                             <small class="text-muted" style="font-size: 0.7rem;">@step.DateUpdated.ToString("g")</small>
                         </div>
                         <p class="mb-1 text-dark small">@step.Comment</p>
-                        <span class="badge rounded-pill" style="font-size: 0.6rem; background-color: @step.ProcedureStatus?.BackgroundColor; color: @step.ProcedureStatus?.TextColor">
-                            Cambió a: @step.ProcedureStatus?.Name
+                        <span class="badge rounded-pill" style="font-size: 0.6rem; background-color: @step.ProcedureFlow?.ProcedureStatus?.BackgroundColor; color: @step.ProcedureFlow?.ProcedureStatus?.TextColor">
+                            Cambió a: @step.ProcedureFlow?.ProcedureStatus?.Name
                         </span>
                     </div>
                 }

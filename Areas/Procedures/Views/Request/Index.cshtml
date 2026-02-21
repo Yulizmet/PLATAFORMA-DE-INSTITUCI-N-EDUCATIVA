@@ -1,7 +1,7 @@
 ﻿@{
     ViewData["Title"] = "Centro de Trámites";
-    Layout = "/Pages/Shared/_Layout.cshtml";
-    var isAuthenticated = false;
+    Layout = "/Areas/MainScreen/Views/Shared/_Layout.cshtml";
+    //var isAuthenticated = false;
 }
 
 <style>
@@ -97,6 +97,7 @@
     /* Clases para JS */
     .auth-only {
         display: none;
+        display: flex !important;
     }
 
     @@media (max-width: 992px) {

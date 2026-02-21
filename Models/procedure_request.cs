@@ -13,6 +13,9 @@ namespace SchoolManager.Models
         public string Folio { get; set; } = null!;
 
         [Required]
+        public DateTime DateCreated { get; set; } = DateTime.Now;
+
+        [Required]
         public DateTime DateUpdated { get; set; } = DateTime.Now;
 
         [Required]
@@ -29,7 +32,7 @@ namespace SchoolManager.Models
         public int IdTypeProcedure { get; set; }
 
         [Required]
-        public int IdStatus { get; set; }
+        public int IdProcedureFlow { get; set; }
 
         [ForeignKey("IdUser")]
         public virtual users_user User { get; set; } = null!;
@@ -37,8 +40,8 @@ namespace SchoolManager.Models
         [ForeignKey("IdTypeProcedure")]
         public virtual procedure_types ProcedureType { get; set; } = null!;
 
-        [ForeignKey("IdStatus")]
-        public virtual procedure_status ProcedureStatus { get; set; } = null!;
+        [ForeignKey("IdProcedureFlow")]
+        public virtual procedure_flow ProcedureFlow { get; set; } = null!;
 
         public virtual ICollection<procedure_documents> ProcedureDocuments { get; set; } = new List<procedure_documents>();
         public virtual ICollection<procedure_monitoring> ProcedureMonitorings { get; set; } = new List<procedure_monitoring>();
