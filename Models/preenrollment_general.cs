@@ -10,6 +10,8 @@ namespace SchoolManager.Models
 
         [Required]
         public int IdCareer { get; set; }
+        [ForeignKey("IdCareer")]
+        public preenrollment_careers Career { get; set; } = null!;
 
         [Required]
         public int IdGeneration { get; set; }
@@ -52,10 +54,9 @@ namespace SchoolManager.Models
         [Required, MaxLength(10)]
         public string Matricula { get; set; } = null!;
 
-
-        public preenrollment_careers Career { get; set; } = null!;
-
         public ICollection<preenrollment_schools> Schools { get; set; } = new List<preenrollment_schools>();
         public ICollection<preenrollment_addresses> Addresses { get; set; } = new List<preenrollment_addresses>();
+        public ICollection<preenrollment_infos> Infos { get; set; } = new List<preenrollment_infos>();
+        public ICollection<preenrollment_tutors> Tutors { get; set; } = new List<preenrollment_tutors>();
     }
 }
