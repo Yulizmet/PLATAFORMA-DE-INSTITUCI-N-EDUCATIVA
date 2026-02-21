@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SchoolManager.Data;
+using SchoolManager.Areas.Procedures.ViewModels;
 
 namespace SchoolManager.Areas.Procedures.Controllers
 {
@@ -16,24 +17,31 @@ namespace SchoolManager.Areas.Procedures.Controllers
 
         public async Task<IActionResult> Index()
         {
-            var stats = new
+            var solicitudesBase = _context.ProcedureRequest
+                .Include(r => r.ProcedureFlow)
+                    .ThenInclude(f => f.ProcedureStatus);
+
+            var vm = new DashboardViewModel
             {
-                Total = await _context.ProcedureRequest.CountAsync(),
-                Nuevos = await _context.ProcedureRequest.CountAsync(r => r.IdStatus == 1),
-                Finalizados = await _context.ProcedureRequest.CountAsync(r => r.IdStatus == 3),
-                Cancelados = await _context.ProcedureRequest.CountAsync(r => r.IdStatus == 5)
+                TotalRequests = await _context.ProcedureRequest.CountAsync(),
+                ActionRequired = await solicitudesBase.CountAsync(r => r.ProcedureFlow.ProcedureStatus.IsActionRequiredByUser),
+                Done = await solicitudesBase.CountAsync(r => r.ProcedureFlow.ProcedureStatus.IsTerminalState),
+                InProgress = await solicitudesBase.CountAsync(r =>
+                    !r.ProcedureFlow.ProcedureStatus.IsTerminalState &&
+                    !r.ProcedureFlow.ProcedureStatus.IsActionRequiredByUser),
+
+                Cancelled = 0
             };
 
-            ViewBag.Stats = stats;
-
-            var recientes = await _context.ProcedureRequest
+            vm.Recientes = await _context.ProcedureRequest
                 .Include(r => r.ProcedureType)
-                .Include(r => r.ProcedureStatus)
+                .Include(r => r.ProcedureFlow)
+                    .ThenInclude(f => f.ProcedureStatus)
                 .OrderByDescending(r => r.DateUpdated)
                 .Take(5)
                 .ToListAsync();
 
-            return View(recientes);
+            return View(vm);
         }
     }
 }

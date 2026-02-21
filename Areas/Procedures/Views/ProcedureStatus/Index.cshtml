@@ -2,9 +2,105 @@
 
 @{
     ViewData["Title"] = "Gestión de Estados";
+    ViewBag.EntityName = "estados";
 }
 
 <div id="modalContainer"></div>
+
+<div class="container-fluid px-4 pt-5">
+    <div class="d-flex justify-content-between align-items-start mb-4">
+        <div>
+            <h2 class="fw-bold mb-1">
+                <i class="bi bi-check-circle"></i> Catálogo de Estados
+            </h2>
+            <p class="text-muted small mb-0">Configura las etiquetas y lógica de control para los trámites.</p>
+        </div>
+
+        <div class="d-flex gap-2">
+            <button class="btn btn-success shadow-sm px-4" onclick="loadModal('/Procedures/ProcedureStatus/Create')">
+                <i class="bi bi-plus-circle me-2"></i> Agregar estado
+            </button>
+        </div>
+    </div>
+
+    <partial name="_TableTools" />
+
+    <div class="card shadow-sm border-0 overflow-hidden">
+        <div class="card-body p-0">
+            <table id="tableToCopy" class="table table-hover align-middle mb-0">
+                <thead class="burgundy-header text-white">
+                    <tr>
+                        <th class="ps-4">Código Interno</th>
+                        <th>Nombre y Previsualización</th>
+                        <th class="text-center">Propiedades</th>
+                        <th>Última modificación</th>
+                        <th class="actions text-center pe-4">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td class="ps-4">
+                                <code class="fw-bold text-primary">@item.InternalCode</code>
+                            </td>
+                            <td>
+                                <div style="background-color: @item.BackgroundColor;
+                                                color: @item.TextColor;
+                                                padding: 6px 18px;
+                                                border-radius: 20px;
+                                                text-align: center;
+                                                font-weight: 700;
+                                                display: inline-block;
+                                                min-width: 150px;
+                                                border: 1px solid rgba(0,0,0,0.1);
+                                                box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+                                                font-size: 0.85rem;">
+                                    @item.Name
+                                </div>
+                            </td>
+                            <td class="text-center">
+                                <div class="d-flex justify-content-center gap-2">
+                                    @if (item.IsTerminalState)
+                                    {
+                                        <span class="badge bg-dark" title="Estado Finalizado">
+                                            <i class="bi bi-flag-fill"></i> Final
+                                        </span>
+                                    }
+                                    @if (item.IsActionRequiredByUser)
+                                    {
+                                        <span class="badge bg-warning text-dark" title="Requiere Acción del Alumno">
+                                            <i class="bi bi-person-exclamation"></i> Alumno
+                                        </span>
+                                    }
+                                </div>
+                            </td>
+                            <td class="text-muted small">
+                                <i class="bi bi-clock-history me-1"></i> @item.DateUpdated.ToString("dd/MM/yyyy hh:mm tt")
+                            </td>
+                            <td class="actions text-center pe-4">
+                                <div class="btn-group">
+                                    <button class="btn btn-sm btn-warning me-2"
+                                            style="width:32px; height:32px; padding:0;"
+                                            onclick="loadModal('/Procedures/ProcedureStatus/Edit/@item.Id')"
+                                            title="Editar">
+                                        <i class="bi bi-pencil-square"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-danger"
+                                            style="width:32px; height:32px; padding:0;"
+                                            onclick="loadModal('/Procedures/ProcedureStatus/Delete/@item.Id')"
+                                            title="Eliminar">
+                                        <i class="bi bi-trash3-fill"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
 
 <script>
     async function loadModal(url) {
@@ -24,7 +120,7 @@
 
         } catch (error) {
             console.error(error);
-            alert("No se pudo cargar la ventana.");
+            Swal.fire('Error', 'No se pudo cargar la ventana.', 'error');
         }
     }
 
@@ -43,10 +139,11 @@
 
         if (result.success) {
             const modalEl = form.closest(".modal");
-            bootstrap.Modal.getInstance(modalEl).hide();
+            const modalInstance = bootstrap.Modal.getInstance(modalEl);
+            if(modalInstance) modalInstance.hide();
             location.reload();
         } else {
-            alert("Errores:\n" + result.errors.join("\n"));
+            Swal.fire('Atención', result.errors.join("\n"), 'warning');
         }
     });
 
@@ -65,61 +162,7 @@
         };
 
         [bgInput, textInput, nameInput].forEach(el => {
-            el.addEventListener('input', update);
+            if(el) el.addEventListener('input', update);
         });
     }
 </script>
-
-<div class="d-flex justify-content-between align-items-center mb-4 p-3 bg-white shadow-sm rounded">
-    <div>
-        <h2 class="mb-0 text-dark">Estados de trámite</h2>
-        <p class="text-muted small mb-0">Configura la progresión visual de los procesos.</p>
-    </div>
-    <button class="btn btn-success shadow-sm px-4" onclick="loadModal('/Procedures/ProcedureStatus/Create')">
-        <i class="bi bi-plus-circle me-2"></i> Agregar estado
-    </button>
-</div>
-
-<table class="table table-hover mt-3 shadow-sm bg-white rounded overflow-hidden">
-    <thead class="burgundy-header text-white">
-        <tr>
-            <th class="text-center" style="width: 80px;">Orden</th>
-            <th>Nombre y Previsualización</th>
-            <th>Última modificación</th>
-            <th class="text-center">Acciones</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var item in Model)
-        {
-            <tr>
-                <td class="text-center align-middle">
-                    <span class="badge bg-secondary rounded-pill">#@item.StepOrder</span>
-                </td>
-                <td class="align-middle">
-                    <div style="background-color: @item.BackgroundColor; 
-                                color: @item.TextColor; 
-                                padding: 6px 15px; 
-                                border-radius: 20px; 
-                                text-align: center; 
-                                font-weight: 600; 
-                                display: inline-block; 
-                                min-width: 140px;
-                                border: 1px solid rgba(0,0,0,0.1);
-                                box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
-                        @item.Name
-                    </div>
-                </td>
-                <td>@item.DateUpdated.ToString("dd/MM/yyyy hh:mm tt")</td>
-                <td class="text-center align-middle">
-                    <button class="btn btn-sm btn-warning me-1" onclick="loadModal('/Procedures/ProcedureStatus/Edit/@item.Id')">
-                        <i class="bi bi-pencil-square"></i>
-                    </button>
-                    <button class="btn btn-sm btn-danger" onclick="loadModal('/Procedures/ProcedureStatus/Delete/@item.Id')">
-                        <i class="bi bi-trash3-fill"></i>
-                    </button>
-                </td>
-            </tr>
-        }
-    </tbody>
-</table>

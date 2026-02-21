@@ -9,8 +9,11 @@ namespace SchoolManager.Models
         public int IdSchool { get; set; }
 
 
+        [Required]
         public int id_data { get; set; }
-        public preenrollment_general preenrollment_general { get; set; }
+
+        [ForeignKey("id_data")]
+        public virtual preenrollment_general General { get; set; } = null!;
 
         public string school { get; set; }
         public string degree { get; set; }

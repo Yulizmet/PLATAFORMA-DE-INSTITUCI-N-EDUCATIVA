@@ -1,125 +1,141 @@
-﻿@model IEnumerable<SchoolManager.Models.procedure_request>
+﻿@model SchoolManager.Areas.Procedures.ViewModels.DashboardViewModel
+@using System.Globalization
+
 @{
     ViewData["Title"] = "Panel de Control";
     Layout = "_ProceduresLayout";
-}
-@using System.Globalization
-@{
     var espanol = new CultureInfo("es-MX");
 }
+
+<style>
+    body {
+        background: linear-gradient(135deg, #D4D2D2, #FFFFFF);
+    }
+
+    .card:hover {
+        transform: translateY(-3px);
+        transition: .2s;
+    }
+
+    .chart-container {
+        position: relative;
+        height: 300px;
+        width: 100%;
+    }
+</style>
+
 <div class="container-fluid">
+
+    <!-- HEADER -->
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="fw-bold">Resumen General</h2>
-        <span class="text-muted">@DateTime.Now.ToString("dd 'de' MMMM 'del' yyyy", espanol)</span>
+        <h2 class="fw-bold">Panel de Control Institucional</h2>
+        <span class="text-muted">
+            @DateTime.Now.ToString("dddd dd 'de' MMMM 'de' yyyy", espanol)
+        </span>
     </div>
 
-    <div class="row g-3 mb-5">
+    <!-- TARJETAS -->
+    <div class="row g-3 mb-4">
+
         <div class="col-md-3">
-            <div class="card border-0 shadow-sm h-100 border-start border-primary border-4">
+            <div class="card shadow border-0 h-100"
+                 style="border-left:6px solid #8C1B1B;">
                 <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h6 class="text-muted mb-1">Total Solicitudes</h6>
-                            <h3 class="fw-bold mb-0">@ViewBag.Stats.Total</h3>
-                        </div>
-                        <div class="bg-primary bg-opacity-10 p-3 rounded">
-                            <i class="bi bi-layers text-primary fs-3"></i>
-                        </div>
-                    </div>
+                    <h6 class="text-muted">Total de Solicitudes</h6>
+                    <h2 class="fw-bold">@Model.TotalRequests</h2>
                 </div>
             </div>
         </div>
 
         <div class="col-md-3">
-            <div class="card border-0 shadow-sm h-100 border-start border-warning border-4">
+            <div class="card shadow border-0 h-100"
+                 style="border-left:6px solid #B1A596;">
                 <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h6 class="text-muted mb-1">Nuevas / Pendientes</h6>
-                            <h3 class="fw-bold mb-0">@ViewBag.Stats.Nuevos</h3>
-                        </div>
-                        <div class="bg-warning bg-opacity-10 p-3 rounded">
-                            <i class="bi bi-clock-history text-warning fs-3"></i>
-                        </div>
-                    </div>
+                    <h6 class="text-muted">Acción Requerida</h6>
+                    <h2 class="fw-bold">@Model.ActionRequired</h2>
                 </div>
             </div>
         </div>
 
         <div class="col-md-3">
-            <div class="card border-0 shadow-sm h-100 border-start border-success border-4">
+            <div class="card shadow border-0 h-100"
+                 style="border-left:6px solid #620900;">
                 <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h6 class="text-muted mb-1">Finalizadas</h6>
-                            <h3 class="fw-bold mb-0">@ViewBag.Stats.Finalizados</h3>
-                        </div>
-                        <div class="bg-success bg-opacity-10 p-3 rounded">
-                            <i class="bi bi-check-circle text-success fs-3"></i>
-                        </div>
-                    </div>
+                    <h6 class="text-muted">En Curso</h6>
+                    <h2 class="fw-bold">@Model.InProgress</h2>
                 </div>
             </div>
         </div>
 
         <div class="col-md-3">
-            <div class="card border-0 shadow-sm h-100 border-start border-danger border-4">
+            <div class="card shadow border-0 h-100"
+                 style="border-left:6px solid #8C1B1B;">
                 <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h6 class="text-muted mb-1">Canceladas</h6>
-                            <h3 class="fw-bold mb-0">@ViewBag.Stats.Cancelados</h3>
-                        </div>
-                        <div class="bg-danger bg-opacity-10 p-3 rounded">
-                            <i class="bi bi-x-octagon text-danger fs-3"></i>
-                        </div>
-                    </div>
+                    <h6 class="text-muted">Finalizadas</h6>
+                    <h2 class="fw-bold">@Model.Cancelled</h2>
                 </div>
             </div>
         </div>
+
     </div>
 
-    <div class="card shadow-sm border-0 rounded-3">
-        <div class="card-header bg-white py-3 border-0 burgundy-header">
-            <div class="d-flex justify-content-between align-items-center px-2">
-                <h5 class="mb-0 fw-bold text-white"><i class="bi bi-lightning-charge me-2 text-white"></i>Solicitudes Recientes</h5>
-                <a href="#" class="btn btn-sm btn-outline-white rounded-pill text-white fw-bold">Ver todas</a>
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <div class="card shadow border-0 p-3 h-100">
+                <h5 class="fw-bold mb-3">Distribución de Solicitudes</h5>
+                <div class="chart-container">
+                    <canvas id="statusChart"></canvas>
+                </div>
             </div>
         </div>
-        <div class="card-body p-0">
-            <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0">
-                    <thead class="bg-light" style="background-color: #E4E4E4 !important">
-                        <tr>
-                            <th class="ps-4">Folio</th>
-                            <th>Trámite</th>
-                            <th>Asunto</th>
-                            <th>Estado</th>
-                            <th class="text-end pe-4">Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (var item in Model)
-                        {
-                            <tr>
-                                <td class="ps-4 fw-bolder burgundy-color">@item.Folio</td>
-                                <td>@item.ProcedureType?.Name</td>
-                                <td class="text-truncate" style="max-width: 250px;">@item.Subject</td>
-                                <td>
-                                    <span class="badge rounded-pill" style="background-color: @item.ProcedureStatus?.BackgroundColor; color: @item.ProcedureStatus?.TextColor">
-                                        @item.ProcedureStatus?.Name
-                                    </span>
-                                </td>
-                                <td class="text-end pe-4">
-                                    <button class="btn btn-sm btn-warning" title="Gestionar">
-                                        <i class="bi bi-pencil-square"></i>
-                                    </button>
-                                </td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
+
+        <div class="col-md-6">
+            <div class="card shadow border-0 p-3 h-100">
+                <h5 class="fw-bold mb-3">Solicitudes por Mes</h5>
+                <div class="chart-container">
+                    <canvas id="monthChart"></canvas>
+                </div>
             </div>
         </div>
     </div>
 </div>
+
+<script>
+    const commonOptions = {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'bottom'
+            }
+        }
+    };
+
+    const statusChart = new Chart(document.getElementById('statusChart'), {
+        type: 'doughnut',
+        data: {
+            labels: ['Acción requerida', 'En curso', 'Finalizadas'],
+            datasets: [{
+                data: [@Model.ActionRequired, @Model.InProgress, @Model.Cancelled],
+                backgroundColor: ['#8C1B1B', '#B1A596', '#620900']
+            }]
+        },
+        options: commonOptions
+    });
+
+    const monthChart = new Chart(document.getElementById('monthChart'), {
+        type: 'line',
+        data: {
+            labels: ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'],
+            datasets: [{
+                label: 'Solicitudes',
+                data: @Html.Raw(Json.Serialize(Model.MonthlyRequests)),
+                borderColor: '#8C1B1B',
+                backgroundColor: 'rgba(140,27,27,0.2)',
+                fill: true,
+                tension: 0.4
+            }]
+        },
+        options: commonOptions
+    });
+</script>

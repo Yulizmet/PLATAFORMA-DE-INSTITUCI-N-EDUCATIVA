@@ -10,16 +10,21 @@ namespace SchoolManager.Models
 
         [Required]
         [MaxLength(150)]
+        [Display(Name = "Nombre del trámite")]
         public string Name { get; set; } = null!;
 
         [Required]
+        [Display(Name = "Última modificación")]
         public DateTime DateUpdated { get; set; } = DateTime.Now;
 
         [Required]
+        [Display(Name = "Área responsable")]
         public int IdArea { get; set; }
 
         [ForeignKey("IdArea")]
         public virtual procedure_areas ProcedureArea { get; set; } = null!;
+
+        public virtual ICollection<procedure_flow> ProcedureFlow { get; set; } = new List<procedure_flow>();
 
         public virtual ICollection<procedure_type_requirements> Requirements { get; set; } = new List<procedure_type_requirements>();
 

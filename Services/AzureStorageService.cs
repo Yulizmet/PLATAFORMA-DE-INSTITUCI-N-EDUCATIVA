@@ -1,22 +1,24 @@
 ﻿using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
 using Azure.Storage.Sas;
-using SchoolManager.Services;
 
 namespace SchoolManager.Services
 {
     public class AzureStorageService : IStorageService
     {
-        private readonly string _connectionString;
+        private readonly IConfiguration _configuration;
 
         public AzureStorageService(IConfiguration configuration)
         {
-            _connectionString = configuration.GetConnectionString("AzureStorage")!;
+            _configuration = configuration;
         }
 
-        public async Task<string> UploadFileAsync(IFormFile file, string containerName)
+        private string GetConnectionString(string connectionName)
+            => _configuration.GetConnectionString(connectionName) ?? throw new Exception($"Connection string {connectionName} not found.");
+
+        public async Task<string> UploadFileAsync(IFormFile file, string containerName, string connectionName = "AzureStorageProcedures")
         {
-            var blobServiceClient = new BlobServiceClient(_connectionString);
+            var blobServiceClient = new BlobServiceClient(GetConnectionString(connectionName));
             var containerClient = blobServiceClient.GetBlobContainerClient(containerName);
 
             await containerClient.CreateIfNotExistsAsync();
@@ -34,7 +36,7 @@ namespace SchoolManager.Services
             return blobClient.Uri.ToString();
         }
 
-        public string GetSecureUrl(string fileUrl, string originalName)
+        public string GetSecureUrl(string fileUrl, string originalName, string connectionName = "AzureStorageProcedures")
         {
             if (string.IsNullOrEmpty(fileUrl)) return "";
 
@@ -42,7 +44,7 @@ namespace SchoolManager.Services
             string blobName = Path.GetFileName(uri.LocalPath);
             string containerName = uri.Segments[1].Replace("/", "");
 
-            var blobServiceClient = new BlobServiceClient(_connectionString);
+            var blobServiceClient = new BlobServiceClient(GetConnectionString(connectionName));
             var containerClient = blobServiceClient.GetBlobContainerClient(containerName);
             var blobClient = containerClient.GetBlobClient(blobName);
 
@@ -64,9 +66,9 @@ namespace SchoolManager.Services
             return fileUrl;
         }
 
-        public async Task DeleteFileAsync(string fileUrl, string containerName)
+        public async Task DeleteFileAsync(string fileUrl, string containerName, string connectionName = "AzureStorageProcedures")
         {
-            var blobServiceClient = new BlobServiceClient(_connectionString);
+            var blobServiceClient = new BlobServiceClient(GetConnectionString(connectionName));
             var containerClient = blobServiceClient.GetBlobContainerClient(containerName);
 
             Uri uri = new Uri(fileUrl);

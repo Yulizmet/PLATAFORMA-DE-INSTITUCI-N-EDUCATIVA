@@ -2,39 +2,64 @@
 
 <div class="modal fade" id="createModal" tabindex="-1">
     <div class="modal-dialog">
-        <div class="modal-content border-0 shadow">
+        <div class="modal-content border-0 shadow-lg rounded-4">
             <form method="post" action="/Procedures/ProcedureStatus/Create">
                 @Html.AntiForgeryToken()
                 <div class="modal-header bg-success text-white">
-                    <h5 class="modal-title"><i class="bi bi-file-earmark-plus me-2"></i>Nuevo estado</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    <h5 class="modal-title fw-bold"><i class="bi bi-file-earmark-plus-fill me-2"></i>Nuevo Estado Maestro</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
-                <div class="modal-body">
+                <div class="modal-body p-4">
                     <div class="mb-3">
-                        <label asp-for="Name" class="form-label fw-bold">Nombre del Estado</label>
-                        <input asp-for="Name" class="form-control" required placeholder="Ej: Pendiente, Aprobado..." />
+                        <label asp-for="Name" class="form-label fw-bold">Nombre Visual</label>
+                        <input asp-for="Name" id="Name" class="form-control border-2" required placeholder="Ej: Pendiente de Pago" />
+                        <div class="form-text small">Es el nombre que verá el alumno.</div>
                     </div>
 
                     <div class="mb-3">
-                        <label asp-for="StepOrder" class="form-label fw-bold">Orden en el Proceso</label>
-                        <input type="number" asp-for="StepOrder" class="form-control" min="1" value="1" />
-                        <div class="form-text">Define la posición jerárquica del estado.</div>
+                        <label asp-for="InternalCode" class="form-label fw-bold">Código Interno (Único)</label>
+                        <input asp-for="InternalCode" class="form-control border-2" required placeholder="Ej: PENDING_PAYMENT" />
+                        <div class="form-text small text-primary"><i class="bi bi-info-circle me-1"></i>Usa mayúsculas y guiones bajos para validaciones en código.</div>
+                    </div>
+
+                    <div class="row mb-4">
+                        <div class="col-6">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" asp-for="IsTerminalState" id="IsTerminalState">
+                                <label class="form-check-label fw-bold" for="IsTerminalState">¿Estado Final?</label>
+                            </div>
+                            <small class="text-muted">Finaliza el trámite.</small>
+                        </div>
+                        <div class="col-6">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" asp-for="IsActionRequiredByUser" id="IsActionRequiredByUser">
+                                <label class="form-check-label fw-bold" for="IsActionRequiredByUser">¿Acción del Alumno?</label>
+                            </div>
+                            <small class="text-muted">Requiere que el alumno haga algo.</small>
+                        </div>
                     </div>
 
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label asp-for="BackgroundColor" class="form-label fw-bold">Fondo (Hex)</label>
-                            <input type="color" asp-for="BackgroundColor" class="form-control form-control-color w-100" value="#198754" />
+                            <label asp-for="BackgroundColor" class="form-label fw-bold">Color Fondo</label>
+                            <input type="color" asp-for="BackgroundColor" id="BackgroundColor" class="form-control form-control-color w-100 shadow-sm" value="#620900" />
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label asp-for="TextColor" class="form-label fw-bold">Texto (Hex)</label>
-                            <input type="color" asp-for="TextColor" class="form-control form-control-color w-100" value="#FFFFFF" />
+                            <label asp-for="TextColor" class="form-label fw-bold">Color Texto</label>
+                            <input type="color" asp-for="TextColor" id="TextColor" class="form-control form-control-color w-100 shadow-sm" value="#FFFFFF" />
                         </div>
                     </div>
+
+                    <div class="mt-2 p-3 border rounded-3 bg-light text-center">
+                        <span class="text-muted small d-block mb-2">Vista previa del indicador:</span>
+                        <span id="previewBadge" class="badge px-4 py-2 shadow-sm" style="background-color: #620900; color: #FFFFFF; font-size: 0.9rem; border-radius: 20px;">
+                            Vista Previa
+                        </span>
+                    </div>
                 </div>
-                <div class="modal-footer bg-light border-top-0">
-                    <button type="button" class="btn btn-outline-secondary px-4" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="submit" class="btn btn-success px-4 shadow-sm">Guardar</button>
+                <div class="modal-footer bg-light border-0">
+                    <button type="button" class="btn btn-outline-secondary px-4 fw-bold" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-success px-5 shadow-sm fw-bold">Guardar Estado</button>
                 </div>
             </form>
         </div>
