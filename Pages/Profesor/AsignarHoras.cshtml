@@ -1,0 +1,55 @@
+@page
+@{
+    Layout = "_LayoutEscolar";
+    ViewData["Title"] = "Asignar Horas";
+}
+
+<h3>Asignar Horas a Alumnos</h3>
+
+<table class="table table-bordered mt-4">
+    <thead class="table-dark">
+        <tr>
+            <th>Alumno</th>
+            <th>Tipo</th>
+            <th>Horas a asignar</th>
+            <th>Acción</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>Juan Pérez</td>
+            <td>
+                <select class="form-select">
+                    <option>Prácticas Profesionales</option>
+                    <option>Servicio Social</option>
+                </select>
+            </td>
+            <td>
+                <input type="number" class="form-control" placeholder="Ej. 20" />
+            </td>
+            <td>
+                <button class="btn btn-success btn-sm">
+                    Asignar
+                </button>
+            </td>
+        </tr>
+
+        <tr>
+            <td>Ana López</td>
+            <td>
+                <select class="form-select">
+                    <option>Prácticas Profesionales</option>
+                    <option>Servicio Social</option>
+                </select>
+            </td>
+            <td>
+                <input type="number" class="form-control" />
+            </td>
+            <td>
+                <button class="btn btn-success btn-sm">
+                    Asignar
+                </button>
+            </td>
+        </tr>
+    </tbody>
+</table>
