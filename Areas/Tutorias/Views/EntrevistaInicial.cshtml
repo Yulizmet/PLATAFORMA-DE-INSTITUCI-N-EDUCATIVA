@@ -9,10 +9,30 @@
         </div>
 
         <div class="card-body p-4" style="background-color: var(--utt-white);">
-            <form asp-action="GuardarEntrevista" method="post">
+            <form asp-action="GuardarEntrevista" method="post" enctype="multipart/form-data">
 
                 <div class="p-3 rounded mb-4" style="background-color: var(--utt-light);">
                     <h5 class="fw-bold" style="color: var(--utt-dark-red);">Datos del Alumno</h5>
+
+                    <div class="row mb-4 align-items-center justify-content-center">
+                        <div class="col-md-12 text-center">
+                            <div class="position-relative d-inline-block">
+                                <img id="previewFoto" src="https://via.placeholder.com/150?text=Sin+Foto"
+                                     alt="Foto del Alumno"
+                                     class="rounded-circle shadow-sm"
+                                     style="width: 150px; height: 150px; object-fit: cover; border: 4px solid var(--utt-white);">
+
+                                <label for="inputFoto" class="position-absolute bottom-0 end-0 btn btn-sm btn-utt-primary rounded-circle"
+                                       style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; cursor: pointer;"
+                                       title="Subir Foto">
+                                    <i class="bi bi-camera-fill"></i>
+                                </label>
+
+                                <input type="file" id="inputFoto" name="FotoPerfil" accept="image/*" class="d-none" onchange="mostrarPrevisualizacion(this)">
+                            </div>
+                            <p class="text-muted small mt-2">Click en la cámara para subir tu foto</p>
+                        </div>
+                    </div>
                     <div class="row">
                         <div class="col-md-6">
                             <label class="form-label fw-bold">Nombre Completo</label>
@@ -25,7 +45,7 @@
                                    style="border-color: var(--utt-beige);">
                         </div>
                     </div>
-                    <div class="row">
+                    <div class="row mt-3">
                         <div class="col-md-6">
                             <label class="form-label fw-bold">Correo</label>
                             <input type="text" class="form-control" value=""
@@ -185,3 +205,21 @@
         </div>
     </div>
 </div>
+
+@section Scripts {
+    <script>
+        // Script para previsualizar la imagen antes de subirla
+        function mostrarPrevisualizacion(input) {
+            if (input.files && input.files[0]) {
+                var reader = new FileReader();
+
+                reader.onload = function (e) {
+                    // Asigna la imagen cargada al elemento img
+                    document.getElementById('previewFoto').src = e.target.result;
+                }
+
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+    </script>
+}

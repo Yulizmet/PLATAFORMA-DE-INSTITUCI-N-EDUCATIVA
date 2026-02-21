@@ -27,5 +27,14 @@ namespace SchoolManager.Areas.Tutorias.Controllers
         {
             return View("~/Areas/Tutorias/Views/Seguimiento.cshtml");
         }
+
+        public IActionResult Controlador()
+        {
+            return View("~/Areas/Tutorias/Views/Controlador.cshtml");
+        }
+        public IActionResult ListaDeAlumnos()
+        {
+            return View("~/Areas/Tutorias/Views/ListaDeAlumnos.cshtml");
+        }
     }
 }
