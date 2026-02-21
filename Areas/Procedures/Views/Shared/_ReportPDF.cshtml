@@ -1,0 +1,262 @@
+﻿@model List<object>
+@{
+    Layout = null;
+    var columns = ViewData["Columns"] as IEnumerable<dynamic> ?? new List<dynamic>();
+    var institutionName = "SCHOOL MANAGER";
+}
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            color: #000000;
+            line-height: 1.5;
+            letter-spacing: 1.8px;
+        }
+
+        @@page {
+            size: letter;
+            margin: 0;
+        }
+
+        .page {
+            width: 215.9mm;
+            height: 279.4mm;
+            padding: 10mm;
+            margin: 0 auto;
+            background: #FFFFFF;
+            position: relative;
+            box-sizing: border-box;
+        }
+
+        header {
+            font-family: Arial, Helvetica, sans-serif;
+            display: table;
+            width: 100%;
+            border-bottom: 3px solid #8C1B1B;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+
+        .header-left {
+            display: table-cell;
+            vertical-align: middle;
+        }
+
+        .logo-placeholder {
+            width: 85px;
+            height: 85px;
+            background-color: #D4D2D2;
+            border-radius: 50%;
+            display: inline-block;
+            text-align: center;
+            line-height: 85px;
+            color: #620900;
+            font-weight: bold;
+            border: 2px solid #B1A596;
+            font-size: 12pt;
+        }
+
+        .institution-name {
+            display: inline-block;
+            vertical-align: middle;
+            margin-left: 20px;
+        }
+
+            .institution-name h1 {
+                margin: 0;
+                font-size: 28pt;
+                color: #620900;
+                text-transform: uppercase;
+                letter-spacing: 5px;
+                font-weight: bold;
+            }
+
+            .institution-name p {
+                margin: 0;
+                font-size: 10.5pt;
+                color: #B1A596;
+                font-weight: bold;
+                letter-spacing: 2px;
+            }
+
+        .report-meta {
+            display: table-cell;
+            vertical-align: middle;
+            text-align: right;
+            font-size: 9.5pt;
+            color: #555;
+            line-height: 1.6;
+        }
+
+        .content {
+            margin-top: 30px;
+        }
+
+        h2.report-title {
+            color: #8C1B1B;
+            border-left: 10px solid #B1A596;
+            padding-left: 20px;
+            margin: 30px 0 15px 0;
+            font-size: 18pt;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 25px;
+            table-layout: auto;
+        }
+
+            table th {
+                background-color: #8C1B1B;
+                color: #FFFFFF;
+                text-align: left;
+                padding: 14px 10px;
+                font-size: 13pt;
+                text-transform: uppercase;
+                letter-spacing: 2px;
+            }
+
+            table td {
+                padding: 12px 10px;
+                border-bottom: 1px solid #D4D2D2;
+                font-size: 10pt;
+                letter-spacing: 1.2px;
+                color: #333;
+            }
+
+        .bg-zebra {
+            background-color: #f9f9f9;
+        }
+
+        footer {
+            position: absolute;
+            bottom: 10mm;
+            left: 10mm;
+            right: 10mm;
+            border-top: 2px solid #D4D2D2;
+            padding-top: 10px;
+            display: table;
+            width: 195.9mm;
+            font-size: 9pt;
+            color: #B1A596;
+            letter-spacing: 1.5px;
+        }
+
+        .footer-left {
+            display: table-cell;
+            text-align: left;
+        }
+
+        .footer-right {
+            display: table-cell;
+            text-align: right;
+        }
+
+        .stamp {
+            margin-top: 50px;
+            text-align: center;
+            float: right;
+            width: 200px;
+        }
+
+        .signature-line {
+            border-top: 1px solid #000000;
+            margin-top: 60px;
+            padding-top: 5px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="page">
+        <header>
+            <div class="header-left">
+                <div class="logo-placeholder">LOGO</div>
+                <div class="institution-name">
+                    <h1>@institutionName</h1>
+                    <p>SISTEMA DE GESTIÓN DE TRÁMITES ADMINISTRATIVOS</p>
+                </div>
+            </div>
+            <div class="report-meta">
+                <strong>Fecha:</strong> @DateTime.Now.ToString("dd/MM/yyyy")<br>
+                <strong>Hora:</strong> @DateTime.Now.ToString("hh:mm:ss tt")<br>
+                <strong>Módulo:</strong> @(ViewData["Entity"]?.ToString().ToUpper())
+            </div>
+        </header>
+
+        <main class="content">
+            <h2 class="report-title">Reporte Detallado de @ViewData["Entity"]</h2>
+
+            <p style="font-size: 11pt; color: #444; margin-bottom: 25px;">
+                A continuación se presenta el listado oficial de registros activos correspondientes al módulo seleccionado, filtrados según los criterios del administrador.
+            </p>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        @foreach (var col in columns)
+                        {
+                            <th>@col.DisplayName</th>
+                        }
+                    </tr>
+                </thead>
+                <tbody>
+                    @{
+                        int contador = 1;
+                    }
+                    @foreach (var item in Model)
+                    {
+                        <tr class="@(contador % 2 == 0 ? "bg-zebra" : "")">
+                            <td style="text-align: center; font-weight: bold;">@contador</td>
+
+                            @foreach (var col in columns)
+                            {
+                                string propName = col.PropName;
+                                var prop = item.GetType().GetProperty(propName);
+                                var val = prop?.GetValue(item, null);
+                                <td>
+                                    @if (val is DateTime dt)
+                                    {
+                                        @dt.ToString("dd/MM/yyyy hh:mm tt")
+                                    }
+                                    else
+                                    {
+                                        @(val ?? "N/A")
+                                    }
+                                </td>
+                            }
+                        </tr>
+                        contador++;
+                    }
+                </tbody>
+            </table>
+
+            @*<div class="stamp">
+                <div class="signature-line">
+                    Sello de Validación
+                </div>
+            </div>*@
+        </main>
+
+        <footer>
+            <div class="footer-left">
+                © @DateTime.Now.Year @institutionName - Documento de Control Interno
+            </div>
+            <div class="footer-right">
+                Página <span class="page"></span> de <span class="topage"></span>
+            </div>
+        </footer>
+    </div>
+</body>
+</html>

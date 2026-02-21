@@ -1,8 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using SchoolManager.Models;
-using System;
-using System.Data;
-using System.Security;
 
 namespace SchoolManager.Data
 {
@@ -10,37 +7,31 @@ namespace SchoolManager.Data
     {
         public AppDbContext(DbContextOptions<AppDbContext> options)
             : base(options) { }
-        
 
-        //Add Entity Sample
-    
+        #region DbSets
+        // Preenrollment (Inscripciones)
         public DbSet<preenrollment_general> PreenrollmentGenerals { get; set; } = default!;
         public DbSet<preenrollment_addresses> PreenrollmentAddresses { get; set; } = default!;
         public DbSet<preenrollment_careers> PreenrollmentCareers { get; set; } = default!;
         public DbSet<preenrollment_generations> Generations { get; set; } = default!;
 
+        public DbSet<Generation> Generations { get; set; } = default!;
         public DbSet<preenrollment_infos> PreenrollmentInfos { get; set; } = default!;
         public DbSet<preenrollment_schools> PreenrollmentSchools { get; set; } = default!;
         public DbSet<preenrollment_tutors> PreenrollmentTutors { get; set; } = default!;
-        
-        //Preenrollment
-        
+
+        // Procedures (Trámites - El área que actualizamos hoy)
         public DbSet<procedure_areas> ProcedureAreas { get; set; }
-
         public DbSet<procedure_documents> ProcedureDocuments { get; set; }
-
+        public DbSet<procedure_flow> ProcedureFlow { get; set; }
         public DbSet<procedure_monitoring> ProcedureMonitoring { get; set; }
-
         public DbSet<procedure_request> ProcedureRequest { get; set; }
-
         public DbSet<procedure_status> ProcedureStatus { get; set; }
-
         public DbSet<procedure_type_documents> ProcedureTypeDocuments { get; set; }
-
         public DbSet<procedure_type_requirements> ProcedureTypeRequirements { get; set; }
-
         public DbSet<procedure_types> ProcedureTypes { get; set; }
 
+        // Users (Gestión de Usuarios)
         public DbSet<users_person> Persons { get; set; }
         public DbSet<users_user> Users { get; set; }
         public DbSet<users_auditlog> AuditLogs { get; set; }
@@ -49,8 +40,8 @@ namespace SchoolManager.Data
         public DbSet<users_userrole> UserRoles { get; set; }
         public DbSet<users_rolepermission> RolePermissions { get; set; }
         public DbSet<users_session> Sessions { get; set; }
-        
-        //grades
+
+        // Grades (Calificaciones de los compañeros)
         public DbSet<grades_extraordinary_grades> grades_ExtraordinaryGrades { get; set; }
         public DbSet<grades_final_grades> grades_FinalGrades { get; set; }
         public DbSet<grades_grade_level> grades_GradeLevels { get; set; }
@@ -63,11 +54,13 @@ namespace SchoolManager.Data
         public DbSet<grades_teacher_subject_group> grades_TeacherSubjectGroups { get; set; }
         public DbSet<grades_unit_recovery> grades_UnitRecoveries { get; set; }
 
+        // Tutorship (Tutorías)
         public DbSet<tutorship> Tutorships { get; set; }
         public DbSet<tutorship_attendance> TutorshipAttendances { get; set; }
         public DbSet<tutorship_monitoring> TutorshipMonitorings { get; set; }
         public DbSet<tutorship_interview> TutorshipInterviews { get; set; }
         public DbSet<tutorship_interview_answer> TutorshipInterviewAnswers { get; set; }
+        #endregion
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -302,74 +295,73 @@ namespace SchoolManager.Data
             modelBuilder.Entity<preenrollment_generations>().ToTable("Generation");
 
             //Procedures
+            #region 1. Procedures Configuration
             modelBuilder.Entity<procedure_status>().ToTable("procedure_status");
             modelBuilder.Entity<procedure_areas>().ToTable("procedure_areas");
             modelBuilder.Entity<procedure_documents>().ToTable("procedure_documents");
-            modelBuilder.Entity<procedure_request>().ToTable("procedure_request");
             modelBuilder.Entity<procedure_type_documents>().ToTable("procedure_type_documents");
             modelBuilder.Entity<procedure_type_requirements>().ToTable("procedure_type_requirements");
-            modelBuilder.Entity<procedure_types>().ToTable("procedure_types");
-            modelBuilder.Entity<procedure_monitoring>().ToTable("procedure_monitoring");
 
-            modelBuilder.Entity<tutorship>().ToTable("tutorship_sessions");
-            modelBuilder.Entity<tutorship_attendance>().ToTable("tutorship_attendances");
-            modelBuilder.Entity<tutorship_monitoring>().ToTable("tutorship_monitorings");
-            modelBuilder.Entity<tutorship_interview>().ToTable("tutorship_interviews");
-            modelBuilder.Entity<tutorship_interview_answer>().ToTable("tutorship_interview_answers");
+            modelBuilder.Entity<procedure_status>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Name).IsRequired().HasMaxLength(50);
+                entity.Property(e => e.InternalCode).IsRequired().HasMaxLength(50);
+                entity.Property(e => e.BackgroundColor).HasMaxLength(20);
+                entity.Property(e => e.TextColor).HasMaxLength(20);
+                entity.Property(e => e.IsTerminalState).HasDefaultValue(false);
+                entity.Property(e => e.IsActionRequiredByUser).HasDefaultValue(false);
+                entity.HasIndex(e => e.InternalCode).IsUnique();
+            });
 
-            modelBuilder.Entity<tutorship_interview_answer>()
-                .HasOne(a => a.Interview)
-                .WithMany(i => i.Answers)
-                .HasForeignKey(a => a.InterviewId)
-                .OnDelete(DeleteBehavior.Cascade);
+            modelBuilder.Entity<procedure_types>(entity => {
+                entity.ToTable("procedure_types");
+                entity.HasOne(d => d.ProcedureArea).WithMany(p => p.ProcedureTypes).HasForeignKey(d => d.IdArea);
+            });
 
-            modelBuilder.Entity<tutorship_monitoring>()
-                .HasOne(m => m.Student)
-                .WithMany()
-                .HasForeignKey(m => m.StudentId)
-                .OnDelete(DeleteBehavior.Restrict);
+            modelBuilder.Entity<procedure_flow>(entity => {
+                entity.ToTable("procedure_flow");
+                entity.Property(e => e.StepOrder).IsRequired();
+                entity.HasOne(d => d.ProcedureType).WithMany(p => p.ProcedureFlow).HasForeignKey(d => d.IdTypeProcedure).OnDelete(DeleteBehavior.Cascade);
+                entity.HasOne(d => d.ProcedureStatus).WithMany(p => p.ProcedureFlow).HasForeignKey(d => d.IdStatus).OnDelete(DeleteBehavior.Restrict);
+            });
 
-            modelBuilder.Entity<tutorship_monitoring>()
-                .HasOne(m => m.Teacher)
-                .WithMany()
-                .HasForeignKey(m => m.TeacherId)
-                .OnDelete(DeleteBehavior.Restrict);
+            modelBuilder.Entity<procedure_request>(entity => {
+                entity.ToTable("procedure_request");
+                entity.HasOne(d => d.User).WithMany().HasForeignKey(d => d.IdUser).OnDelete(DeleteBehavior.Restrict);
+                entity.HasOne(d => d.ProcedureType).WithMany(p => p.ProcedureRequests).HasForeignKey(d => d.IdTypeProcedure).OnDelete(DeleteBehavior.Restrict);
+                entity.HasOne(d => d.ProcedureFlow).WithMany().HasForeignKey(d => d.IdProcedureFlow).OnDelete(DeleteBehavior.Restrict);
+                entity.Property(p => p.DateCreated).HasDefaultValueSql("GETDATE()").ValueGeneratedOnAdd();
+                entity.Property(p => p.DateUpdated).HasDefaultValueSql("GETDATE()");
+            });
 
-            modelBuilder.Entity<tutorship_attendance>()
-                .HasOne(a => a.Student)
-                .WithMany()
-                .HasForeignKey(a => a.StudentId)
-                .OnDelete(DeleteBehavior.Restrict);
+            modelBuilder.Entity<procedure_monitoring>(entity => {
+                entity.ToTable("procedure_monitoring");
+                entity.HasOne(pm => pm.ProcedureRequest).WithMany(pr => pr.ProcedureMonitorings).HasForeignKey(pm => pm.IdProcedure).OnDelete(DeleteBehavior.Cascade);
+                entity.HasOne(pm => pm.ProcedureFlow).WithMany().HasForeignKey(pm => pm.IdProcedureFlow).OnDelete(DeleteBehavior.Restrict); // Asegúrate de que use IdProcedureFlow
+                entity.HasOne(pm => pm.User).WithMany().HasForeignKey(pm => pm.IdUser).OnDelete(DeleteBehavior.Restrict);
+            });
+            #endregion
 
-            modelBuilder.Entity<tutorship_attendance>()
-                .HasOne(a => a.Teacher)
-                .WithMany()
-                .HasForeignKey(a => a.TeacherId)
-                .OnDelete(DeleteBehavior.Restrict);
+            #region 2. Users Configuration
+            modelBuilder.Entity<users_person>().ToTable("users_person").HasKey(p => p.PersonId);
+            modelBuilder.Entity<users_user>().ToTable("users_user").HasKey(u => u.UserId);
+            modelBuilder.Entity<users_role>().ToTable("users_role").HasKey(r => r.RoleId);
+            modelBuilder.Entity<users_permission>().ToTable("users_permission").HasKey(p => p.PermissionId);
+            modelBuilder.Entity<users_userrole>().ToTable("users_userrole").HasKey(ur => ur.UserRoleId);
+            modelBuilder.Entity<users_rolepermission>().ToTable("users_rolepermission").HasKey(rp => rp.RolePermissionId);
+            modelBuilder.Entity<users_session>().ToTable("users_session").HasKey(s => s.SessionId);
+            modelBuilder.Entity<users_auditlog>().ToTable("users_auditlog").HasKey(a => a.AuditId);
 
-            modelBuilder.Entity<tutorship>()
-                .HasOne(t => t.Student)
-                .WithMany()
-                .HasForeignKey(t => t.StudentId)
-                .OnDelete(DeleteBehavior.Restrict);
+            modelBuilder.Entity<users_person>().HasOne(p => p.User).WithOne(u => u.Person).HasForeignKey<users_user>(u => u.PersonId).OnDelete(DeleteBehavior.Cascade);
+            modelBuilder.Entity<users_userrole>().HasOne(ur => ur.User).WithMany(u => u.UserRoles).HasForeignKey(ur => ur.UserId);
+            modelBuilder.Entity<users_userrole>().HasOne(ur => ur.Role).WithMany(r => r.UserRoles).HasForeignKey(ur => ur.RoleId);
+            modelBuilder.Entity<users_rolepermission>().HasOne(rp => rp.Role).WithMany(r => r.RolePermissions).HasForeignKey(rp => rp.RoleId);
+            modelBuilder.Entity<users_session>().HasOne(s => s.User).WithMany(u => u.Sessions).HasForeignKey(s => s.UserId);
+            modelBuilder.Entity<users_auditlog>().HasOne(a => a.User).WithMany(u => u.AuditLogs).HasForeignKey(a => a.UserId);
+            #endregion
 
-            modelBuilder.Entity<tutorship>()
-                .HasOne(t => t.Teacher)
-                .WithMany()
-                .HasForeignKey(t => t.TeacherId)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            ///UsersCategory
-            modelBuilder.Entity<users_person>().ToTable("users_person");
-            modelBuilder.Entity<users_user>().ToTable("users_user");
-            modelBuilder.Entity<users_role>().ToTable("users_role");
-            modelBuilder.Entity<users_permission>().ToTable("users_permission");
-            modelBuilder.Entity<users_userrole>().ToTable("users_userrole");
-            modelBuilder.Entity<users_rolepermission>().ToTable("users_rolepermission");
-            modelBuilder.Entity<users_session>().ToTable("users_session");
-            modelBuilder.Entity<users_auditlog>().ToTable("users_auditlog");
-            
-            //preenrollment
+            #region 3. Preenrollment Configuration
             modelBuilder.Entity<preenrollment_general>().ToTable("preenrollment_general");
             modelBuilder.Entity<preenrollment_addresses>().ToTable("preenrollment_addresses");
             modelBuilder.Entity<preenrollment_careers>().ToTable("preenrollment_careers");
@@ -478,30 +470,81 @@ namespace SchoolManager.Data
                 .WithMany(g => g.Addresses)
                 .HasForeignKey(a => a.id_data)
                 .OnDelete(DeleteBehavior.Cascade);
+            modelBuilder.Entity<preenrollment_general>().HasIndex(p => p.Curp).IsUnique();
+            modelBuilder.Entity<preenrollment_general>().HasIndex(p => p.Email).IsUnique();
+            modelBuilder.Entity<Generation>().ToTable("Generation");
+
+            modelBuilder.Entity<preenrollment_addresses>().ToTable("preenrollment_addresses").HasOne(a => a.preenrollment_general).WithMany(g => g.Addresses).HasForeignKey(a => a.id_data);
+            modelBuilder.Entity<preenrollment_schools>().ToTable("preenrollment_schools").HasOne(s => s.preenrollment_general).WithMany(g => g.Schools).HasForeignKey(s => s.id_data);
+            modelBuilder.Entity<preenrollment_infos>().ToTable("preenrollment_infos").HasOne(i => i.preenrollment_general).WithMany().HasForeignKey(i => i.id_data);
+            modelBuilder.Entity<preenrollment_tutors>().ToTable("preenrollment_tutors").HasOne(t => t.preenrollment_general).WithMany().HasForeignKey(t => t.id_data);
+            modelBuilder.Entity<preenrollment_general>().HasOne(p => p.Generation).WithMany(g => g.Students).HasForeignKey(p => p.IdGeneration).OnDelete(DeleteBehavior.Restrict);
+            #endregion
 
             modelBuilder.Entity<preenrollment_schools>()
                 .HasOne(s => s.preenrollment_general)
                 .WithMany(g => g.Schools)
                 .HasForeignKey(s => s.id_data)
                 .OnDelete(DeleteBehavior.Cascade);
+            #region 4. Grades Configuration
+            modelBuilder.Entity<grades_extraordinary_grades>().ToTable("grades_extraordinary_grades").HasKey(e => e.ExtraordinaryGradeId);
+            modelBuilder.Entity<grades_final_grades>().ToTable("grades_final_grades").HasKey(f => f.FinalGradeId);
+            modelBuilder.Entity<grades_grade_level>().ToTable("grades_grade_level").HasKey(g => g.GradeLevelId);
+            modelBuilder.Entity<grades_grades>().ToTable("grades_grades").HasKey(g => g.GradeId);
+            modelBuilder.Entity<grades_group>().ToTable("grades_group").HasKey(g => g.GroupId);
+            modelBuilder.Entity<grades_school_cycle>().ToTable("grades_school_cycle").HasKey(s => s.SchoolCycleId);
+            modelBuilder.Entity<grades_subject_unit>().ToTable("grades_subject_unit").HasKey(s => s.UnitId);
+            modelBuilder.Entity<grades_subjects>().ToTable("grades_subjects").HasKey(s => s.SubjectId);
+            modelBuilder.Entity<grades_teacher_subject>().ToTable("grades_teacher_subject").HasKey(t => t.TeacherSubjectId);
+            modelBuilder.Entity<grades_teacher_subject_group>().ToTable("grades_teacher_subject_group").HasKey(t => t.TeacherSubjectGroupId);
+            modelBuilder.Entity<grades_unit_recovery>().ToTable("grades_unit_recovery").HasKey(u => u.UnitRecoveryId);
 
             modelBuilder.Entity<preenrollment_infos>()
                 .HasOne(i => i.preenrollment_general)
                 .WithMany() 
                 .HasForeignKey(i => i.id_data)
                 .OnDelete(DeleteBehavior.Cascade);
+            // Relaciones de Calificaciones
+            modelBuilder.Entity<grades_extraordinary_grades>().HasOne(e => e.FinalGrade).WithOne(f => f.ExtraordinaryGrade).HasForeignKey<grades_extraordinary_grades>(e => e.FinalGradeId).OnDelete(DeleteBehavior.Cascade);
+            modelBuilder.Entity<grades_final_grades>().HasOne(f => f.Subject).WithMany().HasForeignKey(f => f.SubjectId).OnDelete(DeleteBehavior.Restrict);
+            modelBuilder.Entity<grades_final_grades>().HasOne(f => f.grades_group).WithMany().HasForeignKey(f => f.GroupId).OnDelete(DeleteBehavior.Restrict);
+            modelBuilder.Entity<grades_grade_level>().HasMany(g => g.Groups).WithOne(gr => gr.GradeLevel).HasForeignKey(gr => gr.GradeLevelId).OnDelete(DeleteBehavior.Restrict);
+            modelBuilder.Entity<grades_grade_level>().HasMany(g => g.Subjects).WithOne(s => s.GradeLevel).HasForeignKey(s => s.GradeLevelId).OnDelete(DeleteBehavior.Restrict);
+            modelBuilder.Entity<grades_grades>().HasOne(g => g.grades_group).WithMany().HasForeignKey(g => g.GroupId).OnDelete(DeleteBehavior.Restrict);
+            modelBuilder.Entity<grades_grades>().HasOne(g => g.SubjectUnit).WithMany().HasForeignKey(g => g.SubjectUnitId).OnDelete(DeleteBehavior.Restrict);
+            modelBuilder.Entity<grades_grades>().HasMany(g => g.Recoveries).WithOne(r => r.Grade).HasForeignKey(r => r.GradeId).OnDelete(DeleteBehavior.Cascade);
+            modelBuilder.Entity<grades_group>().HasOne(g => g.GradeLevel).WithMany(gl => gl.Groups).HasForeignKey(g => g.GradeLevelId).OnDelete(DeleteBehavior.Restrict);
+            modelBuilder.Entity<grades_group>().HasOne(g => g.SchoolCycle).WithMany(sc => sc.Groups).HasForeignKey(g => g.SchoolCycleId).OnDelete(DeleteBehavior.Restrict);
+            modelBuilder.Entity<grades_subject_unit>().HasOne(su => su.Subject).WithMany(s => s.Units).HasForeignKey(su => su.SubjectId).OnDelete(DeleteBehavior.Cascade);
+            modelBuilder.Entity<grades_subjects>().HasOne(s => s.GradeLevel).WithMany(gl => gl.Subjects).HasForeignKey(s => s.GradeLevelId).OnDelete(DeleteBehavior.Restrict);
+            modelBuilder.Entity<grades_teacher_subject>().HasOne(t => t.Subject).WithMany().HasForeignKey(t => t.SubjectId).OnDelete(DeleteBehavior.Restrict);
+            modelBuilder.Entity<grades_teacher_subject_group>().HasOne(t => t.TeacherSubject).WithMany().HasForeignKey(t => t.TeacherSubjectId).OnDelete(DeleteBehavior.Cascade);
+            modelBuilder.Entity<grades_teacher_subject_group>().HasOne(t => t.grades_group).WithMany().HasForeignKey(t => t.GroupId).OnDelete(DeleteBehavior.Cascade);
+            modelBuilder.Entity<grades_unit_recovery>().HasOne(u => u.Grade).WithMany(g => g.Recoveries).HasForeignKey(u => u.GradeId).OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder.Entity<preenrollment_tutors>()
                 .HasOne(t => t.preenrollment_general)
                 .WithMany()
                 .HasForeignKey(t => t.id_data)
                 .OnDelete(DeleteBehavior.Cascade);
+            // Índices de Calificaciones
+            modelBuilder.Entity<grades_final_grades>().HasIndex(f => new { f.StudentId, f.SubjectId, f.GroupId });
+            modelBuilder.Entity<grades_grades>().HasIndex(g => new { g.StudentId, g.SubjectUnitId, g.GroupId });
+            modelBuilder.Entity<grades_subject_unit>().HasIndex(su => new { su.SubjectId, su.UnitNumber }).IsUnique();
+            modelBuilder.Entity<grades_teacher_subject_group>().HasIndex(t => new { t.TeacherSubjectId, t.GroupId }).IsUnique();
+            #endregion
 
             modelBuilder.Entity<preenrollment_general>()
                 .HasOne(p => p.User)
                 .WithMany()
                 .HasForeignKey(p => p.UserId)
                 .OnDelete(DeleteBehavior.Restrict);
+            #region 5. Tutorship Configuration
+            modelBuilder.Entity<tutorship>().ToTable("tutorship_sessions");
+            modelBuilder.Entity<tutorship_attendance>().ToTable("tutorship_attendances");
+            modelBuilder.Entity<tutorship_monitoring>().ToTable("tutorship_monitorings");
+            modelBuilder.Entity<tutorship_interview>().ToTable("tutorship_interviews");
+            modelBuilder.Entity<tutorship_interview_answer>().ToTable("tutorship_interview_answers");
 
             modelBuilder.Entity<preenrollment_general>()
                 .HasOne(p => p.ProcedureRequest)
@@ -510,8 +553,14 @@ namespace SchoolManager.Data
                 .OnDelete(DeleteBehavior.Restrict);
 
 
+            modelBuilder.Entity<tutorship_interview_answer>().HasOne(a => a.Interview).WithMany(i => i.Answers).HasForeignKey(a => a.InterviewId).OnDelete(DeleteBehavior.Cascade);
+            modelBuilder.Entity<tutorship_monitoring>().HasOne(m => m.Student).WithMany().HasForeignKey(m => m.StudentId).OnDelete(DeleteBehavior.Restrict);
+            modelBuilder.Entity<tutorship_monitoring>().HasOne(m => m.Teacher).WithMany().HasForeignKey(m => m.TeacherId).OnDelete(DeleteBehavior.Restrict);
+            modelBuilder.Entity<tutorship_attendance>().HasOne(a => a.Student).WithMany().HasForeignKey(a => a.StudentId).OnDelete(DeleteBehavior.Restrict);
+            modelBuilder.Entity<tutorship_attendance>().HasOne(a => a.Teacher).WithMany().HasForeignKey(a => a.TeacherId).OnDelete(DeleteBehavior.Restrict);
+            modelBuilder.Entity<tutorship>().HasOne(t => t.Student).WithMany().HasForeignKey(t => t.StudentId).OnDelete(DeleteBehavior.Restrict);
+            modelBuilder.Entity<tutorship>().HasOne(t => t.Teacher).WithMany().HasForeignKey(t => t.TeacherId).OnDelete(DeleteBehavior.Restrict);
+            #endregion
         }
     }
-
-           
-        }
+}

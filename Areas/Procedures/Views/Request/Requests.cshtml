@@ -1,66 +1,167 @@
 ﻿@model IEnumerable<SchoolManager.Models.procedure_request>
 @{
     ViewData["Title"] = "Nueva solicitud";
-    Layout = "/Pages/Shared/_Layout.cshtml";
+    Layout = "/Areas/MainScreen/Views/Shared/_Layout.cshtml";
+    //Layout = "/MainScreen/Views/Shared/_Layout.cshtml";
     var newRequest = new SchoolManager.Models.procedure_request();
 }
 
-@if (ViewBag.Errors != null)
-{
-    <div class="alert alert-danger">
-        <ul>
-            @foreach (var error in ViewBag.Errors)
-            {
-                <li>@error</li>
-            }
-        </ul>
-    </div>
-}
+<style>
+    :root {
+        --burgundy: #620900;
+        --burgundy-light: #8C1B1B;
+    }
 
+    .form-container {
+        /*background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);*/
+        min-height: 90vh;
+        padding-top: 2rem;
+        padding-bottom: 2rem;
+    }
 
-<div class="container py-5">
-    <div class="card shadow-sm border-0">
-        <div class="card-header bg-success text-white py-3">
-            <h5 class="mb-0"><i class="bi bi-file-earmark-arrow-up me-2"></i>Nueva solicitud</h5>
-        </div>
-        <div class="card-body p-4">
-            <form id="formNewRequest" method="post" enctype="multipart/form-data" asp-action="CreateRequest">
-                @Html.AntiForgeryToken()
+    .card-request {
+        border: none;
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+    }
 
-                <div class="row g-3">
-                    <div class="col-md-6">
-                        <label class="form-label fw-bold">Tipo de Trámite</label>
-                        <select asp-for="@newRequest.IdTypeProcedure" name="IdTypeProcedure" id="ProcedureSelect" class="form-select shadow-sm" asp-items="ViewBag.Procedures" required>
-                            <option value="">-- Selecciona un trámite --</option>
-                        </select>
+    .card-header-burgundy {
+        background-color: var(--burgundy);
+        color: white;
+        padding: 1.5rem;
+        border: none;
+    }
+
+    .form-label {
+        color: var(--burgundy);
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+
+    .form-control, .form-select {
+        border-radius: 10px;
+        padding: 0.75rem;
+        border: 1px solid #dee2e6;
+        transition: all 0.3s;
+    }
+
+        .form-control:focus, .form-select:focus {
+            border-color: var(--burgundy-light);
+            box-shadow: 0 0 0 0.25 core-rgba(77, 2, 23, 0.1);
+        }
+
+    .btn-send {
+        background-color: var(--burgundy);
+        color: white;
+        border-radius: 50px;
+        padding: 0.8rem 2.5rem;
+        font-weight: 600;
+        transition: all 0.3s;
+        border: none;
+    }
+
+        .btn-send:hover {
+            background-color: var(--burgundy-light);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(77, 2, 23, 0.3);
+        }
+
+    .requirement-box {
+        background-color: #fff;
+        border-radius: 15px;
+        padding: 1.5rem;
+        border: 1px dashed #ced4da;
+    }
+
+    .section-title {
+        color: var(--burgundy);
+        border-bottom: 2px solid #f1f1f1;
+        padding-bottom: 0.5rem;
+        margin-bottom: 1.5rem;
+        font-weight: 700;
+    }
+</style>
+
+<div class="form-container">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-12">
+
+                @if (ViewBag.Errors != null)
+                {
+                    <div class="alert alert-danger shadow-sm border-0 mb-4" style="border-radius: 15px;">
+                        <div class="d-flex align-items-center">
+                            <i class="bi bi-exclamation-triangle-fill fs-4 me-3"></i>
+                            <ul class="mb-0">
+                                @foreach (var error in ViewBag.Errors)
+                                {
+                                    <li>@error</li>
+                                }
+                            </ul>
+                        </div>
+                    </div>
+                }
+
+                <div class="card card-request">
+                    <div class="card-header-burgundy">
+                        <div class="d-flex align-items-center">
+                            <div class="bg-white rounded-circle p-2 me-3 d-flex align-items-center justify-content-center" style="width: 45px; height: 45px;">
+                                <i class="bi bi-file-earmark-plus-fill fs-4" style="color: var(--burgundy);"></i>
+                            </div>
+                            <h4 class="mb-0 fw-bold">Nueva Solicitud de Trámite</h4>
+                        </div>
                     </div>
 
-                    <div class="col-md-6">
-                        <label class="form-label fw-bold">Asunto / Título</label>
-                        <input asp-for="@newRequest.Subject" name="Subject" class="form-control shadow-sm" placeholder="Ej: Solicitud de certificado parcial" required />
-                    </div>
+                    <div class="card-body p-4 p-md-5">
+                        <form id="formNewRequest" method="post" enctype="multipart/form-data" asp-action="CreateRequest">
+                            @Html.AntiForgeryToken()
 
-                    <div class="col-12">
-                        <label class="form-label fw-bold">Mensaje adicional</label>
-                        <textarea asp-for="@newRequest.Message" name="Message" class="form-control shadow-sm" rows="3" placeholder="Escribe aquí los detalles..."></textarea>
+                            <div class="row g-4">
+                                <div class="col-12">
+                                    <h5 class="section-title"><i class="bi bi-info-circle me-2"></i>Información General</h5>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label class="form-label">Tipo de Trámite</label>
+                                    <select asp-for="@newRequest.IdTypeProcedure" name="IdTypeProcedure" id="ProcedureSelect" class="form-select shadow-sm" asp-items="ViewBag.Procedures" required>
+                                        <option value="">-- Selecciona el trámite a realizar --</option>
+                                    </select>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label class="form-label">Asunto / Título</label>
+                                    <input asp-for="@newRequest.Subject" name="Subject" class="form-control shadow-sm" placeholder="Ej: Solicitud de certificado parcial" required />
+                                </div>
+
+                                <div class="col-12">
+                                    <label class="form-label">Mensaje o Detalles adicionales</label>
+                                    <textarea asp-for="@newRequest.Message" name="Message" class="form-control shadow-sm" rows="3" placeholder="Describe brevemente el motivo de tu solicitud..."></textarea>
+                                </div>
+
+                                <div id="requirementsContainer" class="col-12 mt-5" style="display: none;">
+                                    <h5 class="section-title"><i class="bi bi-cloud-upload me-2"></i>Documentación Requerida</h5>
+                                    <div class="requirement-box">
+                                        <div id="fileInputsList" class="row g-3">
+                                        </div>
+                                        <div class="mt-3 text-muted small">
+                                            <i class="bi bi-info-circle me-1"></i> Formatos permitidos: PDF, JPG, PNG. Tamaño máximo: 100MB.
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="mt-5 text-center text-md-end border-top pt-4">
+                                <a href="/Procedures/Request" class="btn btn-link text-decoration-none text-muted me-md-3">Cancelar</a>
+                                <button type="submit" class="btn btn-send shadow-sm">
+                                    <i class="bi bi-send-check me-2"></i>Enviar Solicitud
+                                </button>
+                            </div>
+                        </form>
                     </div>
                 </div>
-
-                <div id="requirementsContainer" class="mt-4" style="display: none;">
-                    <h6 class="text-secondary fw-bold border-bottom pb-2 mb-3">
-                        <i class="bi bi-cloud-arrow-up me-1"></i> Subir Documentación Requerida
-                    </h6>
-                    <div id="fileInputsList" class="row">
-                    </div>
-
-                    <div class="mt-4 text-end">
-                        <hr />
-                        <button type="submit" class="btn btn-success btn-lg px-5 shadow-sm">
-                            <i class="bi bi-send-check me-2"></i> Enviar
-                        </button>
-                    </div>
-                </div>
-            </form>
+            </div>
         </div>
     </div>
 </div>
@@ -82,27 +183,31 @@
                 const requirements = await response.json();
 
                 list.empty();
-                if (requirements.length > 0) {
+
+                if (requirements && requirements.length > 0) {
                     requirements.forEach(req => {
                         const inputHtml = `
                             <div class="col-md-6 mb-3">
-                                <label class="form-label small fw-bold">
-                                    ${req.documentName} ${req.isRequired ? '<span class="text-danger">*</span>' : '(Opcional)'}
-                                </label>
-                                <input type="file" name="files_${req.documentId}"
-                                       class="form-control"
-                                       ${req.isRequired ? 'required' : ''}
-                                       accept=".pdf,.jpg,.png" />
+                                <div class="p-3 border rounded bg-light shadow-sm">
+                                    <label class="form-label small fw-bold d-block mb-2">
+                                        ${req.documentName} ${req.isRequired ? '<span class="text-danger">*</span>' : '<span class="text-muted fw-normal">(Opcional)</span>'}
+                                    </label>
+                                    <input type="file" name="formFiles"
+                                           class="form-control form-control-sm"
+                                           ${req.isRequired ? 'required' : ''}
+                                           accept=".pdf,.jpg,.png" />
+                                </div>
                             </div>`;
                         list.append(inputHtml);
                     });
                     container.fadeIn();
                 } else {
-                    list.append('<div class="col-12 text-muted p-3">Este trámite no requiere documentos adicionales.</div>');
+                    list.append('<div class="col-12 text-muted p-3"><i class="bi bi-info-circle me-2"></i>Este trámite no requiere adjuntar documentos adicionales.</div>');
                     container.fadeIn();
                 }
             } catch (error) {
                 console.error("Error al cargar requisitos:", error);
+                Swal.fire('Error', 'No se pudieron cargar los requisitos del trámite.', 'error');
             }
         });
 
@@ -111,48 +216,38 @@
                 const btn = document.getElementById('btnCopy');
                 if (btn) {
                     btn.innerHTML = '<i class="bi bi-check-all"></i> ¡Copiado!';
-                    btn.classList.replace('btn-outline-primary', 'btn-success');
+                    btn.classList.replace('btn-outline-secondary', 'btn-success');
+                    btn.classList.add('text-white');
                 }
             });
         }
 
         document.getElementById('formNewRequest').addEventListener('submit', async function (e) {
             e.preventDefault();
-
             const form = e.target;
-
             const files = form.querySelectorAll('input[type="file"]');
-            const maxSize = 100 * 1024 * 1024; 
-            const allowedExtensions = /(\.pdf|\.jpg|\.jpeg|\.png|\.txt|\.xml)$/i;
+            const maxSize = 50 * 1024 * 1024;
+            const allowedExtensions = /(\.pdf|\.jpg|\.jpeg|\.png)$/i;
 
             for (let fileInput of files) {
                 if (fileInput.files.length > 0) {
                     const file = fileInput.files[0];
-
                     if (!allowedExtensions.exec(file.name)) {
-                        Swal.fire({
-                            title: 'Archivo no permitido',
-                            text: `El archivo "${file.name}" no tiene una extensión válida (PDF, JPG, PNG, TXT, XML).`,
-                            icon: 'error'
-                        });
-                        return; 
+                        Swal.fire({ title: 'Archivo no permitido', text: `El archivo "${file.name}" debe ser PDF, JPG o PNG.`, icon: 'error' });
+                        return;
                     }
-
                     if (file.size > maxSize) {
-                        Swal.fire({
-                            title: 'Archivo muy pesado',
-                            text: `El archivo "${file.name}" supera el límite de 100MB.`,
-                            icon: 'error'
-                        });
+                        Swal.fire({ title: 'Archivo muy pesado', text: `"${file.name}" supera el límite permitido.`, icon: 'error' });
                         return;
                     }
                 }
             }
+
             const formData = new FormData(form);
 
             Swal.fire({
-                title: 'Procesando...',
-                text: 'Estamos registrando tu solicitud y subiendo tus archivos.',
+                title: 'Enviando Solicitud',
+                text: 'Estamos registrando tu información, por favor espera...',
                 allowOutsideClick: false,
                 didOpen: () => { Swal.showLoading(); }
             });
@@ -163,42 +258,31 @@
                     body: formData
                 });
 
-                const contentType = response.headers.get("content-type");
+                const data = await response.json();
 
-                if (contentType && contentType.indexOf("application/json") !== -1) {
-                    const data = await response.json();
-
-                    if (data.success) {
-                        await Swal.fire({
-                            title: '¡Solicitud enviada!',
-                            icon: 'success',
-                            html: `
-                                <div class="p-3 border rounded bg-light mb-3 text-center">
-                                    <p class="mb-1 small text-muted">Tu número de folio es:</p>
-                                    <h4 class="text-primary mb-3" id="folioText">${data.folio}</h4>
-                                    <button type="button" id="btnCopy" class="btn btn-sm btn-outline-primary" onclick="copyFolio('${data.folio}')">
-                                        <i class="bi bi-clipboard"></i> Copiar Folio
-                                    </button>
-                                </div>
-                                <p class="small text-muted text-start">
-                                    <i class="bi bi-envelope-at me-1"></i>
-                                    Se ha enviado una confirmación a tu correo. Te avisaremos por ese medio cualquier cambio de estatus.
-                                </p>
-                            `,
-                            confirmButtonText: 'Ir a Mis Trámites',
-                            confirmButtonColor: '#198754'
-                        });
-
-                        window.location.href = '/Procedures/Request/Tracking';
-                    } else {
-                        const errorMsg = data.errors ? data.errors.join('<br>') : 'Error desconocido';
-                        Swal.fire('Error', errorMsg, 'error');
-                    }
+                if (data.success) {
+                    await Swal.fire({
+                        title: '¡Solicitud enviada!',
+                        icon: 'success',
+                        confirmButtonColor: '#620900',
+                        html: `
+                            <div class="p-3 border rounded bg-light mb-3 text-center">
+                                <p class="mb-1 small text-muted">Tu número de folio es:</p>
+                                <h4 style="color: #620900;" class="mb-3 fw-bold">${data.folio}</h4>
+                                <button type="button" id="btnCopy" class="btn btn-sm btn-outline-secondary" onclick="copyFolio('${data.folio}')">
+                                    <i class="bi bi-clipboard"></i> Copiar Folio
+                                </button>
+                            </div>
+                            <p class="small text-muted text-start">Puedes consultar el avance en la sección de "Seguimiento" o con las actualizaciones que se enviarán a tu correo institucional.</p>
+                        `,
+                        confirmButtonText: 'Ver mis trámites'
+                    });
+                    window.location.href = '/Procedures/Request/Tracking';
                 } else {
-                    Swal.fire('Error', 'El servidor respondió en un formato incorrecto.', 'error');
+                    Swal.fire('Hubo un problema', data.errors?.join('<br>') || 'No se pudo completar el registro.', 'error');
                 }
             } catch (error) {
-                Swal.fire('Error', 'No se pudo conectar con el servidor.', 'error');
+                Swal.fire('Error de conexión', 'No pudimos comunicarnos con el servidor.', 'error');
             }
         });
     </script>
