@@ -17,6 +17,10 @@ namespace SchoolManager.Models
         public int? UserId { get; set; }
         public users_user User { get; set; }
 
+        public int? ProcedureRequestId { get; set; }
+        [ForeignKey("ProcedureRequestId")]
+        public virtual procedure_request? ProcedureRequest { get; set; }
+
         public preenrollment_generations Generation { get; set; } = null!;
 
         [MaxLength(10)]

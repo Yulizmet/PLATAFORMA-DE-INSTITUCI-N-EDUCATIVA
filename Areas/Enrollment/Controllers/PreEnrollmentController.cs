@@ -261,6 +261,38 @@ namespace SchoolManager.Areas.Enrollment.Controllers
             return RedirectToAction("Success");
         }
 
+        [HttpPost]
+        public async Task<IActionResult> ValidateFolio(string folio)
+        {
+            // 1️⃣ Buscar preinscripción
+            var pre = await _context.PreenrollmentGenerals
+               .Include(p => p.ProcedureRequest)
+                   .ThenInclude(pr => pr.ProcedureStatus)
+               .Include(p => p.User)
+                   .ThenInclude(u => u.Person)
+               .FirstOrDefaultAsync(p => p.Folio == folio);
+
+            if (pre == null)
+            {
+                ModelState.AddModelError("", "Folio no encontrado");
+                return View();
+            }
+
+            if (pre.ProcedureRequest == null)
+            {
+                ModelState.AddModelError("", "No hay trámite asociado");
+                return View();
+            }
+
+            if (pre.ProcedureRequest.ProcedureStatus.InternalCode != "APPROVED")
+            {
+                ModelState.AddModelError("", "El trámite aún no ha sido aprobado");
+                return View();
+            }
+
+            return View("CompleteRegistration", pre.User);
+        }
+
 
     }
 }

@@ -503,6 +503,12 @@ namespace SchoolManager.Data
                 .HasForeignKey(p => p.UserId)
                 .OnDelete(DeleteBehavior.Restrict);
 
+            modelBuilder.Entity<preenrollment_general>()
+                .HasOne(p => p.ProcedureRequest)
+                .WithMany()
+                .HasForeignKey(p => p.ProcedureRequestId)
+                .OnDelete(DeleteBehavior.Restrict);
+
 
         }
     }
