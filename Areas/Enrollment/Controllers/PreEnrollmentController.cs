@@ -1,12 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using SchoolManager.Data;
 using SchoolManager.Models;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Security.Cryptography;
+using System.Threading.Tasks;
 
 namespace SchoolManager.Areas.Enrollment.Controllers
 {
@@ -19,6 +20,30 @@ namespace SchoolManager.Areas.Enrollment.Controllers
         {
             _context = context;
         }
+
+        private string GenerarMatricula()
+        {
+            int year = DateTime.Now.Year;
+            string yearShort = year.ToString().Substring(2, 2);
+
+            int randomNumber = RandomNumberGenerator.GetInt32(100000, 999999);
+
+            return yearShort + randomNumber.ToString() + yearShort;
+        }
+
+        private string GenerarFolio(int idGeneration)
+        {
+            var Generation = _context.Generations
+                .FirstOrDefault(g => g.IdGeneration == idGeneration);
+
+            int contador = _context.PreenrollmentGenerals
+                .Count(p => p.IdGeneration == idGeneration) + 1;
+
+            string folio = $"{Generation.Year}-{contador.ToString("D4")}";
+
+            return folio;
+        }
+
 
         // GET: Enrollment/PreEnrollment
         public async Task<IActionResult> Index()
@@ -58,17 +83,39 @@ namespace SchoolManager.Areas.Enrollment.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("IdData,IdCareer,PaternalLastName,MaternalLastName,Gender,BirthDate,Email,Curp")] preenrollment_general preenrollment_general)
+        public async Task<IActionResult> Create(
+    [Bind("IdCareer,PaternalLastName,MaternalLastName,Gender,BirthDate,Email,Curp")]
+    preenrollment_general preenrollment_general)
+
         {
             if (ModelState.IsValid)
             {
+                preenrollment_general.Matricula = GenerarMatriculaUnica();
+                preenrollment_general.Folio = GenerarFolio(preenrollment_general.IdGeneration);
+                preenrollment_general.CreateStat = DateTime.Now;
+
                 _context.Add(preenrollment_general);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
+
+
             ViewData["IdCareer"] = new SelectList(_context.Set<preenrollment_careers>(), "IdCareer", "IdCareer", preenrollment_general.IdCareer);
             return View(preenrollment_general);
         }
+
+        private string GenerarMatriculaUnica()
+        {
+            string matricula;
+            do
+            {
+                matricula = GenerarMatricula();
+            }
+            while (_context.PreenrollmentGenerals.Any(x => x.Matricula == matricula));
+
+            return matricula;
+        }
+
 
         // GET: Enrollment/PreEnrollment/Edit/5
         public async Task<IActionResult> Edit(int? id)

@@ -17,6 +17,8 @@ namespace SchoolManager.Data
         public DbSet<preenrollment_general> PreenrollmentGenerals { get; set; } = default!;
         public DbSet<preenrollment_addresses> PreenrollmentAddresses { get; set; } = default!;
         public DbSet<preenrollment_careers> PreenrollmentCareers { get; set; } = default!;
+        public DbSet<Generation> Generations { get; set; } = default!;
+
         public DbSet<preenrollment_infos> PreenrollmentInfos { get; set; } = default!;
         public DbSet<preenrollment_schools> PreenrollmentSchools { get; set; } = default!;
         public DbSet<preenrollment_tutors> PreenrollmentTutors { get; set; } = default!;
@@ -60,6 +62,12 @@ namespace SchoolManager.Data
         public DbSet<grades_teacher_subject> grades_TeacherSubjects { get; set; }
         public DbSet<grades_teacher_subject_group> grades_TeacherSubjectGroups { get; set; }
         public DbSet<grades_unit_recovery> grades_UnitRecoveries { get; set; }
+
+        public DbSet<tutorship> Tutorships { get; set; }
+        public DbSet<tutorship_attendance> TutorshipAttendances { get; set; }
+        public DbSet<tutorship_monitoring> TutorshipMonitorings { get; set; }
+        public DbSet<tutorship_interview> TutorshipInterviews { get; set; }
+        public DbSet<tutorship_interview_answer> TutorshipInterviewAnswers { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -291,6 +299,8 @@ namespace SchoolManager.Data
                 .Property(u => u.CreatedAt)
                 .HasDefaultValueSql("GETDATE()");
 
+            modelBuilder.Entity<Generation>().ToTable("Generation");
+
             //Procedures
             modelBuilder.Entity<procedure_status>().ToTable("procedure_status");
             modelBuilder.Entity<procedure_areas>().ToTable("procedure_areas");
@@ -300,6 +310,54 @@ namespace SchoolManager.Data
             modelBuilder.Entity<procedure_type_requirements>().ToTable("procedure_type_requirements");
             modelBuilder.Entity<procedure_types>().ToTable("procedure_types");
             modelBuilder.Entity<procedure_monitoring>().ToTable("procedure_monitoring");
+
+            modelBuilder.Entity<tutorship>().ToTable("tutorship_sessions");
+            modelBuilder.Entity<tutorship_attendance>().ToTable("tutorship_attendances");
+            modelBuilder.Entity<tutorship_monitoring>().ToTable("tutorship_monitorings");
+            modelBuilder.Entity<tutorship_interview>().ToTable("tutorship_interviews");
+            modelBuilder.Entity<tutorship_interview_answer>().ToTable("tutorship_interview_answers");
+
+            modelBuilder.Entity<tutorship_interview_answer>()
+                .HasOne(a => a.Interview)
+                .WithMany(i => i.Answers)
+                .HasForeignKey(a => a.InterviewId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<tutorship_monitoring>()
+                .HasOne(m => m.Student)
+                .WithMany()
+                .HasForeignKey(m => m.StudentId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<tutorship_monitoring>()
+                .HasOne(m => m.Teacher)
+                .WithMany()
+                .HasForeignKey(m => m.TeacherId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<tutorship_attendance>()
+                .HasOne(a => a.Student)
+                .WithMany()
+                .HasForeignKey(a => a.StudentId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<tutorship_attendance>()
+                .HasOne(a => a.Teacher)
+                .WithMany()
+                .HasForeignKey(a => a.TeacherId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<tutorship>()
+                .HasOne(t => t.Student)
+                .WithMany()
+                .HasForeignKey(t => t.StudentId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<tutorship>()
+                .HasOne(t => t.Teacher)
+                .WithMany()
+                .HasForeignKey(t => t.TeacherId)
+                .OnDelete(DeleteBehavior.Restrict);
 
             ///UsersCategory
             modelBuilder.Entity<users_person>().ToTable("users_person");
@@ -364,37 +422,61 @@ namespace SchoolManager.Data
             modelBuilder.Entity<users_person>()
                 .HasOne(p => p.User)
                 .WithOne(u => u.Person)
-                .HasForeignKey<users_user>(u => u.PersonId);
+                .HasForeignKey<users_user>(u => u.PersonId)
+                .OnDelete(DeleteBehavior.Cascade);  
+
+
+
+
+
+
+
+
+
+
+
 
             modelBuilder.Entity<users_userrole>()
                 .HasOne(ur => ur.User)
                 .WithMany(u => u.UserRoles)
-                .HasForeignKey(ur => ur.UserId);
+                .HasForeignKey(ur => ur.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder.Entity<users_userrole>()
                 .HasOne(ur => ur.Role)
                 .WithMany(r => r.UserRoles)
-                .HasForeignKey(ur => ur.RoleId);
+                .HasForeignKey(ur => ur.RoleId)
+                .OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder.Entity<users_rolepermission>()
                 .HasOne(rp => rp.Role)
                 .WithMany(r => r.RolePermissions)
-                .HasForeignKey(rp => rp.RoleId);
+                .HasForeignKey(rp => rp.RoleId)
+                .OnDelete(DeleteBehavior.Cascade);
 
-            modelBuilder.Entity<users_rolepermission>()
-                .HasOne(rp => rp.Permission)
-                .WithMany(p => p.RolePermissions)
-                .HasForeignKey(rp => rp.PermissionId)
-                .OnDelete(DeleteBehavior.Restrict);
+            modelBuilder.Entity<users_session>()
+                .HasOne(s => s.User)
+                .WithMany(u => u.Sessions)
+                .HasForeignKey(s => s.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<users_auditlog>()
+                .HasOne(a => a.User)
+                .WithMany(u => u.AuditLogs)
+                .HasForeignKey(a => a.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
 
 
 
-            // Configurar la relación entre preenrollment_general y preenrollment_careers
+
+
+            // Configurar la relación entre preenrollment_general y Generations
             modelBuilder.Entity<preenrollment_general>()
-                .HasOne(p => p.Career)
-                .WithMany(c => c.preenrollment_general)
-                .HasForeignKey(p => p.IdCareer)
+                .HasOne(p => p.Generation)
+                .WithMany(g => g.Students)
+                .HasForeignKey(p => p.IdGeneration)
                 .OnDelete(DeleteBehavior.Restrict);
+
 
             // Configurar la relación uno-a-muchos entre preenrollment_general y preenrollment_addresses
             modelBuilder.Entity<preenrollment_addresses>()
