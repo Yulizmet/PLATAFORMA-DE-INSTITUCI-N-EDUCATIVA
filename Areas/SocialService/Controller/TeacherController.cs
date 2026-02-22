@@ -1,8 +1,9 @@
 using Microsoft.AspNetCore.Mvc;
 
-namespace PI.Controllers
+namespace SchoolManager.Areas.SocialService.Controllers
 {
-    public class ProfesorController : Controller
+    [Area("SocialService")]
+    public class TeacherController : Controller
     {
         public IActionResult Dashboard()
         {

@@ -1,15 +1,10 @@
 using Microsoft.AspNetCore.Mvc;
 
-namespace PI.Controllers
+namespace SchoolManager.Areas.SocialService.Controllers
 {
-    public class AlumnoController : Controller
+    [Area("SocialService")]
+    public class StudentController : Controller
     {
-        // Dashboard del alumno
-        public IActionResult Dashboard()
-        {
-            return View();
-        }
-
         // Ver bitácoras anteriores
         public IActionResult Bitacoras()
         {
