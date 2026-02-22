@@ -7,13 +7,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="Areas\Tutorship\**" />
-    <Content Remove="Areas\Tutorship\**" />
-    <EmbeddedResource Remove="Areas\Tutorship\**" />
-    <None Remove="Areas\Tutorship\**" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="Azure.Storage.Blobs" Version="12.27.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.23">
       <PrivateAssets>all</PrivateAssets>
