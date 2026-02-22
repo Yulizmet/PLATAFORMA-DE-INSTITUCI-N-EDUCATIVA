@@ -17,8 +17,10 @@ namespace SchoolManager.Models
         public DateTime CreatedAt { get; set; }
 
         // Navigation properties
+        public users_user Student { get; set; } = null!;
+
         public grades_subjects Subject { get; set; } = null!;
-        //public grades_group grades_group { get; set; } = null!;
+        public grades_group Group { get; set; } = null!;
         public grades_extraordinary_grades? ExtraordinaryGrade { get; set; }
     }
 }

@@ -14,14 +14,26 @@ namespace SchoolManager.Models
         [Required]
         public int IdGeneration { get; set; }
 
-        public int? UserId { get; set; }
-        public users_user User { get; set; }
+        public Generation Generation { get; set; } = null!;
 
-        public int? ProcedureRequestId { get; set; }
-        [ForeignKey("ProcedureRequestId")]
-        public virtual procedure_request? ProcedureRequest { get; set; }
 
-        public preenrollment_generations Generation { get; set; } = null!;
+        [Required, MaxLength(100)]
+        public string PaternalLastName { get; set; } = null!;
+
+        [Required, MaxLength(100)]
+        public string MaternalLastName { get; set; } = null!;
+
+        [Required, MaxLength(20)]
+        public string Gender { get; set; } = null!;
+
+        [Required]
+        public DateTime BirthDate { get; set; }
+
+        [Required, MaxLength(100)]
+        public string Email { get; set; } = null!;
+
+        [Required, MaxLength(18)]
+        public string Curp { get; set; } = null!;
 
         [MaxLength(10)]
         public string? BloodType { get; set; }

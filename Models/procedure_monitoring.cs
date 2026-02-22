@@ -24,6 +24,7 @@ namespace SchoolManager.Models
 
         [Required]
         public int IdProcedureFlow { get; set; }
+        [Required]
 
         [ForeignKey("IdUser")]
         public virtual users_user User { get; set; } = null!;

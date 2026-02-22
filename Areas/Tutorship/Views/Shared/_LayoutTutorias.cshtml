@@ -1,0 +1,52 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Tutorías</title>
+
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+
+    <link rel="stylesheet" href="~/css/tutorias_layout.css" asp-append-version="true" />
+
+</head>
+<body>
+    <header>
+        <nav class="navbar navbar-light border-bottom box-shadow mb-3"
+             style="background-color: var(--utt-red); padding-top: 15px; padding-bottom: 15px; position: relative;">
+
+            <div class="container-fluid d-flex align-items-center">
+                <a asp-area="Gestion" asp-controller="Tutorias" asp-action="Controlador" class="navbar-brand text-white position-absolute top-50 start-50 translate-middle text-center"
+                   asp-controller="Home" asp-action="Index"
+                   style="line-height: 1; z-index: 10;">
+                    <div style="font-weight: 900; font-size: 1.8rem; letter-spacing: 1px;">UTTN</div>
+                    <div style="font-size: 0.85rem; font-weight: 400; letter-spacing: 2px; opacity: 0.9;">TUTORÍAS</div>
+                </a>
+                <div class="ms-auto" style="z-index: 20;">
+                    <a asp-area="MainScreen" asp-controller="MainScreen" asp-action="Index" class="btn btn-outline-light border-0 d-flex align-items-center gap-2">
+                        <span class="d-none d-md-block fw-bold">Salir</span> <i class="bi bi-box-arrow-right fs-5"></i>
+                    </a>
+                </div>
+            </div>
+        </nav>
+    </header>
+    <div class="container">
+        <main role="main" class="pb-3">
+            @RenderBody()
+        </main>
+    </div>
+
+    <footer class="border-top footer text-muted">
+        <div class="container">
+            &copy; 2026 - PruebaTutorias - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+        </div>
+    </footer>
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>
