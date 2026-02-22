@@ -1,0 +1,173 @@
+﻿@model SchoolManager.Areas.Grades.ViewModels.SetupWizardViewModel;
+
+@{
+    ViewData["Title"] = "Asistente de Configuración Inicial";
+    Layout = "~/Pages/Shared/_Layout.cshtml";
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h3>@ViewData["Title"]</h3>
+                </div>
+
+                <div class="card-body">
+                    <!-- Barra de progreso -->
+                    <div class="progress mb-4">
+                        @switch (Model.CurrentStep)
+                        {
+                            case 1:
+                                <div class="progress-bar" style="width: 33%">Paso 1/3</div>
+                                break;
+                            case 2:
+                                <div class="progress-bar" style="width: 66%">Paso 2/3</div>
+                                break;
+                            case 3:
+                                <div class="progress-bar" style="width: 100%">Paso 3/3</div>
+                                break;
+                        }
+                    </div>
+
+                    <!-- PASO 1: Ciclo Escolar -->
+                    @if (Model.CurrentStep == 1)
+                    {
+                        <form asp-area="Grades"
+                              asp-controller="Setup"
+                              asp-action="Step1"
+                              method="post">
+                            <h4 class="mb-3">📅 Paso 1: Configurar Ciclo Escolar</h4>
+
+                            <div class="form-group mb-3">
+                                <label>Nombre del ciclo</label>
+                                <input asp-for="SchoolCycleName" class="form-control"
+                                       placeholder="Ej: Ciclo Escolar 2026-2027" />
+                                <span asp-validation-for="SchoolCycleName" class="text-danger"></span>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group mb-3">
+                                        <label>Fecha de inicio</label>
+                                        <input asp-for="StartDate" type="date" class="form-control" />
+                                        <span asp-validation-for="StartDate" class="text-danger"></span>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group mb-3">
+                                        <label>Fecha de fin</label>
+                                        <input asp-for="EndDate" type="date" class="form-control" />
+                                        <span asp-validation-for="EndDate" class="text-danger"></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="d-flex justify-content-between">
+                                <a asp-action="Index" asp-controller="Home" class="btn btn-secondary">Cancelar</a>
+                                <button type="submit" class="btn btn-primary">Siguiente →</button>
+                            </div>
+                        </form>
+                    }
+
+                    <!-- PASO 2: Niveles/Grados -->
+                    @if (Model.CurrentStep == 2)
+                    {
+                        <form asp-action="Step2" method="post">
+                            <h4 class="mb-3">📚 Paso 2: Configurar Niveles/Grados</h4>
+
+                            <div class="alert alert-info">
+                                Ciclo: <strong>@Model.SchoolCycleName</strong>
+                            </div>
+
+                            <!-- Lista de niveles agregados -->
+                            @if (Model.GradeLevelNames.Any())
+                            {
+                                <h5>Niveles agregados:</h5>
+                                <ul class="list-group mb-3">
+                                    @foreach (var nivel in Model.GradeLevelNames)
+                                    {
+                                        <li class="list-group-item">@nivel</li>
+                                    }
+                                </ul>
+                            }
+
+                            <!-- Agregar nuevo nivel -->
+                            <div class="input-group mb-3">
+                                <input asp-for="NewGradeLevel" class="form-control"
+                                       placeholder="Escribe un nivel (Ej: 1er Grado, 2do Grado)" />
+                                <button type="submit" name="action" value="add"
+                                        class="btn btn-success">
+                                    ➕ Agregar
+                                </button>
+                            </div>
+
+                            <div class="d-flex justify-content-between">
+                                <button type="submit" name="action" value="prev"
+                                        class="btn btn-secondary">
+                                    ← Anterior
+                                </button>
+                                <button type="submit" name="action" value="next"
+                                        class="btn btn-primary">
+                                    Siguiente →
+                                </button>
+                            </div>
+                        </form>
+                    }
+
+                    <!-- PASO 3: Materias -->
+                    @if (Model.CurrentStep == 3)
+                    {
+                        <form asp-action="Step3" method="post">
+                            <h4 class="mb-3">📖 Paso 3: Configurar Materias</h4>
+
+                            <div class="alert alert-info">
+                                Ciclo: <strong>@Model.SchoolCycleName</strong><br />
+                                Niveles: <strong>@string.Join(", ", Model.GradeLevelNames)</strong>
+                            </div>
+
+                            <!-- Lista de materias agregadas -->
+                            @if (Model.SubjectNames.Any())
+                            {
+                                <h5>Materias agregadas:</h5>
+                                <ul class="list-group mb-3">
+                                    @foreach (var materia in Model.SubjectNames)
+                                    {
+                                        <li class="list-group-item">@materia</li>
+                                    }
+                                </ul>
+                            }
+
+                            <!-- Agregar nueva materia -->
+                            <div class="input-group mb-3">
+                                <input asp-for="NewSubject" class="form-control"
+                                       placeholder="Escribe una materia (Ej: Matemáticas, Español)" />
+                                <button type="submit" name="action" value="add"
+                                        class="btn btn-success">
+                                    ➕ Agregar
+                                </button>
+                            </div>
+
+                            <div class="d-flex justify-content-between">
+                                <button type="submit" name="action" value="prev"
+                                        class="btn btn-secondary">
+                                    ← Anterior
+                                </button>
+                                <button type="submit" name="action" value="finish"
+                                        class="btn btn-primary">
+                                    ✅ Finalizar configuración
+                                </button>
+                            </div>
+                        </form>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

@@ -30,6 +30,11 @@ namespace SchoolManager.Areas.MainScreen.Controllers
             return View();
         }
 
+        public IActionResult ServicioSocial()
+        {
+            return RedirectToPage("/Index");
+        }
+
         public IActionResult Extension()
         {
             return View();
