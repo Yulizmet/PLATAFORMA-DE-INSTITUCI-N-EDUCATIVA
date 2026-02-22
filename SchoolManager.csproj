@@ -9,10 +9,13 @@
   <ItemGroup>
     <Compile Remove="Areas\Preenrollment\**" />
     <Compile Remove="Areas\Tutorship\**" />
+    <Compile Remove="Migrations\**" />
     <Content Remove="Areas\Preenrollment\**" />
     <Content Remove="Areas\Tutorship\**" />
+    <Content Remove="Migrations\**" />
     <EmbeddedResource Remove="Areas\Preenrollment\**" />
     <EmbeddedResource Remove="Areas\Tutorship\**" />
+    <EmbeddedResource Remove="Migrations\**" />
     <None Remove="Areas\Preenrollment\**" />
     <None Remove="Areas\Tutorship\**" />
     <Compile Remove="Areas\Tutorship\**" />
@@ -22,14 +25,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Remove="Areas\Preenrollment\**" />
     <Compile Remove="Areas\Procedures\Templates\**" />
-    <Content Remove="Areas\Preenrollment\**" />
     <Content Remove="Areas\Procedures\Templates\**" />
-    <EmbeddedResource Remove="Areas\Preenrollment\**" />
     <EmbeddedResource Remove="Areas\Procedures\Templates\**" />
-    <None Remove="Areas\Preenrollment\**" />
     <None Remove="Areas\Procedures\Templates\**" />
+    <None Remove="Migrations\**" />
   </ItemGroup>
 
   <ItemGroup>
@@ -55,16 +55,12 @@
     <Folder Include="Areas\Grades\JS\" />
     <Folder Include="Areas\Procedures\Controllers\" />
     <Folder Include="Areas\Procedures\Views\" />
-    <Folder Include="Areas\Preenrollment\Controllers\" />
-    <Folder Include="Areas\Preenrollment\ViewModels\" />
-    <Folder Include="Areas\Preenrollment\Views\" />
     <Folder Include="Areas\Grades\Controllers\" />
     <Folder Include="Areas\Grades\Views\" />
     <Folder Include="Areas\Grades\Views\" />
     <Folder Include="Areas\Procedures\Templates\" />
     <Folder Include="Areas\Tutorship\Controllers\" />
     <Folder Include="Areas\Tutorship\Views\" />
-    <Folder Include="Migrations\" />
 
 	  <None Update="libwkhtmltox.dll">
 		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
