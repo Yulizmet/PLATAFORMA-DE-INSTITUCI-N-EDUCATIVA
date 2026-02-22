@@ -1,0 +1,122 @@
+﻿@model SchoolManager.Models.grades_subjects
+
+@{
+    ViewData["Title"] = $"Detalles - {Model.Name}";
+    Layout = "~/Pages/Shared/_Layout.cshtml";
+
+}
+
+<div class="container-fluid py-4">
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-action="Index">Materias</a></li>
+            <li class="breadcrumb-item active" aria-current="page">@Model.Name</li>
+        </ol>
+    </nav>
+
+    <div class="row">
+        <div class="col-md-4 mb-4">
+            <div class="card shadow h-100">
+                <div class="card-header bg-white py-3">
+                    <h5 class="mb-0">
+                        <i class="fas fa-info-circle me-2 text-primary"></i>
+                        Información de la Materia
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <h6 class="fw-bold mb-3">@Model.Name</h6>
+
+                    <div class="mb-3">
+                        <small class="text-muted d-block">Nivel Escolar</small>
+                        <span>@Model.GradeLevel?.Name</span>
+                    </div>
+
+                    <div class="mb-3">
+                        <small class="text-muted d-block">Total de Unidades</small>
+                        <h4 class="mb-0">@(Model.Units?.Count() ?? 0)</h4>
+                    </div>
+
+                    <div class="mb-3">
+                        <small class="text-muted d-block">Unidades Abiertas</small>
+                        <h4 class="mb-0 text-success">@(Model.Units?.Count(u => u.IsOpen) ?? 0)</h4>
+                    </div>
+                </div>
+                <div class="card-footer bg-white border-0 pb-3">
+                    <div class="d-flex gap-2">
+                        <a asp-action="Edit" asp-route-id="@Model.SubjectId" class="btn btn-primary flex-fill">
+                            <i class="fas fa-edit me-2"></i>Editar
+                        </a>
+                        <a asp-action="ManageUnits" asp-route-subjectId="@Model.SubjectId"
+                           class="btn btn-success flex-fill">
+                            <i class="fas fa-puzzle-piece me-2"></i>Unidades
+                        </a>
+                        <a asp-action="Index" class="btn btn-secondary flex-fill">
+                            <i class="fas fa-arrow-left me-2"></i>Volver
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-white py-3">
+                    <h5 class="mb-0">
+                        <i class="fas fa-puzzle-piece me-2 text-primary"></i>
+                        Unidades
+                    </h5>
+                </div>
+                <div class="card-body">
+                    @if (Model.Units != null && Model.Units.Any())
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Unidad</th>
+                                        <th>Estado</th>
+                                        <th class="text-end">Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var unit in Model.Units.OrderBy(u => u.UnitNumber))
+                                    {
+                                        <tr>
+                                            <td class="fw-semibold">Unidad @unit.UnitNumber</td>
+                                            <td>
+                                                <span class="badge @(unit.IsOpen ? "bg-success" : "bg-secondary")">
+                                                    @(unit.IsOpen ? "Abierta" : "Cerrada")
+                                                </span>
+                                            </td>
+                                            <td class="text-end">
+                                                <form asp-action="ToggleUnit" method="post" class="d-inline">
+                                                    <input type="hidden" name="unitId" value="@unit.UnitId" />
+                                                    <button type="submit"
+                                                            class="btn btn-sm @(unit.IsOpen ? "btn-warning" : "btn-success")"
+                                                            title="@(unit.IsOpen ? "Cerrar" : "Abrir")">
+                                                        <i class="fas @(unit.IsOpen ? "fa-lock" : "fa-lock-open")"></i>
+                                                    </button>
+                                                </form>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center py-4">
+                            <i class="fas fa-puzzle-piece fa-3x text-muted mb-3"></i>
+                            <p class="text-muted mb-3">Esta materia no tiene unidades</p>
+                            <a asp-action="ManageUnits" asp-route-subjectId="@Model.SubjectId"
+                               class="btn btn-success">
+                                <i class="fas fa-plus me-2"></i>Agregar Unidades
+                            </a>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

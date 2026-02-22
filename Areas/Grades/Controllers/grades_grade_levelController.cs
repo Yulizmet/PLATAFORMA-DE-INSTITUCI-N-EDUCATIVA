@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SchoolManager.Data;
 using SchoolManager.Models;
@@ -11,146 +6,128 @@ using SchoolManager.Models;
 namespace SchoolManager.Areas.Grades.Controllers
 {
     [Area("Grades")]
-    public class grades_grade_levelController : Controller
+    public class GradeLevelsController : Controller
     {
         private readonly AppDbContext _context;
 
-        public grades_grade_levelController(AppDbContext context)
+        public GradeLevelsController(AppDbContext context)
         {
             _context = context;
         }
 
-        // GET: Grades/grades_grade_level
+        // GET: GradeLevels
         public async Task<IActionResult> Index()
         {
-            return View(await _context.grades_GradeLevels.ToListAsync());
+            var gradeLevels = await _context.grades_GradeLevels
+                .Include(g => g.Groups)
+                .Include(g => g.Subjects)
+                .ToListAsync();
+            return View(gradeLevels);
         }
 
-        // GET: Grades/grades_grade_level/Details/5
+        // GET: GradeLevels/Details/5
         public async Task<IActionResult> Details(int? id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
+            if (id == null) return NotFound();
 
-            var grades_grade_level = await _context.grades_GradeLevels
+            var gradeLevel = await _context.grades_GradeLevels
+                .Include(g => g.Groups)
+                .Include(g => g.Subjects)
                 .FirstOrDefaultAsync(m => m.GradeLevelId == id);
-            if (grades_grade_level == null)
-            {
-                return NotFound();
-            }
 
-            return View(grades_grade_level);
+            if (gradeLevel == null) return NotFound();
+
+            return View(gradeLevel);
         }
 
-        // GET: Grades/grades_grade_level/Create
+        // GET: GradeLevels/Create
         public IActionResult Create()
         {
             return View();
         }
 
-        // POST: Grades/grades_grade_level/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+        // POST: GradeLevels/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("GradeLevelId,Name")] grades_grade_level grades_grade_level)
+        public async Task<IActionResult> Create(grades_grade_level gradeLevel)
         {
             if (ModelState.IsValid)
             {
-                _context.Add(grades_grade_level);
+                _context.Add(gradeLevel);
                 await _context.SaveChangesAsync();
+                TempData["Success"] = "Nivel creado exitosamente";
                 return RedirectToAction(nameof(Index));
             }
-            return View(grades_grade_level);
+            return View(gradeLevel);
         }
 
-        // GET: Grades/grades_grade_level/Edit/5
+        // GET: GradeLevels/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
+            if (id == null) return NotFound();
 
-            var grades_grade_level = await _context.grades_GradeLevels.FindAsync(id);
-            if (grades_grade_level == null)
-            {
-                return NotFound();
-            }
-            return View(grades_grade_level);
+            var gradeLevel = await _context.grades_GradeLevels.FindAsync(id);
+            if (gradeLevel == null) return NotFound();
+
+            return View(gradeLevel);
         }
 
-        // POST: Grades/grades_grade_level/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+        // POST: GradeLevels/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("GradeLevelId,Name")] grades_grade_level grades_grade_level)
+        public async Task<IActionResult> Edit(int id, grades_grade_level gradeLevel)
         {
-            if (id != grades_grade_level.GradeLevelId)
-            {
-                return NotFound();
-            }
+            if (id != gradeLevel.GradeLevelId) return NotFound();
 
             if (ModelState.IsValid)
             {
                 try
                 {
-                    _context.Update(grades_grade_level);
+                    _context.Update(gradeLevel);
                     await _context.SaveChangesAsync();
+                    TempData["Success"] = "Nivel actualizado exitosamente";
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!grades_grade_levelExists(grades_grade_level.GradeLevelId))
-                    {
+                    if (!GradeLevelExists(gradeLevel.GradeLevelId))
                         return NotFound();
-                    }
                     else
-                    {
                         throw;
-                    }
                 }
                 return RedirectToAction(nameof(Index));
             }
-            return View(grades_grade_level);
+            return View(gradeLevel);
         }
 
-        // GET: Grades/grades_grade_level/Delete/5
-        public async Task<IActionResult> Delete(int? id)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var grades_grade_level = await _context.grades_GradeLevels
-                .FirstOrDefaultAsync(m => m.GradeLevelId == id);
-            if (grades_grade_level == null)
-            {
-                return NotFound();
-            }
-
-            return View(grades_grade_level);
-        }
-
-        // POST: Grades/grades_grade_level/Delete/5
-        [HttpPost, ActionName("Delete")]
+        // POST: GradeLevels/Delete/5
+        [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(int id)
+        public async Task<IActionResult> Delete(int id)
         {
-            var grades_grade_level = await _context.grades_GradeLevels.FindAsync(id);
-            if (grades_grade_level != null)
+            var gradeLevel = await _context.grades_GradeLevels.FindAsync(id);
+            if (gradeLevel == null)
             {
-                _context.grades_GradeLevels.Remove(grades_grade_level);
+                return NotFound();
             }
 
+            // Verificar si tiene dependencias
+            var hasGroups = await _context.grades_GradeGroups.AnyAsync(g => g.GradeLevelId == id);
+            var hasSubjects = await _context.grades_Subjects.AnyAsync(s => s.GradeLevelId == id);
+
+            if (hasGroups || hasSubjects)
+            {
+                TempData["Error"] = "No se puede eliminar porque tiene grupos o materias asociadas";
+                return RedirectToAction(nameof(Index));
+            }
+
+            _context.grades_GradeLevels.Remove(gradeLevel);
             await _context.SaveChangesAsync();
+            TempData["Success"] = "Nivel eliminado exitosamente";
+
             return RedirectToAction(nameof(Index));
         }
 
-        private bool grades_grade_levelExists(int id)
+        private bool GradeLevelExists(int id)
         {
             return _context.grades_GradeLevels.Any(e => e.GradeLevelId == id);
         }

@@ -1,0 +1,164 @@
+﻿@model IEnumerable<SchoolManager.Models.grades_subjects>
+
+@{
+    ViewData["Title"] = "Materias";
+    var selectedGradeLevel = ViewBag.SelectedGradeLevel as int?;
+    Layout = "~/Pages/Shared/_Layout.cshtml";
+
+}
+
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3">
+            <i class="fas fa-book me-2"></i>Materias
+        </h1>
+        <a asp-action="Create" asp-route-gradeLevelId="@selectedGradeLevel" class="btn btn-primary">
+            <i class="fas fa-plus me-2"></i>Nueva Materia
+        </a>
+    </div>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="fas fa-check-circle me-2"></i>@TempData["Success"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <!-- Filtro por Nivel -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3 align-items-end">
+                <div class="col-md-4">
+                    <label class="form-label fw-semibold">Filtrar por Nivel</label>
+                    <select name="gradeLevelId" class="form-select" onchange="this.form.submit()">
+                        <option value="">Todos los niveles</option>
+                        @foreach (var level in ViewBag.GradeLevels)
+                        {
+                            <option value="@level.GradeLevelId" selected="@(level.GradeLevelId == selectedGradeLevel)">
+                                @level.Name
+                            </option>
+                        }
+                    </select>
+                </div>
+                @if (selectedGradeLevel.HasValue)
+                {
+                    <div class="col-md-2">
+                        <a asp-action="Index" class="btn btn-outline-secondary">Limpiar filtro</a>
+                    </div>
+                }
+            </form>
+        </div>
+    </div>
+
+    @if (!Model.Any())
+    {
+        <div class="text-center py-5">
+            <div class="mb-3">
+                <i class="fas fa-book fa-4x text-muted"></i>
+            </div>
+            <h5 class="text-muted">No hay materias registradas</h5>
+            <p class="text-muted mb-4">Comienza creando la primera materia</p>
+            <a asp-action="Create" class="btn btn-primary">
+                <i class="fas fa-plus me-2"></i>Crear Materia
+            </a>
+        </div>
+    }
+    else
+    {
+        <div class="row">
+            @foreach (var item in Model)
+            {
+                <div class="col-md-6 col-lg-4 mb-4">
+                    <div class="card h-100 shadow-sm">
+                        <div class="card-header bg-white py-3">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <h5 class="card-title mb-0 fw-bold">@item.Name</h5>
+                                <span class="badge bg-info">@item.Units?.Count() ?? 0 unidades</span>
+                            </div>
+                            <small class="text-muted d-block mt-1">
+                                <i class="fas fa-layer-group me-1"></i>@item.GradeLevel?.Name
+                            </small>
+                        </div>
+                        <div class="card-body">
+                            <div class="d-flex flex-wrap gap-2 mb-3">
+                                @if (item.Units != null && item.Units.Any())
+                                {
+                                    @foreach (var unit in item.Units.OrderBy(u => u.UnitNumber).Take(3))
+                                    {
+                                        <span class="badge @(unit.IsOpen ? "bg-success" : "bg-secondary")">
+                                            U@(unit.UnitNumber)
+                                        </span>
+                                    }
+                                    @if (item.Units.Count() > 3)
+                                    {
+                                        <span class="badge bg-light text-dark">+@(item.Units.Count() - 3)</span>
+                                    }
+                                }
+                                else
+                                {
+                                    <span class="text-muted">Sin unidades</span>
+                                }
+                            </div>
+                        </div>
+                        <div class="card-footer bg-white border-0 pb-3 d-flex justify-content-end gap-2">
+                            <a asp-action="Details" asp-route-id="@item.SubjectId"
+                               class="btn btn-sm btn-outline-info" title="Ver detalles">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                            <a asp-action="ManageUnits" asp-route-subjectId="@item.SubjectId"
+                               class="btn btn-sm btn-outline-success" title="Gestionar unidades">
+                                <i class="fas fa-puzzle-piece"></i>
+                            </a>
+                            <a asp-action="Edit" asp-route-id="@item.SubjectId"
+                               class="btn btn-sm btn-outline-primary" title="Editar">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <button type="button" class="btn btn-sm btn-outline-danger"
+                                    data-bs-toggle="modal" data-bs-target="#deleteModal-@item.SubjectId"
+                                    title="Eliminar">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Modal de eliminación -->
+                    <div class="modal fade" id="deleteModal-@item.SubjectId" tabindex="-1">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title">Confirmar Eliminación</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <p>¿Estás seguro de eliminar la materia <strong>@item.Name</strong>?</p>
+                                    @if (item.Units != null && item.Units.Any())
+                                    {
+                                        <p class="text-warning">
+                                            <i class="fas fa-exclamation-triangle me-2"></i>
+                                            Esta materia tiene @item.Units.Count() unidades asociadas.
+                                        </p>
+                                    }
+                                    <p class="text-danger mb-0">
+                                        <i class="fas fa-exclamation-triangle me-2"></i>
+                                        Esta acción no se puede deshacer.
+                                    </p>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                        Cancelar
+                                    </button>
+                                    <form asp-action="Delete" asp-route-id="@item.SubjectId" method="post">
+                                        <button type="submit" class="btn btn-danger">
+                                            <i class="fas fa-trash me-2"></i>Eliminar
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
