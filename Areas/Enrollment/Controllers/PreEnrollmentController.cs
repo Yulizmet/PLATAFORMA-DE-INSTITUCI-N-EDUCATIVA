@@ -61,6 +61,8 @@ namespace SchoolManager.Areas.Enrollment.Controllers
             return _context.PreenrollmentGenerals.Any(e => e.IdData == id);
         }
 
+
+
         // =====================================================================
         // FLUJO 1: REGISTRO INICIAL + GENERACIÓN DE FOLIO
         // El usuario (sin cuenta) llena sus datos y genera un folio de pago.
