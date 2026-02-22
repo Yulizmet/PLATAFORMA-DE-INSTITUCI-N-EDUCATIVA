@@ -11,25 +11,19 @@
         <div class="row g-3">
 
             <div class="col-md-4">
-                <label asp-for="Persona.LastNamePaternal" class="form-label">
-                    Apellido paterno
-                </label>
+                <label class="form-label">Apellido Paterno</label>
                 <input asp-for="Persona.LastNamePaternal" class="form-control" />
                 <span asp-validation-for="Persona.LastNamePaternal" class="text-danger"></span>
             </div>
 
             <div class="col-md-4">
-                <label asp-for="Persona.LastNameMaternal" class="form-label">
-                    Apellido materno
-                </label>
+                <label class="form-label">Apellido Materno</label>
                 <input asp-for="Persona.LastNameMaternal" class="form-control" />
                 <span asp-validation-for="Persona.LastNameMaternal" class="text-danger"></span>
             </div>
 
             <div class="col-md-4">
-                <label asp-for="Persona.FirstName" class="form-label">
-                    Nombre(s)
-                </label>
+                <label class="form-label">Nombre(s)</label>
                 <input asp-for="Persona.FirstName" class="form-control" />
                 <span asp-validation-for="Persona.FirstName" class="text-danger"></span>
             </div>
@@ -40,29 +34,23 @@
         <div class="row g-3 mt-2">
 
             <div class="col-md-3">
-                <label asp-for="Persona.Gender" class="form-label">
-                    Género
-                </label>
+                <label class="form-label">Género</label>
                 <select asp-for="Persona.Gender" class="form-select">
                     <option value="">Sin selección</option>
-                    <option value="Femenino">Femenino</option>
-                    <option value="Masculino">Masculino</option>
+                    <option>Femenino</option>
+                    <option>Masculino</option>
                 </select>
                 <span asp-validation-for="Persona.Gender" class="text-danger"></span>
             </div>
 
             <div class="col-md-3">
-                <label asp-for="Persona.BirthDate" class="form-label">
-                    Fecha de nacimiento
-                </label>
+                <label class="form-label">Fecha de Nacimiento</label>
                 <input asp-for="Persona.BirthDate" type="date" class="form-control" />
                 <span asp-validation-for="Persona.BirthDate" class="text-danger"></span>
             </div>
 
             <div class="col-md-3">
-                <label asp-for="DatosGenerales.MaritalStatus" class="form-label">
-                    Estado civil
-                </label>
+                <label class="form-label">Estado Civil</label>
                 <select asp-for="DatosGenerales.MaritalStatus" class="form-select">
                     <option value="">Sin selección</option>
                     <option>Soltero(a)</option>
@@ -74,9 +62,7 @@
             </div>
 
             <div class="col-md-3">
-                <label asp-for="DatosGenerales.Nationality" class="form-label">
-                    Nacionalidad
-                </label>
+                <label class="form-label">Nacionalidad</label>
                 <select asp-for="DatosGenerales.Nationality" class="form-select">
                     <option value="">Sin selección</option>
                     <option>Mexicano(a)</option>
@@ -92,10 +78,7 @@
         <div class="row g-3 mt-4">
 
             <div class="col-md-6">
-                <label asp-for="Persona.Curp" class="form-label">
-                    CURP
-                </label>
-
+                <label class="form-label">CURP</label>
                 <div class="input-group">
                     <input asp-for="Persona.Curp"
                            class="form-control"
@@ -103,27 +86,75 @@
                            placeholder="Ingresa tu CURP"
                            style="text-transform: uppercase;"
                            oninput="this.value = this.value.toUpperCase()" />
-
-                    <a href="https://www.gob.mx/curp/"
-                       target="_blank"
-                       class="btn btn-outline-primary">
-                        Consultar
-                    </a>
+                    <a href="https://www.gob.mx/curp/" target="_blank" class="btn btn-outline-primary">Consultar</a>
                 </div>
-
+                <small class="text-muted">La CURP debe contener exactamente 18 caracteres.</small>
                 <span asp-validation-for="Persona.Curp" class="text-danger"></span>
             </div>
 
             <div class="col-md-6">
-                <label asp-for="Persona.Email" class="form-label">
-                    Correo electrónico
-                </label>
-                <input asp-for="Persona.Email"
-                       class="form-control"
-                       placeholder="ejemplo@correo.com" />
+                <label class="form-label">Correo Electrónico</label>
+                <input asp-for="Persona.Email" class="form-control" placeholder="ejemplo@correo.com" />
                 <span asp-validation-for="Persona.Email" class="text-danger"></span>
             </div>
 
+        </div>
+
+        <!-- ================= TIPO DE SANGRE Y TRABAJO ================= -->
+        <div class="row g-3 mt-2">
+
+            <div class="col-md-6">
+                <label class="form-label">Tipo de Sangre</label>
+                <select asp-for="DatosGenerales.BloodType" class="form-select">
+                    <option value="">Sin selección</option>
+                    <option>A+</option>
+                    <option>A-</option>
+                    <option>B+</option>
+                    <option>B-</option>
+                    <option>AB+</option>
+                    <option>AB-</option>
+                    <option>O+</option>
+                    <option>O-</option>
+                </select>
+                <span asp-validation-for="DatosGenerales.BloodType" class="text-danger"></span>
+            </div>
+
+            <div class="col-md-6">
+                <label class="form-label d-block">¿Trabaja actualmente?</label>
+                <div class="d-flex gap-3 mt-1">
+                    <div class="form-check m-0">
+                        <input class="form-check-input" type="radio" asp-for="DatosGenerales.Work" id="trabajaNo" value="false" />
+                        <label class="form-check-label" for="trabajaNo">No</label>
+                    </div>
+                    <div class="form-check m-0">
+                        <input class="form-check-input" type="radio" asp-for="DatosGenerales.Work" id="trabajaSi" value="true" />
+                        <label class="form-check-label" for="trabajaSi">Sí</label>
+                    </div>
+                </div>
+                <span asp-validation-for="DatosGenerales.Work" class="text-danger"></span>
+            </div>
+
+        </div>
+
+        <!-- ================= CAMPOS DE TRABAJO ================= -->
+        <div class="row g-3 mt-3 d-none" id="camposTrabajo">
+            <div class="col-md-4">
+                <label class="form-label">Ocupación</label>
+                <input asp-for="DatosGenerales.Occupation" class="form-control" />
+                <span asp-validation-for="DatosGenerales.Occupation" class="text-danger"></span>
+            </div>
+
+            <div class="col-md-4">
+                <label class="form-label">Dirección de Trabajo</label>
+                <input asp-for="DatosGenerales.WorkAddress" class="form-control" />
+                <span asp-validation-for="DatosGenerales.WorkAddress" class="text-danger"></span>
+            </div>
+
+            <div class="col-md-4">
+                <label class="form-label">Teléfono de Trabajo</label>
+                <input asp-for="DatosGenerales.WorkPhone" class="form-control" />
+                <span asp-validation-for="DatosGenerales.WorkPhone" class="text-danger"></span>
+            </div>
         </div>
 
     </div>

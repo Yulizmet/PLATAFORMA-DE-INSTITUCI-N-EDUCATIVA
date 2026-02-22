@@ -364,14 +364,20 @@ namespace SchoolManager.Areas.Enrollment.Controllers
         // =====================================================================
 
         // GET: Enrollment/PreEnrollment
-        public async Task<IActionResult> Index()
+
+        public IActionResult Index()
         {
-            var generales = await _context.PreenrollmentGenerals
-                .Include(p => p.Career)
-                .Include(p => p.Generation)
-                .ToListAsync();
-            return View(generales);
+            return RedirectToAction(nameof(Create));
         }
+
+        // public async Task<IActionResult> Index()
+        //{
+        //   var generales = await _context.PreenrollmentGenerals
+        //     .Include(p => p.Career)
+        //    .Include(p => p.Generation)
+        //    .ToListAsync();
+        // return View(generales);
+        //} 
 
         // GET: Enrollment/PreEnrollment/Details/5
         public async Task<IActionResult> Details(int? id)
