@@ -5,6 +5,11 @@ namespace SchoolManager.Areas.SocialService.Controllers
     [Area("SocialService")]
     public class TeacherController : Controller
     {
+        // Al acceder a /SocialService/Teacher redirige al dashboard del profesor
+        public IActionResult Index()
+        {
+            return RedirectToAction("Dashboard");
+        }
         public IActionResult Dashboard()
         {
             return View();

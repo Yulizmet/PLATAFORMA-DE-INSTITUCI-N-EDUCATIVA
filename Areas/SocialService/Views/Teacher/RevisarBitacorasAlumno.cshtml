@@ -1,6 +1,6 @@
-@page "{id:int}"
 @{
-    var idObj = RouteData.Values["id"];
+    // Obtener el id desde RouteData (MVC) o desde ViewBag si el controlador lo proporcionó
+    var idObj = ViewContext?.RouteData?.Values["id"] ?? ViewBag.AlumnoId;
     int id = 1;
     if (idObj != null)
     {
