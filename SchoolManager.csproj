@@ -7,7 +7,14 @@
   </PropertyGroup>
 
   <ItemGroup>
-
+    <Compile Remove="Areas\Preenrollment\**" />
+    <Compile Remove="Areas\Tutorship\**" />
+    <Content Remove="Areas\Preenrollment\**" />
+    <Content Remove="Areas\Tutorship\**" />
+    <EmbeddedResource Remove="Areas\Preenrollment\**" />
+    <EmbeddedResource Remove="Areas\Tutorship\**" />
+    <None Remove="Areas\Preenrollment\**" />
+    <None Remove="Areas\Tutorship\**" />
   </ItemGroup>
 
   <ItemGroup>
@@ -30,12 +37,7 @@
     <Folder Include="Areas\Grades\JS\" />
     <Folder Include="Areas\Procedures\Controllers\" />
     <Folder Include="Areas\Procedures\Views\" />
-    <Folder Include="Areas\Preenrollment\Controllers\" />
-    <Folder Include="Areas\Preenrollment\ViewModels\" />
-    <Folder Include="Areas\Preenrollment\Views\" />
     <Folder Include="Areas\Grades\Views\" />
     <Folder Include="Areas\Procedures\Templates\" />
-    <Folder Include="Areas\Tutorship\Controllers\" />
-    <Folder Include="Areas\Tutorship\Views\" />
   </ItemGroup>
 </Project>

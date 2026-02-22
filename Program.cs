@@ -48,6 +48,10 @@ app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
 
+app.MapAreaControllerRoute(
+    name: "social_service_root",
+    areaName: "SocialService",
+    pattern: "SocialService/{controller=Account}/{action=Index}/{id?}");
 
 app.MapRazorPages();
 

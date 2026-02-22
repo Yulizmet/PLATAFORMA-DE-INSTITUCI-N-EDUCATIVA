@@ -1,7 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 
-namespace PI.Controllers
+namespace SchoolManager.Areas.SocialService.Controllers
 {
+    [Area("SocialService")]
     public class AccountController : Controller
     {
         // GET: Acceso (selección de dashboard)
