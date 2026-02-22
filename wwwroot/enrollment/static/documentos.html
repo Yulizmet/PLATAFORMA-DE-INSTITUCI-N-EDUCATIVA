@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+	<meta name="description" content="Responsive Admin &amp; Dashboard Template based on Bootstrap 5">
+	<meta name="author" content="AdminKit">
+	<meta name="keywords" content="adminkit, bootstrap, bootstrap 5, admin, dashboard, template, responsive, css, sass, html, theme, front-end, ui kit, web">
+
+	<link rel="preconnect" href="https://fonts.gstatic.com">
+	<link rel="shortcut icon" href="/src/img/icons/icono-Itace.png" />
+
+	<title>Documentos</title>
+
+	<link href="css/app.css" rel="stylesheet">
+	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+	<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+
+	</head>
+
+	<body>
+		<div class="wrapper">
+			<nav id="sidebar" class="sidebar js-sidebar">
+				<div class="sidebar-content js-simplebar">
+					<a class="sidebar-brand" href="index.html">
+			<span class="align-middle ms-3">
+				
+			<div style="position: relative; height: 110px; overflow: hidden;">
+			<img src="img/icons/ITACE.png" alt="Escuela logo" style="position: absolute; top: -50px; left: 50%; transform: translateX(-50%); height: 150px; width: auto; display: block;">
+			</div>
+				</span>
+			</a>
+
+			<ul class="sidebar-nav">
+			<li class="sidebar-header"></li>
+
+			<li class="sidebar-item">
+				<div class="steps-vertical" id="wizardSteps">
+
+				<a href="index.html" class="step-vertical" data-step="0">
+					<div class="step-vertical-icon">
+					<i class="fa-solid fa-check"></i>
+					</div>
+					<div class="step-vertical-content">
+					<div class="step-vertical-title">Preinscripción</div>
+					<div class="step-vertical-desc">Datos iniciales</div>
+					</div>
+				</a>
+
+				<a href="documentos.html" class="step-vertical" data-step="1">
+				<div class="step-vertical-icon">
+					<i class="fa-solid fa-file-lines"></i>
+				</div>
+				<div class="step-vertical-content">
+					<div class="step-vertical-title">Documentos</div>
+					<div class="step-vertical-desc">Carga de archivos</div>
+				</div>
+				</a>
+
+				<a href="alumno.html" class="step-vertical" data-step="1">
+					<div class="step-vertical-icon">
+					<i class="fa-solid fa-user-check"></i>
+					</div>
+					<div class="step-vertical-content">
+					<div class="step-vertical-title">Confirmar datos</div>
+					<div class="step-vertical-desc">Verifica tu información</div>
+					</div>
+				</a>
+
+				<a href="finalizar.html" class="step-vertical" data-step="2">
+					<div class="step-vertical-icon">
+					<i class="fa-solid fa-flag-checkered"></i>
+					</div>
+					<div class="step-vertical-content">
+					<div class="step-vertical-title">Finalizar</div>
+					<div class="step-vertical-desc">Enviar solicitud</div>
+					</div>
+				</a>
+
+				</div>
+			</li>
+			</ul>
+
+			<style>
+			.steps-vertical{
+				padding: 12px 14px 12px 18px;
+				margin: 8px 10px;
+				border-left: 3px solid rgba(255,255,255,.2);
+			}
+
+			.step-vertical{
+				position: relative;
+				display: flex;
+				gap: 12px;
+				padding: 10px;
+				margin-bottom: 12px;
+				border-radius: .4rem;
+				text-decoration: none;
+				color: rgba(255,255,255,.9);
+				opacity: .55;
+			}
+
+			.step-vertical::before{
+				content: "";
+				position: absolute;
+				left: -11px;
+				top: 18px;
+				width: 12px;
+				height: 12px;
+				border-radius: 50%;
+				background: rgba(255,255,255,.3);
+			}
+
+			.step-vertical-icon{
+				width: 34px;
+				height: 34px;
+				display: grid;
+				place-items: center;
+				border-radius: .5rem;
+				background: rgba(255,255,255,.1);
+				flex: 0 0 34px;
+			}
+
+			.step-vertical-icon i{
+				font-size: 15px;
+				color: rgba(255,255,255,.95);
+			}
+
+			.step-vertical-title{
+				font-size: .95rem;
+				font-weight: 600;
+				line-height: 1.1;
+			}
+
+			.step-vertical-desc{
+				font-size: .78rem;
+				opacity: .8;
+				margin-top: 2px;
+			}
+
+			.step-vertical.active{
+				opacity: 1;
+				background: rgba(255,255,255,.06);
+				border: 1px solid rgba(255,255,255,.12);
+			}
+
+			.step-vertical.active::before{
+				background: #4D0218;
+			}
+
+			.step-vertical.complete{
+				opacity: 1;
+			}
+
+			.step-vertical.complete::before{
+				background: #198754;
+			}
+
+			.step-vertical.complete .step-vertical-icon i{
+				color: #198754;
+			}
+			</style>
+
+					
+			</nav>
+
+			<div class="main">
+				<nav class="navbar navbar-expand navbar-light navbar-bg">
+					<a class="sidebar-toggle js-sidebar-toggle">
+			<i class="hamburger align-self-center"></i>
+			</a>
+					<div class="navbar-collapse collapse">
+						<ul class="navbar-nav navbar-align">
+				</a>
+
+				</nav>
+
+				<main class="content">
+				<div class="container-fluid p-0">
+
+					<h1 class="h3 mb-3">Documentos</h1>
+
+					<div class="row">
+					<div class="col-12">
+						<div class="card">
+
+						<div class="card-header">
+							<h5 class="card-title mb-0">Documentación</h5>
+						</div>
+
+						<div class="card-body">
+
+							<h6 class="mb-3">Entregados</h6>
+							<div class="table-responsive">
+							<table class="table table-bordered table-sm align-middle">
+							<thead class="table-light">
+								<tr>
+								<th>Documento</th>
+								<th style="width:140px">Usuario</th>
+								<th style="width:140px">Fecha</th>
+								<th>Observaciones</th>
+								<th style="width:260px">Anexar Documento</th>
+								<th style="width:60px" class="text-center">Acción</th>
+								</tr>
+							</thead>
+							<tbody id="tbodyEntregados">
+								<!-- Se llena dinámicamente con JS -->
+							</tbody>
+							</table>
+							</div>
+
+							<!-- ================= POR ENTREGAR ================= -->
+							<h6 class="mt-4 mb-3">Por Entregar</h6>
+							<div class="table-responsive">
+							<table class="table table-bordered table-sm align-middle">
+							<thead class="table-light">
+								<tr>
+								<th>Documento</th>
+								<th style="width:260px">Anexar Documento</th>
+								</tr>
+							</thead>
+							<tbody id="tbodyPorEntregar">
+							</tbody>
+							</table>
+							</div>
+
+						</div>
+						</div>
+					</div>
+					</div>
+
+					<style>
+					.table td, .table th {
+						vertical-align: middle;
+					}
+					@media (max-width: 576px){
+						.table-responsive {
+						border: 1px solid rgba(0,0,0,.1);
+						border-radius: .5rem;
+						}
+					}
+					</style>
+					
+				<div class="d-flex justify-content-end">
+				<button type="button" id="btnContinuar" class="btn btn-primary">
+					Siguiente
+				</button>
+				</div>
+
+				</div>
+				</main>
+
+				<footer class="footer">
+					<div class="container-fluid">
+						<div class="row text-muted">
+							<div class="col-6 text-start">
+								<p class="mb-0">
+										<a class="text-muted" href="https://itace.edu.mx/" target="_blank"><strong>Instituto Tamaulipeco de Capacitación para el Empleo</strong></a> &copy;
+								</p>
+							</div>
+							<div class="col-6 text-end">
+								<ul class="list-inline">
+									<li class="list-inline-item">
+										<a class="text-muted" href="https://adminkit.io/" target="_blank">Soporte</a>
+									</li>
+									<li class="list-inline-item">
+									<a class="text-muted" href="/static/docs/AVISO-DE-PRIVACIDAD-ITACE.pdf"target="_blank">Aviso de Privacidad</a>
+									</li>
+								</ul>
+							</div>
+						</div>
+					</div>
+				</footer>
+			</div>
+		</div>
+		<img id="pdfLogo" src="../src/img/icons/ITACE.png" style="display:none;" alt="logo">
+
+		<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+		<script src="js/app.js"></script>
+		<script src="/src/js/modules/documentos-scripts.js"></script>
+	</body>
+
+</html>

@@ -25,6 +25,10 @@ namespace SchoolManager.Models
         [Required]
         public int IdProcedureFlow { get; set; }
 
+        [Required]
+        public int IdStatus { get; set; }
+
+
         [ForeignKey("IdUser")]
         public virtual users_user User { get; set; } = null!;
 
@@ -33,5 +37,8 @@ namespace SchoolManager.Models
 
         [ForeignKey("IdProcedureFlow")]
         public virtual procedure_flow ProcedureFlow { get; set; } = null!;
+
+        [ForeignKey("IdStatus")]
+        public virtual procedure_status ProcedureStatus { get; set; } = null!;
     }
 }

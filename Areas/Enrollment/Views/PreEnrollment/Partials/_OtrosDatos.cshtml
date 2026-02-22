@@ -1,0 +1,91 @@
+﻿@model SchoolManager.Areas.Enrollment.ViewModels.PreEnrollmentViewModel
+
+<div class="card mb-4">
+    <div class="card-header fw-bold text-uppercase">Otros datos</div>
+
+    <div class="card-body row g-3">
+
+        <!-- Beca -->
+        <div class="col-12">
+            <label class="form-label fw-semibold d-block">¿Contaba con beca?</label>
+            <div class="form-check form-check-inline">
+                <input asp-for="Otros.beca" class="form-check-input" type="radio" value="No" checked>
+                <label class="form-check-label" for="Otros_beca">No</label>
+            </div>
+            <div class="form-check form-check-inline">
+                <input asp-for="Otros.beca" class="form-check-input" type="radio" value="Sí">
+                <label class="form-check-label" for="Otros_beca">Sí</label>
+            </div>
+        </div>
+
+        <!-- Comunidad indígena -->
+        <div class="col-12">
+            <label class="form-label fw-semibold d-block">¿Proviene de alguna comunidad indígena?</label>
+            <div class="form-check form-check-inline">
+                <input asp-for="Otros.comu_indi" class="form-check-input" type="radio" value="No" checked>
+                <label class="form-check-label" for="Otros_comu_indi">No</label>
+            </div>
+            <div class="form-check form-check-inline">
+                <input asp-for="Otros.comu_indi" class="form-check-input" type="radio" value="Sí">
+                <label class="form-check-label" for="Otros_comu_indi">Sí</label>
+            </div>
+        </div>
+
+        <!-- Habla lengua indígena -->
+        <div class="col-12">
+            <label class="form-label fw-semibold d-block">¿Habla lengua indígena?</label>
+            <div class="form-check form-check-inline">
+                <input asp-for="Otros.lengu_indi" class="form-check-input" type="radio" value="No" checked>
+                <label class="form-check-label" for="Otros_lengu_indi">No</label>
+            </div>
+            <div class="form-check form-check-inline">
+                <input asp-for="Otros.lengu_indi" class="form-check-input" type="radio" value="Sí">
+                <label class="form-check-label" for="Otros_lengu_indi">Sí</label>
+            </div>
+        </div>
+
+        <!-- Discapacidad -->
+        <div class="col-12">
+            <label class="form-label fw-semibold d-block">¿Padece alguna discapacidad?</label>
+            <div class="form-check form-check-inline">
+                <input asp-for="Otros.incapa" class="form-check-input" type="radio" value="No" checked>
+                <label class="form-check-label" for="Otros_incapa">No</label>
+            </div>
+            <div class="form-check form-check-inline">
+                <input asp-for="Otros.incapa" class="form-check-input" type="radio" value="Sí">
+                <label class="form-check-label" for="Otros_incapa">Sí</label>
+            </div>
+        </div>
+
+        <!-- Enfermedad -->
+        <div class="col-12">
+            <label class="form-label fw-semibold d-block">¿Padece alguna enfermedad?</label>
+            <div class="form-check form-check-inline">
+                <input asp-for="Otros.disease" class="form-check-input" type="radio" value="No" checked>
+                <label class="form-check-label" for="Otros_disease">No</label>
+            </div>
+            <div class="form-check form-check-inline">
+                <input asp-for="Otros.disease" class="form-check-input" type="radio" value="Sí">
+                <label class="form-check-label" for="Otros_disease">Sí</label>
+            </div>
+        </div>
+
+        <!-- Cómo se enteró -->
+        <div class="col-12 mt-3">
+            <label class="form-label fw-semibold">¿Cómo se enteró primeramente del ITACE y sus especialidades?</label>
+            <select asp-for="Otros.comment" class="form-select">
+                <option value="">Sin selección</option>
+                <option value="Amigos">Amigos</option>
+                <option value="Familia">Familia</option>
+                <option value="Redes sociales">Redes sociales</option>
+                <option value="Internet">Internet</option>
+                <option value="Radio/TV">Radio/TV</option>
+                <option value="Feria educativa">Feria educativa</option>
+                <option value="Visita a escuela">Visita a escuela</option>
+                <option value="Otro">Otro</option>
+            </select>
+            <span asp-validation-for="Otros.comment" class="text-danger"></span>
+        </div>
+
+    </div>
+</div>

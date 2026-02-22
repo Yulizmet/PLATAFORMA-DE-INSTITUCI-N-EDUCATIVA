@@ -1,0 +1,59 @@
+﻿@model SchoolManager.Areas.Enrollment.ViewModels.PreEnrollmentViewModel
+
+<div class="card mb-4">
+    <div class="card-header fw-bold text-uppercase">Datos del tutor o responsable legal</div>
+
+    <div class="card-body row g-3">
+
+        <div class="col-md-4">
+            <label asp-for="Tutor.relationship" class="form-label">Parentesco</label>
+            <select asp-for="Tutor.relationship" class="form-select">
+                <option value="">Sin selección</option>
+                <option value="Padre">Padre</option>
+                <option value="Madre">Madre</option>
+                <option value="Tutor">Tutor</option>
+                <option value="Abuelo(a)">Abuelo(a)</option>
+                <option value="Hermano(a)">Hermano(a)</option>
+                <option value="Otro">Otro</option>
+            </select>
+        </div>
+
+        <div class="col-md-4">
+            <label asp-for="Tutor.paternal_last_name" class="form-label">Apellido paterno</label>
+            <input asp-for="Tutor.paternal_last_name" class="form-control" />
+        </div>
+
+        <div class="col-md-4">
+            <label asp-for="Tutor.maternal_last_name" class="form-label">Apellido materno</label>
+            <input asp-for="Tutor.maternal_last_name" class="form-control" />
+        </div>
+
+        <div class="col-md-6">
+            <label asp-for="Tutor.name" class="form-label">Nombre(s)</label>
+            <input asp-for="Tutor.name" class="form-control" />
+        </div>
+
+        <div class="col-md-3">
+            <label asp-for="Tutor.home_phone" class="form-label">Teléfono de casa</label>
+            <input asp-for="Tutor.home_phone"
+                   type="tel"
+                   class="form-control"
+                   inputmode="numeric"
+                   pattern="[0-9]{10}"
+                   maxlength="10"
+                   placeholder="10 dígitos" />
+        </div>
+
+        <div class="col-md-3">
+            <label asp-for="Tutor.work_phone" class="form-label">Teléfono de trabajo (Opcional)</label>
+            <input asp-for="Tutor.work_phone"
+                   type="tel"
+                   class="form-control"
+                   inputmode="numeric"
+                   pattern="[0-9]{10}"
+                   maxlength="10"
+                   placeholder="10 dígitos" />
+        </div>
+
+    </div>
+</div>
