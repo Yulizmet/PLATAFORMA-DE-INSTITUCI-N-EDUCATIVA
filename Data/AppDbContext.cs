@@ -247,7 +247,6 @@ namespace SchoolManager.Data
             #endregion
 
             #region 4. Grades Configuration
-            #region 4. Grades Configuration
 
             // Configurar nombres de tabla para grades
             modelBuilder.Entity<grades_extraordinary_grades>().ToTable("grades_extraordinary_grades");
@@ -482,7 +481,7 @@ namespace SchoolManager.Data
                 .HasDefaultValueSql("GETDATE()");
 
             #endregion
-            #endregion
+        
 
             #region 5. Tutorship Configuration
             modelBuilder.Entity<tutorship>().ToTable("tutorship_sessions");
