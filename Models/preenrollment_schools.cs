@@ -9,11 +9,8 @@ namespace SchoolManager.Models
         public int IdSchool { get; set; }
 
 
-        [Required]
         public int id_data { get; set; }
-
-        [ForeignKey("id_data")]
-        public virtual preenrollment_general General { get; set; } = null!;
+        public preenrollment_general preenrollment_general { get; set; }
 
         public string school { get; set; }
         public string degree { get; set; }
@@ -22,9 +19,8 @@ namespace SchoolManager.Models
 
         public decimal average { get; set; }
 
-        public DateTime? start_date { get; set; }
-        public DateTime? end_date { get; set; }
-
+        public DateTime start_date { get; set; }
+        public DateTime end_date { get; set; }
 
         public string study_system { get; set; }
         public string high_school_type { get; set; }

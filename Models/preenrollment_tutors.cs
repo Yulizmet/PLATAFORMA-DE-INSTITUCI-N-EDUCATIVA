@@ -9,11 +9,8 @@ namespace SchoolManager.Models
         public int IdTutor { get; set; }
 
 
-        [Required]
         public int id_data { get; set; }
-
-        [ForeignKey("id_data")]
-        public virtual preenrollment_general General { get; set; } = null!;
+        public preenrollment_general preenrollment_general { get; set; }
 
         public string relationship { get; set; }
         public string paternal_last_name { get; set; }
