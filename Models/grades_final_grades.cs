@@ -18,7 +18,7 @@ namespace SchoolManager.Models
 
         // Navigation properties
         public grades_subjects Subject { get; set; } = null!;
-        //public grades_group grades_group { get; set; } = null!;
+        public grades_group grades_group { get; set; } = null!;
         public grades_extraordinary_grades? ExtraordinaryGrade { get; set; }
     }
 }

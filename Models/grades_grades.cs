@@ -14,7 +14,7 @@ namespace SchoolManager.Models
         public decimal Value { get; set; }
         public DateTime CreatedAt { get; set; }
 
-        //public grades_group grades_group { get; set; } = null!;
+        public grades_group grades_group { get; set; } = null!;
         public grades_subject_unit SubjectUnit { get; set; } = null!;
 
         public ICollection<grades_unit_recovery> Recoveries { get; set; } = new List<grades_unit_recovery>();
