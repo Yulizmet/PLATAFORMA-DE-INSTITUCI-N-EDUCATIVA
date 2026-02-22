@@ -175,11 +175,6 @@ namespace SchoolManager.Data
                 .HasForeignKey(pm => pm.IdProcedure)
                 .OnDelete(DeleteBehavior.Cascade); 
 
-            modelBuilder.Entity<procedure_monitoring>()
-                .HasOne(pm => pm.ProcedureStatus)
-                .WithMany()
-                .HasForeignKey(pm => pm.IdStatus)
-                .OnDelete(DeleteBehavior.Restrict);
 
             // Relaciones de Usuarios
             modelBuilder.Entity<users_person>()
