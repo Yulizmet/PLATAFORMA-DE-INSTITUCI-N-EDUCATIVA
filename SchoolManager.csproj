@@ -8,17 +8,9 @@
 
   <ItemGroup>
     <Compile Remove="Areas\Preenrollment\**" />
-    <Compile Remove="Areas\Tutorship\**" />
     <Content Remove="Areas\Preenrollment\**" />
-    <Content Remove="Areas\Tutorship\**" />
     <EmbeddedResource Remove="Areas\Preenrollment\**" />
-    <EmbeddedResource Remove="Areas\Tutorship\**" />
     <None Remove="Areas\Preenrollment\**" />
-    <None Remove="Areas\Tutorship\**" />
-    <Compile Remove="Areas\Tutorship\**" />
-    <Content Remove="Areas\Tutorship\**" />
-    <EmbeddedResource Remove="Areas\Tutorship\**" />
-    <None Remove="Areas\Tutorship\**" />
   </ItemGroup>
 
   <ItemGroup>
@@ -62,8 +54,6 @@
     <Folder Include="Areas\Grades\Views\" />
     <Folder Include="Areas\Grades\Views\" />
     <Folder Include="Areas\Procedures\Templates\" />
-    <Folder Include="Areas\Tutorship\Controllers\" />
-    <Folder Include="Areas\Tutorship\Views\" />
     <Folder Include="Migrations\" />
 
 	  <None Update="libwkhtmltox.dll">

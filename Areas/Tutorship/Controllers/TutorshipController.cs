@@ -1,40 +1,40 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 
-namespace SchoolManager.Areas.Tutorias.Controllers
+namespace SchoolManager.Areas.Tutorship.Controllers
 {
     [Area("Gestion")]
     ////localhost:7207/Gestion/Tutorias/Seguimiento
     //[Route("PanelTutorias")]
     //localhost/PanelTutorias/Seguimiento
-    public class TutoriasController : Controller
+    public class TutorshipController : Controller
     {
         public IActionResult Asistencia()
         {
-            return View("~/Areas/Tutorias/Views/Asistencia.cshtml");
+            return View("~/Areas/Tutorship/Views/Asistencia.cshtml");
         }
 
         public IActionResult EntrevistaInicial()
         {
-            return View("~/Areas/Tutorias/Views/EntrevistaInicial.cshtml");
+            return View("~/Areas/Tutorship/Views/EntrevistaInicial.cshtml");
         }
 
         public IActionResult DetalleEntrevista()
         {
-            return View("~/Areas/Tutorias/Views/DetalleEntrevista.cshtml");
+            return View("~/Areas/Tutorship/Views/DetalleEntrevista.cshtml");
         }
 
         public IActionResult Seguimiento()
         {
-            return View("~/Areas/Tutorias/Views/Seguimiento.cshtml");
+            return View("~/Areas/Tutorship/Views/Seguimiento.cshtml");
         }
 
         public IActionResult Controlador()
         {
-            return View("~/Areas/Tutorias/Views/Controlador.cshtml");
+            return View("~/Areas/Tutorship/Views/Controlador.cshtml");
         }
         public IActionResult ListaDeAlumnos()
         {
-            return View("~/Areas/Tutorias/Views/ListaDeAlumnos.cshtml");
+            return View("~/Areas/Tutorship/Views/ListaDeAlumnos.cshtml");
         }
     }
 }
