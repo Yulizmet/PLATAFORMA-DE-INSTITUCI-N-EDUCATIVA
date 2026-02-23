@@ -35,17 +35,22 @@
                         @foreach (var item in Model)
                         {
                             <tr>
-                                <td class="ps-4">
-                                    <div class="fw-bold burgundy-color">@item.Folio</div>
-                                    <small class="text-muted">@item.DateUpdated.ToString("dd/MM/yyyy HH:mm")</small>
+                                <td>
+                                    <strong>@item.Folio</strong><br />
+                                    <small>@item.DateUpdated.ToString("dd/MM/yyyy HH:mm")</small>
                                 </td>
                                 <td>
-                                    <div class="fw-bold">
-                                        @(item.User?.Person != null 
-                                            ? $"{item.User.Person.FirstName} {item.User.Person.LastNamePaternal}" 
-                                            : "Usuario sin datos personales")
-                                    </div>
-                                    <small class="text-muted">Matrícula: @item.Id</small>
+                                    @* @if (item.PreenrollmentGeneral?.User?.Person != null)
+                                    {
+                                        <span>@item.PreenrollmentGeneral.User.Person.FirstName @item.PreenrollmentGeneral.User.Person.LastNamePaternal</span>
+                                
+                                        <br />
+                                        <small>Matrícula: @item.PreenrollmentGeneral.Matricula</small>
+                                    }
+                                    else
+                                    {
+                                        <span>Sin datos personales</span>
+                                    } *@
                                 </td>
                                 <td>
                                     <div class="fw-bold text-dark">@item.ProcedureType?.Name</div>
@@ -87,7 +92,6 @@
 <div class="modal fade" id="dynamicModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-xl modal-dialog-centered">
         <div class="modal-content border-0 shadow-lg" id="dynamicModalContent">
-            @* Aquí se inyecta la vista parcial *@
         </div>
     </div>
 </div>

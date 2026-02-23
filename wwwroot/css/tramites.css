@@ -1,0 +1,388 @@
+﻿/*============================================================================
+    IMPORTACIÓN DE FUENTES (Esto arregla que no cargue la tipografía)
+==============================================================================*/
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800;900&display=swap');
+
+/*============================================================================
+    VARIABLES Y CONFIGURACIÓN GLOBAL
+==============================================================================*/
+:root {
+    --burgundy: #620900;
+    --burgundy-light: #8C1B1B;
+    --transition: all 0.3s ease;
+}
+
+.area-tramites {
+    font-family: 'Inter', -apple-system, sans-serif !important;
+    background-color: #f3f3f3;
+    min-height: 100vh;
+}
+
+    .area-tramites h1 {
+        font-weight: 900;
+        color: var(--burgundy);
+    }
+
+    .area-tramites h2 {
+        font-weight: 700;
+    }
+
+    .area-tramites p {
+        font-weight: 300;
+    }
+
+.btn:focus, .btn:active:focus, .btn-link.nav-link:focus,
+.form-control:focus, .form-select:focus, .form-check-input:focus {
+    box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem rgba(98, 9, 0, 0.25);
+    border-color: var(--burgundy-light) !important;
+}
+
+/*============================================================================
+    LAYOUT: SIDEBAR (Procedures)
+==============================================================================*/
+.sidebar {
+    background-color: var(--burgundy) !important;
+    min-height: 100vh;
+    color: white;
+    padding-top: 2rem;
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+}
+
+    .sidebar .position-sticky {
+        display: flex;
+        flex-direction: column;
+        height: calc(100vh - 2rem);
+        width: 100%;
+    }
+
+    .sidebar h5 {
+        color: rgba(255, 255, 255, 0.6) !important;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        padding-left: 1.5rem;
+    }
+
+    .sidebar .nav.flex-column {
+        flex-grow: 1;
+        overflow-y: auto;
+    }
+
+    .sidebar .nav-link {
+        color: rgba(255, 255, 255, 0.8) !important;
+        border-left: 4px solid transparent;
+        transition: var(--transition);
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 0.8rem 1.5rem;
+    }
+
+        .sidebar .nav-link:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: white !important;
+        }
+
+        .sidebar .nav-link.active-item {
+            background-color: rgba(255, 255, 255, 0.15) !important;
+            border-left: 4px solid #ffffff !important;
+            font-weight: bold;
+            color: white !important;
+        }
+
+.user-profile {
+    margin: auto 1rem 1.5rem 1rem;
+    padding: 1rem;
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    transition: var(--transition);
+}
+
+/*============================================================================
+    VISTAS DE FORMULARIOS (Requests & PaymentRegistration)
+==============================================================================*/
+.form-container {
+    min-height: 90vh;
+    padding: 2rem 0;
+}
+
+.card-request {
+    border: none;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+}
+
+.form-label {
+    color: var(--burgundy);
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.form-control, .form-select {
+    border-radius: 10px;
+    padding: 0.75rem;
+    border: 1px solid #dee2e6;
+    transition: var(--transition);
+}
+
+.requirement-box {
+    background-color: #fff;
+    border-radius: 15px;
+    padding: 1.5rem;
+    border: 1px dashed #ced4da;
+}
+
+.section-title {
+    color: var(--burgundy);
+    border-bottom: 2px solid #f1f1f1;
+    padding-bottom: 0.5rem;
+    margin-bottom: 1.5rem;
+    font-weight: 700;
+}
+
+/* Drop Zone & File Preview */
+.drop-zone {
+    border: 2px dashed #ced4da;
+    border-radius: 20px;
+    padding: 40px;
+    text-align: center;
+    background: #fff;
+    transition: var(--transition);
+    cursor: pointer;
+}
+
+    .drop-zone:hover {
+        border-color: var(--burgundy);
+        background: rgba(98, 9, 0, 0.02);
+    }
+
+#file-preview {
+    display: none;
+    margin-top: 15px;
+    padding: 15px;
+    border-radius: 15px;
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    align-items: center;
+    gap: 15px;
+}
+
+.file-icon {
+    font-size: 2.5rem;
+    color: var(--burgundy);
+}
+
+/*============================================================================
+    VISTA TRACKING & DETAILS
+==============================================================================*/
+.tracking-container {
+    padding-top: 3rem;
+    min-height: 90vh;
+}
+
+.table-custom {
+    background: white;
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+}
+
+    .table-custom thead th {
+        background-color: var(--burgundy) !important;
+        color: white !important;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+        border: none !important;
+        padding: 1.2rem 1rem;
+    }
+
+.btn-action {
+    width: 35px;
+    height: 35px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    transition: all 0.2s;
+}
+
+    .btn-action:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+
+.status-badge {
+    padding: 0.5em 1.2em;
+    border-radius: 50px;
+    font-weight: 600;
+    font-size: 0.75rem;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.03);
+}
+
+/* Timeline scrollbar */
+.timeline-detail::-webkit-scrollbar {
+    width: 5px;
+}
+
+.timeline-detail::-webkit-scrollbar-thumb {
+    background: #ced4da;
+    border-radius: 10px;
+}
+
+/*============================================================================
+    COMPONENTES: CARDS HORIZONTALES (Centro de Trámites)
+==============================================================================*/
+.area-tramites .card-horizontal {
+    border: none;
+    border-radius: 20px;
+    overflow: hidden;
+    background: white;
+    transition: all 0.4s ease;
+    display: flex;
+    flex-direction: row;
+    height: 220px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+}
+
+    .area-tramites .card-horizontal:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 20px 40px rgba(77, 2, 23, 0.15);
+    }
+
+.area-tramites .img-side {
+    width: 35%;
+    position: relative;
+    overflow: hidden;
+}
+
+    .area-tramites .img-side img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+.area-tramites .img-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(to right, rgba(77, 2, 23, 0.1), rgba(77, 2, 23, 0.6));
+}
+
+.area-tramites .content-side {
+    width: 65%;
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    position: relative;
+}
+
+.area-tramites .icon-float {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    color: var(--burgundy);
+    opacity: 0.15;
+    font-size: 1.8rem;
+}
+
+/*============================================================================
+    UTILERÍAS Y COLORES INSTITUCIONALES
+==============================================================================*/
+.bg-burgundy, .burgundy-header, .card-header-burgundy {
+    background-color: var(--burgundy) !important;
+    color: white !important;
+}
+
+.card-header-burgundy {
+    padding: 1rem 1.2rem;
+}
+
+    .burgundy-color {
+        color: var(--burgundy) !important;
+    }
+
+.burgundy-border {
+    border: 2px solid var(--burgundy) !important;
+}
+
+.hover-bg-light:hover {
+    background-color: #f8f9fa !important;
+    transform: translateX(5px);
+}
+
+.transition-all {
+    transition: var(--transition);
+}
+
+.btn-burgundy, .btn-send {
+    background-color: var(--burgundy);
+    color: white !important;
+    border-radius: 50px;
+    padding: 0.5rem 2.5rem;
+    font-weight: 600;
+    transition: var(--transition);
+    border: none;
+    width: fit-content;
+    text-decoration: none;
+}
+
+    .btn-burgundy:hover, .btn-send:hover {
+        background-color: var(--burgundy-light);
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(98, 9, 0, 0.3);
+    }
+
+/*============================================================================
+    RESPONSIVE & PRINT
+==============================================================================*/
+.main-content {
+    margin-left: 16.666667%;
+}
+
+@media (max-width: 992px) {
+    .area-tramites .card-horizontal {
+        flex-direction: column;
+        height: auto;
+    }
+
+    .area-tramites .img-side, .area-tramites .content-side {
+        width: 100%;
+    }
+
+    .area-tramites .img-side {
+        height: 120px;
+    }
+}
+
+@media (max-width: 767.98px) {
+    .sidebar {
+        position: relative;
+        min-height: auto;
+        width: 100%;
+    }
+
+    .main-content {
+        margin-left: 0;
+    }
+}
+
+@media print {
+    .table-tools, nav, .sidebar, .btn, .toast-container, header, footer {
+        display: none !important;
+    }
+
+    .actions, th:last-child, td:last-child {
+        display: none !important;
+    }
+
+    tr {
+        page-break-inside: avoid;
+    }
+}
