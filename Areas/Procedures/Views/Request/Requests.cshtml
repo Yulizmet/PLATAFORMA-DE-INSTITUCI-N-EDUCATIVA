@@ -2,89 +2,11 @@
 @{
     ViewData["Title"] = "Nueva solicitud";
     Layout = "/Areas/MainScreen/Views/Shared/_Layout.cshtml";
-    //Layout = "/MainScreen/Views/Shared/_Layout.cshtml";
     var newRequest = new SchoolManager.Models.procedure_request();
 }
 
-<style>
-    :root {
-        --burgundy: #620900;
-        --burgundy-light: #8C1B1B;
-    }
 
-    .form-container {
-        /*background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);*/
-        min-height: 90vh;
-        padding-top: 2rem;
-        padding-bottom: 2rem;
-    }
-
-    .card-request {
-        border: none;
-        border-radius: 20px;
-        overflow: hidden;
-        box-shadow: 0 15px 35px rgba(0,0,0,0.1);
-    }
-
-    .card-header-burgundy {
-        background-color: var(--burgundy);
-        color: white;
-        padding: 1.5rem;
-        border: none;
-    }
-
-    .form-label {
-        color: var(--burgundy);
-        font-weight: 600;
-        margin-bottom: 0.5rem;
-    }
-
-    .form-control, .form-select {
-        border-radius: 10px;
-        padding: 0.75rem;
-        border: 1px solid #dee2e6;
-        transition: all 0.3s;
-    }
-
-        .form-control:focus, .form-select:focus {
-            border-color: var(--burgundy-light);
-            box-shadow: 0 0 0 0.25 core-rgba(77, 2, 23, 0.1);
-        }
-
-    .btn-send {
-        background-color: var(--burgundy);
-        color: white;
-        border-radius: 50px;
-        padding: 0.8rem 2.5rem;
-        font-weight: 600;
-        transition: all 0.3s;
-        border: none;
-    }
-
-        .btn-send:hover {
-            background-color: var(--burgundy-light);
-            color: white;
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(77, 2, 23, 0.3);
-        }
-
-    .requirement-box {
-        background-color: #fff;
-        border-radius: 15px;
-        padding: 1.5rem;
-        border: 1px dashed #ced4da;
-    }
-
-    .section-title {
-        color: var(--burgundy);
-        border-bottom: 2px solid #f1f1f1;
-        padding-bottom: 0.5rem;
-        margin-bottom: 1.5rem;
-        font-weight: 700;
-    }
-</style>
-
-<div class="form-container">
+<div class="form-container area-tramites">
     <div class="container">
         <div class="row justify-content-center">
             <div class="col-lg-12">
