@@ -1,0 +1,94 @@
+﻿@model SchoolManager.Areas.Enrollment.ViewModels.PreEnrollmentViewModel
+@{
+    Layout = "~/Areas/Enrollment/Views/_Layout.cshtml";
+    ViewData["Title"] = "Preinscripción";
+}
+
+<main class="content">
+
+    <div class="container-fluid p-0">
+        <h1 class="h3 mb-3"><strong>Datos del Aspirante</strong></h1>
+    </div>
+
+    <div class="container my-5">
+
+        <form id="preinscripcionForm">
+            <!-- agregamos id para JS -->
+            <!-- Carrera -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <label asp-for="DatosGenerales.IdCareer" class="form-label">
+                        Carrera solicitada
+                    </label>
+
+                    <select asp-for="DatosGenerales.IdCareer"
+                            asp-items="ViewBag.IdCareer"
+                            class="form-select"
+                            required>
+                        <option value="MANT_IND">Mantenimiento Industrial</option>
+
+                    </select>
+
+                    <span asp-validation-for="DatosGenerales.IdCareer" class="text-danger"></span>
+                </div>
+            </div>
+
+            <partial name="Partials/_DatosGenerales" model="Model" />
+            <partial name="Partials/_DatosEscolares" model="Model" />
+            <partial name="Partials/_Domicilio" model="Model" />
+            <partial name="Partials/_Tutor" model="Model" />
+            <partial name="Partials/_OtrosDatos" model="Model" />
+
+            <div class="d-flex justify-content-end">
+                <button type="submit" class="btn btn-primary">
+                    Continuar
+                </button>
+            </div>
+
+        </form>
+
+    </div>
+</main>
+
+
+
+@section Scripts {
+    @await Html.PartialAsync("_ValidationScriptsPartial")
+
+    <script>
+        const LS_KEY = "preinscripcion_activa";
+
+        function guardarPreinscripcionLS(payload) {
+            localStorage.setItem(LS_KEY, JSON.stringify(payload));
+        }
+
+        function generarHash(curp, fechaNacimiento) {
+            const base = `${(curp || "").toUpperCase()}|${fechaNacimiento || ""}`;
+            return btoa(unescape(encodeURIComponent(base)));
+        }
+
+        document.addEventListener("DOMContentLoaded", function() {
+            const form = document.getElementById("preinscripcionForm");
+            if (!form) return;
+
+            form.addEventListener("submit", function(e) {
+                e.preventDefault(); // Evita enviar al servidor
+
+                const formData = new FormData(form);
+                const data = {};
+                formData.forEach((value, key) => data[key] = value);
+
+                // Si tienes CURP y fecha de nacimiento, genera hash
+                if (data["Persona.CURP"] && data["Persona.BirthDate"]) {
+                    data.hash = generarHash(data["Persona.CURP"], data["Persona.BirthDate"]);
+                }
+
+                // Guardar en LocalStorage
+                guardarPreinscripcionLS(data);
+
+                // Redirigir a la vista de subir documentos
+                window.location.href = '@Url.Action("SubirDocumentos", "PreEnrollment", new { area = "Enrollment" })';
+            });
+        });
+    </script>
+}
