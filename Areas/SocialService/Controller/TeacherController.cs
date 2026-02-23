@@ -134,20 +134,143 @@ namespace SchoolManager.Areas.SocialService.Controllers
             return RedirectToAction("Alumnos");
         }
 
-        //  // Obtener TODAS las bitácoras
-        public IActionResult RevisarBitacorasAlumno()
+        // Ver bitácoras de un alumno específico
+        public async Task<IActionResult> RevisarBitacorasAlumno(int id)
         {
-           
-            var bitacoras = _context.SocialServiceLogs
-                .OrderByDescending(x => x.CreatedAt)
-                .ToList();
+            int currentTeacherId = GetCurrentTeacherId();
+
+            // Verificar que el alumno esté asignado a este maestro
+            var isAssigned = await _context.SocialServiceAssignments
+                .AnyAsync(a => a.TeacherId == currentTeacherId 
+                    && a.StudentId == id 
+                    && a.IsActive);
+
+            if (!isAssigned)
+            {
+                TempData["Error"] = "Este alumno no está asignado a ti.";
+                return RedirectToAction("Alumnos");
+            }
+
+            // Obtener bitácoras del alumno
+            var bitacoras = await _context.SocialServiceLogs
+                .Include(b => b.Student)
+                    .ThenInclude(s => s.Person)
+                .Where(b => b.StudentId == id)
+                .OrderByDescending(b => b.Week)
+                .ThenByDescending(b => b.CreatedAt)
+                .ToListAsync();
+
+            // Obtener información del estudiante
+            var student = await _context.Users
+                .Include(u => u.Person)
+                .FirstOrDefaultAsync(u => u.UserId == id);
+
+            if (student != null)
+            {
+                ViewBag.StudentName = $"{student.Person.FirstName} {student.Person.LastNamePaternal} {student.Person.LastNameMaternal}";
+                ViewBag.StudentId = id;
+            }
 
             return View(bitacoras);
         }
 
-        public IActionResult AsignarHoras()
+        // Aprobar bitácora y sumar horas
+        [HttpPost]
+        public async Task<IActionResult> AprobarBitacora(int logId, int approvedHoursPracticas, int approvedHoursServicioSocial, string teacherComments)
         {
-            return View();
+            int currentTeacherId = GetCurrentTeacherId();
+
+            var bitacora = await _context.SocialServiceLogs
+                .FirstOrDefaultAsync(b => b.LogId == logId);
+
+            if (bitacora == null)
+            {
+                TempData["Error"] = "Bitácora no encontrada.";
+                return RedirectToAction("Alumnos");
+            }
+
+            // Verificar que el alumno esté asignado a este maestro
+            var isAssigned = await _context.SocialServiceAssignments
+                .AnyAsync(a => a.TeacherId == currentTeacherId 
+                    && a.StudentId == bitacora.StudentId 
+                    && a.IsActive);
+
+            if (!isAssigned)
+            {
+                TempData["Error"] = "No tienes permiso para aprobar esta bitácora.";
+                return RedirectToAction("Alumnos");
+            }
+
+            // Validar que las horas aprobadas no excedan las registradas
+            if (approvedHoursPracticas > bitacora.HoursPracticas || approvedHoursServicioSocial > bitacora.HoursServicioSocial)
+            {
+                TempData["Error"] = "Las horas aprobadas no pueden exceder las horas registradas.";
+                return RedirectToAction("RevisarBitacorasAlumno", new { id = bitacora.StudentId });
+            }
+
+            // Actualizar la bitácora
+            bitacora.IsApproved = true;
+            bitacora.ApprovedHoursPracticas = approvedHoursPracticas;
+            bitacora.ApprovedHoursServicioSocial = approvedHoursServicioSocial;
+            bitacora.ApprovedBy = currentTeacherId;
+            bitacora.ApprovedAt = DateTime.Now;
+            bitacora.TeacherComments = teacherComments;
+
+            await _context.SaveChangesAsync();
+
+            TempData["Success"] = "Bitácora aprobada exitosamente. Las horas se han sumado al alumno.";
+            return RedirectToAction("RevisarBitacorasAlumno", new { id = bitacora.StudentId });
+        }
+
+        // Vista de asignar horas - Resumen de bitácoras pendientes
+        public async Task<IActionResult> AsignarHoras()
+        {
+            int currentTeacherId = GetCurrentTeacherId();
+
+            // Obtener alumnos asignados al maestro
+            var assignments = await _context.SocialServiceAssignments
+                .Include(a => a.Student)
+                    .ThenInclude(s => s.Person)
+                .Where(a => a.TeacherId == currentTeacherId && a.IsActive)
+                .OrderBy(a => a.Student.Person.FirstName)
+                .ToListAsync();
+
+            var viewModel = new List<AsignarHorasViewModel>();
+
+            foreach (var assignment in assignments)
+            {
+                // Obtener bitácoras pendientes de aprobar
+                var bitacorasPendientes = await _context.SocialServiceLogs
+                    .Where(log => log.StudentId == assignment.StudentId && !log.IsApproved)
+                    .OrderBy(log => log.Week)
+                    .Select(log => new BitacoraPendiente
+                    {
+                        LogId = log.LogId,
+                        Week = log.Week,
+                        HoursPracticas = log.HoursPracticas,
+                        HoursServicioSocial = log.HoursServicioSocial,
+                        CreatedAt = log.CreatedAt
+                    })
+                    .ToListAsync();
+
+                // Solo agregar alumnos que tengan bitácoras pendientes
+                if (bitacorasPendientes.Any())
+                {
+                    var fullName = $"{assignment.Student.Person.FirstName} {assignment.Student.Person.LastNamePaternal} {assignment.Student.Person.LastNameMaternal}";
+
+                    viewModel.Add(new AsignarHorasViewModel
+                    {
+                        StudentId = assignment.StudentId,
+                        StudentName = fullName,
+                        GroupName = assignment.GroupName,
+                        BitacorasPendientes = bitacorasPendientes,
+                        TotalHorasPracticasPendientes = bitacorasPendientes.Sum(b => b.HoursPracticas),
+                        TotalHorasServicioSocialPendientes = bitacorasPendientes.Sum(b => b.HoursServicioSocial)
+                    });
+                }
+            }
+
+            return View(viewModel);
         }
 
         public async Task<IActionResult> Asistencia()

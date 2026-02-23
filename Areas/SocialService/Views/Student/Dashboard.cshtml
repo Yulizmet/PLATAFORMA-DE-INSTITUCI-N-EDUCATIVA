@@ -1,29 +1,92 @@
-@page
 @{
-    Layout = "/Areas/MainScreen/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Dashboard Alumno";
 }
 
-<h3>Dashboard Alumno</h3>
+<!-- Hero Section -->
+<div class="ss-hero fade-in">
+    <div class="container">
+        <h2 class="mb-2">
+            <i class="bi bi-person-circle me-2"></i>
+            Dashboard Alumno
+        </h2>
+        <p>Gestiona tus horas de servicio social y bitácoras semanales</p>
+    </div>
+</div>
 
 <div class="dashboard-cards">
-    <div class="card dashboard-card">
+    <div class="card dashboard-card slide-in-left">
         <div class="card-body">
-            <h5>Horas</h5>
-            <p>Prácticas: 120 / 480</p>
-            <p>Servicio Social: 80 / 480</p>
-            <a href="/SocialService/Student/Horas" class="btn btn-primary">Ver horas</a>
+            <div class="icon-box icon-estudiantes mb-3">
+                <i class="bi bi-clock-fill"></i>
+            </div>
+            <h5><i class="bi bi-hourglass-split me-2"></i>Mis Horas</h5>
+
+            <!-- Prácticas Profesionales -->
+            <div class="mb-4">
+                <h6 class="text-primary-custom mb-2">
+                    <i class="bi bi-briefcase-fill me-1"></i> 
+                    Prácticas Profesionales
+                </h6>
+                <div class="row g-2">
+                    <div class="col-6">
+                        <div class="stat-card" style="padding: 1rem;">
+                            <p class="mb-1 text-muted" style="font-size: 0.875rem;">Horas Realizadas</p>
+                            <h3 class="text-success mb-0">120</h3>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="stat-card" style="padding: 1rem;">
+                            <p class="mb-1 text-muted" style="font-size: 0.875rem;">Horas Faltantes</p>
+                            <h3 class="text-warning mb-0">360</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Servicio Social -->
+            <div class="mb-3">
+                <h6 class="text-success mb-2">
+                    <i class="bi bi-heart-fill me-1"></i> 
+                    Servicio Social
+                </h6>
+                <div class="row g-2">
+                    <div class="col-6">
+                        <div class="stat-card" style="padding: 1rem;">
+                            <p class="mb-1 text-muted" style="font-size: 0.875rem;">Horas Realizadas</p>
+                            <h3 class="text-success mb-0">80</h3>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="stat-card" style="padding: 1rem;">
+                            <p class="mb-1 text-muted" style="font-size: 0.875rem;">Horas Faltantes</p>
+                            <h3 class="text-warning mb-0">400</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <a href="/SocialService/Student/Horas" class="btn btn-primary w-100">
+                <i class="bi bi-eye-fill me-1"></i> Ver Detalle Completo
+            </a>
         </div>
     </div>
 
-    <div class="card dashboard-card">
+    <div class="card dashboard-card slide-in-left" style="animation-delay: 0.1s;">
         <div class="card-body">
-            <h5>Bitácoras</h5>
-            <p>Consulta tus registros semanales</p>
-            <a href="/SocialService/Student/Bitacoras" class="btn btn-primary">Ver bitácoras</a>
-            <a href="/SocialService/Student/CrearBitacora" class="btn btn-primary">Crear bitácoras</a>
+            <div class="icon-box icon-docentes mb-3">
+                <i class="bi bi-journal-text"></i>
+            </div>
+            <h5><i class="bi bi-journal-bookmark me-2"></i>Bitácoras</h5>
+            <p>Consulta y registra tus actividades semanales</p>
+            <div class="d-flex flex-wrap gap-2">
+                <a href="/SocialService/Student/Bitacoras" class="btn btn-info">
+                    <i class="bi bi-list-ul me-1"></i> Ver bitácoras
+                </a>
+                <a href="/SocialService/Student/CrearBitacora" class="btn btn-success">
+                    <i class="bi bi-plus-circle-fill me-1"></i> Crear nueva
+                </a>
+            </div>
         </div>
     </div>
-
-
-
 </div>
+

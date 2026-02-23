@@ -36,7 +36,29 @@ namespace SchoolManager.Models
         [Column("CreatedAt")]
         public DateTime CreatedAt { get; set; } = DateTime.Now;
 
+        // Campos para la aprobación
+        [Column("IsApproved")]
+        public bool IsApproved { get; set; } = false;
+
+        [Column("ApprovedHoursPracticas")]
+        public int ApprovedHoursPracticas { get; set; } = 0;
+
+        [Column("ApprovedHoursServicioSocial")]
+        public int ApprovedHoursServicioSocial { get; set; } = 0;
+
+        [Column("ApprovedBy")]
+        public int? ApprovedBy { get; set; }
+
+        [Column("ApprovedAt")]
+        public DateTime? ApprovedAt { get; set; }
+
+        [Column("TeacherComments")]
+        public string? TeacherComments { get; set; }
+
         [ForeignKey("StudentId")]
         public virtual users_user? Student { get; set; }
+
+        [ForeignKey("ApprovedBy")]
+        public virtual users_user? Approver { get; set; }
     }
 }

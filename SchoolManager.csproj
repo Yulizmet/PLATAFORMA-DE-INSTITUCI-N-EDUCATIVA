@@ -39,5 +39,7 @@
     <Folder Include="Areas\Procedures\Views\" />
     <Folder Include="Areas\Grades\Views\" />
     <Folder Include="Areas\Procedures\Templates\" />
+    <Folder Include="Docs\" />
+    <Folder Include="Scripts\" />
   </ItemGroup>
 </Project>

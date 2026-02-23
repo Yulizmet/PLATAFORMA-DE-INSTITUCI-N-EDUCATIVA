@@ -63,11 +63,25 @@ namespace SchoolManager.Areas.SocialService.Controllers
             // Verifica que los datos del formulario sean válidos
             if (ModelState.IsValid)
             {
+                // TODO: Obtener el ID del estudiante actual desde la sesión/autenticación
+                int currentStudentId = 1; // Valor temporal
+
+                // Verificar si ya existe una bitácora para esta semana
+                var existingLog = _context.SocialServiceLogs
+                    .FirstOrDefault(log => log.StudentId == currentStudentId && log.Week == vm.Week);
+
+                if (existingLog != null)
+                {
+                    // Si ya existe una bitácora para esta semana, mostrar error
+                    TempData["Error"] = $"Ya tienes una bitácora registrada para la {vm.Week}. No puedes crear más de una bitácora por semana.";
+                    return View(vm);
+                }
+
                 // Crear un nuevo objeto del modelo que representa la tabla social_service_log
                 var log = new social_service_log
                 {
                     // ID del estudiante (temporal, luego se conectará con el usuario logueado)
-                    StudentId = 1,
+                    StudentId = currentStudentId,
 
                     // Datos provenientes del formulario
                     Week = vm.Week,
@@ -86,6 +100,9 @@ namespace SchoolManager.Areas.SocialService.Controllers
                 // Guarda los cambios en la base de datos
                 _context.SaveChanges();
 
+                // Mensaje de éxito
+                TempData["Success"] = "Bitácora registrada exitosamente.";
+
                 // Redirige a la vista de bitácoras después de guardar
                 return RedirectToAction("Bitacoras");
             }
@@ -97,6 +114,36 @@ namespace SchoolManager.Areas.SocialService.Controllers
         // Ver horas de prácticas y servicio social
         public IActionResult Horas()
         {
+            // TODO: Obtener el ID del estudiante actual desde la sesión/autenticación
+            int currentStudentId = 1; // Valor temporal
+
+            // Calcular horas totales aprobadas
+            var approvedLogs = _context.SocialServiceLogs
+                .Where(log => log.StudentId == currentStudentId && log.IsApproved)
+                .ToList();
+
+            int totalHoursPracticas = approvedLogs.Sum(log => log.ApprovedHoursPracticas);
+            int totalHoursServicioSocial = approvedLogs.Sum(log => log.ApprovedHoursServicioSocial);
+
+            // Horas requeridas (podrían venir de configuración)
+            int requiredHoursPracticas = 480;
+            int requiredHoursServicioSocial = 480;
+
+            // Calcular porcentajes
+            ViewBag.TotalHoursPracticas = totalHoursPracticas;
+            ViewBag.RequiredHoursPracticas = requiredHoursPracticas;
+            ViewBag.RemainingHoursPracticas = Math.Max(0, requiredHoursPracticas - totalHoursPracticas);
+            ViewBag.PercentagePracticas = requiredHoursPracticas > 0 
+                ? (int)((double)totalHoursPracticas / requiredHoursPracticas * 100) 
+                : 0;
+
+            ViewBag.TotalHoursServicioSocial = totalHoursServicioSocial;
+            ViewBag.RequiredHoursServicioSocial = requiredHoursServicioSocial;
+            ViewBag.RemainingHoursServicioSocial = Math.Max(0, requiredHoursServicioSocial - totalHoursServicioSocial);
+            ViewBag.PercentageServicioSocial = requiredHoursServicioSocial > 0 
+                ? (int)((double)totalHoursServicioSocial / requiredHoursServicioSocial * 100) 
+                : 0;
+
             return View();
         }
     }
