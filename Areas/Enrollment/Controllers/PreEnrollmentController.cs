@@ -44,7 +44,7 @@ namespace SchoolManager.Areas.Enrollment.Controllers
 
         private string GenerarFolio(int idGeneration)
         {
-            var generation = _context.Generations
+            var generation = _context.PreenrollmentGenerations
                 .FirstOrDefault(g => g.IdGeneration == idGeneration);
 
             if (generation == null)
@@ -72,7 +72,7 @@ namespace SchoolManager.Areas.Enrollment.Controllers
             ViewData["IdCareer"] = new SelectList(
                 _context.PreenrollmentCareers, "IdCareer", "name_career");
             ViewData["IdGeneration"] = new SelectList(
-                _context.Generations, "IdGeneration", "Year");
+                _context.PreenrollmentGenerations, "IdGeneration", "Year");
             return View();
         }
 
@@ -88,7 +88,7 @@ namespace SchoolManager.Areas.Enrollment.Controllers
                 ViewData["IdCareer"] = new SelectList(
                     _context.PreenrollmentCareers, "IdCareer", "name_career", vm.IdCareer);
                 ViewData["IdGeneration"] = new SelectList(
-                    _context.Generations, "IdGeneration", "Year", vm.IdGeneration);
+                    _context.PreenrollmentGenerations, "IdGeneration", "Year", vm.IdGeneration);
                 return View(vm);
             }
 
@@ -413,7 +413,7 @@ namespace SchoolManager.Areas.Enrollment.Controllers
             ViewData["IdCareer"] = new SelectList(
                 _context.PreenrollmentCareers, "IdCareer", "name_career", general.IdCareer);
             ViewData["IdGeneration"] = new SelectList(
-                _context.Generations, "IdGeneration", "Year", general.IdGeneration);
+                _context.PreenrollmentGenerations, "IdGeneration", "Year", general.IdGeneration);
 
             return View(general);
         }
@@ -446,7 +446,7 @@ namespace SchoolManager.Areas.Enrollment.Controllers
             ViewData["IdCareer"] = new SelectList(
                 _context.PreenrollmentCareers, "IdCareer", "name_career", general.IdCareer);
             ViewData["IdGeneration"] = new SelectList(
-                _context.Generations, "IdGeneration", "Year", general.IdGeneration);
+                _context.PreenrollmentGenerations, "IdGeneration", "Year", general.IdGeneration);
 
             return View(general);
         }

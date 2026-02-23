@@ -1,0 +1,64 @@
+﻿@model SchoolManager.Areas.Grades.ViewModels.TeacherSubject.TeacherAssignmentViewModel
+
+@{
+    ViewData["Title"] = "Asignar Grupos";
+    Layout = "~/Pages/Shared/_Layout.cshtml";
+}
+
+<div class="container-fluid py-4">
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-action="Index" style="color: #8C1B1B;">Asignaciones</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Asignar Grupos</li>
+        </ol>
+    </nav>
+
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="sistema-card">
+                <div class="sistema-icon icon-calificaciones mb-4">
+                    <i class="bi bi-people"></i>
+                </div>
+
+                <div class="mb-4">
+                    <h4 class="fw-bold" style="color: #1f2937;">@Model.TeacherName</h4>
+                    <p class="mb-1"><i class="bi bi-book me-2" style="color: #8C1B1B;"></i>@Model.SubjectName</p>
+                    <p><i class="bi bi-layers me-2" style="color: #8C1B1B;"></i>@Model.GradeLevelName</p>
+                </div>
+
+                <form asp-action="SaveGroupAssignments" method="post">
+                    <input type="hidden" name="teacherSubjectId" value="@Model.TeacherSubjectId" />
+
+                    <h5 class="fw-semibold mb-3" style="color: #1f2937;">Selecciona los grupos</h5>
+
+                    <div class="row g-3 mb-4">
+                        @foreach (var group in Model.AvailableGroups)
+                        {
+                            <div class="col-md-6">
+                                <div class="form-check p-3" style="border: 2px solid #e0e0e0; border-radius: 10px; @(group.IsAssigned ? "background-color: #f0f7f0; border-color: #28a745;" : "")">
+                                    <input class="form-check-input" type="checkbox"
+                                           name="selectedGroups" value="@group.GroupId"
+                                           id="group_@group.GroupId"
+                                           @(group.IsAssigned ? "checked" : "") />
+                                    <label class="form-check-label fw-semibold" for="group_@group.GroupId">
+                                        Grupo @group.GroupName
+                                    </label>
+                                </div>
+                            </div>
+                        }
+                    </div>
+
+                    <div class="d-flex gap-2 justify-content-end">
+                        <a asp-action="Index" class="btn btn-secondary"
+                           style="border-radius: 10px; background-color: #6c757d; color: white; padding: 10px 25px;">
+                            <i class="bi bi-x-circle me-2"></i>Cancelar
+                        </a>
+                        <button type="submit" class="btn btn-calificaciones" style="padding: 10px 25px;">
+                            <i class="bi bi-save me-2"></i>Guardar Asignaciones
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
