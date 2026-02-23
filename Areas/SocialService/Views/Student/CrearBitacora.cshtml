@@ -1,3 +1,4 @@
+@model SchoolManager.Areas.SocialService.ViewModels.BitacoraViewModel
 
 <div class="bitacora-form-container">
 
@@ -6,46 +7,40 @@
 
             <h4 class="mb-4">Crear Bitácora Semanal</h4>
 
-            <form>
+            <form asp-area="SocialService"
+                  asp-controller="Student"
+                  asp-action="CrearBitacora"
+                  method="post">
 
-                <!-- SEMANA -->
                 <div class="mb-4 form-group-inline">
-                    <label class="form-label">Semana</label>
-                    <input type="text"
-                           class="form-control input-small"
-                           placeholder="Ej. Semana 3" />
+                    <label asp-for="Week" class="form-label">Semana</label>
+                    <input asp-for="Week" class="form-control input-small" />
                 </div>
 
                 <div class="mb-4">
-                    <label class="form-label">Actividades realizadas</label>
-                    <textarea class="form-control textarea-large"
-                              placeholder="Describe detalladamente las actividades realizadas durante la semana"></textarea>
+                    <label asp-for="Activities" class="form-label"></label>
+                    <textarea asp-for="Activities" class="form-control textarea-large"></textarea>
                 </div>
 
-                <!-- HORAS -->
                 <div class="horas-inputs mb-4">
+
                     <div>
-                        <label class="form-label">Horas de Prácticas Profesionales</label>
-                        <input type="number"
-                               class="form-control input-small"
-                               placeholder="Ej. 20" />
+                        <label asp-for="HoursPracticas"></label>
+                        <input asp-for="HoursPracticas" type="number" class="form-control input-small" />
                     </div>
 
                     <div>
-                        <label class="form-label">Horas de Servicio Social</label>
-                        <input type="number"
-                               class="form-control input-small"
-                               placeholder="Ej. 10" />
+                        <label asp-for="HoursServicioSocial"></label>
+                        <input asp-for="HoursServicioSocial" type="number" class="form-control input-small" />
                     </div>
+
                 </div>
 
-                <!-- OBSERVACIONES (ANCHO COMPLETO) -->
                 <div class="mb-4">
-                    <label class="form-label">Observaciones (opcional)</label>
-                    <textarea class="form-control textarea-large"></textarea>
+                    <label asp-for="Observations"></label>
+                    <textarea asp-for="Observations" class="form-control textarea-large"></textarea>
                 </div>
 
-                <!-- GUARDAR -->
                 <button type="submit" class="btn-primary">
                     Guardar Bitácora
                 </button>

@@ -134,14 +134,15 @@ namespace SchoolManager.Areas.SocialService.Controllers
             return RedirectToAction("Alumnos");
         }
 
-        // 👉 VER BITÁCORAS DE UN ALUMNO ESPECÍFICO
-        public IActionResult RevisarBitacorasAlumno(int id)
+        //  // Obtener TODAS las bitácoras
+        public IActionResult RevisarBitacorasAlumno()
         {
-            // Simulación de alumno seleccionado
-            ViewBag.AlumnoId = id;
-            ViewBag.NombreAlumno = "Juan Pérez";
+           
+            var bitacoras = _context.SocialServiceLogs
+                .OrderByDescending(x => x.CreatedAt)
+                .ToList();
 
-            return View();
+            return View(bitacoras);
         }
 
         public IActionResult AsignarHoras()

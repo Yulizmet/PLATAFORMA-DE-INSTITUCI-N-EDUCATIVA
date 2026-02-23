@@ -1,35 +1,42 @@
-
+@model List<SchoolManager.Models.social_service_log>
 
 <h3 class="text-center mb-5">Mis Bitácoras</h3>
 
 <div class="bitacora-container">
 
-    <!-- BITÁCORA 1 -->
-    <div class="bitacora-item">
-        <h6>Semana 1</h6>
+    @if (Model != null && Model.Count > 0)
+    {
+        foreach (var bitacora in Model)
+        {
+            <div class="bitacora-item">
 
-        <p><strong>Actividades realizadas:</strong></p>
-        <p>
-            Apoyo en el área administrativa, captura de información y
-            organización de documentos.
-        </p>
+                <h6>Semana @bitacora.Week</h6>
 
-        <p><strong>Horas Prácticas:</strong> 20</p>
-        <p><strong>Horas Servicio Social:</strong> 10</p>
-    </div>
+                <p><strong>Actividades realizadas:</strong></p>
+                <p>@bitacora.Activities</p>
 
-    <!-- BITÁCORA 2 -->
-    <div class="bitacora-item">
-        <h6>Semana 2</h6>
+                <p><strong>Horas Prácticas:</strong> @bitacora.HoursPracticas</p>
 
-        <p><strong>Actividades realizadas:</strong></p>
-        <p>
-            Soporte técnico básico, revisión de equipos y apoyo a usuarios.
-        </p>
+                <p><strong>Horas Servicio Social:</strong> @bitacora.HoursServicioSocial</p>
 
-        <p><strong>Horas Prácticas:</strong> 15</p>
-        <p><strong>Horas Servicio Social:</strong> 5</p>
-    </div>
+                @if (!string.IsNullOrEmpty(bitacora.Observations))
+                {
+                    <p><strong>Observaciones:</strong> @bitacora.Observations</p>
+                }
+
+                <p class="text-muted">
+                    Creado el: @bitacora.CreatedAt.ToString("dd/MM/yyyy HH:mm")
+                </p>
+
+            </div>
+        }
+    }
+    else
+    {
+        <div class="text-center">
+            <p>No tienes bitácoras registradas.</p>
+        </div>
+    }
 
     <div class="text-center mt-5">
         <a href="/SocialService/Student/CrearBitacora" class="btn btn-primary">
