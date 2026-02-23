@@ -16,7 +16,7 @@ namespace SchoolManager.Models
 
         public preenrollment_generations Generation { get; set; } = null!;
 
-
+        // === PROPIEDADES QUE FALTABAN (SEGÚN BD) ===
         [Required, MaxLength(100)]
         public string PaternalLastName { get; set; } = null!;
 
@@ -34,6 +34,7 @@ namespace SchoolManager.Models
 
         [Required, MaxLength(18)]
         public string Curp { get; set; } = null!;
+        // ===========================================
 
         [MaxLength(10)]
         public string? BloodType { get; set; }
@@ -64,17 +65,20 @@ namespace SchoolManager.Models
         [Required, MaxLength(10)]
         public string Matricula { get; set; } = null!;
 
-
+        // Foreign Keys y Navegación
         public preenrollment_careers Career { get; set; } = null!;
+
         public int? ProcedureRequestId { get; set; }
+
         [ForeignKey("ProcedureRequestId")]
         public virtual procedure_request? ProcedureRequest { get; set; }
 
         public int? UserId { get; set; }
+
         [ForeignKey("UserId")]
         public users_user User { get; set; }
 
-        // Y actualizar las colecciones existentes para que incluyan:
+        // Colecciones
         public ICollection<preenrollment_infos> Infos { get; set; } = new List<preenrollment_infos>();
         public ICollection<preenrollment_tutors> Tutors { get; set; } = new List<preenrollment_tutors>();
         public ICollection<preenrollment_schools> Schools { get; set; } = new List<preenrollment_schools>();
