@@ -12,7 +12,6 @@
     <Compile Remove="Migrations\**" />
     <Content Remove="Areas\Preenrollment\**" />
     <Content Remove="Areas\Tutorship\**" />
-    <Content Remove="Migrations\**" />
     <EmbeddedResource Remove="Areas\Preenrollment\**" />
     <EmbeddedResource Remove="Areas\Tutorship\**" />
     <EmbeddedResource Remove="Migrations\**" />
@@ -30,6 +29,12 @@
     <EmbeddedResource Remove="Areas\Procedures\Templates\**" />
     <None Remove="Areas\Procedures\Templates\**" />
     <None Remove="Migrations\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="Migrations\20260223040200_InitialCreate.cs" />
+    <Compile Include="Migrations\20260223040200_InitialCreate.Designer.cs" />
+    <Compile Include="Migrations\AppDbContextModelSnapshot.cs" />
   </ItemGroup>
 
   <ItemGroup>
