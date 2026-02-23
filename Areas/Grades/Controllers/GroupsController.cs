@@ -176,6 +176,9 @@ namespace SchoolManager.Areas.Grades.Controllers
                     .ThenInclude(tsg => tsg.TeacherSubject)
                         .ThenInclude(ts => ts.Teacher)
                             .ThenInclude(t => t.Person)
+                .Include(g => g.Enrollments)  
+                    .ThenInclude(e => e.Student)
+                        .ThenInclude(s => s.Person)
                 .Where(g => g.GroupId == id)
                 .Select(g => new GroupDetailsViewModel
                 {
@@ -189,6 +192,17 @@ namespace SchoolManager.Areas.Grades.Controllers
                         SubjectName = tsg.TeacherSubject.Subject.Name,
                         TeacherName = tsg.TeacherSubject.Teacher.Person.FirstName + " " +
                                      tsg.TeacherSubject.Teacher.Person.LastNamePaternal
+                    }).ToList(),
+                    StudentsCount = g.Enrollments.Count,
+                    Students = g.Enrollments.Select(e => new GroupStudentViewModel
+                    {
+                        EnrollmentId = e.EnrollmentId,
+                        StudentId = e.StudentId,
+                        FullName = e.Student.Person.FirstName + " " +
+                                  e.Student.Person.LastNamePaternal + " " +
+                                  e.Student.Person.LastNameMaternal,
+                        Matricula = e.Student.Person.Curp, //Matricula no se donde esta aun
+                        Email = e.Student.Email
                     }).ToList()
                 })
                 .FirstOrDefaultAsync();
@@ -197,7 +211,6 @@ namespace SchoolManager.Areas.Grades.Controllers
 
             return View(group);
         }
-
         // POST: Groups/Delete/5
         [HttpPost]
         [ValidateAntiForgeryToken]
