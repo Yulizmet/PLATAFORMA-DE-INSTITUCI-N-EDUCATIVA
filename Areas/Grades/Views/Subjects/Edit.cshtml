@@ -35,6 +35,12 @@
                         </select>
                         <span asp-validation-for="GradeLevelId" class="text-danger"></span>
                     </div>
+                    <div class="mb-4">
+                        <label asp-for="MinPassingGrade" class="form-label fw-semibold">Calificación mínima (opcional)</label>
+                        <input asp-for="MinPassingGrade" class="form-control" type="number" step="0.5" min="0" max="10" />
+                        <span asp-validation-for="MinPassingGrade" class="text-danger"></span>
+                        <small class="form-text text-muted">Si se deja vacío, usará la del nivel escolar</small>
+                    </div>
 
                     <div class="d-flex gap-2 justify-content-end">
                         <a asp-action="Index" asp-route-gradeLevelId="@Model.GradeLevelId" class="btn btn-secondary"

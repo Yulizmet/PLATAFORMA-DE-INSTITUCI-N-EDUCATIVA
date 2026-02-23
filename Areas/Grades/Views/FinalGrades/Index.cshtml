@@ -1,0 +1,76 @@
+﻿@{
+    ViewData["Title"] = "Calificaciones Finales";
+    Layout = "~/Pages/Shared/_Layout.cshtml";
+}
+
+<div class="container-fluid py-4">
+    <h1 class="users-title mb-4">
+        <i class="bi bi-clipboard-data me-2"></i>Calificaciones Finales
+    </h1>
+
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="sistema-card">
+                <h5 class="fw-bold mb-4">Selecciona un grupo y materia</h5>
+
+                <form method="get" asp-action="Details">
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Grupo</label>
+                        <select name="groupId" class="form-select" required>
+                            <option value="">-- Selecciona un grupo --</option>
+                            @foreach (var item in ViewBag.Classes)
+                            {
+                                <option value="@item.GroupId" selected="@(item.GroupId == ViewBag.SelectedGroupId)">
+                                    @item.GroupName - @item.GradeLevelName
+                                </option>
+                            }
+                        </select>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label fw-semibold">Materia</label>
+                        <select name="subjectId" class="form-select" required>
+                            <option value="">-- Selecciona una materia --</option>
+                            @foreach (var item in ViewBag.Classes)
+                            {
+                                <option value="@item.SubjectId"
+                                        data-group="@item.GroupId"
+                                        selected="@(item.SubjectId == ViewBag.SelectedSubjectId && item.GroupId == ViewBag.SelectedGroupId)">
+                                    @item.SubjectName
+                                </option>
+                            }
+                        </select>
+                    </div>
+
+                    <button type="submit" class="btn btn-calificaciones w-100">
+                        <i class="bi bi-eye me-2"></i>Ver Calificaciones
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Filtrar materias por grupo seleccionado
+    document.querySelector('select[name="groupId"]').addEventListener('change', function() {
+        var groupId = this.value;
+        var subjectSelect = document.querySelector('select[name="subjectId"]');
+        var options = subjectSelect.querySelectorAll('option');
+
+        options.forEach(opt => {
+            if (opt.value === "") return;
+            var optGroup = opt.getAttribute('data-group');
+            if (optGroup === groupId) {
+                opt.style.display = "";
+            } else {
+                opt.style.display = "none";
+            }
+        });
+
+        subjectSelect.value = "";
+    });
+
+    // Trigger inicial
+    document.querySelector('select[name="groupId"]').dispatchEvent(new Event('change'));
+</script>

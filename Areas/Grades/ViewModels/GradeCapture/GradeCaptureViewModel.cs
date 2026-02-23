@@ -62,6 +62,8 @@ namespace SchoolManager.Areas.Grades.ViewModels.GradeCapture
     {
         public int TeacherSubjectGroupId { get; set; }
         public int UnitId { get; set; }
+        public int GroupId { get; set; } 
+
         public List<StudentGradeInputViewModel> Grades { get; set; } = new();
     }
 
