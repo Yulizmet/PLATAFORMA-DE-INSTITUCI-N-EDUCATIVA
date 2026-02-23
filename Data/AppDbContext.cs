@@ -13,10 +13,13 @@ namespace SchoolManager.Data
         public DbSet<preenrollment_general> PreenrollmentGenerals { get; set; } = default!;
         public DbSet<preenrollment_addresses> PreenrollmentAddresses { get; set; } = default!;
         public DbSet<preenrollment_careers> PreenrollmentCareers { get; set; } = default!;
-        public DbSet<Generation> Generations { get; set; } = default!;
+        public DbSet<preenrollment_generations> PreenrollmentGenerations { get; set; } = default!;
         public DbSet<preenrollment_infos> PreenrollmentInfos { get; set; } = default!;
         public DbSet<preenrollment_schools> PreenrollmentSchools { get; set; } = default!;
         public DbSet<preenrollment_tutors> PreenrollmentTutors { get; set; } = default!;
+        public DbSet<preenrollment_docs> PreenrollmentDocs { get; set; } = default!;
+
+
 
         // Procedures (Trámites - El área que actualizamos hoy)
         public DbSet<procedure_areas> ProcedureAreas { get; set; }
@@ -66,7 +69,7 @@ namespace SchoolManager.Data
             base.OnModelCreating(modelBuilder);
 
 
-            modelBuilder.Entity<Generation>().ToTable("Generation");
+            modelBuilder.Entity<preenrollment_generations>().ToTable("Generation");
 
             //Procedures
             #region 1. Procedures Configuration
@@ -142,7 +145,8 @@ namespace SchoolManager.Data
             modelBuilder.Entity<preenrollment_infos>().ToTable("preenrollment_infos");
             modelBuilder.Entity<preenrollment_schools>().ToTable("preenrollment_schools");
             modelBuilder.Entity<preenrollment_tutors>().ToTable("preenrollment_tutors");
-
+            modelBuilder.Entity<preenrollment_generations>().ToTable("preenrollment_generations");
+            modelBuilder.Entity<preenrollment_docs>().ToTable("preenrollment_docs");
             modelBuilder.Entity<users_auditlog>()
                 .HasKey(a => a.AuditId);
 
@@ -160,17 +164,7 @@ namespace SchoolManager.Data
                 .HasKey(s => s.UserId);
             modelBuilder.Entity<users_userrole>()
                 .HasKey(s => s.UserRoleId);
-            // Configurar nombres de tabla para grades
-            modelBuilder.Entity<grades_extraordinary_grades>().ToTable("grades_extraordinary_grades");
-            modelBuilder.Entity<grades_final_grades>().ToTable("grades_final_grades");
-            modelBuilder.Entity<grades_grade_level>().ToTable("grades_grade_level");
-            modelBuilder.Entity<grades_grades>().ToTable("grades_grades");
-            modelBuilder.Entity<grades_group>().ToTable("grades_group");
-            modelBuilder.Entity<grades_subject_unit>().ToTable("grades_subject_unit");
-            modelBuilder.Entity<grades_subjects>().ToTable("grades_subjects");
-            modelBuilder.Entity<grades_teacher_subject>().ToTable("grades_teacher_subject");
-            modelBuilder.Entity<grades_teacher_subject_group>().ToTable("grades_teacher_subject_group");
-            modelBuilder.Entity<grades_unit_recovery>().ToTable("grades_unit_recovery");
+
             modelBuilder.Entity<procedure_monitoring>()
                 .HasOne(pm => pm.ProcedureRequest)
                 .WithMany(pr => pr.ProcedureMonitorings)
@@ -189,7 +183,17 @@ namespace SchoolManager.Data
 
 
 
+            modelBuilder.Entity<preenrollment_docs>()
+                .ToTable("preenrollment_docs")
+                .HasOne(d => d.General)
+                .WithMany() // O .WithOne() si es 1:1
+                .HasForeignKey(d => d.IdData)
+                .OnDelete(DeleteBehavior.Cascade);
 
+            // Índice único para CURP (si existe en la tabla)
+            modelBuilder.Entity<preenrollment_docs>()
+                .HasIndex(d => d.Curp)
+                .IsUnique();
 
 
 
@@ -239,7 +243,7 @@ namespace SchoolManager.Data
 
             modelBuilder.Entity<preenrollment_general>().HasIndex(p => p.Curp).IsUnique();
             modelBuilder.Entity<preenrollment_general>().HasIndex(p => p.Email).IsUnique();
-            modelBuilder.Entity<Generation>().ToTable("Generation");
+            modelBuilder.Entity<preenrollment_generations>().ToTable("Generation");
 
             modelBuilder.Entity<preenrollment_addresses>().ToTable("preenrollment_addresses").HasOne(a => a.preenrollment_general).WithMany(g => g.Addresses).HasForeignKey(a => a.id_data);
             modelBuilder.Entity<preenrollment_schools>().ToTable("preenrollment_schools").HasOne(s => s.preenrollment_general).WithMany(g => g.Schools).HasForeignKey(s => s.id_data);

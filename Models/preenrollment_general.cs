@@ -14,7 +14,7 @@ namespace SchoolManager.Models
         [Required]
         public int IdGeneration { get; set; }
 
-        public Generation Generation { get; set; } = null!;
+        public preenrollment_generations Generation { get; set; } = null!;
 
 
         [Required, MaxLength(100)]
