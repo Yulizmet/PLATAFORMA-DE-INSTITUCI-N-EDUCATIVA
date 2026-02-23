@@ -50,6 +50,8 @@ namespace SchoolManager.Data
         public DbSet<grades_teacher_subject> grades_TeacherSubjects { get; set; }
         public DbSet<grades_teacher_subject_group> grades_TeacherSubjectGroups { get; set; }
         public DbSet<grades_unit_recovery> grades_UnitRecoveries { get; set; }
+        public DbSet<grades_enrollment> grades_Enrollments { get; set; }
+
 
         // Tutorship (Tutorías)
         public DbSet<tutorship> Tutorships { get; set; }
@@ -259,8 +261,12 @@ namespace SchoolManager.Data
             modelBuilder.Entity<grades_teacher_subject>().ToTable("grades_teacher_subject");
             modelBuilder.Entity<grades_teacher_subject_group>().ToTable("grades_teacher_subject_group");
             modelBuilder.Entity<grades_unit_recovery>().ToTable("grades_unit_recovery");
+            modelBuilder.Entity<grades_enrollment>().ToTable("grades_enrollment");
 
-            // Claves primarias
+            // Clave primaria
+            modelBuilder.Entity<grades_enrollment>()
+                .HasKey(e => e.EnrollmentId);
+
             modelBuilder.Entity<grades_extraordinary_grades>()
                 .HasKey(e => e.ExtraordinaryGradeId);
 
@@ -291,8 +297,18 @@ namespace SchoolManager.Data
             modelBuilder.Entity<grades_unit_recovery>()
                 .HasKey(u => u.UnitRecoveryId);
 
-            // RELACIONES CON USERS (NUEVAS)
-            // grades_final_grades -> users_user (StudentId)
+
+            modelBuilder.Entity<grades_enrollment>()
+                .HasOne(e => e.Student)
+                .WithMany()
+                .HasForeignKey(e => e.StudentId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<grades_enrollment>()
+                .HasOne(e => e.Group)
+                .WithMany(g => g.Enrollments)
+                .HasForeignKey(e => e.GroupId)
+                .OnDelete(DeleteBehavior.Restrict);
             modelBuilder.Entity<grades_final_grades>()
                 .HasOne(f => f.Student)
                 .WithMany()
@@ -313,7 +329,6 @@ namespace SchoolManager.Data
                 .HasForeignKey(t => t.TeacherId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // OTRAS RELACIONES
 
             // grades_extraordinary_grades -> grades_final_grades (1:1)
             modelBuilder.Entity<grades_extraordinary_grades>()
@@ -402,7 +417,7 @@ namespace SchoolManager.Data
             // grades_teacher_subject_group -> grades_teacher_subject
             modelBuilder.Entity<grades_teacher_subject_group>()
                 .HasOne(t => t.TeacherSubject)
-                .WithMany()
+                .WithMany(ts => ts.TeacherSubjectGroups)  
                 .HasForeignKey(t => t.TeacherSubjectId)
                 .OnDelete(DeleteBehavior.Cascade);
 
@@ -421,6 +436,10 @@ namespace SchoolManager.Data
                 .OnDelete(DeleteBehavior.Cascade);
 
             // ÍNDICES
+            modelBuilder.Entity<grades_enrollment>()
+                .HasIndex(e => new { e.StudentId, e.GroupId })
+                .IsUnique();
+
             modelBuilder.Entity<grades_final_grades>()
                 .HasIndex(f => new { f.StudentId, f.SubjectId, f.GroupId });
 

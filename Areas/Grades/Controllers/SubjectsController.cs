@@ -1,7 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using SchoolManager.Areas.Grades.ViewModels.Subjects;
 using SchoolManager.Data;
 using SchoolManager.Models;
+using SchoolManager.Areas.Grades.ViewModels;
 
 namespace SchoolManager.Areas.Grades.Controllers
 {
@@ -29,13 +31,22 @@ namespace SchoolManager.Areas.Grades.Controllers
             }
 
             var subjects = await query
-                .OrderBy(s => s.GradeLevel.Name)
+                .Select(s => new SubjectViewModel
+                {
+                    SubjectId = s.SubjectId,
+                    Name = s.Name,
+                    GradeLevelId = s.GradeLevelId,
+                    GradeLevelName = s.GradeLevel.Name,
+                    UnitsCount = s.Units.Count,
+                    OpenUnitsCount = s.Units.Count(u => u.IsOpen)
+                })
+                .OrderBy(s => s.GradeLevelName)
                 .ThenBy(s => s.Name)
                 .ToListAsync();
 
             ViewBag.GradeLevels = await _context.grades_GradeLevels
-                .Where(gl => gl.IsOpen)
                 .OrderBy(gl => gl.Name)
+                .Select(gl => new { gl.GradeLevelId, gl.Name, gl.IsOpen })
                 .ToListAsync();
 
             ViewBag.SelectedGradeLevel = gradeLevelId;
@@ -46,39 +57,48 @@ namespace SchoolManager.Areas.Grades.Controllers
         // GET: Subjects/Create
         public IActionResult Create(int? gradeLevelId)
         {
-            ViewBag.GradeLevels = _context.grades_GradeLevels
-                .Where(gl => gl.IsOpen)
-                .OrderBy(gl => gl.Name)
-                .ToList();
+            var viewModel = new SubjectViewModel();
 
             if (gradeLevelId.HasValue)
             {
-                ViewBag.SelectedGradeLevel = gradeLevelId.Value;
+                viewModel.GradeLevelId = gradeLevelId.Value;
             }
 
-            return View();
+            ViewBag.GradeLevels = _context.grades_GradeLevels
+                .Where(gl => gl.IsOpen)
+                .OrderBy(gl => gl.Name)
+                .Select(gl => new { gl.GradeLevelId, gl.Name })
+                .ToList();
+
+            return View(viewModel);
         }
 
         // POST: Subjects/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(grades_subjects subject)
+        public async Task<IActionResult> Create(SubjectViewModel viewModel)
         {
-            ModelState.Remove("GradeLevel");
             if (ModelState.IsValid)
             {
+                var subject = new grades_subjects
+                {
+                    Name = viewModel.Name,
+                    GradeLevelId = viewModel.GradeLevelId
+                };
+
                 _context.Add(subject);
                 await _context.SaveChangesAsync();
                 TempData["Success"] = "Materia creada exitosamente";
-                return RedirectToAction(nameof(Index), new { gradeLevelId = subject.GradeLevelId });
+                return RedirectToAction(nameof(Index), new { gradeLevelId = viewModel.GradeLevelId });
             }
 
             ViewBag.GradeLevels = _context.grades_GradeLevels
                 .Where(gl => gl.IsOpen)
                 .OrderBy(gl => gl.Name)
+                .Select(gl => new { gl.GradeLevelId, gl.Name })
                 .ToList();
 
-            return View(subject);
+            return View(viewModel);
         }
 
         // GET: Subjects/Edit/5
@@ -86,12 +106,22 @@ namespace SchoolManager.Areas.Grades.Controllers
         {
             if (id == null) return NotFound();
 
-            var subject = await _context.grades_Subjects.FindAsync(id);
+            var subject = await _context.grades_Subjects
+                .Where(s => s.SubjectId == id)
+                .Select(s => new SubjectViewModel
+                {
+                    SubjectId = s.SubjectId,
+                    Name = s.Name,
+                    GradeLevelId = s.GradeLevelId
+                })
+                .FirstOrDefaultAsync();
+
             if (subject == null) return NotFound();
 
             ViewBag.GradeLevels = _context.grades_GradeLevels
                 .Where(gl => gl.IsOpen)
                 .OrderBy(gl => gl.Name)
+                .Select(gl => new { gl.GradeLevelId, gl.Name })
                 .ToList();
 
             return View(subject);
@@ -100,37 +130,41 @@ namespace SchoolManager.Areas.Grades.Controllers
         // POST: Subjects/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, grades_subjects subject)
+        public async Task<IActionResult> Edit(int id, SubjectViewModel viewModel)
         {
-            if (id != subject.SubjectId) return NotFound();
-
-            // Limpiar validación de la propiedad de navegación
-            ModelState.Remove("GradeLevel");
+            if (id != viewModel.SubjectId) return NotFound();
 
             if (ModelState.IsValid)
             {
                 try
                 {
+                    var subject = await _context.grades_Subjects.FindAsync(id);
+                    if (subject == null) return NotFound();
+
+                    subject.Name = viewModel.Name;
+                    subject.GradeLevelId = viewModel.GradeLevelId;
+
                     _context.Update(subject);
                     await _context.SaveChangesAsync();
                     TempData["Success"] = "Materia actualizada exitosamente";
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!SubjectExists(subject.SubjectId))
+                    if (!SubjectExists(viewModel.SubjectId))
                         return NotFound();
                     else
                         throw;
                 }
-                return RedirectToAction(nameof(Index), new { gradeLevelId = subject.GradeLevelId });
+                return RedirectToAction(nameof(Index), new { gradeLevelId = viewModel.GradeLevelId });
             }
 
             ViewBag.GradeLevels = _context.grades_GradeLevels
                 .Where(gl => gl.IsOpen)
                 .OrderBy(gl => gl.Name)
+                .Select(gl => new { gl.GradeLevelId, gl.Name })
                 .ToList();
 
-            return View(subject);
+            return View(viewModel);
         }
 
         // GET: Subjects/Details/5
@@ -139,9 +173,24 @@ namespace SchoolManager.Areas.Grades.Controllers
             if (id == null) return NotFound();
 
             var subject = await _context.grades_Subjects
-                .Include(s => s.GradeLevel)
-                .Include(s => s.Units.OrderBy(u => u.UnitNumber))
-                .FirstOrDefaultAsync(m => m.SubjectId == id);
+                .Where(s => s.SubjectId == id)
+                .Select(s => new SubjectDetailsViewModel
+                {
+                    SubjectId = s.SubjectId,
+                    Name = s.Name,
+                    GradeLevelId = s.GradeLevelId,
+                    GradeLevelName = s.GradeLevel.Name,
+                    Units = s.Units
+                        .OrderBy(u => u.UnitNumber)
+                        .Select(u => new UnitViewModel
+                        {
+                            UnitId = u.UnitId,
+                            UnitNumber = u.UnitNumber,
+                            IsOpen = u.IsOpen,
+                            HasGrades = _context.grades_Grades.Any(g => g.SubjectUnitId == u.UnitId)
+                        }).ToList()
+                })
+                .FirstOrDefaultAsync();
 
             if (subject == null) return NotFound();
 
@@ -154,12 +203,29 @@ namespace SchoolManager.Areas.Grades.Controllers
             if (subjectId == null) return NotFound();
 
             var subject = await _context.grades_Subjects
-                .Include(s => s.Units.OrderBy(u => u.UnitNumber))
+                .Include(s => s.GradeLevel)
+                .Include(s => s.Units)
                 .FirstOrDefaultAsync(s => s.SubjectId == subjectId);
 
             if (subject == null) return NotFound();
 
-            return View(subject);
+            var viewModel = new ManageUnitsViewModel
+            {
+                SubjectId = subject.SubjectId,
+                SubjectName = subject.Name,
+                GradeLevelName = subject.GradeLevel.Name,
+                Units = subject.Units
+                    .OrderBy(u => u.UnitNumber)
+                    .Select(u => new UnitViewModel
+                    {
+                        UnitId = u.UnitId,
+                        UnitNumber = u.UnitNumber,
+                        IsOpen = u.IsOpen,
+                        HasGrades = _context.grades_Grades.Any(g => g.SubjectUnitId == u.UnitId)
+                    }).ToList()
+            };
+
+            return View(viewModel);
         }
 
         // POST: Subjects/AddUnit
@@ -254,6 +320,12 @@ namespace SchoolManager.Areas.Grades.Controllers
             {
                 TempData["Error"] = "No se puede eliminar la materia porque tiene calificaciones asociadas";
                 return RedirectToAction(nameof(Index));
+            }
+
+            // Eliminar primero las unidades
+            if (subject.Units.Any())
+            {
+                _context.grades_SubjectUnits.RemoveRange(subject.Units);
             }
 
             _context.grades_Subjects.Remove(subject);

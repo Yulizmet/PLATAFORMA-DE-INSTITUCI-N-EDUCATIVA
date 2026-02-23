@@ -1,4 +1,5 @@
-﻿@model SchoolManager.Models.grades_grade_level
+﻿@using SchoolManager.Areas.Grades.ViewModels.GradeLevels
+@model GradeLevelDetailsViewModel
 
 @{
     ViewData["Title"] = $"Detalles - {Model.Name}";
@@ -41,13 +42,13 @@
                     <div class="row g-3 mt-2">
                         <div class="col-6">
                             <div class="border rounded p-3 text-center">
-                                <h4 class="mb-1 fw-bold">@Model.Groups?.Count() ?? 0</h4>
+                                <h4 class="mb-1 fw-bold">@Model.Groups.Count</h4>
                                 <small class="text-muted">Grupos</small>
                             </div>
                         </div>
                         <div class="col-6">
                             <div class="border rounded p-3 text-center">
-                                <h4 class="mb-1 fw-bold">@Model.Subjects?.Count() ?? 0</h4>
+                                <h4 class="mb-1 fw-bold">@Model.Subjects.Count</h4>
                                 <small class="text-muted">Materias</small>
                             </div>
                         </div>
@@ -72,7 +73,7 @@
                 <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
                     <h5 class="mb-0">
                         <i class="fas fa-users me-2 text-primary"></i>
-                        Grupos (@(Model.Groups?.Count() ?? 0))
+                        Grupos (@Model.Groups.Count)
                     </h5>
                     <a asp-controller="Groups" asp-action="Create" asp-route-gradeLevelId="@Model.GradeLevelId"
                        class="btn btn-sm btn-primary">
@@ -80,7 +81,7 @@
                     </a>
                 </div>
                 <div class="card-body">
-                    @if (Model.Groups != null && Model.Groups.Any())
+                    @if (Model.Groups.Any())
                     {
                         <div class="row">
                             @foreach (var group in Model.Groups.OrderBy(g => g.Name))
@@ -92,7 +93,7 @@
                                                 <h6 class="mb-1 fw-bold">@group.Name</h6>
                                                 <small class="text-muted">
                                                     <i class="fas fa-users me-1"></i>
-                                                    @group.TeacherSubjectGroups?.Count() ?? 0 materias asignadas
+                                                    @group.SubjectsCount materias
                                                 </small>
                                             </div>
                                             <a asp-controller="Groups" asp-action="Details" asp-route-id="@group.GroupId"
@@ -120,7 +121,7 @@
                 <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
                     <h5 class="mb-0">
                         <i class="fas fa-book me-2 text-primary"></i>
-                        Materias (@(Model.Subjects?.Count() ?? 0))
+                        Materias (@Model.Subjects.Count)
                     </h5>
                     <a asp-controller="Subjects" asp-action="Create" asp-route-gradeLevelId="@Model.GradeLevelId"
                        class="btn btn-sm btn-primary">
@@ -128,7 +129,7 @@
                     </a>
                 </div>
                 <div class="card-body">
-                    @if (Model.Subjects != null && Model.Subjects.Any())
+                    @if (Model.Subjects.Any())
                     {
                         <div class="table-responsive">
                             <table class="table table-hover align-middle">
@@ -145,7 +146,7 @@
                                         <tr>
                                             <td class="fw-semibold">@subject.Name</td>
                                             <td class="text-center">
-                                                <span class="badge bg-info">@(subject.Units?.Count() ?? 0)</span>
+                                                <span class="badge bg-info">@subject.UnitsCount</span>
                                             </td>
                                             <td class="text-end">
                                                 <a asp-controller="Subjects" asp-action="Details" asp-route-id="@subject.SubjectId"

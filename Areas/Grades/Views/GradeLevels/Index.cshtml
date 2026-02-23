@@ -1,4 +1,5 @@
-﻿@model IEnumerable<SchoolManager.Models.grades_grade_level>
+﻿@using SchoolManager.Areas.Grades.ViewModels.GradeLevels
+@model IEnumerable<GradeLevelViewModel>
 
 @{
     ViewData["Title"] = "Niveles Escolares";
@@ -72,12 +73,12 @@
 
                             <div class="d-flex justify-content-around text-center py-2">
                                 <div>
-                                    <span class="h5 mb-0 fw-bold">@item.Groups?.Count() ?? 0</span>
+                                    <span class="h5 mb-0 fw-bold">@item.GroupsCount</span>
                                     <small class="text-muted d-block">Grupos</small>
                                 </div>
                                 <div class="vr"></div>
                                 <div>
-                                    <span class="h5 mb-0 fw-bold">@item.Subjects?.Count() ?? 0</span>
+                                    <span class="h5 mb-0 fw-bold">@item.SubjectsCount</span>
                                     <small class="text-muted d-block">Materias</small>
                                 </div>
                             </div>
@@ -109,6 +110,13 @@
                                 </div>
                                 <div class="modal-body">
                                     <p>¿Estás seguro de eliminar el nivel <strong>@item.Name</strong>?</p>
+                                    @if (item.GroupsCount > 0 || item.SubjectsCount > 0)
+                                    {
+                                        <p class="text-warning">
+                                            <i class="fas fa-exclamation-triangle me-2"></i>
+                                            Este nivel tiene @item.GroupsCount grupos y @item.SubjectsCount materias asociadas.
+                                        </p>
+                                    }
                                     <p class="text-danger mb-0">
                                         <i class="fas fa-exclamation-triangle me-2"></i>
                                         Esta acción no se puede deshacer.

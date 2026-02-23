@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using SchoolManager.Data;
 using SchoolManager.Models;
+using SchoolManager.Areas.Grades.ViewModels.Groups;
 
 namespace SchoolManager.Areas.Grades.Controllers
 {
@@ -20,6 +21,7 @@ namespace SchoolManager.Areas.Grades.Controllers
         {
             var query = _context.grades_GradeGroups
                 .Include(g => g.GradeLevel)
+                .Include(g => g.TeacherSubjectGroups)
                 .AsQueryable();
 
             if (gradeLevelId.HasValue)
@@ -28,12 +30,22 @@ namespace SchoolManager.Areas.Grades.Controllers
             }
 
             var groups = await query
-                .OrderBy(g => g.GradeLevel.Name)
+                .Select(g => new GroupViewModel
+                {
+                    GroupId = g.GroupId,
+                    Name = g.Name,
+                    GradeLevelId = g.GradeLevelId,
+                    GradeLevelName = g.GradeLevel.Name,
+                    SubjectsCount = g.TeacherSubjectGroups.Count,
+                    StudentsCount = 0 // Por ahora, hasta que tengamos inscripciones
+                })
+                .OrderBy(g => g.GradeLevelName)
                 .ThenBy(g => g.Name)
                 .ToListAsync();
 
             ViewBag.GradeLevels = await _context.grades_GradeLevels
                 .OrderBy(gl => gl.Name)
+                .Select(gl => new { gl.GradeLevelId, gl.Name })
                 .ToListAsync();
 
             ViewBag.SelectedGradeLevel = gradeLevelId;
@@ -44,39 +56,46 @@ namespace SchoolManager.Areas.Grades.Controllers
         // GET: Groups/Create
         public IActionResult Create(int? gradeLevelId)
         {
-            ViewBag.GradeLevels = _context.grades_GradeLevels
-                .OrderBy(gl => gl.Name)
-                .ToList();
+            var viewModel = new GroupViewModel();
 
             if (gradeLevelId.HasValue)
             {
-                ViewBag.SelectedGradeLevel = gradeLevelId.Value;
+                viewModel.GradeLevelId = gradeLevelId.Value;
             }
 
-            return View();
+            ViewBag.GradeLevels = _context.grades_GradeLevels
+                .OrderBy(gl => gl.Name)
+                .Select(gl => new { gl.GradeLevelId, gl.Name })
+                .ToList();
+
+            return View(viewModel);
         }
 
         // POST: Groups/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(grades_group group)
+        public async Task<IActionResult> Create(GroupViewModel viewModel)
         {
-            // Limpiar validación de la propiedad de navegación
-            ModelState.Remove("GradeLevel");
-
             if (ModelState.IsValid)
             {
+                var group = new grades_group
+                {
+                    Name = viewModel.Name,
+                    GradeLevelId = viewModel.GradeLevelId
+                };
+
                 _context.Add(group);
                 await _context.SaveChangesAsync();
                 TempData["Success"] = "Grupo creado exitosamente";
-                return RedirectToAction(nameof(Index), new { gradeLevelId = group.GradeLevelId });
+                return RedirectToAction(nameof(Index), new { gradeLevelId = viewModel.GradeLevelId });
             }
 
             ViewBag.GradeLevels = _context.grades_GradeLevels
                 .OrderBy(gl => gl.Name)
+                .Select(gl => new { gl.GradeLevelId, gl.Name })
                 .ToList();
 
-            return View(group);
+            return View(viewModel);
         }
 
         // GET: Groups/Edit/5
@@ -84,11 +103,21 @@ namespace SchoolManager.Areas.Grades.Controllers
         {
             if (id == null) return NotFound();
 
-            var group = await _context.grades_GradeGroups.FindAsync(id);
+            var group = await _context.grades_GradeGroups
+                .Where(g => g.GroupId == id)
+                .Select(g => new GroupViewModel
+                {
+                    GroupId = g.GroupId,
+                    Name = g.Name,
+                    GradeLevelId = g.GradeLevelId
+                })
+                .FirstOrDefaultAsync();
+
             if (group == null) return NotFound();
 
             ViewBag.GradeLevels = _context.grades_GradeLevels
                 .OrderBy(gl => gl.Name)
+                .Select(gl => new { gl.GradeLevelId, gl.Name })
                 .ToList();
 
             return View(group);
@@ -97,35 +126,40 @@ namespace SchoolManager.Areas.Grades.Controllers
         // POST: Groups/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, grades_group group)
+        public async Task<IActionResult> Edit(int id, GroupViewModel viewModel)
         {
-            if (id != group.GroupId) return NotFound();
-
-            ModelState.Remove("GradeLevel");
+            if (id != viewModel.GroupId) return NotFound();
 
             if (ModelState.IsValid)
             {
                 try
                 {
+                    var group = await _context.grades_GradeGroups.FindAsync(id);
+                    if (group == null) return NotFound();
+
+                    group.Name = viewModel.Name;
+                    group.GradeLevelId = viewModel.GradeLevelId;
+
                     _context.Update(group);
                     await _context.SaveChangesAsync();
                     TempData["Success"] = "Grupo actualizado exitosamente";
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!GroupExists(group.GroupId))
+                    if (!GroupExists(viewModel.GroupId))
                         return NotFound();
                     else
                         throw;
                 }
-                return RedirectToAction(nameof(Index), new { gradeLevelId = group.GradeLevelId });
+                return RedirectToAction(nameof(Index), new { gradeLevelId = viewModel.GradeLevelId });
             }
 
             ViewBag.GradeLevels = _context.grades_GradeLevels
                 .OrderBy(gl => gl.Name)
+                .Select(gl => new { gl.GradeLevelId, gl.Name })
                 .ToList();
 
-            return View(group);
+            return View(viewModel);
         }
 
         // GET: Groups/Details/5
@@ -142,7 +176,22 @@ namespace SchoolManager.Areas.Grades.Controllers
                     .ThenInclude(tsg => tsg.TeacherSubject)
                         .ThenInclude(ts => ts.Teacher)
                             .ThenInclude(t => t.Person)
-                .FirstOrDefaultAsync(g => g.GroupId == id);
+                .Where(g => g.GroupId == id)
+                .Select(g => new GroupDetailsViewModel
+                {
+                    GroupId = g.GroupId,
+                    Name = g.Name,
+                    GradeLevelId = g.GradeLevelId,
+                    GradeLevelName = g.GradeLevel.Name,
+                    Subjects = g.TeacherSubjectGroups.Select(tsg => new GroupSubjectViewModel
+                    {
+                        TeacherSubjectGroupId = tsg.TeacherSubjectGroupId,
+                        SubjectName = tsg.TeacherSubject.Subject.Name,
+                        TeacherName = tsg.TeacherSubject.Teacher.Person.FirstName + " " +
+                                     tsg.TeacherSubject.Teacher.Person.LastNamePaternal
+                    }).ToList()
+                })
+                .FirstOrDefaultAsync();
 
             if (group == null) return NotFound();
 
