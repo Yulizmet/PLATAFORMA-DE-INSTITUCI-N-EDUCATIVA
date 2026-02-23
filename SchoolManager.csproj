@@ -51,6 +51,7 @@
 
   <ItemGroup>
     <Folder Include="Areas\Enrollment\Controllers\" />
+    <Folder Include="Areas\Enrollment\Views\" />
     <Folder Include="Areas\Grades\JS\" />
     <Folder Include="Areas\Procedures\Controllers\" />
     <Folder Include="Areas\Procedures\Views\" />
