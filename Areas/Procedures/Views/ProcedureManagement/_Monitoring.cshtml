@@ -1,5 +1,51 @@
 ﻿@model SchoolManager.Models.procedure_request
 
+<style>
+
+    :root {
+        --burgundy: #620900;
+        --burgundy-light: #8C1B1B;
+    }
+
+    .burgundy-border {
+        border: 2px solid var(--burgundy) !important;
+    }
+
+    .timeline-burgundy {
+        border-left: 3px solid var(--burgundy);
+        margin-left: 10px;
+        position: relative;
+    }
+
+        .timeline-burgundy::before {
+            content: "";
+            position: absolute;
+            left: -8px;
+            top: 15px;
+            width: 13px;
+            height: 13px;
+            border-radius: 50%;
+            background: var(--burgundy);
+            border: 2px solid white;
+        }
+
+    .doc-card-custom {
+        border: 1px solid #dee2e6;
+        transition: all 0.3s ease;
+    }
+
+        .doc-card-custom:hover {
+            border-color: var(--burgundy) !important;
+            background-color: rgba(98, 9, 0, 0.03) !important;
+            transform: translateX(5px);
+        }
+
+    .header-burgundy-solid {
+        background-color: var(--burgundy);
+        border-bottom: 3px solid var(--burgundy-light);
+    }
+</style>
+
 <div class="modal-header header-burgundy-solid text-white py-3">
     <div class="d-flex align-items-center">
         <i class="bi bi-person-badge fs-3 me-3"></i>
