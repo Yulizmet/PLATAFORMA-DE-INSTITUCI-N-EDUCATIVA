@@ -138,7 +138,6 @@ namespace SchoolManager.Areas.Grades.Controllers
             return View(viewModel);
         }
 
-        // POST: GradeCapture/SaveGrades
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> SaveGrades(SaveGradesViewModel viewModel)
@@ -164,17 +163,15 @@ namespace SchoolManager.Areas.Grades.Controllers
 
                     if (existingGrade != null)
                     {
-                        // Actualizar calificación existente
                         existingGrade.Value = gradeInput.GradeValue.Value;
                         existingGrade.CreatedAt = DateTime.Now;
                     }
                     else
                     {
-                        // Crear nueva calificación
                         var newGrade = new grades_grades
                         {
                             StudentId = gradeInput.StudentId,
-                            GroupId = viewModel.TeacherSubjectGroupId, // Necesitas el GroupId real
+                            GroupId = viewModel.GroupId,
                             SubjectUnitId = viewModel.UnitId,
                             Value = gradeInput.GradeValue.Value,
                             CreatedAt = DateTime.Now

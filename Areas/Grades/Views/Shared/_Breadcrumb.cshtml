@@ -1,0 +1,21 @@
+﻿<!-- Views/Shared/_Breadcrumb.cshtml -->
+@model SchoolManager.Areas.Grades.ViewModels.Breadcrumbs.BreadcrumbViewModel
+
+@if (Model?.Items?.Any() == true)
+{
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            @foreach (var item in Model.Items)
+            {
+                if (item.IsActive)
+                {
+                    <li class="breadcrumb-item active" aria-current="page">@item.Title</li>
+                }
+                else
+                {
+                    <li class="breadcrumb-item"><a href="@item.Url" style="color: #8C1B1B;">@item.Title</a></li>
+                }
+            }
+        </ol>
+    </nav>
+}

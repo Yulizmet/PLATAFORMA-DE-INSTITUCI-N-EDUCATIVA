@@ -1,4 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using SchoolManager.Areas.MainScreen.ViewModels;
+using SchoolManager.Data;
 
 namespace SchoolManager.Areas.MainScreen.Controllers
 {
@@ -6,6 +9,11 @@ namespace SchoolManager.Areas.MainScreen.Controllers
     [Route("MainScreen/[controller]/[action]")]
     public class MainScreenController : Controller
     {
+        private readonly AppDbContext _context;
+
+        public MainScreenController(AppDbContext context) {
+            _context = context;
+        }
         [Route("/", Order = -1)]
         public IActionResult Index()
         {
@@ -32,6 +40,52 @@ namespace SchoolManager.Areas.MainScreen.Controllers
 
         [Route("/SistemaEscolar")]
         public IActionResult SistemaEscolar()
+        {
+            return View();
+        }
+
+        [Route("/PanelAdministrativo")]
+        public async Task<IActionResult> PanelAdministrativo()
+        {
+            var asignaciones = await _context.grades_TeacherSubjects
+                .Include(ts => ts.Teacher).ThenInclude(t => t.Person)
+                .Include(ts => ts.Subject).ThenInclude(s => s.GradeLevel)
+                .Select(ts => new AsignacionResumenViewModel
+                {
+                    TeacherSubjectId = ts.TeacherSubjectId,
+                    TeacherName = ts.Teacher.Person.FirstName + " " + ts.Teacher.Person.LastNamePaternal,
+                    SubjectName = ts.Subject.Name,
+                    GradeLevelName = ts.Subject.GradeLevel.Name
+                })
+                .ToListAsync();
+
+            var grupos = await _context.grades_GradeGroups
+                .Include(g => g.GradeLevel)
+                .Select(g => new GrupoResumenViewModel
+                {
+                    GroupId = g.GroupId,
+                    Name = g.Name,
+                    GradeLevelName = g.GradeLevel.Name
+                })
+                .ToListAsync();
+
+            var viewModel = new PanelAdministrativoViewModel
+            {
+                Asignaciones = asignaciones,
+                Grupos = grupos
+            };
+
+            return View(viewModel);
+        }
+
+
+        [Route("/CalificacionesDocente")]
+        public IActionResult CalificacionesDocente()
+        {
+            return View();
+        }
+        [Route("/CalificacionesEstudiante")]
+        public IActionResult CalificacionesEstudiante()
         {
             return View();
         }

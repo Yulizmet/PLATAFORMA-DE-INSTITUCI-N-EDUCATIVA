@@ -26,6 +26,8 @@ namespace SchoolManager.Areas.Grades.ViewModels.GradeLevels
         public bool IsOpen { get; set; }
 
         // Propiedades para la vista (solo lectura)
+        [Display(Name = "Calificación mínima aprobatoria")]
+        public decimal MinPassingGrade { get; set; }
         public int GroupsCount { get; set; }
         public int SubjectsCount { get; set; }
     }

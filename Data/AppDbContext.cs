@@ -314,6 +314,11 @@ namespace SchoolManager.Data
                 .HasForeignKey<grades_extraordinary_grades>(e => e.FinalGradeId)
                 .OnDelete(DeleteBehavior.Cascade);
 
+            modelBuilder.Entity<grades_final_grades>()
+                .HasOne(f => f.ExtraordinaryGrade)
+                .WithOne(e => e.FinalGrade)
+                .HasForeignKey<grades_extraordinary_grades>(e => e.FinalGradeId);
+
             // grades_final_grades -> grades_subjects
             modelBuilder.Entity<grades_final_grades>()
                 .HasOne(f => f.Subject)
