@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using SchoolManager.Areas.Procedures.ViewModels;
 using SchoolManager.Data;
 using SchoolManager.Models;
 
@@ -19,45 +20,98 @@ namespace SchoolManager.Areas.Procedures.Controllers
         public async Task<IActionResult> Index()
         {
             var requests = await _context.ProcedureRequest
+                .Include(r => r.ProcedureDocuments)
                 .Include(r => r.ProcedureType)
                 .Include(r => r.ProcedureFlow)
                     .ThenInclude(f => f.ProcedureStatus)
-                .Include(r => r.ProcedureDocuments)
+                .Include(r => r.Preenrollments)
+                    .ThenInclude(p => p.User)
+                    .ThenInclude(u => u.Person)
                 .OrderByDescending(r => r.DateUpdated)
                 .ToListAsync();
 
             return View(requests);
         }
-
         public async Task<IActionResult> Monitoring(int id)
         {
             var request = await _context.ProcedureRequest
                 .Include(r => r.ProcedureType)
-                .Include(r => r.ProcedureFlow)
-                    .ThenInclude(f => f.ProcedureStatus)
+                .Include(r => r.ProcedureFlow).ThenInclude(f => f.ProcedureStatus)
                 .Include(r => r.ProcedureDocuments)
+                .Include(r => r.Preenrollments).ThenInclude(p => p.User).ThenInclude(u => u.Person)
                 .Include(r => r.ProcedureMonitorings)
                     .ThenInclude(m => m.ProcedureFlow)
                         .ThenInclude(f => f.ProcedureStatus)
-                .Include(r => r.ProcedureMonitorings)
-                    .ThenInclude(m => m.User)
+                .Include(r => r.ProcedureMonitorings).ThenInclude(m => m.User)
                 .FirstOrDefaultAsync(r => r.Id == id);
 
             if (request == null) return NotFound();
 
-            var possibleSteps = await _context.ProcedureFlow
+            var student = request.Preenrollments.FirstOrDefault();
+
+            var viewModel = new ExtraInfoViewModel
+            {
+                RequestId = request.Id,
+                Folio = request.Folio,
+                ProcedureName = request.ProcedureType?.Name ?? "Trámite",
+                CurrentStatus = request.ProcedureFlow?.ProcedureStatus?.Name ?? "N/A",
+                UserMessage = request.Message,
+                LastUpdate = request.DateUpdated,
+                StudentFullName = student?.User?.Person != null
+                    ? $"{student.User.Person.FirstName} {student.User.Person.LastNamePaternal} {student.User.Person.LastNameMaternal}"
+                    : (student != null ? "Aspirante" : "Usuario sin expediente"),
+                Matricula = student?.Matricula ?? "S/M",
+                Email = student?.User?.Person?.Email ?? student?.User?.Email ?? "N/A",
+                ApplicantFolio = student?.Folio ?? "N/A",
+                IsAspirante = student?.UserId == null,
+                Documents = request.ProcedureDocuments.Select(d => new DocumentDetail { FileName = d.Name, FilePath = d.FilePath }).ToList()
+            };
+
+            // --- CONSTRUCCIÓN DEL HISTORIAL DINÁMICO ---
+            var flujoInicial = await _context.ProcedureFlow
                 .Include(f => f.ProcedureStatus)
                 .Where(f => f.IdTypeProcedure == request.IdTypeProcedure)
                 .OrderBy(f => f.StepOrder)
-                .Select(f => new {
-                    Id = f.Id,
-                    DisplayName = $"[{f.StepOrder}] - {f.ProcedureStatus.Name}"
-                })
+                .FirstOrDefaultAsync();
+
+            var historyList = request.ProcedureMonitorings.Select(m => new MonitoringStep
+            {
+                StatusName = m.ProcedureFlow?.ProcedureStatus?.Name ?? "Cambio de Estado",
+                AdminComment = m.Comment,
+                Date = m.DateUpdated,
+                UpdatedBy = m.User?.Username ?? "Admin",
+                BackgroundColor = m.ProcedureFlow?.ProcedureStatus?.BackgroundColor ?? "#6c757d",
+                TextColor = m.ProcedureFlow?.ProcedureStatus?.TextColor ?? "#ffffff"
+            }).ToList();
+
+            historyList.Add(new MonitoringStep
+            {
+                StatusName = flujoInicial?.ProcedureStatus?.Name ?? "Solicitud Iniciada",
+                AdminComment = "El usuario ha iniciado el proceso.",
+                Date = request.DateCreated,
+                UpdatedBy = "sistema",
+                BackgroundColor = flujoInicial?.ProcedureStatus?.BackgroundColor ?? "#17a2b8",
+                TextColor = flujoInicial?.ProcedureStatus?.TextColor ?? "#ffffff"
+            });
+
+            viewModel.History = historyList.OrderByDescending(h => h.Date).ToList();
+
+            var steps = await _context.ProcedureFlow
+                .Include(f => f.ProcedureStatus)
+                .Where(f => f.IdTypeProcedure == request.IdTypeProcedure)
+                .OrderBy(f => f.StepOrder)
                 .ToListAsync();
 
-            ViewBag.Statuses = new SelectList(possibleSteps, "Id", "DisplayName", request.IdProcedureFlow);
+            var selectListItems = steps.Select((f, index) => new {
+                Id = f.Id,
+                DisplayName = f.StepOrder == 99 ? $"🔴 {f.ProcedureStatus.Name}" :
+                              f.StepOrder >= 90 ? $"🔴 {f.ProcedureStatus.Name}" :
+                              $"🟢 {f.ProcedureStatus.Name}"
+            });
 
-            return PartialView("_Monitoring", request);
+            ViewBag.Statuses = new SelectList(selectListItems, "Id", "DisplayName", request.IdProcedureFlow);
+
+            return PartialView("_Monitoring", viewModel);
         }
 
         [HttpPost]

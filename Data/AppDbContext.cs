@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using DocumentFormat.OpenXml.Vml.Office;
+using Microsoft.EntityFrameworkCore;
 using SchoolManager.Models;
 
 namespace SchoolManager.Data
@@ -104,12 +105,12 @@ namespace SchoolManager.Data
 
             modelBuilder.Entity<procedure_request>(entity => {
                 entity.ToTable("procedure_request");
-                entity.HasOne(d => d.User).WithMany().HasForeignKey(d => d.IdUser).OnDelete(DeleteBehavior.Restrict);
                 entity.HasOne(d => d.ProcedureType).WithMany(p => p.ProcedureRequests).HasForeignKey(d => d.IdTypeProcedure).OnDelete(DeleteBehavior.Restrict);
                 entity.HasOne(d => d.ProcedureFlow).WithMany().HasForeignKey(d => d.IdProcedureFlow).OnDelete(DeleteBehavior.Restrict);
+                entity.HasOne(d => d.User).WithMany(u => u.ProcedureRequests).HasForeignKey(d => d.IdUser).OnDelete(DeleteBehavior.Restrict);
                 entity.Property(p => p.DateCreated).HasDefaultValueSql("GETDATE()").ValueGeneratedOnAdd();
                 entity.Property(p => p.DateUpdated).HasDefaultValueSql("GETDATE()");
-            });
+            });            
 
             modelBuilder.Entity<procedure_monitoring>(entity => {
                 entity.ToTable("procedure_monitoring");
@@ -117,6 +118,7 @@ namespace SchoolManager.Data
                 entity.HasOne(pm => pm.ProcedureFlow).WithMany().HasForeignKey(pm => pm.IdProcedureFlow).OnDelete(DeleteBehavior.Restrict); // Asegúrate de que use IdProcedureFlow
                 entity.HasOne(pm => pm.User).WithMany().HasForeignKey(pm => pm.IdUser).OnDelete(DeleteBehavior.Restrict);
             });
+
             #endregion
 
             #region 2. Users Configuration
@@ -149,17 +151,17 @@ namespace SchoolManager.Data
             modelBuilder.Entity<preenrollment_docs>().ToTable("preenrollment_docs");
 
             // Índices únicos
-            modelBuilder.Entity<preenrollment_general>()
-                .HasIndex(p => p.Curp)
-                .IsUnique();
+            //modelBuilder.Entity<preenrollment_general>()
+            //    .HasIndex(p => p.Curp)
+            //    .IsUnique();
 
-            modelBuilder.Entity<preenrollment_general>()
-                .HasIndex(p => p.Email)
-                .IsUnique();
+            //modelBuilder.Entity<preenrollment_general>()
+            //    .HasIndex(p => p.Email)
+            //    .IsUnique();
 
-            modelBuilder.Entity<preenrollment_docs>()
-                .HasIndex(d => d.Curp)
-                .IsUnique();
+            //modelBuilder.Entity<preenrollment_docs>()
+            //    .HasIndex(d => d.Curp)
+            //    .IsUnique();
 
             // Relación: preenrollment_general -> preenrollment_careers
             modelBuilder.Entity<preenrollment_general>()
@@ -178,16 +180,16 @@ namespace SchoolManager.Data
             // Relación: preenrollment_general -> users_user (UserId)
             modelBuilder.Entity<preenrollment_general>()
                 .HasOne(p => p.User)
-                .WithMany()
+                .WithMany(u => u.Preenrollments)
                 .HasForeignKey(p => p.UserId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // Relación: preenrollment_general -> procedure_request (ProcedureRequestId)
+            //Relación: preenrollment_general -> procedure_request (1:1)
             modelBuilder.Entity<preenrollment_general>()
                 .HasOne(p => p.ProcedureRequest)
-                .WithMany()
+                .WithMany(r => r.Preenrollments)
                 .HasForeignKey(p => p.ProcedureRequestId)
-                .OnDelete(DeleteBehavior.Restrict);
+                .OnDelete(DeleteBehavior.SetNull);
 
             // Relación: preenrollment_addresses -> preenrollment_general
             modelBuilder.Entity<preenrollment_addresses>()
@@ -477,7 +479,6 @@ namespace SchoolManager.Data
                 .HasDefaultValueSql("GETDATE()");
 
             #endregion
-
 
             #region 5. Tutorship Configuration
             modelBuilder.Entity<tutorship>().ToTable("tutorship_sessions");

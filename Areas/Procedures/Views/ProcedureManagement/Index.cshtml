@@ -34,41 +34,76 @@
                     <tbody>
                         @foreach (var item in Model)
                         {
+                            var student = item.Preenrollments?.FirstOrDefault();
+
                             <tr>
                                 <td class="ps-4">
                                     <div class="fw-bold burgundy-color">@item.Folio</div>
-                                    <small class="text-muted">@item.DateUpdated.ToString("dd/MM/yyyy HH:mm")</small>
+                                    <small class="text-muted">@item.DateUpdated.ToString("dd/MM/yyyy hh:mm tt")</small>
                                 </td>
+
                                 <td>
                                     <div class="fw-bold">
-                                        @(item.User?.Person != null 
-                                            ? $"{item.User.Person.FirstName} {item.User.Person.LastNamePaternal}" 
-                                            : "Usuario sin datos personales")
+                                        @if (student?.User?.Person != null)
+                                        {
+                                            @($"{student.User.Person.FirstName} {student.User.Person.LastNamePaternal}")
+                                        }
+                                        else if (student != null)
+                                        {
+                                            <span>Aspirante: <i>Sin expediente</i></span>
+                                        }
                                     </div>
-                                    <small class="text-muted">Matrícula: @item.Id</small>
+
+                                    <small class="text-muted">
+                                        @{
+                                            string label = "N/A";
+
+                                            if (!string.IsNullOrWhiteSpace(student?.Matricula) && student.Matricula != "0")
+                                            {
+                                                label = $"Matrícula: {student.Matricula}";
+                                            }
+                                            else if (!string.IsNullOrWhiteSpace(student?.Folio) && student.Folio != "0")
+                                            {
+                                                label = $"Folio: {student.Folio}";
+                                            }
+                                        }
+                                        @label
+                                    </small>
                                 </td>
+
                                 <td>
                                     <div class="fw-bold text-dark">@item.ProcedureType?.Name</div>
-                                    <div class="small text-truncate text-muted" style="max-width: 200px;">@item.Subject</div>
+                                    <div class="small text-truncate text-muted" style="max-width: 200px;">
+                                        @item.Subject
+                                    </div>
                                 </td>
+
                                 <td class="text-center">
-                                    @if (item.ProcedureDocuments != null && item.ProcedureDocuments.Any())
+                                    @{
+                                        var docsCount = item.ProcedureDocuments?.Count ?? 0;
+                                    }
+
+                                    @if (docsCount > 0)
                                     {
                                         <span class="badge bg-info text-white rounded-pill">
-                                            <i class="bi bi-paperclip"></i> @item.ProcedureDocuments.Count
+                                            <i class="bi bi-paperclip"></i> @docsCount
                                         </span>
                                     }
                                     else
                                     {
-                                        <span class="text-muted small">-</span>
+                                        <span class="text-muted small">0</span>
                                     }
                                 </td>
+
                                 <td>
                                     <span class="badge rounded-pill shadow-sm"
-                                          style="background-color: @(item.ProcedureFlow?.ProcedureStatus?.BackgroundColor ?? "#6c757d"); color: @(item.ProcedureFlow?.ProcedureStatus?.TextColor ?? "#fff"); padding: 0.5em 1em;">
+                                          style="background-color: @(item.ProcedureFlow?.ProcedureStatus?.BackgroundColor ?? "#6c757d");
+                             color: @(item.ProcedureFlow?.ProcedureStatus?.TextColor ?? "#fff");
+                             padding: 0.5em 1em;">
                                         @item.ProcedureFlow?.ProcedureStatus?.Name
                                     </span>
                                 </td>
+
                                 <td class="text-center pe-4">
                                     <button class="btn btn-sm btn-secondary px-3 shadow-sm rounded-pill"
                                             onclick="openMonitoring(@item.Id)">

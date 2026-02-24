@@ -1,7 +1,6 @@
-﻿@model SchoolManager.Models.procedure_request
+﻿@model SchoolManager.Areas.Procedures.ViewModels.ExtraInfoViewModel
 
 <style>
-
     :root {
         --burgundy: #620900;
         --burgundy-light: #8C1B1B;
@@ -44,6 +43,24 @@
         background-color: var(--burgundy);
         border-bottom: 3px solid var(--burgundy-light);
     }
+
+    .burgundy-color {
+        color: var(--burgundy);
+    }
+
+    .btn-burgundy {
+        background-color: var(--burgundy);
+        color: white;
+        border: none;
+        padding: 10px;
+        border-radius: 8px;
+        transition: 0.3s;
+    }
+
+        .btn-burgundy:hover {
+            background-color: var(--burgundy-light);
+            color: white;
+        }
 </style>
 
 <div class="modal-header header-burgundy-solid text-white py-3">
@@ -51,104 +68,114 @@
         <i class="bi bi-person-badge fs-3 me-3"></i>
         <div>
             <h5 class="modal-title mb-0 fw-bold">Gestión de Trámite</h5>
-            <small>Folio: <strong class="text-white">@Model.Folio</strong></small>
+            <small class="text-uppercase text-white-50">Folio: <strong>@Model.Folio</strong></small>
         </div>
     </div>
     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
 </div>
 
-<div class="modal-body bg-white px-4 py-4">
+<div class="modal-body bg-white px-4 py-4 area-tramites">
     <div class="row g-4">
+        @* COLUMNA IZQUIERDA: INFORMACIÓN Y LÍNEA DE TIEMPO *@
         <div class="col-lg-7">
+            @* Tarjeta de Datos del Remitente y Detalle de Solicitud *@
             <div class="card burgundy-border shadow-sm rounded-4 mb-4">
                 <div class="card-body p-4">
-                    <h6 class="fw-bold text-uppercase mb-3" style="color: var(--burgundy);">Resumen del Requerimiento</h6>
-                    <div class="row">
-                        <div class="col-12 mb-2">
-                            <span class="small text-muted d-block">Asunto:</span>
-                            <span class="fw-bold text-dark">@Model.Subject</span>
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <h6 class="fw-bold text-uppercase mb-0 burgundy-color">Datos del Remitente</h6>
+                        @if (Model.IsAspirante)
+                        {
+                            <span class="badge bg-warning text-dark"><i class="bi bi-star-fill me-1"></i>Aspirante</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-success"><i class="bi bi-person-check-fill me-1"></i>Alumno</span>
+                        }
+                    </div>
+                    <div class="row g-3">
+                        <div class="col-md-7">
+                            <span class="small text-muted d-block">Nombre Completo:</span>
+                            <span class="fw-bold text-dark fs-5">@Model.StudentFullName</span>
                         </div>
-                        <div class="col-12">
-                            <span class="small text-muted d-block">Mensaje del Usuario:</span>
-                            <p class="text-secondary small mb-0 border-start ps-2 py-1">@Model.Message</p>
+                        <div class="col-md-5">
+                            <span class="small text-muted d-block">@(Model.IsAspirante ? "Folio Aspirante:" : "Matrícula:")</span>
+                            <span class="badge bg-light text-dark border p-2">
+                                <i class="bi bi-hash me-1"></i> @(Model.IsAspirante? Model.ApplicantFolio: Model.Matricula)
+                            </span>
+                        </div>
+
+                        <div class="col-12 mt-2 pt-3 border-top">
+                            <span class="small text-muted d-block fw-bold text-uppercase">Asunto del Trámite:</span>
+                            <p class="mb-2 text-dark"><strong>@Model.ProcedureName</strong> - @Model.UserMessage</p>
+                            <span class="small text-muted"><i class="bi bi-envelope me-1"></i>@Model.Email</span>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <h6 class="fw-bold mb-3" style="color: var(--burgundy);">
-                <i class="bi bi-clock-history me-2"></i> Historial de Seguimiento
-            </h6>
-
-            <div class="ps-2" style="max-height: 350px; overflow-y: auto;">
-                @foreach (var log in Model.ProcedureMonitorings.OrderByDescending(l => l.DateUpdated))
+            @* Historial de Seguimiento *@
+            <h6 class="fw-bold mb-3 burgundy-color"><i class="bi bi-clock-history me-2"></i> Historial de Seguimiento</h6>
+            <div class="ps-2 timeline-detail" style="max-height: 400px; overflow-y: auto;">
+                @foreach (var log in Model.History)
                 {
                     <div class="timeline-burgundy p-3 bg-light rounded-4 mb-3 ms-3 border shadow-sm">
                         <div class="d-flex justify-content-between align-items-center mb-2">
-                            <span class="badge" style="background-color:@(log.ProcedureFlow?.ProcedureStatus?.BackgroundColor ?? "#6c757d"); color:@(log.ProcedureFlow?.ProcedureStatus?.TextColor ?? "#fff")">
-                                @log.ProcedureFlow?.ProcedureStatus?.Name
+                            @* Aplicamos los colores dinámicos del controlador *@
+                            <span class="badge shadow-sm" style="background-color: @(log.BackgroundColor); color: @(log.TextColor);">
+                                @log.StatusName
                             </span>
-                            <small class="text-muted fw-bold">@log.DateUpdated.ToString("dd/MM/yyyy HH:mm")</small>
+                            <small class="text-muted fw-bold">@log.Date.ToString("dd/MM/yyyy HH:mm")</small>
                         </div>
-                        <p class="small text-dark mb-2">@log.Comment</p>
+                        <p class="small text-dark mb-2">@log.AdminComment</p>
                         <div class="pt-2 border-top text-end">
-                            <small class="text-muted italic">- Atendido por: @log.User?.Username</small>
+                            <small class="text-muted italic">- @log.UpdatedBy</small>
                         </div>
                     </div>
                 }
             </div>
         </div>
 
+        @* COLUMNA DERECHA: ACCIONES Y DOCUMENTOS *@
         <div class="col-lg-5">
-            <h6 class="fw-bold mb-3" style="color: var(--burgundy);">
-                <i class="bi bi-files me-2"></i> Documentación Adjunta
-            </h6>
+            <h6 class="fw-bold mb-3 burgundy-color"><i class="bi bi-files me-2"></i> Documentación</h6>
             <div class="mb-4">
-                @if (Model.ProcedureDocuments != null && Model.ProcedureDocuments.Any())
+                @if (Model.Documents != null && Model.Documents.Any())
                 {
-                    @foreach (var doc in Model.ProcedureDocuments)
+                    foreach (var doc in Model.Documents)
                     {
-                        var isPdf = doc.Name.ToLower().EndsWith(".pdf");
                         <a href="@doc.FilePath" target="_blank" class="doc-card-custom list-group-item list-group-item-action rounded-4 mb-2 p-3 d-flex align-items-center">
-                            <div class="rounded p-2 me-3">
-                                @if (isPdf)
-                                {
-                                    <i class="bi bi-file-earmark-pdf-fill text-danger fs-3"></i>
-                                }
-                                else
-                                {
-                                    <i class="bi bi-file-earmark-image-fill text-primary fs-3"></i>
-                                }
-                            </div>
+                            <i class="bi bi-file-earmark-pdf-fill text-danger fs-3 me-3"></i>
                             <div class="overflow-hidden">
-                                <div class="text-dark fw-bold small text-truncate">@doc.Name</div>
-                                <small class="text-muted">Ver archivo @(isPdf ? "PDF" : "Imagen")</small>
+                                <div class="text-dark fw-bold small text-truncate">@doc.FileName</div>
+                                <small class="text-muted">Abrir documento</small>
                             </div>
                         </a>
                     }
                 }
+                else
+                {
+                    <p class="text-muted small">No hay documentos adjuntos.</p>
+                }
             </div>
 
+            @* Formulario de Actualización *@
             <div class="card burgundy-border rounded-4 overflow-hidden shadow-sm">
-                <div class="card-header text-white py-2 fw-bold" style="background-color: var(--burgundy);">
-                    <i class="bi bi-arrow-repeat me-2"></i>ACTUALIZAR ESTATUS
+                <div class="card-header text-white py-2 fw-bold bg-burgundy text-uppercase">
+                    <i class="bi bi-arrow-repeat me-2"></i>Actualizar Estatus
                 </div>
                 <div class="card-body p-4 bg-white">
                     <form id="formUpdateStatus">
-                        <input type="hidden" name="requestId" value="@Model.Id" />
-
+                        <input type="hidden" name="requestId" value="@Model.RequestId" />
                         <div class="mb-3">
                             <label class="form-label small fw-bold">Nuevo Estado:</label>
-                            <select name="newFlowId" class="form-select border-1" asp-items="ViewBag.Statuses"></select>
+                            <select name="newFlowId" class="form-select shadow-sm" asp-items="ViewBag.Statuses"></select>
                         </div>
-
                         <div class="mb-3">
-                            <label class="form-label small fw-bold">Comentario Administrativo:</label>
-                            <textarea name="adminComment" class="form-control border-1" rows="4" required placeholder="Escriba la respuesta..."></textarea>
+                            <label class="form-label small fw-bold">Comentario:</label>
+                            <textarea name="adminComment" class="form-control" rows="3" required placeholder="Escriba el motivo del cambio o instrucciones..."></textarea>
                         </div>
-
-                        <button type="button" onclick="submitStep()" class="btn btn-burgundy w-100 py-2 shadow-sm">
-                            Guardar y Notificar
+                        <button type="button" onclick="submitStep()" class="btn-burgundy w-100 fw-bold shadow-sm">
+                            <i class="bi bi-save me-1"></i> Guardar Cambios
                         </button>
                     </form>
                 </div>

@@ -12,6 +12,11 @@ namespace SchoolManager.Areas.Procedures.ViewModels
 
         public List<procedure_request> Recientes { get; set; } = new();
 
-        public List<int> MonthlyRequests { get; set; }
+        public int SelectedYear { get; set; }
+
+        public int[] MonthlyRequests { get; set; } = new int[12];
+
+        public Dictionary<string, int> RequestsByArea { get; set; } = new Dictionary<string, int>();
+        public Dictionary<string, int> RequestsByType { get; set; } = new Dictionary<string, int>();
     }
 }

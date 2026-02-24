@@ -43,6 +43,8 @@ namespace SchoolManager.Models
         [ForeignKey("IdProcedureFlow")]
         public virtual procedure_flow ProcedureFlow { get; set; } = null!;
 
+        public virtual ICollection<preenrollment_general> Preenrollments { get; set; } = new List<preenrollment_general>();
+
         public virtual ICollection<procedure_documents> ProcedureDocuments { get; set; } = new List<procedure_documents>();
         public virtual ICollection<procedure_monitoring> ProcedureMonitorings { get; set; } = new List<procedure_monitoring>();
     }

@@ -13,7 +13,7 @@
 }
 
 .area-tramites {
-    font-family: 'Inter', -apple-system, sans-serif !important;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
     background-color: #f3f3f3;
     min-height: 100vh;
 }
@@ -300,6 +300,10 @@
     color: white !important;
 }
 
+.card-header-burgundy {
+    padding: 1rem 1.2rem;
+}
+
 .burgundy-color {
     color: var(--burgundy) !important;
 }
@@ -321,7 +325,7 @@
     background-color: var(--burgundy);
     color: white !important;
     border-radius: 50px;
-    padding: 0.8rem 2.5rem;
+    padding: 0.5rem 2.5rem;
     font-weight: 600;
     transition: var(--transition);
     border: none;
