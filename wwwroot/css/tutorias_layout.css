@@ -1,0 +1,278 @@
+﻿:root {
+    --utt-red: #8C1B1B;
+    --utt-dark-red: #620900;
+    --utt-beige: #B1A596;
+    --utt-light: #D5D0CB;
+    --utt-black: #090909;
+    --utt-white: #FFFFFF;
+}
+
+.dashboard-header {
+    background-color: var(--utt-red);
+    color: var(--utt-white);
+    border-radius: 15px;
+    padding: 2rem;
+    margin-bottom: -3rem;
+    padding-bottom: 5rem;
+    box-shadow: 0 4px 15px rgba(140, 27, 27, 0.3);
+}
+
+.search-input {
+    border: none;
+    border-radius: 20px;
+    padding: 10px 20px;
+}
+
+.dashboard-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border: none;
+    border-radius: 15px;
+    overflow: hidden;
+    cursor: pointer;
+    height: 100%;
+    text-decoration: none;
+    color: inherit;
+}
+
+    .dashboard-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    }
+
+.card-icon-box {
+    width: 60px;
+    height: 60px;
+    background-color: #f8f9fa;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1rem auto;
+    font-size: 1.5rem;
+    color: var(--utt-red);
+}
+
+.status-badge {
+    background-color: rgba(177, 165, 150, 0.2);
+    color: var(--utt-dark-red);
+    font-weight: bold;
+    padding: 8px;
+    border-radius: 20px;
+    display: block;
+    width: 100%;
+    text-align: center;
+    margin-top: 15px;
+    transition: background-color 0.3s;
+}
+
+.dashboard-card:hover .status-badge {
+    background-color: var(--utt-red);
+    color: white;
+}
+
+
+.filter-container {
+    background-color: white;
+    border-radius: 15px;
+    padding: 20px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    margin-bottom: 30px;
+    border-left: 5px solid var(--utt-red); 
+}
+
+.student-row {
+    background-color: white;
+    border-radius: 12px;
+    padding: 15px 20px;
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    transition: transform 0.2s, box-shadow 0.2s;
+    border: 1px solid rgba(0,0,0,0.05);
+}
+
+    .student-row:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+        border-color: var(--utt-beige);
+    }
+
+.avatar-circle {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--utt-beige);
+}
+
+.student-name {
+    font-weight: 600;
+    color: var(--utt-black);
+    font-size: 1.1rem;
+}
+
+.student-meta {
+    font-size: 0.85rem;
+    color: #666;
+}
+
+.btn-action-entrevista {
+    background-color: var(--utt-red);
+    color: white;
+    border: none;
+    padding: 8px 20px;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    transition: background 0.3s;
+}
+
+    .btn-action-entrevista:hover {
+        background-color: var(--utt-dark-red);
+        color: white;
+    }
+
+.btn-action-seguimiento {
+    background-color: var(--utt-dark-red); 
+    color: white;
+    border: none;
+    padding: 8px 20px;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    transition: background 0.3s;
+}
+
+    .btn-action-seguimiento:hover {
+        background-color: black;
+        color: white;
+    }
+
+body {
+    background-color: #f4f4f4;
+    color: var(--utt-black);
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif !important;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+h1, h2, h3, h4, h5, h6, .navbar-brand div {
+    font-family: inherit !important;
+}
+.btn-utt-primary {
+    background-color: var(--utt-red);
+    border-color: var(--utt-red);
+    color: var(--utt-white);
+}
+
+    .btn-utt-primary:hover {
+        background-color: var(--utt-dark-red);
+        border-color: var(--utt-dark-red);
+        color: var(--utt-white);
+    }
+
+.btn-utt-secondary {
+    background-color: var(--utt-beige);
+    border-color: var(--utt-beige);
+    color: var(--utt-black);
+}
+
+    .btn-utt-secondary:hover {
+        background-color: #9c8f80; 
+        color: var(--utt-black);
+    }
+
+.card-header-utt {
+    background-color: var(--utt-red);
+    color: var(--utt-white);
+}
+
+.table-utt-head {
+    background-color: var(--utt-dark-red);
+    color: var(--utt-white);
+}
+
+.form-check-input:checked {
+    background-color: var(--utt-red);
+    border-color: var(--utt-red);
+}
+
+footer {
+    position: static !important;
+    margin-top: auto !important;
+}
+
+.filter-container {
+    background-color: white;
+    border-radius: 15px;
+    padding: 20px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    margin-bottom: 30px;
+    border-left: 5px solid var(--utt-red); /* Detalle rojo a la izquierda */
+}
+
+.student-row {
+    background-color: white;
+    border-radius: 12px;
+    padding: 15px 20px;
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    transition: transform 0.2s, box-shadow 0.2s;
+    border: 1px solid rgba(0,0,0,0.05);
+}
+
+    .student-row:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+        border-color: var(--utt-beige);
+    }
+
+.avatar-circle {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--utt-beige);
+}
+
+.student-name {
+    font-weight: 600;
+    color: var(--utt-black);
+    font-size: 1.1rem;
+}
+
+.student-meta {
+    font-size: 0.85rem;
+    color: #666;
+}
+
+/* Botones de acción específicos */
+.btn-action-entrevista {
+    background-color: var(--utt-red);
+    color: white;
+    border: none;
+    padding: 8px 20px;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    transition: background 0.3s;
+}
+
+    .btn-action-entrevista:hover {
+        background-color: var(--utt-dark-red);
+        color: white;
+    }
+
+.btn-action-seguimiento {
+    background-color: var(--utt-dark-red); /* Un tono más oscuro para diferenciar */
+    color: white;
+    border: none;
+    padding: 8px 20px;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    transition: background 0.3s;
+}
+
+    .btn-action-seguimiento:hover {
+        background-color: black;
+        color: white;
+    }

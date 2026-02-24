@@ -10,6 +10,7 @@ namespace SchoolManager.Models
 
         [Required]
         [MaxLength(255)]
+        [Display(Name = "Nombre del documento")]
         public string Name { get; set; } = null!;
 
         [Required]

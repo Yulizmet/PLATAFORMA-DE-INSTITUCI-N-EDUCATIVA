@@ -1,0 +1,236 @@
+﻿@model SchoolManager.Areas.Grades.ViewModels.GradeCapture.GradeCaptureViewModel
+
+@{
+    ViewData["Title"] = $"Capturar Calificaciones - {Model.SubjectName}";
+    Layout = "~/Pages/Shared/_Layout.cshtml";
+}
+
+<div class="container-fluid py-4">
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-action="MyClasses">Mis Clases</a></li>
+            <li class="breadcrumb-item"><a asp-action="SelectUnit" asp-route-teacherSubjectGroupId="@Model.TeacherSubjectGroupId">@Model.SubjectName</a></li>
+            <li class="breadcrumb-item active">Unidad @Model.UnitNumber</li>
+        </ol>
+    </nav>
+
+    <div class="sistema-card">
+        <div class="d-flex justify-content-between align-items-start mb-4">
+            <div>
+                <h4 class="fw-bold mb-2" style="color: #1f2937;">@Model.SubjectName - Unidad @Model.UnitNumber</h4>
+                <p class="text-muted mb-0">
+                    <i class="bi bi-people me-2"></i>Grupo @Model.GroupName
+                </p>
+            </div>
+            <span class="badge bg-success" style="font-size: 1rem; padding: 8px 15px;">
+                <i class="bi bi-pencil me-2"></i>Capturando
+            </span>
+        </div>
+
+        @if (TempData["Success"] != null)
+        {
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <i class="bi bi-check-circle-fill me-2"></i>@TempData["Success"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        }
+
+        @if (TempData["Error"] != null)
+        {
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <i class="bi bi-exclamation-triangle-fill me-2"></i>@TempData["Error"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        }
+
+        <form asp-action="SaveGrades" method="post" id="gradeForm">
+            <input type="hidden" name="TeacherSubjectGroupId" value="@Model.TeacherSubjectGroupId" />
+            <input type="hidden" name="UnitId" value="@Model.UnitId" />
+
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th style="width: 100px;">Matrícula</th>
+                            <th>Estudiante</th>
+                            <th style="width: 150px;">Calificación</th>
+                            <th style="width: 200px;">Recuperación</th>
+                            <th style="width: 100px;">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (int i = 0; i < Model.Students.Count; i++)
+                        {
+                            <tr>
+                                <td class="fw-semibold">@Model.Students[i].Matricula</td>
+                                <td>@Model.Students[i].StudentName</td>
+                                <td>
+                                    <input type="hidden" name="Grades[@i].StudentId" value="@Model.Students[i].StudentId" />
+                                    <input type="number" name="Grades[@i].GradeValue"
+                                           class="form-control grade-input"
+                                           value="@(Model.Students[i].GradeValue?.ToString("F2") ?? "")"
+                                           step="0.01" min="0" max="10"
+                                           style="width: 100px; @(Model.Students[i].HasRecovery ? "background-color: #fff3cd;" : "")" />
+                                </td>
+                                <td>
+                                    @if (Model.Students[i].GradeId.HasValue)
+                                    {
+                                        @if (Model.Students[i].RecoveryValue.HasValue)
+                                        {
+                                            <span class="text-success">
+                                                <i class="bi bi-check-circle me-1"></i>@Model.Students[i].RecoveryValue?.ToString("F2")
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <button type="button" class="btn btn-sm btn-warning"
+                                                    onclick="openRecoveryModal(@Model.Students[i].GradeId, '@Model.Students[i].StudentName')">
+                                                <i class="bi bi-plus-circle me-1"></i>Agregar Recuperación
+                                            </button>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">Primero captura calificación</span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (Model.Students[i].RecoveryId.HasValue)
+                                    {
+                                        <button type="button" class="btn btn-sm btn-outline-danger"
+                                                onclick="openDeleteRecoveryModal(@Model.Students[i].RecoveryId, '@Model.Students[i].StudentName')">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="d-flex gap-2 justify-content-end mt-4">
+                <a asp-action="SelectUnit" asp-route-teacherSubjectGroupId="@Model.TeacherSubjectGroupId"
+                   class="btn btn-secondary" style="border-radius: 10px; background-color: #6c757d; color: white; padding: 10px 25px;">
+                    <i class="bi bi-x-circle me-2"></i>Cancelar
+                </a>
+                <button type="submit" class="btn btn-calificaciones" style="padding: 10px 25px;">
+                    <i class="bi bi-save me-2"></i>Guardar Calificaciones
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal para recuperación -->
+<div class="modal fade" id="recoveryModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content" style="border-radius: 20px; border: none;">
+            <div class="modal-header" style="background-color: #8C1B1B; color: white; border-radius: 20px 20px 0 0;">
+                <h5 class="modal-title">
+                    <i class="bi bi-arrow-repeat me-2"></i>
+                    Agregar Recuperación
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form asp-action="SaveRecovery" method="post" id="recoveryForm">
+                <div class="modal-body p-4">
+                    <input type="hidden" name="gradeId" id="recoveryGradeId" />
+                    <input type="hidden" name="teacherSubjectGroupId" value="@Model.TeacherSubjectGroupId" />
+                    <input type="hidden" name="unitId" value="@Model.UnitId" />
+
+                    <p>Estudiante: <strong id="recoveryStudentName"></strong></p>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Calificación de Recuperación</label>
+                        <input type="number" name="recoveryValue" class="form-control"
+                               step="0.01" min="0" max="10" required />
+                    </div>
+                </div>
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn" style="background-color: #D42D2D; color: white;">Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<!-- Modal para eliminar recuperación -->
+<div class="modal fade" id="deleteRecoveryModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content" style="border-radius: 20px; border: none;">
+            <div class="modal-header" style="background-color: #8C1B1B; color: white; border-radius: 20px 20px 0 0;">
+                <h5 class="modal-title">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                    Confirmar Eliminación
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form asp-action="DeleteRecovery" method="post">
+                <div class="modal-body p-4">
+                    <input type="hidden" name="recoveryId" id="deleteRecoveryId" value="" />
+
+                    <input type="hidden" name="teacherSubjectGroupId" value="@Model.TeacherSubjectGroupId" />
+                    <input type="hidden" name="unitId" value="@Model.UnitId" />
+
+                    <p>¿Estás seguro de eliminar esta recuperación?</p>
+                    <p class="text-danger mb-0">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                        Esta acción no se puede deshacer.
+                    </p>
+                </div>
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn" style="background-color: #D42D2D; color: white;">Eliminar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+@section Scripts {
+    <script>
+        let currentRecoveryId = null;
+
+        function openRecoveryModal(gradeId, studentName) {
+            document.getElementById('recoveryGradeId').value = gradeId;
+            document.getElementById('recoveryStudentName').innerText = studentName;
+            new bootstrap.Modal(document.getElementById('recoveryModal')).show();
+        }
+
+        function openDeleteRecoveryModal(recoveryId, studentName) {
+            currentRecoveryId = recoveryId;
+            document.getElementById('deleteRecoveryId').value = recoveryId;
+            new bootstrap.Modal(document.getElementById('deleteRecoveryModal')).show();
+        }
+
+        // Event delegation - escucha clicks en todo el documento
+        document.addEventListener('click', function(e) {
+            if (e.target && e.target.id === 'confirmDeleteRecovery') {
+                if (currentRecoveryId) {
+                    bootstrap.Modal.getInstance(document.getElementById('deleteRecoveryModal')).hide();
+
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Eliminado',
+                        text: 'Recuperación eliminada correctamente',
+                        timer: 1500,
+                        showConfirmButton: false
+                    }).then(() => {
+                        location.reload();
+                    });
+                }
+            }
+        });
+
+        // Validación de calificaciones (0-10)
+        document.querySelectorAll('.grade-input').forEach(input => {
+            input.addEventListener('change', function() {
+                let value = parseFloat(this.value);
+                if (value < 0) this.value = 0;
+                if (value > 10) this.value = 10;
+                if (isNaN(value)) this.value = '';
+            });
+        });
+        
+    </script>
+}

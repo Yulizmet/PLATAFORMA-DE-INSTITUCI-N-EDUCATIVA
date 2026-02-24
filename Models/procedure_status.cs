@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace SchoolManager.Models
 {
@@ -9,7 +10,11 @@ namespace SchoolManager.Models
 
         [Required]
         [MaxLength(50)]
+        [Display(Name = "Estado")]
         public string Name { get; set; } = null!;
+
+        [MaxLength(50)]
+        public string InternalCode { get; set; } = null!;
 
         [Required]
         [MaxLength(7)]
@@ -22,11 +27,14 @@ namespace SchoolManager.Models
         public string TextColor { get; set; } = "#000000";
 
         [Required]
-        public int StepOrder { get; set; }
-
-        [Required]
+        [Display(Name = "Última modificación")]
         public DateTime DateUpdated { get; set; } = DateTime.Now;
 
-        public virtual ICollection<procedure_request> ProcedureRequests { get; set; } = new List<procedure_request>();
+        public bool IsTerminalState { get; set; }
+
+        public bool IsActionRequiredByUser { get; set; }
+
+        public virtual ICollection<procedure_flow> ProcedureFlow { get; set; } = new List<procedure_flow>();
+
     }
 }

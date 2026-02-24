@@ -1,39 +1,202 @@
 ﻿@{
-    ViewData["Title"] = "Solicitudes";
-    Layout = "/Pages/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Centro de Trámites";
+    Layout = "/Areas/MainScreen/Views/Shared/_Layout.cshtml";
+    //var isAuthenticated = false;
 }
 
-<div class="container d-flex align-items-center justify-content-center" style="min-height: 80vh;">
-    <div class="row g-4 w-100 justify-content-center">
-        <div class="col-md-5 col-lg-4">
-            <a asp-action="Requests" class="card h-100 text-center shadow-sm text-decoration-none transition-hover border-success border-top border-4">
-                <div class="card-body py-5">
-                    <i class="bi bi-file-earmark-plus text-success" style="font-size: 4rem;"></i>
-                    <h4 class="card-title mt-3 text-dark">Solicitar Documento</h4>
-                    <p class="text-muted">Inicia un nuevo trámite y sube tus requisitos.</p>
+<style>
+    :root {
+        --burgundy: #620900;
+        --burgundy-light: #8C1B1B;
+    }
+
+    .header-section {
+        margin-bottom: 3rem;
+    }
+
+        .header-section h1 {
+            color: var(--burgundy);
+            font-weight: 800;
+            letter-spacing: -1px;
+        }
+
+    .card-horizontal {
+        border: none;
+        border-radius: 20px;
+        overflow: hidden;
+        background: white;
+        transition: all 0.4s ease;
+        display: flex;
+        flex-direction: row;
+        height: 220px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+    }
+
+        .card-horizontal:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(77, 2, 23, 0.15);
+        }
+
+    .img-side {
+        width: 35%;
+        position: relative;
+        overflow: hidden;
+    }
+
+        .img-side img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+    .content-side {
+        width: 65%;
+        padding: 1.5rem;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        position: relative;
+    }
+
+    .img-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(to right, rgba(77, 2, 23, 0.1), rgba(77, 2, 23, 0.6));
+    }
+
+    .btn-burgundy {
+        background-color: var(--burgundy);
+        color: white;
+        border-radius: 50px;
+        padding: 0.5rem 1.2rem;
+        font-weight: 600;
+        transition: all 0.3s;
+        border: none;
+        width: fit-content;
+        font-size: 0.9rem;
+    }
+
+        .btn-burgundy:hover {
+            background-color: var(--burgundy-light);
+            color: white;
+            transform: translateX(5px);
+        }
+
+    .icon-float {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        color: var(--burgundy);
+        opacity: 0.15;
+        font-size: 1.8rem;
+    }
+
+    /* Clases para JS */
+    .auth-only {
+        display: none;
+        display: flex !important;
+    }
+
+    @@media (max-width: 992px) {
+        .card-horizontal {
+            flex-direction: column;
+            height: auto;
+        }
+
+        .img-side, .content-side {
+            width: 100%;
+        }
+
+        .img-side {
+            height: 120px;
+        }
+    }
+</style>
+
+<div class="container py-5">
+    <div class="text-center header-section">
+        <h1 class="display-4">Centro de Trámites</h1>
+        <p class="lead text-muted">Gestiona tus requerimientos institucionales y procesos de pago en un solo lugar.</p>
+        <div class="mx-auto" style="width: 80px; height: 4px; background: var(--burgundy); border-radius: 2px;"></div>
+    </div>
+
+    <div class="row g-4 justify-content-center">
+        <div class="col-xl-4 col-lg-6" id="card-payment">
+            <div class="card-horizontal">
+                <div class="img-side">
+                    <img src="https://images.unsplash.com/photo-1554224155-6726b3ff858f?q=80&w=600&auto=format&fit=crop" alt="Registrar Pago">
+                    <div class="img-overlay"></div>
                 </div>
-            </a>
+                <div class="content-side">
+                    <i class="bi bi-credit-card-2-front icon-float"></i>
+                    <h3 class="fw-bold h5">Registrar Pago</h3>
+                    <p class="text-muted mb-3" style="font-size: 0.85rem;">Valida tu boucher de inscripción o preinscripción ante el área de Finanzas.</p>
+                    <a asp-action="PaymentRegistration" class="btn btn-burgundy">
+                        <i class="bi bi-cash-coin me-2"></i>Ir a Pagos
+                    </a>
+                </div>
+            </div>
         </div>
 
-        <div class="col-md-5 col-lg-4">
-            <a asp-action="Tracking" class="card h-100 text-center shadow-sm text-decoration-none transition-hover border-primary border-top border-4">
-                <div class="card-body py-5">
-                    <i class="bi bi-search text-primary" style="font-size: 4rem;"></i>
-                    <h4 class="card-title mt-3 text-dark">Consultar Trámite</h4>
-                    <p class="text-muted">Revisa el folio y el estado actual de tus solicitudes.</p>
+        <div class="col-xl-4 col-lg-6 auth-only" id="card-new-request">
+            <div class="card-horizontal">
+                <div class="img-side">
+                    <img src="https://images.unsplash.com/photo-1586281380349-632531db7ed4?q=80&w=600&auto=format&fit=crop" alt="Nueva Solicitud">
+                    <div class="img-overlay"></div>
                 </div>
-            </a>
+                <div class="content-side">
+                    <i class="bi bi-file-earmark-text icon-float"></i>
+                    <h3 class="fw-bold h5">Nueva Solicitud</h3>
+                    <p class="text-muted mb-3" style="font-size: 0.85rem;">Trámites generales. Prepara tu documentación académica en formato PDF.</p>
+                    <a asp-action="Requests" class="btn btn-burgundy">
+                        <i class="bi bi-plus-circle me-2"></i>Comenzar
+                    </a>
+                </div>
+            </div>
         </div>
+
+        <div class="col-xl-4 col-lg-6 auth-only" id="card-tracking">
+            <div class="card-horizontal shadow-sm">
+                <div class="img-side">
+                    <img src="https://images.unsplash.com/photo-1507925921958-8a62f3d1a50d?auto=format&fit=crop&q=80&w=600" alt="Seguimiento">
+                    <div class="img-overlay"></div>
+                </div>
+                <div class="content-side">
+                    <i class="bi bi-search icon-float"></i>
+                    <h3 class="fw-bold h5">Mis Trámites</h3>
+                    <p class="text-muted mb-3" style="font-size: 0.85rem;">Monitorea estatus en tiempo real y descarga tus resultados oficiales.</p>
+                    <a asp-action="Tracking" class="btn btn-burgundy">
+                        <i class="bi bi-eye me-2"></i>Ver Estatus
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="mt-5 text-center">
+        <small class="text-muted">
+            <i class="bi bi-info-circle me-1"></i> Para trámites administrativos avanzados, es necesario iniciar sesión con tu cuenta institucional.
+        </small>
     </div>
 </div>
 
-<style>
-    .transition-hover {
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
-    }
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            checkUserSession();
+        });
 
-    .transition-hover:hover {
-        transform: translateY(-10px);
-        box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
-    }        
-</style>
+        function checkUserSession() {
+            let userId = 1;
+
+            if (userId != null && userId > 0) {
+                $('.auth-only').fadeIn(600);
+            } else {
+                $('.auth-only').hide();
+            }
+        }
+    </script>
+}

@@ -1,124 +1,28 @@
 html {
-  font-size: 14px;
+    font-size: 14px;
 }
 
 @media (min-width: 768px) {
-  html {
-    font-size: 16px;
-  }
+    html {
+        font-size: 16px;
+    }
 }
 
 .btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
-  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
+    box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
 }
 
 html {
-  position: relative;
-  min-height: 100%;
+    position: relative;
+    min-height: 100%;
 }
 
 body {
-    
     background-color: #f3f3f3;
     margin-bottom: 60px;
     font-family: 'Merriweather', serif;
+    /*font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;*/
 }
-
-/* Autocomplete Styles */
-.autocomplete-wrapper {
-    position: relative;
-    width: 100%;
-}
-
-.autocomplete-dropdown {
-    position: absolute;
-    top: 100%;
-    left: 0;
-    right: 0;
-    background: white;
-    border: 1px solid #ddd;
-    border-top: none;
-    border-radius: 0 0 8px 8px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    max-height: 300px;
-    overflow-y: auto;
-    z-index: 1000;
-    display: none;
-}
-
-.autocomplete-item {
-    padding: 10px 15px;
-    cursor: pointer;
-    border-bottom: 1px solid #f0f0f0;
-    transition: background-color 0.15s;
-}
-
-.autocomplete-item:last-child {
-    border-bottom: none;
-}
-
-.autocomplete-item:hover,
-.autocomplete-item.active {
-    background-color: #f8f9fa;
-}
-
-.autocomplete-item-title {
-    font-weight: 500;
-    color: #333;
-}
-
-.autocomplete-item-subtitle {
-    font-size: 0.8rem;
-    color: #666;
-    margin-top: 2px;
-}
-
-.autocomplete-loading,
-.autocomplete-empty {
-    padding: 15px;
-    text-align: center;
-    color: #666;
-}
-
-.autocomplete-loading {
-    color: #1a6dad;
-}
-
-/* Dark mode support */
-[data-bs-theme="dark"] .autocomplete-dropdown {
-    background: #2b3035;
-    border-color: #495057;
-}
-
-[data-bs-theme="dark"] .autocomplete-item:hover,
-[data-bs-theme="dark"] .autocomplete-item.active {
-    background-color: #343a40;
-}
-
-[data-bs-theme="dark"] .autocomplete-item-title {
-    color: #e9ecef;
-}
-
-[data-bs-theme="dark"] .autocomplete-item-subtitle {
-    color: #adb5bd;
-}
-
-[data-bs-theme="dark"] .autocomplete-item {
-    border-bottom-color: #495057;
-}
-
-.sidebar .nav-link {
-    cursor: pointer !important;
-    transition: all 0.3s ease;
-}
-
-    .sidebar .nav-link:hover {
-        background-color: #e9ecef;
-        border-radius: 5px;
-    }
-    
-    
-
 
 h1 {
     font-weight: 900;
@@ -150,7 +54,6 @@ p {
     background: linear-gradient(135deg, var(--rojo-principal), var(--rojo-claro));
     color: white;
     padding: 100px 0;
-
     border-radius: 28px;
     border-radius: 28px;
 }
@@ -182,7 +85,6 @@ p {
     border-radius: 20px;
     padding: 30px;
     backdrop-filter: blur(10px);
-
 }
 
 /* ===== SECCI�N USUARIOS ===== */
@@ -428,3 +330,35 @@ p {
         background-color: #8C1B1B;
         color: white;
     }
+
+/*============ PROCEDURES ===========*/
+#bulkActionsBar {
+    background-color: #4a0700 !important;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    z-index: 9999 !important;
+}
+
+    #bulkActionsBar .btn-bulk-edit {
+        background-color: #ffc107 !important;
+        color: #000 !important;
+        border: none;
+        font-weight: 700;
+    }
+
+        #bulkActionsBar .btn-bulk-edit:hover {
+            background-color: #e0a800 !important;
+            transform: translateY(-2px);
+        }
+
+.row-selected {
+    background-color: rgba(98, 9, 0, 0.05) !important;
+}
+
+.burgundy-header th i {
+    display: none;
+}
+
+.bg-burgundy {
+    background-color: #8C1B1B !important;
+}
