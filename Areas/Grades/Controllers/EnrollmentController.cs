@@ -1,8 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using SchoolManager.Areas.Grades.ViewModels.Enrollment;
+using SchoolManager.Areas.MainScreen.ViewModels;
 using SchoolManager.Data;
 using SchoolManager.Models;
-using SchoolManager.Areas.Grades.ViewModels.Enrollment;
 
 namespace SchoolManager.Areas.Grades.Controllers
 {
@@ -48,6 +49,50 @@ namespace SchoolManager.Areas.Grades.Controllers
             }).ToList();
 
             return View(students);
+        }
+
+        // GET: Enrollment/SelectGroupForAssignment
+        public async Task<IActionResult> SelectGroupForAssignment()
+        {
+            var grupos = await _context.grades_GradeGroups
+                .Include(g => g.GradeLevel)
+                .OrderBy(g => g.GradeLevel.Name)
+                .ThenBy(g => g.Name)
+                .Select(g => new GrupoResumenViewModel
+                {
+                    GroupId = g.GroupId,
+                    Name = g.Name,
+                    GradeLevelName = g.GradeLevel.Name
+                })
+                .ToListAsync();
+
+            ViewBag.Accion = "AssignToGroup";
+            ViewBag.Titulo = "Seleccionar Grupo para Inscribir Estudiantes";
+            ViewBag.Boton = "Continuar con Inscripción";
+
+            return View("SelectGroup", grupos);
+        }
+
+        // GET: Enrollment/SelectGroupForViewing
+        public async Task<IActionResult> SelectGroupForViewing()
+        {
+            var grupos = await _context.grades_GradeGroups
+                .Include(g => g.GradeLevel)
+                .OrderBy(g => g.GradeLevel.Name)
+                .ThenBy(g => g.Name)
+                .Select(g => new GrupoResumenViewModel
+                {
+                    GroupId = g.GroupId,
+                    Name = g.Name,
+                    GradeLevelName = g.GradeLevel.Name
+                })
+                .ToListAsync();
+
+            ViewBag.Accion = "ByGroup";
+            ViewBag.Titulo = "Seleccionar Grupo para Ver Estudiantes";
+            ViewBag.Boton = "Ver Estudiantes";
+
+            return View("SelectGroup", grupos);
         }
 
         // GET: Enrollment/AssignToGroup/5

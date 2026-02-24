@@ -19,25 +19,37 @@ namespace SchoolManager.Areas.Grades.Controllers
         }
 
         // GET: GradeLevels
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(string estado = "abiertos")
         {
-            var gradeLevels = await _context.grades_GradeLevels
-                .Select(gl => new GradeLevelViewModel
+            var query = _context.grades_GradeLevels
+                .Include(g => g.Groups)
+                .Include(g => g.Subjects)
+                .AsQueryable();
+
+            // Filtrar por estado
+            if (estado == "abiertos")
+            {
+                query = query.Where(g => g.IsOpen);
+            }
+
+            var gradeLevels = await query
+                .Select(g => new GradeLevelViewModel
                 {
-                    GradeLevelId = gl.GradeLevelId,
-                    Name = gl.Name,
-                    StartDate = gl.StartDate,
-                    EndDate = gl.EndDate,
-                    IsOpen = gl.IsOpen,
-                    GroupsCount = gl.Groups.Count,
-                    SubjectsCount = gl.Subjects.Count
+                    GradeLevelId = g.GradeLevelId,
+                    Name = g.Name,
+                    StartDate = g.StartDate,
+                    EndDate = g.EndDate,
+                    IsOpen = g.IsOpen,
+                    MinPassingGrade = g.MinPassingGrade,
+                    GroupsCount = g.Groups.Count,
+                    SubjectsCount = g.Subjects.Count
                 })
-                .OrderBy(gl => gl.Name)
+                .OrderByDescending(g => g.IsOpen)
+                .ThenBy(g => g.StartDate)
                 .ToListAsync();
 
             return View(gradeLevels);
         }
-
         // GET: GradeLevels/Details/5
         public async Task<IActionResult> Details(int? id)
         {
@@ -159,6 +171,7 @@ namespace SchoolManager.Areas.Grades.Controllers
                     gradeLevel.StartDate = viewModel.StartDate;
                     gradeLevel.EndDate = viewModel.EndDate;
                     gradeLevel.IsOpen = viewModel.IsOpen;
+                    gradeLevel.MinPassingGrade = viewModel.MinPassingGrade;
 
                     _context.Update(gradeLevel);
                     await _context.SaveChangesAsync();

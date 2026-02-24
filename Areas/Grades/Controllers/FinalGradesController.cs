@@ -174,7 +174,8 @@ namespace SchoolManager.Areas.Grades.Controllers
 
             // 6. Obtener calificaciones finales existentes
             var existingFinalGrades = await _context.grades_FinalGrades
-                .Where(f => f.GroupId == groupId && f.SubjectId == subjectId)
+                .Include(f => f.ExtraordinaryGrade)
+                .Where(f => f.GroupId == groupId && f.SubjectId == subjectId)   
                 .ToDictionaryAsync(f => f.StudentId);
 
             // 7. Calcular para cada estudiante
@@ -184,13 +185,25 @@ namespace SchoolManager.Areas.Grades.Controllers
                 if (student == null) continue;
 
                 var studentUnitGrades = unitGrades?
-                    .Where(g => g != null && g.StudentId == student.UserId)
+                    .Where(g => g.StudentId == student.UserId)
                     .ToList() ?? new List<grades_grades>();
 
                 var calculatedFinal = CalculateFinalGrade(studentUnitGrades, subject.Units?.Count ?? 0);
-                var passed = calculatedFinal >= minPassingGrade;
 
-                if (existingFinalGrades.TryGetValue(student.UserId, out var existing))
+                // Determinar si pasa (considerando extraordinario si existe)
+                bool passed;
+                if (existingFinalGrades.TryGetValue(student.UserId, out var existing) && existing.ExtraordinaryGrade != null)
+                {
+                    // Si tiene extraordinario, usarlo para determinar si pasa
+                    passed = existing.ExtraordinaryGrade.Value >= minPassingGrade;
+                }
+                else
+                {
+                    // Si no tiene extraordinario, usar el promedio calculado
+                    passed = calculatedFinal >= minPassingGrade;
+                }
+
+                if (existing != null)
                 {
                     existing.Value = calculatedFinal;
                     existing.Passed = passed;
@@ -198,6 +211,7 @@ namespace SchoolManager.Areas.Grades.Controllers
                     existing.CalculationMethod = "Promedio con recuperaciones";
                     existing.ConsideredRecoveries = true;
                     existing.CreatedAt = DateTime.Now;
+                    // El extraordinario no se modifica
                 }
                 else
                 {
@@ -216,7 +230,6 @@ namespace SchoolManager.Areas.Grades.Controllers
                     _context.grades_FinalGrades.Add(finalGrade);
                 }
             }
-
             await _context.SaveChangesAsync();
             TempData["Success"] = $"Calificaciones calculadas (Mínimo: {minPassingGrade:F1})";
 
@@ -250,6 +263,77 @@ namespace SchoolManager.Areas.Grades.Controllers
             }
 
             return grades.Any() ? grades.Average() : 0;
+        }
+
+        // POST: FinalGrades/AddExtraordinary
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AddExtraordinary(int finalGradeId, decimal extraordinaryValue)
+        {
+            var finalGrade = await _context.grades_FinalGrades
+                .Include(f => f.ExtraordinaryGrade)
+                .FirstOrDefaultAsync(f => f.FinalGradeId == finalGradeId);
+
+            if (finalGrade == null) return NotFound();
+
+            // Obtener la calificación mínima que se usó (de la final grade o calcularla)
+            var minPassingGrade = finalGrade.MinPassingGradeUsed;
+
+            if (finalGrade.ExtraordinaryGrade != null)
+            {
+                // Actualizar existente
+                finalGrade.ExtraordinaryGrade.Value = extraordinaryValue;
+                finalGrade.ExtraordinaryGrade.CreatedAt = DateTime.Now;
+            }
+            else
+            {
+                // Crear nuevo extraordinario
+                var extraordinary = new grades_extraordinary_grades
+                {
+                    FinalGradeId = finalGradeId,
+                    Value = extraordinaryValue,
+                    CreatedAt = DateTime.Now
+                };
+                _context.grades_ExtraordinaryGrades.Add(extraordinary);
+            }
+
+            // Actualizar estado de aprobación (si el extraordinario alcanza el mínimo)
+            finalGrade.Passed = extraordinaryValue >= minPassingGrade;
+
+            await _context.SaveChangesAsync();
+
+            TempData["Success"] = $"Calificación extraordinaria guardada: {extraordinaryValue:F2}";
+            return RedirectToAction(nameof(Details), new
+            {
+                groupId = finalGrade.GroupId,
+                subjectId = finalGrade.SubjectId
+            });
+        }
+
+        // POST: FinalGrades/DeleteExtraordinary
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteExtraordinary(int extraordinaryId)
+        {
+            var extraordinary = await _context.grades_ExtraordinaryGrades
+                .Include(e => e.FinalGrade)
+                .FirstOrDefaultAsync(e => e.ExtraordinaryGradeId == extraordinaryId);
+
+            if (extraordinary == null) return NotFound();
+
+            var finalGrade = extraordinary.FinalGrade;
+            var groupId = finalGrade.GroupId;
+            var subjectId = finalGrade.SubjectId;
+
+            // Recalcular si aprobaba sin extraordinario
+            var minPassingGrade = finalGrade.MinPassingGradeUsed;
+            finalGrade.Passed = finalGrade.Value >= minPassingGrade;
+
+            _context.grades_ExtraordinaryGrades.Remove(extraordinary);
+            await _context.SaveChangesAsync();
+
+            TempData["Success"] = "Extraordinario eliminado";
+            return RedirectToAction(nameof(Details), new { groupId, subjectId });
         }
 
     }
