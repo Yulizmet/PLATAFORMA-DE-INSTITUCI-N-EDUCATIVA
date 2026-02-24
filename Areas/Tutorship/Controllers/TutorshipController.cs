@@ -1,4 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using SchoolManager.Data;
 
 namespace SchoolManager.Areas.Tutorship.Controllers
 {
@@ -8,6 +10,13 @@ namespace SchoolManager.Areas.Tutorship.Controllers
     //localhost/PanelTutorias/Seguimiento
     public class TutorshipController : Controller
     {
+
+        private readonly AppDbContext _context;
+
+        public TutorshipController(AppDbContext context)
+        {
+            _context = context;
+        }
         public IActionResult Asistencia()
         {
             return View("~/Areas/Tutorship/Views/Asistencia.cshtml");
@@ -32,9 +41,13 @@ namespace SchoolManager.Areas.Tutorship.Controllers
         {
             return View("~/Areas/Tutorship/Views/Controlador.cshtml");
         }
-        public IActionResult ListaDeAlumnos()
+        public async Task<IActionResult> ListaDeAlumnos()
         {
-            return View("~/Areas/Tutorship/Views/ListaDeAlumnos.cshtml");
+            var listaAlumnos = await _context.Users
+        .Include(u => u.Person)
+        .ToListAsync();
+
+            return View("~/Areas/Tutorship/Views/ListaDeAlumnos.cshtml", listaAlumnos);
         }
     }
 }
