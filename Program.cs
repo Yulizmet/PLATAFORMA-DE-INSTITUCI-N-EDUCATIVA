@@ -35,28 +35,26 @@ app.UseAuthorization();
 
 // --- ROUTES ---
 app.MapAreaControllerRoute(
-    name: "procedures_root",
-    areaName: "Procedures",
-    pattern: "Procedures",
-    defaults: new { controller = "Dashboard", action = "Index" });
+    name: "social_service",
+    areaName: "SocialService",
+    pattern: "SocialService/{controller=Account}/{action=Index}/{id?}");
 
 app.MapAreaControllerRoute(
-    name: "procedures_full",
+    name: "procedures",
     areaName: "Procedures",
     pattern: "Procedures/{controller=Dashboard}/{action=Index}/{id?}");
 
 app.MapControllerRoute(
-    name: "areas",
-    pattern: "{area:exists}/{controller=Home}/{action=Index}/{id?}");
-
-app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}");
+    pattern: "{area=MainScreen}/{controller=MainScreen}/{action=Index}/{id?}");
 
-app.MapAreaControllerRoute(
-    name: "social_service_root",
-    areaName: "SocialService",
-    pattern: "SocialService/{controller=Account}/{action=Index}/{id?}");
+//app.MapControllerRoute(
+//    name: "areas",
+//    pattern: "{area:exists}/{controller=Home}/{action=Index}/{id?}");
+
+//app.MapControllerRoute(
+//    name: "default",
+//    pattern: "{controller=Home}/{action=Index}/{id?}");
 
 app.MapRazorPages();
 

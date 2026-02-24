@@ -2,7 +2,7 @@
 
 namespace SchoolManager.Models
 {
-    public class Generation
+    public class preenrollment_generations
     {
         [Key]
         public int IdGeneration { get; set; }
