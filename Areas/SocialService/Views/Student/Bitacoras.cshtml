@@ -20,6 +20,12 @@
 
 <div class="bitacora-container">
 
+    <div class="text-end mb-3">
+        <a asp-area="SocialService" asp-controller="Student" asp-action="Download" asp-route-filename="plantilla_bitacora.pdf" class="btn btn-outline-secondary">
+            Descargar plantilla de bitácora (PDF)
+        </a>
+    </div>
+
     @if (Model != null && Model.Count > 0)
     {
         foreach (var bitacora in Model)

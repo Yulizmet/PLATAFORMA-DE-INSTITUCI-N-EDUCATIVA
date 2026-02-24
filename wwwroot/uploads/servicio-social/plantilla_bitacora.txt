@@ -1,0 +1,10 @@
+Plantilla de bitácora
+
+Nombre del estudiante:
+Semana:
+Actividades realizadas:
+Horas prácticas:
+Horas servicio social:
+Observaciones:
+
+(Instrucciones: Rellena esta plantilla y súbela si tu proceso lo requiere.)

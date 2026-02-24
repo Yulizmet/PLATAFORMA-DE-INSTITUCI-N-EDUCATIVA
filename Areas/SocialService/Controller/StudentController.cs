@@ -1,4 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.StaticFiles;
+using System.IO;
 
 // permite acceder a la base de datos mediante Entity Framework
 using SchoolManager.Data;
@@ -34,6 +36,33 @@ namespace SchoolManager.Areas.SocialService.Controllers
         public IActionResult Dashboard()
         {
             return View();
+        }
+
+        // Descargar un archivo relacionado con Servicio Social (ej: plantilla)
+        // Ejemplo de uso: /SocialService/Student/Download?filename=plantilla_bitacora.txt
+        [HttpGet]
+        public IActionResult Download(string filename)
+        {
+            if (string.IsNullOrEmpty(filename))
+                return BadRequest();
+
+            // Evitar path traversal
+            filename = Path.GetFileName(filename);
+
+            var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "servicio-social");
+            var fullPath = Path.Combine(uploadsFolder, filename);
+
+            if (!System.IO.File.Exists(fullPath))
+                return NotFound();
+
+            var provider = new FileExtensionContentTypeProvider();
+            if (!provider.TryGetContentType(fullPath, out var contentType))
+            {
+                contentType = "application/octet-stream";
+            }
+
+            var stream = System.IO.File.OpenRead(fullPath);
+            return File(stream, contentType, fileDownloadName: filename);
         }
 
         // Ver bitácoras anteriores
