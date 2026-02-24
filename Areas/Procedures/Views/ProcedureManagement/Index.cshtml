@@ -48,19 +48,32 @@
                                         {
                                             @($"{student.User.Person.FirstName} {student.User.Person.LastNamePaternal}")
                                         }
+                                        else if (item.User?.Person != null)
+                                        {
+                                            @($"{item.User.Person.FirstName} {item.User.Person.LastNamePaternal}")
+                                        }
                                         else if (student != null)
                                         {
                                             <span>Aspirante: <i>Sin expediente</i></span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">Usuario: @(item.User?.Username ?? "Desconocido")</span>
                                         }
                                     </div>
 
                                     <small class="text-muted">
                                         @{
-                                            string label = "N/A";
+                                            string label = "Usuario Registrado";
 
                                             if (!string.IsNullOrWhiteSpace(student?.Matricula) && student.Matricula != "0")
                                             {
                                                 label = $"Matrícula: {student.Matricula}";
+                                            }
+                                            else if (item.User?.Preenrollments?.Any(p => !string.IsNullOrEmpty(p.Matricula) && p.Matricula != "0") == true)
+                                            {
+                                                var m = item.User.Preenrollments.First(p => !string.IsNullOrEmpty(p.Matricula) && p.Matricula != "0").Matricula;
+                                                label = $"Matrícula: {m}";
                                             }
                                             else if (!string.IsNullOrWhiteSpace(student?.Folio) && student.Folio != "0")
                                             {
@@ -122,7 +135,7 @@
 <div class="modal fade" id="dynamicModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-xl modal-dialog-centered">
         <div class="modal-content border-0 shadow-lg" id="dynamicModalContent">
-            @* Aquí se inyecta la vista parcial *@
+
         </div>
     </div>
 </div>

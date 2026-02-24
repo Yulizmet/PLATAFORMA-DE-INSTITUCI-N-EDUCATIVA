@@ -22,32 +22,37 @@ namespace SchoolManager.Areas.Procedures.Controllers
             var requests = await _context.ProcedureRequest
                 .Include(r => r.ProcedureDocuments)
                 .Include(r => r.ProcedureType)
-                .Include(r => r.ProcedureFlow)
-                    .ThenInclude(f => f.ProcedureStatus)
+                .Include(r => r.ProcedureFlow).ThenInclude(f => f.ProcedureStatus)
                 .Include(r => r.Preenrollments)
-                    .ThenInclude(p => p.User)
+                .Include(r => r.User)
                     .ThenInclude(u => u.Person)
+                .Include(r => r.User)
+                    .ThenInclude(u => u.Preenrollments)
                 .OrderByDescending(r => r.DateUpdated)
                 .ToListAsync();
 
             return View(requests);
         }
+
         public async Task<IActionResult> Monitoring(int id)
         {
             var request = await _context.ProcedureRequest
                 .Include(r => r.ProcedureType)
                 .Include(r => r.ProcedureFlow).ThenInclude(f => f.ProcedureStatus)
                 .Include(r => r.ProcedureDocuments)
+                .Include(r => r.User).ThenInclude(u => u.Person)
+                .Include(r => r.User).ThenInclude(u => u.Preenrollments)
                 .Include(r => r.Preenrollments).ThenInclude(p => p.User).ThenInclude(u => u.Person)
-                .Include(r => r.ProcedureMonitorings)
-                    .ThenInclude(m => m.ProcedureFlow)
-                        .ThenInclude(f => f.ProcedureStatus)
+                .Include(r => r.ProcedureMonitorings).ThenInclude(m => m.ProcedureFlow).ThenInclude(f => f.ProcedureStatus)
                 .Include(r => r.ProcedureMonitorings).ThenInclude(m => m.User)
                 .FirstOrDefaultAsync(r => r.Id == id);
 
             if (request == null) return NotFound();
 
-            var student = request.Preenrollments.FirstOrDefault();
+            var currentPreenrollment = request.Preenrollments.FirstOrDefault();
+
+            var globalMatricula = currentPreenrollment?.Matricula ??
+                                  request.User?.Preenrollments?.FirstOrDefault(p => p.Matricula != "0")?.Matricula;
 
             var viewModel = new ExtraInfoViewModel
             {
@@ -57,17 +62,22 @@ namespace SchoolManager.Areas.Procedures.Controllers
                 CurrentStatus = request.ProcedureFlow?.ProcedureStatus?.Name ?? "N/A",
                 UserMessage = request.Message,
                 LastUpdate = request.DateUpdated,
-                StudentFullName = student?.User?.Person != null
-                    ? $"{student.User.Person.FirstName} {student.User.Person.LastNamePaternal} {student.User.Person.LastNameMaternal}"
-                    : (student != null ? "Aspirante" : "Usuario sin expediente"),
-                Matricula = student?.Matricula ?? "S/M",
-                Email = student?.User?.Person?.Email ?? student?.User?.Email ?? "N/A",
-                ApplicantFolio = student?.Folio ?? "N/A",
-                IsAspirante = student?.UserId == null,
+
+                StudentFullName = currentPreenrollment?.User?.Person != null
+                    ? $"{currentPreenrollment.User.Person.FirstName} {currentPreenrollment.User.Person.LastNamePaternal} {currentPreenrollment.User.Person.LastNameMaternal}"
+                    : (request.User?.Person != null
+                        ? $"{request.User.Person.FirstName} {request.User.Person.LastNamePaternal} {request.User.Person.LastNameMaternal}"
+                        : "Usuario sin expediente"),
+
+                Matricula = (globalMatricula != null && globalMatricula != "0") ? globalMatricula : "S/M",
+
+                Email = request.User?.Person?.Email ?? request.User?.Email ?? "N/A",
+                ApplicantFolio = currentPreenrollment?.Folio ?? "N/A",
+                IsAspirante = request.User == null || (globalMatricula == "0" || globalMatricula == null),
+
                 Documents = request.ProcedureDocuments.Select(d => new DocumentDetail { FileName = d.Name, FilePath = d.FilePath }).ToList()
             };
 
-            // --- CONSTRUCCIÓN DEL HISTORIAL DINÁMICO ---
             var flujoInicial = await _context.ProcedureFlow
                 .Include(f => f.ProcedureStatus)
                 .Where(f => f.IdTypeProcedure == request.IdTypeProcedure)
@@ -131,7 +141,7 @@ namespace SchoolManager.Areas.Procedures.Controllers
                     IdProcedureFlow = newFlowId,
                     Comment = adminComment,
                     DateUpdated = DateTime.Now,
-                    IdUser = 1
+                    IdUser = 3
                 };
 
                 _context.ProcedureMonitoring.Add(monitoring);

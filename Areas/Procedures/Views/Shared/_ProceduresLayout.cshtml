@@ -50,8 +50,16 @@
                         <li class="nav-item">
                             <a class="nav-link @(currentController == "ProcedureManagement" ? "active-item" : "")"
                                asp-area="Procedures" asp-controller="ProcedureManagement" asp-action="Index">
-                                <i class="bi bi-folder2-open"></i>
+                                <i class="bi bi-clock-history"></i>
                                 <span>Seguimiento</span>
+                            </a>
+                        </li>
+
+                        <li class="nav-item">
+                            <a class="nav-link @(currentController == "Proceeding" ? "active-item" : "")"
+                               asp-area="Procedures" asp-controller="Proceeding" asp-action="Index">
+                                <i class="bi bi-folder2-open"></i>
+                                <span>Expedientes</span>
                             </a>
                         </li>
 

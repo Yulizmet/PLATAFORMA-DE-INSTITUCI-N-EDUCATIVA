@@ -76,9 +76,7 @@
 
 <div class="modal-body bg-white px-4 py-4 area-tramites">
     <div class="row g-4">
-        @* COLUMNA IZQUIERDA: INFORMACIÓN Y LÍNEA DE TIEMPO *@
         <div class="col-lg-7">
-            @* Tarjeta de Datos del Remitente y Detalle de Solicitud *@
             <div class="card burgundy-border shadow-sm rounded-4 mb-4">
                 <div class="card-body p-4">
                     <div class="d-flex justify-content-between align-items-start mb-3">
@@ -98,9 +96,12 @@
                             <span class="fw-bold text-dark fs-5">@Model.StudentFullName</span>
                         </div>
                         <div class="col-md-5">
-                            <span class="small text-muted d-block">@(Model.IsAspirante ? "Folio Aspirante:" : "Matrícula:")</span>
+                            <span class="small text-muted d-block">
+                                @((Model.Matricula != "S/M" && Model.Matricula != "0") ? "Matrícula:" : "Folio Aspirante:")
+                            </span>
                             <span class="badge bg-light text-dark border p-2">
-                                <i class="bi bi-hash me-1"></i> @(Model.IsAspirante? Model.ApplicantFolio: Model.Matricula)
+                                <i class="bi bi-hash me-1"></i>
+                                @((Model.Matricula != "S/M" && Model.Matricula != "0") ? Model.Matricula : Model.ApplicantFolio)
                             </span>
                         </div>
 
@@ -113,14 +114,12 @@
                 </div>
             </div>
 
-            @* Historial de Seguimiento *@
             <h6 class="fw-bold mb-3 burgundy-color"><i class="bi bi-clock-history me-2"></i> Historial de Seguimiento</h6>
             <div class="ps-2 timeline-detail" style="max-height: 400px; overflow-y: auto;">
                 @foreach (var log in Model.History)
                 {
                     <div class="timeline-burgundy p-3 bg-light rounded-4 mb-3 ms-3 border shadow-sm">
                         <div class="d-flex justify-content-between align-items-center mb-2">
-                            @* Aplicamos los colores dinámicos del controlador *@
                             <span class="badge shadow-sm" style="background-color: @(log.BackgroundColor); color: @(log.TextColor);">
                                 @log.StatusName
                             </span>
