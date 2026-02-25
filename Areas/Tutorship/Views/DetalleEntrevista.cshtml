@@ -1,25 +1,76 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
-@{                
+﻿@model SchoolManager.Models.tutorship_interview
 
+@{
+    ViewData["Title"] = "Resultados de Entrevista";
+    int roleId = ViewBag.RoleId ?? 0;
+
+    // Obtenemos el nombre del alumno si viene en el modelo
+    string nombreAlumno = Model?.Student?.Person != null
+            ? $"{Model.Student.Person.FirstName} {Model.Student.Person.LastNamePaternal} {Model.Student.Person.LastNameMaternal}"
+            : "Alumno";
 }
-<div class="container mt-4">
-    <h2 class="mb-4">Resultados de Entrevista: Juan Pérez</h2>
 
-    <div class="card">
-        <div class="card-body">
-            <dl class="row">
-                <dt class="col-sm-3">¿Trabaja actualmente?</dt>
-                <dd class="col-sm-9">Sí (Medio tiempo)</dd>
-
-                <dt class="col-sm-3">Situación Familiar</dt>
-                <dd class="col-sm-9">Vivo con mis padres y dos hermanos. El ambiente es tranquilo.</dd>
-
-                <dt class="col-sm-3">Materias Reprobadas</dt>
-                <dd class="col-sm-9"><span class="badge bg-success">Ninguna</span></dd>
-            </dl>
-            <a asp-area="Gestion" asp-controller="Tutorship" asp-action="ListaDeAlumnos" class="btn btn-secondary">Volver a la lista</a>
-        </div>
+<div class="container mt-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="mb-0 fw-bold" style="color: var(--utt-dark);">
+            <i class="bi bi-journal-text text-danger"></i> Resultados de Entrevista: @nombreAlumno
+        </h2>
+        <span class="badge bg-success fs-6">@Model?.Status</span>
     </div>
+
+    @if (Model == null || Model.Answers == null || !Model.Answers.Any())
+    {
+        <div class="alert alert-warning text-center">
+            <h4>No hay datos disponibles</h4>
+            <p>La entrevista aún no ha sido completada o no se encontraron respuestas guardadas.</p>
+        </div>
+    }
+    else
+    {
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-dark text-white">
+                <h5 class="mb-0">Expediente de Tutoría - Fecha: @Model.DateCompleted.ToString("dd/MM/yyyy")</h5>
+            </div>
+            <div class="card-body p-4">
+
+                <dl class="row mb-0">
+                    @foreach (var answer in Model.Answers)
+                    {
+                        <dt class="col-sm-4 text-muted border-bottom py-3">
+                            @answer.QuestionText
+                        </dt>
+                        <dd class="col-sm-8 border-bottom py-3 mb-0 fw-bold" style="color: var(--utt-dark);">
+                            @if (answer.AnswerText == "No" || answer.AnswerText == "Ninguna")
+                            {
+                                <span class="badge bg-success">@answer.AnswerText</span>
+                            }
+                            else if (answer.AnswerText == "Sí" || answer.AnswerText == "Si")
+                            {
+                                <span class="badge bg-warning text-dark">@answer.AnswerText</span>
+                            }
+                            else
+                            {
+                                @answer.AnswerText
+                            }
+                        </dd>
+                    }
+                </dl>
+
+            </div>
+            <div class="card-footer bg-light text-end p-3">
+                @if (roleId == 2)
+                {
+                    <a asp-area="Gestion" asp-controller="Tutorship" asp-action="ListaDeAlumnos" class="btn btn-secondary">
+                        <i class="bi bi-arrow-left"></i> Volver a la lista
+                    </a>
+                }
+                else
+                {
+                    <a asp-area="Gestion" asp-controller="Tutorship" asp-action="Controlador" class="btn btn-secondary">
+                        <i class="bi bi-arrow-left"></i> Volver al panel
+                    </a>
+                }
+            </div>
+        </div>
+    }
 </div>
