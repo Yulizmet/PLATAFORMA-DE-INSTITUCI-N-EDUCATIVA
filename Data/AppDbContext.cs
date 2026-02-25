@@ -8,7 +8,18 @@ namespace SchoolManager.Data
         public AppDbContext(DbContextOptions<AppDbContext> options)
             : base(options) { }
 
-        public DbSet<Student> Students { get; set; }
-        public DbSet<Employee> Employees { get; set; }
+        public DbSet<User> Users { get; set; }
+        public DbSet<Person> Persons { get; set; }
+        public DbSet<GradeFinalGrade> GradeFinalGrades { get; set; }
+        public DbSet<GradeSubject> GradeSubjects { get; set; }
+        public DbSet<GradeGroup> GradeGroups { get; set; }
+        public DbSet<GradeLevel> GradeLevels { get; set; }
+        public DbSet<Role> Roles { get; set; }
+        public DbSet<UserRole> UserRoles { get; set; }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder);
+        }
     }
 }

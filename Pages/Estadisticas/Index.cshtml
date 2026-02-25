@@ -1,14 +1,14 @@
 @page "/Estadisticas"
 @model SchoolManager.Pages.Estadisticas.IndexModel
 @{
-    ViewData["Title"] = "Estadísticas";
+    ViewData["Title"] = "EstadÃ­sticas";
 }
 @section Styles {
     <link rel="stylesheet" href="~/css/escuela.css" asp-append-version="true" />
 }
 
 <style>
-/* Contenedor fijo para las gráficas: evita estirado vertical */
+/* Contenedor fijo para las grÃ¡ficas: evita estirado vertical */
 .chart-container {
     height: 300px;
     position: relative;
@@ -32,11 +32,11 @@
 <div class="row mb-3">
     <div class="col-12 d-flex justify-content-between align-items-center">
         <div>
-            <h2 id="pageTitle">Estadísticas de alumnos</h2>
+            <h2 id="pageTitle">EstadÃ­sticas de alumnos</h2>
             <p class="text-muted" id="pageSubtitle">Control y seguimiento: inscritos, cursando, aprobados y reprobados.</p>
         </div>
         <div>
-            <!-- Pestañas para cambiar entre Alumnos y Empleados -->
+            <!-- PestaÃ±as para cambiar entre Alumnos y Empleados -->
             <div class="btn-group" role="group" aria-label="Vistas">
                 <button id="tabStudents" class="btn btn-primary">Alumnos</button>
                 <button id="tabEmployees" class="btn btn-outline-primary">Empleados</button>
@@ -67,7 +67,7 @@
                     </div>
                     <div class="col-md-2">
                         <select id="filterGenero" class="form-select">
-                            <option value="">Todos géneros</option>
+                            <option value="">Todos gÃ©neros</option>
                             <option value="M">Masculino</option>
                             <option value="F">Femenino</option>
                         </select>
@@ -92,7 +92,7 @@
                 </div>
             </div>
 
-            <!-- Filtros para Empleados (oculto hasta seleccionar la pestaña Empleados) -->
+            <!-- Filtros para Empleados (oculto hasta seleccionar la pestaÃ±a Empleados) -->
             <div id="filtersEmployees" class="d-none">
                 <div class="row g-2">
                     <div class="col-md-3">
@@ -101,8 +101,8 @@
                     <div class="col-md-3">
                         <select id="filterDepartment" class="form-select">
                             <option value="">Todos departamentos</option>
-                            <option value="Enfermería">Enfermería</option>
-                            <option value="Administración">Administración</option>
+                            <option value="EnfermerÃ­a">EnfermerÃ­a</option>
+                            <option value="AdministraciÃ³n">AdministraciÃ³n</option>
                             <option value="Mantenimiento">Mantenimiento</option>
                         </select>
                     </div>
@@ -116,7 +116,7 @@
     </div>
 </div>
 
-<!-- Estadísticas rápidas (solo alumnos por ahora) -->
+<!-- EstadÃ­sticas rÃ¡pidas (solo alumnos por ahora) -->
 <div class="row mb-4" id="studentStats">
     <div class="col-sm-6 col-md-3 mb-2">
         <div class="card p-3">
@@ -159,7 +159,7 @@
                             <th>Semestre</th>
                             <th>Estado</th>
                             <th>Nota</th>
-                            <th>Fecha inscripción</th>
+                            <th>Fecha inscripciÃ³n</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -219,11 +219,11 @@
                         <tr>
                             <th>Id</th>
                             <th>Nombre</th>
-                            <th>Género</th>
+                            <th>GÃ©nero</th>
                             <th>Departamento</th>
                             <th>Rol</th>
                             <th>Actividades hoy</th>
-                            <th>Fecha contratación</th>
+                            <th>Fecha contrataciÃ³n</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -245,7 +245,7 @@
         </div>
     </div>
 
-    <!-- Gráfica exclusiva para actividades de empleados -->
+    <!-- GrÃ¡fica exclusiva para actividades de empleados -->
     <div class="row mt-3">
         <div class="col-md-12">
             <div class="card p-3">
@@ -261,7 +261,7 @@
 <div class="row mt-4">
     <div class="col-md-6">
         <div class="card p-3">
-            <h5>Distribución por estado</h5>
+            <h5>DistribuciÃ³n por estado</h5>
             <div class="chart-container">
                 <canvas id="pieChart"></canvas>
             </div>
@@ -290,7 +290,7 @@
     <script src="~/js/estadisticas.js" asp-append-version="true"></script>
 
     <script>
-        // Lógica mínima para cambiar pestañas y mostrar filtros correspondientes.
+        // LÃ³gica mÃ­nima para cambiar pestaÃ±as y mostrar filtros correspondientes.
         (function () {
             const tabStudents = document.getElementById('tabStudents');
             const tabEmployees = document.getElementById('tabEmployees');
@@ -312,7 +312,7 @@
                 viewEmployees.classList.add('d-none');
                 filtersStudents.classList.remove('d-none');
                 filtersEmployees.classList.add('d-none');
-                pageTitle.textContent = 'Estadísticas de alumnos';
+                pageTitle.textContent = 'EstadÃ­sticas de alumnos';
                 pageSubtitle.textContent = 'Control y seguimiento: inscritos, cursando, aprobados y reprobados.';
             }
 
@@ -325,7 +325,7 @@
                 viewStudents.classList.add('d-none');
                 filtersEmployees.classList.remove('d-none');
                 filtersStudents.classList.add('d-none');
-                pageTitle.textContent = 'Estadísticas de empleados';
+                pageTitle.textContent = 'EstadÃ­sticas de empleados';
                 pageSubtitle.textContent = 'Listado y filtros por departamento y rol.';
             }
 
