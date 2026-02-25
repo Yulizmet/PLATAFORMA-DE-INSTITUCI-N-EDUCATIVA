@@ -1,5 +1,3 @@
-﻿@* @model IEnumerable<SchoolManager.Models.users_user>
- *@
 @model SchoolManager.Models.users_user
 
 @{
@@ -13,16 +11,17 @@
     string atributoBloqueo = estaCompletada ? "disabled" : "";
 }
 
-
 <div class="container mt-5">
     <div class="card shadow border-0">
-        <div class="card-header-utt p-4 rounded-top">
+        <div class="card-header-utt p-4 rounded-top" style="background-color: var(--utt-red, #dc3545); color: white;">
             <h3 class="mb-0 fw-bold"><i class="bi bi-person-lines-fill"></i> Entrevista Inicial de Tutoría</h3>
         </div>
 
         <div class="card-body p-4" style="background-color: var(--utt-white);">
-            <form asp-action="GuardarEntrevista" method="post" enctype="multipart/form-data">
+            <form asp-area="Gestion" asp-controller="Tutorship" asp-action="GuardarEntrevista" method="post" enctype="multipart/form-data">
+
                 <input type="hidden" name="UserId" value="@Model.UserId" />
+
                 <div class="p-3 rounded mb-4" style="background-color: var(--utt-light);">
                     <h5 class="fw-bold" style="color: var(--utt-dark-red);">Datos del Alumno</h5>
 
@@ -30,21 +29,20 @@
                         <div class="col-md-12 text-center">
                             <div class="position-relative d-inline-block">
                                 <img id="previewFoto" src="https://via.placeholder.com/150?text=Sin+Foto"
-                                     alt="Foto del Alumno"
-                                     class="rounded-circle shadow-sm"
+                                     alt="Foto del Alumno" class="rounded-circle shadow-sm"
                                      style="width: 150px; height: 150px; object-fit: cover; border: 4px solid var(--utt-white);">
 
-                                <label for="inputFoto" class="position-absolute bottom-0 end-0 btn btn-sm btn-utt-primary rounded-circle"
-                                       style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; cursor: pointer;"
+                                <label id="btnCamara" for="inputFoto" class="position-absolute bottom-0 end-0 btn btn-sm btn-utt-primary rounded-circle"
+                                       style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; cursor: pointer; @(estaCompletada ? "pointer-events: none; opacity: 0.5;" : "")"
                                        title="Subir Foto">
                                     <i class="bi bi-camera-fill"></i>
                                 </label>
-
                                 <input type="file" id="inputFoto" name="FotoPerfil" accept="image/*" class="d-none" onchange="mostrarPrevisualizacion(this)">
                             </div>
-                            <p class="text-muted small mt-2">Click en la cámara para subir tu foto</p>
+                            <p class="text-muted small mt-2">Click en la cámara para subir tu foto (Opcional)</p>
                         </div>
                     </div>
+
                     <div class="row">
                         <div class="col-md-6">
                             <label class="form-label fw-bold">Nombre Completo</label>
@@ -54,14 +52,11 @@
                                    style="border-color: var(--utt-beige); background-color: #e9ecef;">
                         </div>
                         <div class="col-md-6">
-                            <div class="col-md-6">
-                                <label class="form-label fw-bold">Matrícula</label>
-
-                                <input type="text" class="form-control"
-                                       value="@ViewBag.Matricula"
-                                       readonly
-                                       style="border-color: var(--utt-beige); background-color: #e9ecef;">
-                            </div>
+                            <label class="form-label fw-bold">Matrícula</label>
+                            <input type="text" class="form-control"
+                                   value="@ViewBag.Matricula"
+                                   readonly
+                                   style="border-color: var(--utt-beige); background-color: #e9ecef;">
                         </div>
                     </div>
                     <div class="row mt-3">
@@ -155,7 +150,7 @@
                 </div>
 
                 <div class="mb-4">
-                    <label class="form-label fw-bold" @atributoBloqueo>7. Describe brevemente tu situación familiar actual</label>
+                    <label class="form-label fw-bold">7. Describe brevemente tu situación familiar actual</label>
                     <textarea class="form-control" name="SituacionFamiliar" rows="2"
                               placeholder="Ej. Buena relación, apoyo económico estable, etc."
                               style="border-color: var(--utt-beige);" @atributoBloqueo></textarea>
@@ -242,23 +237,19 @@
 
 @section Scripts {
     <script>
-        // Script para previsualizar la imagen antes de subirla
         function mostrarPrevisualizacion(input) {
             if (input.files && input.files[0]) {
                 var reader = new FileReader();
-
                 reader.onload = function (e) {
-                    // Asigna la imagen cargada al elemento img
                     document.getElementById('previewFoto').src = e.target.result;
                 }
-
                 reader.readAsDataURL(input.files[0]);
             }
         }
 
-                function habilitarEdicion() {
+        function habilitarEdicion() {
             // 1. Le quitamos el atributo 'disabled' a todos los campos del formulario
-            const campos = document.querySelectorAll("select, input[type='radio'], textarea");
+            const campos = document.querySelectorAll("select, input[type='radio'], textarea, input[type='number']");
             campos.forEach(campo => {
                 campo.removeAttribute("disabled");
             });
@@ -266,7 +257,13 @@
             // 2. Ocultamos el botón amarillo y mostramos el verde
             document.getElementById("btnModificar").classList.add("d-none");
             document.getElementById("btnGuardarCambios").classList.remove("d-none");
-        }
 
+            // 3. Desbloqueamos el botón de la cámara devolviéndole sus eventos y opacidad
+            const btnCamara = document.getElementById("btnCamara");
+            if (btnCamara) {
+                btnCamara.style.pointerEvents = "auto";
+                btnCamara.style.opacity = "1";
+            }
+        }
     </script>
 }
