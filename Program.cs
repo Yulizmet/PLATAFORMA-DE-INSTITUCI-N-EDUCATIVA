@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 using SchoolManager.Data;
 using SchoolManager.Services;
@@ -5,6 +6,7 @@ using SchoolManager.Services;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+builder.Services.AddControllersWithViews();
 builder.Services.AddScoped<ISearchService, SearchService > ();
 builder.Services.AddScoped<IStorageService, AzureStorageService>();
 builder.Services.AddRazorPages();
@@ -52,3 +54,4 @@ app.MapControllerRoute(
 app.MapRazorPages();
 
 app.Run();
+
