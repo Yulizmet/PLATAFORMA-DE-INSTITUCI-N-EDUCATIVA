@@ -22,9 +22,28 @@ namespace SchoolManager.Areas.Tutorship.Controllers
             return View("~/Areas/Tutorship/Views/Asistencia.cshtml");
         }
 
-        public IActionResult EntrevistaInicial()
+        public async Task<IActionResult> EntrevistaInicial()
         {
-            return View("~/Areas/Tutorship/Views/EntrevistaInicial.cshtml");
+            int usuarioIdDePrueba = 11;
+
+            var usuario = await _context.Users
+                .Include(u => u.Person)
+                .FirstOrDefaultAsync(u => u.UserId == usuarioIdDePrueba);
+
+            if (usuario == null)
+            {
+                return NotFound("El usuario de prueba no fue encontrado.");
+            }
+
+
+            var matriculaAlumno = await _context.PreenrollmentGenerals
+        .Where(p => p.UserId == usuarioIdDePrueba)
+        .Select(p => p.Matricula)
+        .FirstOrDefaultAsync();
+
+            ViewBag.Matricula = matriculaAlumno ?? "Sin asignar";
+
+            return View("~/Areas/Tutorship/Views/EntrevistaInicial.cshtml", usuario);
         }
 
         public IActionResult DetalleEntrevista()

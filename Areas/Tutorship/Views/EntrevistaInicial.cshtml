@@ -1,5 +1,6 @@
-﻿@model IEnumerable<SchoolManager.Models.users_user>
-
+﻿@* @model IEnumerable<SchoolManager.Models.users_user>
+ *@
+@model SchoolManager.Models.users_user
 
 @{
     ViewData["Title"] = "Entrevista Inicial";
@@ -39,20 +40,29 @@
                     <div class="row">
                         <div class="col-md-6">
                             <label class="form-label fw-bold">Nombre Completo</label>
-                            <input type="text" class="form-control" value="Ana Karen"
-                                   style="border-color: var(--utt-beige);">
+                            <input type="text" class="form-control"
+                                   value="@Model.Person.FirstName @Model.Person.LastNamePaternal @Model.Person.LastNameMaternal"
+                                   readonly
+                                   style="border-color: var(--utt-beige); background-color: #e9ecef;">
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label fw-bold">Matrícula</label>
-                            <input type="text" class="form-control" value="UT123456"
-                                   style="border-color: var(--utt-beige);">
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Matrícula</label>
+
+                                <input type="text" class="form-control"
+                                       value="@ViewBag.Matricula"
+                                       readonly
+                                       style="border-color: var(--utt-beige); background-color: #e9ecef;">
+                            </div>
                         </div>
                     </div>
                     <div class="row mt-3">
                         <div class="col-md-6">
                             <label class="form-label fw-bold">Correo</label>
-                            <input type="text" class="form-control" value=""
-                                   style="border-color: var(--utt-beige);">
+                            <input type="text" class="form-control"
+                                   value="@Model.Person.Email"
+                                   readonly
+                                   style="border-color: var(--utt-beige); background-color: #e9ecef;">
                         </div>
                         <div class="col-md-6">
                             <label class="form-label fw-bold">Carrera</label>
