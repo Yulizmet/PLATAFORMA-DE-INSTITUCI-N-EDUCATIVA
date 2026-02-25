@@ -7,6 +7,115 @@
 
     let pieChart, barChart, employeeActivityChart;
 
+    // Plugin para mostrar pequeñas etiquetas con los valores sobre/ dentro de los elementos
+    const valueLabelPlugin = {
+        id: 'valueLabelPlugin',
+        afterDatasetsDraw(chart, args, pluginOptions) {
+            const ctx = chart.ctx;
+            ctx.save();
+            const opts = pluginOptions || {};
+            const font = opts.font || '12px Arial';
+            ctx.font = font;
+            const textColor = opts.color || '#000';
+            const bgColor = opts.bgColor || 'rgba(108,117,125,0.9)'; // gris semitransparente por defecto
+            const padding = (typeof opts.padding === 'number') ? opts.padding : 6;
+            const borderColor = opts.borderColor || '#000';
+            const borderWidth = (typeof opts.borderWidth === 'number') ? opts.borderWidth : 1;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+
+            chart.data.datasets.forEach((dataset, dsIndex) => {
+                const meta = chart.getDatasetMeta(dsIndex);
+                meta.data.forEach((elem, index) => {
+                    let value = dataset.data && dataset.data[index] !== undefined ? dataset.data[index] : null;
+                    if (value === null) return;
+                    const label = (opts.formatter && typeof opts.formatter === 'function') ? opts.formatter(value, dataset, index) : String(value);
+
+                    // Element provides tooltipPosition for many element types (bars, arcs)
+                    if (typeof elem.tooltipPosition === 'function') {
+                        const pos = elem.tooltipPosition();
+                        // For bars show above, for arcs position will be near center
+                        const yOffset = (elem.height) ? -8 : 0;
+                            drawLabelBoxAndText(ctx, label, pos.x, pos.y + yOffset, font, textColor, bgColor, padding, borderColor, borderWidth);
+                    } else if (elem.x !== undefined && elem.y !== undefined) {
+                        // Fallback: for arc elements compute centroid
+                        if (elem.startAngle !== undefined && elem.endAngle !== undefined) {
+                            const mid = (elem.startAngle + elem.endAngle) / 2;
+                            const r = ((elem.outerRadius || 0) + (elem.innerRadius || 0)) / 2 || (elem.outerRadius || 0) * 0.7;
+                            const x = elem.x + Math.cos(mid) * r;
+                            const y = elem.y + Math.sin(mid) * r;
+                            drawLabelBoxAndText(ctx, label, x, y, font, textColor, bgColor, padding, borderColor, borderWidth);
+                        } else {
+                            drawLabelBoxAndText(ctx, label, elem.x, elem.y - 10, font, textColor, bgColor, padding, borderColor, borderWidth);
+                        }
+                    }
+                });
+            });
+
+            // Helper: dibuja un recuadro y el texto centrado en (x,y)
+            function drawLabelBoxAndText(ctx, text, x, y, font, color, bg, padding, borderColor, borderWidth) {
+                ctx.save();
+                ctx.font = font;
+                // medir texto
+                const metrics = ctx.measureText(text);
+                const textWidth = metrics.width;
+                // medir altura (fallback si no está disponible)
+                const textHeight = (metrics.actualBoundingBoxAscent !== undefined && metrics.actualBoundingBoxDescent !== undefined)
+                    ? (metrics.actualBoundingBoxAscent + metrics.actualBoundingBoxDescent)
+                    : parseInt((font || '12px').replace('px', '')) || 12;
+
+                const boxWidth = textWidth + padding * 2;
+                const boxHeight = textHeight + padding * 2;
+                const bx = x - boxWidth / 2;
+                const by = y - boxHeight / 2;
+
+                // dibujar rectángulo con esquinas ligeramente redondeadas y borde
+                const radius = Math.min(6, boxHeight / 2);
+                ctx.fillStyle = bg;
+                ctx.strokeStyle = borderColor || '#000';
+                ctx.lineWidth = borderWidth || 1;
+                roundRect(ctx, bx, by, boxWidth, boxHeight, radius, true, true);
+
+                // dibujar texto encima
+                ctx.fillStyle = color;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(text, x, y);
+                ctx.restore();
+            }
+
+            function roundRect(ctx, x, y, width, height, radius, fill, stroke) {
+                if (typeof radius === 'undefined') radius = 5;
+                if (typeof radius === 'number') {
+                    radius = { tl: radius, tr: radius, br: radius, bl: radius };
+                } else {
+                    const defaultRadius = { tl: 0, tr: 0, br: 0, bl: 0 };
+                    for (const side in defaultRadius) radius[side] = radius[side] || defaultRadius[side];
+                }
+                ctx.beginPath();
+                ctx.moveTo(x + radius.tl, y);
+                ctx.lineTo(x + width - radius.tr, y);
+                ctx.quadraticCurveTo(x + width, y, x + width, y + radius.tr);
+                ctx.lineTo(x + width, y + height - radius.br);
+                ctx.quadraticCurveTo(x + width, y + height, x + width - radius.br, y + height);
+                ctx.lineTo(x + radius.bl, y + height);
+                ctx.quadraticCurveTo(x, y + height, x, y + height - radius.bl);
+                ctx.lineTo(x, y + radius.tl);
+                ctx.quadraticCurveTo(x, y, x + radius.tl, y);
+                ctx.closePath();
+                if (fill) ctx.fill();
+                if (stroke) ctx.stroke();
+            }
+
+            ctx.restore();
+        }
+    };
+
+    // Registrar el plugin globalmente si Chart está disponible
+    if (window.Chart && typeof Chart.register === 'function') {
+        try { Chart.register(valueLabelPlugin); } catch (e) { /* ya registrado u otra versión */ }
+    }
+
     // --- Utilidades de gráficos y estadísitcas ---
     function computeStudentStats(list) {
         const stats = { Total: list.length, Inscrito: 0, Cursando: 0, Aprobado: 0, Reprobado: 0 };
@@ -42,7 +151,8 @@
                 labels: ['Inscrito', 'Cursando', 'Aprobado', 'Reprobado'],
                 datasets: [{ data, backgroundColor: ['#6c757d', '#ffc107', '#198754', '#dc3545'] }]
             },
-            options: { responsive: true, maintainAspectRatio: false }
+            plugins: [valueLabelPlugin],
+            options: { responsive: true, maintainAspectRatio: false, plugins: { valueLabelPlugin: { color: '#fff', font: '12px Arial', formatter: function (v) { return v; } } } }
         });
     }
 
@@ -68,7 +178,8 @@
                 labels,
                 datasets: [{ label: 'Promedio nota', data: averages, backgroundColor: '#0d6efd' }]
             },
-            options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, max: 10 } } }
+            plugins: [valueLabelPlugin],
+            options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, max: 10 } }, plugins: { valueLabelPlugin: { color: '#000', font: '12px Arial', formatter: function (v) { return v; } } } }
         });
     }
 
@@ -95,7 +206,8 @@
                 labels,
                 datasets: [{ data, backgroundColor: labels.map((_, i) => ['#0d6efd', '#198754', '#ffc107', '#dc3545', '#6c757d'][i % 5]) }]
             },
-            options: { responsive: true, maintainAspectRatio: false }
+            plugins: [valueLabelPlugin],
+            options: { responsive: true, maintainAspectRatio: false, plugins: { valueLabelPlugin: { color: '#fff', font: '12px Arial', formatter: function (v) { return v; } } } }
         });
     }
 
@@ -121,7 +233,8 @@
                 labels,
                 datasets: [{ label: 'Cantidad por rol', data, backgroundColor: '#0d6efd' }]
             },
-            options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true } } }
+            plugins: [valueLabelPlugin],
+            options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true } }, plugins: { valueLabelPlugin: { color: '#000', font: '12px Arial', formatter: function (v) { return v; } } } }
         });
     }
 
@@ -139,7 +252,8 @@
                 labels,
                 datasets: [{ label: 'Actividades hoy', data, backgroundColor: '#198754' }]
             },
-            options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true } } }
+            plugins: [valueLabelPlugin],
+            options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true } }, plugins: { valueLabelPlugin: { color: '#fff', font: '12px Arial', formatter: function (v) { return v; } } } }
         });
     }
 
@@ -240,6 +354,49 @@
         renderEmployeeActivityChart(employees);
     }
 
+    // --- Exportar tabla visible a CSV (compatible con Excel) ---
+    function exportVisibleTableToCSV(tableSelector, filename) {
+        const $table = $(tableSelector);
+        if (!$table.length) return;
+
+        const rows = [];
+        // Cabeceras
+        const headers = [];
+        $table.find('thead th').each(function () {
+            headers.push(csvEscape($(this).text().trim()));
+        });
+        rows.push(headers.join(','));
+
+        // Filas visibles
+        $table.find('tbody tr:visible').each(function () {
+            const cols = [];
+            $(this).find('td').each(function () {
+                cols.push(csvEscape($(this).text().trim()));
+            });
+            rows.push(cols.join(','));
+        });
+
+        const csvContent = '\uFEFF' + rows.join('\n'); // BOM para Excel
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        const url = URL.createObjectURL(blob);
+        link.setAttribute('href', url);
+        link.setAttribute('download', filename || 'export.csv');
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+    }
+
+    function csvEscape(text) {
+        if (text == null) return '';
+        // Si contiene comillas, comas o saltos de línea, encerrar entre comillas y duplicar comillas internas
+        const needsQuotes = /[",\n\r,]/.test(text);
+        let out = text.replace(/\"/g, '""');
+        if (needsQuotes) out = '"' + out + '"';
+        return out;
+    }
+
     // --- Cambio de vista: se disparan desde los botones en la página;
     // añadimos listeners para mantener los gráficos sincronizados ---
     function onShowStudentsView() {
@@ -288,6 +445,17 @@
         });
         $('#tabEmployees').on('click', function () {
             onShowEmployeesView();
+        });
+
+        // Botón de exportar tabla actual (respeta filtros porque exporta sólo filas visibles)
+        $('#btnExportTable').on('click', function () {
+            const now = new Date();
+            const datePart = now.toISOString().slice(0,10);
+            if ($('#viewStudents').is(':visible')) {
+                exportVisibleTableToCSV('#studentsTable', `alumnos_${datePart}.csv`);
+            } else {
+                exportVisibleTableToCSV('#employeesTable', `empleados_${datePart}.csv`);
+            }
         });
     });
 })();
