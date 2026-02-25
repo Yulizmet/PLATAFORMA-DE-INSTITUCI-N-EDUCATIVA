@@ -44,46 +44,55 @@ namespace SchoolManager.Pages.Estadisticas
         {
             try
             {
-                var students = (from user in _context.Users
-                                join person in _context.Persons on user.PersonId equals person.Id into personJoin
-                                from person in personJoin.DefaultIfEmpty()
-                                join userRole in _context.UserRoles on user.Id equals userRole.UserId into roleJoin
-                                from userRole in roleJoin.DefaultIfEmpty()
-                                join role in _context.Roles on userRole.RoleId equals role.Id into roleDetailJoin
-                                from role in roleDetailJoin.DefaultIfEmpty()
-                                join finalGrade in _context.GradeFinalGrades on user.Id equals finalGrade.StudentId into gradeJoin
-                                from finalGrade in gradeJoin.DefaultIfEmpty()
-                                join subject in _context.GradeSubjects on finalGrade != null ? finalGrade.SubjectId : -1 equals subject.Id into subjectJoin
-                                from subject in subjectJoin.DefaultIfEmpty()
-                                where role.Name == "Student"
-                                select new
-                                {
-                                    user.Id,
-                                    Nombre = (person.FirstName + " " + person.LastNamePaternal).Trim(),
-                                    Genero = person.Gender ?? "N/A",
-                                    Curso = subject.Name ?? "Sin asignar",
-                                    Semestre = finalGrade != null ? finalGrade.GroupId : 0,
-                                    Nota = finalGrade != null ? finalGrade.Value : 0.0,
-                                    FechaInscripcion = user.CreatedDate,
-                                    Passed = finalGrade != null ? finalGrade.Passed : false
-                                })
-                                .Distinct()
-                                .ToList();
+                var raw = (from user in _context.Users
+                           join person in _context.Persons on user.PersonId equals person.Id into personJoin
+                           from person in personJoin.DefaultIfEmpty()
+                           join userRole in _context.UserRoles on user.Id equals userRole.UserId into roleJoin
+                           from userRole in roleJoin.DefaultIfEmpty()
+                           join role in _context.Roles on userRole.RoleId equals role.Id into roleDetailJoin
+                           from role in roleDetailJoin.DefaultIfEmpty()
+                           join finalGrade in _context.GradeFinalGrades on user.Id equals finalGrade.StudentId into gradeJoin
+                           from finalGrade in gradeJoin.DefaultIfEmpty()
+                           join subject in _context.GradeSubjects on (finalGrade != null ? finalGrade.SubjectId : -1) equals subject.Id into subjectJoin
+                           from subject in subjectJoin.DefaultIfEmpty()
+                           where role != null && role.Name == "Student"
+                           select new
+                           {
+                               user.Id,
+                               FirstName        = (string?)person.FirstName,
+                               LastName         = (string?)person.LastNamePaternal,
+                               Genero           = (string?)person.Gender,
+                               Curso            = (string?)subject.Name,
+                               Semestre         = finalGrade != null ? finalGrade.GroupId : 0,
+                               Nota             = finalGrade != null ? (double)finalGrade.Value : 0.0,
+                               FechaInscripcion = user.CreatedDate,
+                               HasGrade         = finalGrade != null,
+                               Passed           = finalGrade != null && finalGrade.Passed
+                           })
+                           .Distinct()
+                           .ToList();
 
-                Students = students.Select(s => new StudentStatisticsVM
-                {
-                    Id = s.Id,
-                    Nombre = s.Nombre,
-                    Genero = s.Genero,
-                    Curso = s.Curso,
-                    Semestre = s.Semestre,
-                    Nota = s.Nota,
-                    FechaInscripcion = s.FechaInscripcion,
-                    Estado = s.Passed ? "Aprobado" : "Reprobado"
-                })
-                .GroupBy(x => x.Id)
-                .Select(g => g.First())
-                .ToList();
+                Students = raw
+                    .GroupBy(x => x.Id)
+                    .Select(g =>
+                    {
+                        var s = g.First();
+                        var nombre = $"{s.FirstName ?? string.Empty} {s.LastName ?? string.Empty}".Trim();
+                        return new StudentStatisticsVM
+                        {
+                            Id               = s.Id,
+                            Nombre           = string.IsNullOrWhiteSpace(nombre) ? "Sin nombre" : nombre,
+                            Genero           = string.IsNullOrWhiteSpace(s.Genero) ? "N/A" : s.Genero,
+                            Curso            = string.IsNullOrWhiteSpace(s.Curso) ? "Sin asignar" : s.Curso,
+                            Semestre         = s.Semestre,
+                            Nota             = s.Nota,
+                            FechaInscripcion = s.FechaInscripcion,
+                            Estado           = !s.HasGrade ? "Inscrito"
+                                             : s.Passed    ? "Aprobado"
+                                             :               "Reprobado"
+                        };
+                    })
+                    .ToList();
             }
             catch (Exception ex)
             {
@@ -96,39 +105,45 @@ namespace SchoolManager.Pages.Estadisticas
         {
             try
             {
-                var employees = (from user in _context.Users
-                                 join person in _context.Persons on user.PersonId equals person.Id into personJoin
-                                 from person in personJoin.DefaultIfEmpty()
-                                 join userRole in _context.UserRoles on user.Id equals userRole.UserId into roleJoin
-                                 from userRole in roleJoin.DefaultIfEmpty()
-                                 join role in _context.Roles on userRole.RoleId equals role.Id into roleDetailJoin
-                                 from role in roleDetailJoin.DefaultIfEmpty()
-                                 where role.Name == "Teacher"
-                                 select new
-                                 {
-                                     user.Id,
-                                     Nombre = (person.FirstName + " " + person.LastNamePaternal).Trim(),
-                                     Genero = person.Gender ?? "N/A",
-                                     Departamento = role.Name,
-                                     Rol = role.Name,
-                                     FechaContratacion = userRole.CreatedDate
-                                 })
-                                 .Distinct()
-                                 .ToList();
+                var raw = (from user in _context.Users
+                           join person in _context.Persons on user.PersonId equals person.Id into personJoin
+                           from person in personJoin.DefaultIfEmpty()
+                           join userRole in _context.UserRoles on user.Id equals userRole.UserId into roleJoin
+                           from userRole in roleJoin.DefaultIfEmpty()
+                           join role in _context.Roles on userRole.RoleId equals role.Id into roleDetailJoin
+                           from role in roleDetailJoin.DefaultIfEmpty()
+                           where role != null && role.Name == "Teacher"
+                           select new
+                           {
+                               user.Id,
+                               FirstName         = (string?)person.FirstName,
+                               LastName          = (string?)person.LastNamePaternal,
+                               Genero            = (string?)person.Gender,
+                               Departamento      = (string?)role.Name,
+                               Rol               = (string?)role.Name,
+                               FechaContratacion = (DateTime?)userRole.CreatedDate
+                           })
+                           .Distinct()
+                           .ToList();
 
-                Employees = employees.Select(e => new EmployeeStatisticsVM
-                {
-                    Id = e.Id,
-                    Nombre = e.Nombre,
-                    Genero = e.Genero,
-                    Departamento = e.Departamento,
-                    Rol = e.Rol,
-                    ActividadesHoy = 0,
-                    FechaContratacion = e.FechaContratacion
-                })
-                .GroupBy(x => x.Id)
-                .Select(g => g.First())
-                .ToList();
+                Employees = raw
+                    .GroupBy(x => x.Id)
+                    .Select(g =>
+                    {
+                        var e = g.First();
+                        var nombre = $"{e.FirstName ?? string.Empty} {e.LastName ?? string.Empty}".Trim();
+                        return new EmployeeStatisticsVM
+                        {
+                            Id                = e.Id,
+                            Nombre            = string.IsNullOrWhiteSpace(nombre) ? "Sin nombre" : nombre,
+                            Genero            = string.IsNullOrWhiteSpace(e.Genero) ? "N/A" : e.Genero,
+                            Departamento      = string.IsNullOrWhiteSpace(e.Departamento) ? "Sin asignar" : e.Departamento,
+                            Rol               = string.IsNullOrWhiteSpace(e.Rol) ? "Sin rol" : e.Rol,
+                            ActividadesHoy    = 0,
+                            FechaContratacion = e.FechaContratacion ?? DateTime.Now
+                        };
+                    })
+                    .ToList();
             }
             catch (Exception ex)
             {

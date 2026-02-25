@@ -292,16 +292,17 @@
     <script>
         // Lógica mínima para cambiar pestañas y mostrar filtros correspondientes.
         (function () {
-            const tabStudents = document.getElementById('tabStudents');
-            const tabEmployees = document.getElementById('tabEmployees');
-            const viewStudents = document.getElementById('viewStudents');
-            const viewEmployees = document.getElementById('viewEmployees');
-            const filtersStudents = document.getElementById('filtersStudents');
+            const tabStudents    = document.getElementById('tabStudents');
+            const tabEmployees   = document.getElementById('tabEmployees');
+            const viewStudents   = document.getElementById('viewStudents');
+            const viewEmployees  = document.getElementById('viewEmployees');
+            const filtersStudents  = document.getElementById('filtersStudents');
             const filtersEmployees = document.getElementById('filtersEmployees');
-            const filtersArea = document.getElementById('filtersArea');
-            const toggleFilters = document.getElementById('toggleFilters');
-            const pageTitle = document.getElementById('pageTitle');
-            const pageSubtitle = document.getElementById('pageSubtitle');
+            const filtersArea    = document.getElementById('filtersArea');
+            const toggleFilters  = document.getElementById('toggleFilters');
+            const pageTitle      = document.getElementById('pageTitle');
+            const pageSubtitle   = document.getElementById('pageSubtitle');
+            const studentStats   = document.getElementById('studentStats');
 
             function showStudents() {
                 tabStudents.classList.add('btn-primary');
@@ -312,7 +313,8 @@
                 viewEmployees.classList.add('d-none');
                 filtersStudents.classList.remove('d-none');
                 filtersEmployees.classList.add('d-none');
-                pageTitle.textContent = 'Estadísticas de alumnos';
+                studentStats.classList.remove('d-none');
+                pageTitle.textContent    = 'Estadísticas de alumnos';
                 pageSubtitle.textContent = 'Control y seguimiento: inscritos, cursando, aprobados y reprobados.';
             }
 
@@ -325,7 +327,8 @@
                 viewStudents.classList.add('d-none');
                 filtersEmployees.classList.remove('d-none');
                 filtersStudents.classList.add('d-none');
-                pageTitle.textContent = 'Estadísticas de empleados';
+                studentStats.classList.add('d-none');
+                pageTitle.textContent    = 'Estadísticas de empleados';
                 pageSubtitle.textContent = 'Listado y filtros por departamento y rol.';
             }
 
