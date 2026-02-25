@@ -36,7 +36,6 @@
     <Compile Include="Migrations\20260223040200_InitialCreate.Designer.cs" />
     <Compile Include="Migrations\20260223081233_MinRequiresGradesFields.cs" />
     <Compile Include="Migrations\20260223081233_MinRequiresGradesFields.Designer.cs" />
-    <Compile Include="Migrations\AppDbContextModelSnapshot.cs" />
   </ItemGroup>
 
   <ItemGroup>
