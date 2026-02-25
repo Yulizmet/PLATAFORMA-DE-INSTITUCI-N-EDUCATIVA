@@ -1,13 +1,8 @@
 ﻿using Microsoft.AspNetCore.Authentication;
-
 using Microsoft.AspNetCore.Authentication.Cookies;
-
 using Microsoft.AspNetCore.Mvc;
-
 using SchoolManager.Areas.UserMng.ViewModels;
-
 using SchoolManager.Data;
-
 using System.Security.Claims;
 
 namespace SchoolManager.Areas.UserMng.Controllers
