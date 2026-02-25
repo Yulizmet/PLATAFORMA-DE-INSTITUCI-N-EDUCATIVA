@@ -16,6 +16,8 @@ namespace SchoolManager.Areas.Grades.ViewModels.Subjects
         public int GradeLevelId { get; set; }
 
         // Propiedades para la vista
+        [Display(Name = "Calificación mínima (opcional)")]
+        public decimal? MinPassingGrade { get; set; }
         public string? GradeLevelName { get; set; }
         public int UnitsCount { get; set; }
         public int OpenUnitsCount { get; set; }
