@@ -35,6 +35,27 @@ namespace SchoolManager.Areas.SocialService.Controllers
         // Dashboard del estudiante
         public IActionResult Dashboard()
         {
+            // TODO: Obtener el ID del estudiante actual desde la sesión/autenticación
+            int currentStudentId = 1; // Valor temporal
+
+            // Calcular horas totales aprobadas
+            var approvedLogs = _context.SocialServiceLogs
+                .Where(log => log.StudentId == currentStudentId && log.IsApproved)
+                .ToList();
+
+            int totalHoursPracticas = approvedLogs.Sum(log => log.ApprovedHoursPracticas);
+            int totalHoursServicioSocial = approvedLogs.Sum(log => log.ApprovedHoursServicioSocial);
+
+            // Horas requeridas
+            int requiredHoursPracticas = 240;
+            int requiredHoursServicioSocial = 480;
+
+            // Pasar datos a la vista
+            ViewBag.TotalHoursPracticas = totalHoursPracticas;
+            ViewBag.RemainingHoursPracticas = Math.Max(0, requiredHoursPracticas - totalHoursPracticas);
+            ViewBag.TotalHoursServicioSocial = totalHoursServicioSocial;
+            ViewBag.RemainingHoursServicioSocial = Math.Max(0, requiredHoursServicioSocial - totalHoursServicioSocial);
+
             return View();
         }
 
@@ -155,7 +176,7 @@ namespace SchoolManager.Areas.SocialService.Controllers
             int totalHoursServicioSocial = approvedLogs.Sum(log => log.ApprovedHoursServicioSocial);
 
             // Horas requeridas (podrían venir de configuración)
-            int requiredHoursPracticas = 480;
+            int requiredHoursPracticas = 240;
             int requiredHoursServicioSocial = 480;
 
             // Calcular porcentajes
