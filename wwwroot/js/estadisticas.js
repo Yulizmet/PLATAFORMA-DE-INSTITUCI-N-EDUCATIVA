@@ -5,7 +5,7 @@
     const students = (typeof raw.students === 'string') ? JSON.parse(raw.students) : (raw.students || []);
     const employees = (typeof raw.employees === 'string') ? JSON.parse(raw.employees) : (raw.employees || []);
 
-    let pieChart, barChart, employeeActivityChart;
+    let pieChart, barChart, employeeActivityChart, histogramChart, stackedChart;
 
     // Plugin para mostrar pequeñas etiquetas con los valores sobre/ dentro de los elementos
     const valueLabelPlugin = {
@@ -28,7 +28,8 @@
                 const meta = chart.getDatasetMeta(dsIndex);
                 meta.data.forEach((elem, index) => {
                     let value = dataset.data && dataset.data[index] !== undefined ? dataset.data[index] : null;
-                    if (value === null) return;
+                    // No mostrar etiquetas para valores nulos o cero (evita visualización de "0")
+                    if (value === null || value === 0) return;
                     const label = (opts.formatter && typeof opts.formatter === 'function') ? opts.formatter(value, dataset, index) : String(value);
 
                     // Element provides tooltipPosition for many element types (bars, arcs)
@@ -137,22 +138,118 @@
         const pieEl = document.getElementById('pieChart');
         if (!pieEl) return;
         const st = computeStudentStats(list);
-        const data = [
-            st.Inscrito || 0,
-            st.Cursando || 0,
-            st.Aprobado || 0,
-            st.Reprobado || 0
-        ];
+        const rawLabels = ['Inscrito', 'Cursando', 'Aprobado', 'Reprobado'];
+        const rawData = [st.Inscrito || 0, st.Cursando || 0, st.Aprobado || 0, st.Reprobado || 0];
+        // Filtrar entradas con valor 0 para que no se muestren
+        const labels = [];
+        const data = [];
+        const colors = [];
+        const palette = ['#6c757d', '#ffc107', '#198754', '#dc3545'];
+        rawData.forEach((v, i) => {
+            if (v && v > 0) {
+                labels.push(rawLabels[i]);
+                data.push(v);
+                colors.push(palette[i]);
+            }
+        });
         const ctx = pieEl.getContext('2d');
         if (pieChart) pieChart.destroy();
+        if (!data.length) {
+            // Sin datos: mostrar una porción indicadora o limpiar gráfica
+            pieChart = new Chart(ctx, {
+                type: 'pie',
+                data: { labels: ['Sin datos'], datasets: [{ data: [1], backgroundColor: ['#e9ecef'] }] },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+            });
+            return;
+        }
+
         pieChart = new Chart(ctx, {
             type: 'pie',
-            data: {
-                labels: ['Inscrito', 'Cursando', 'Aprobado', 'Reprobado'],
-                datasets: [{ data, backgroundColor: ['#6c757d', '#ffc107', '#198754', '#dc3545'] }]
-            },
+            data: { labels, datasets: [{ data, backgroundColor: colors }] },
             plugins: [valueLabelPlugin],
             options: { responsive: true, maintainAspectRatio: false, plugins: { valueLabelPlugin: { color: '#fff', font: '12px Arial', formatter: function (v) { return v; } } } }
+        });
+    }
+
+    // Histograma de distribución de notas (usa solo datos existentes de la tabla)
+    function renderGradeHistogram(list) {
+        const el = document.getElementById('gradeHistogramChart');
+        if (!el) return;
+        // buckets: 0-2,2-4,4-6,6-8,8-10
+        const buckets = [0, 0, 0, 0, 0];
+        list.forEach(s => {
+            const n = Number(s.Nota);
+            if (isNaN(n)) return;
+            if (n < 2) buckets[0]++;
+            else if (n < 4) buckets[1]++;
+            else if (n < 6) buckets[2]++;
+            else if (n < 8) buckets[3]++;
+            else buckets[4]++;
+        });
+        const labels = ['0-2', '2-4', '4-6', '6-8', '8-10'];
+        // Filtrar buckets con 0 para que no se muestren
+        const filteredLabels = [];
+        const filteredBuckets = [];
+        buckets.forEach((b, i) => { if (b && b > 0) { filteredLabels.push(labels[i]); filteredBuckets.push(b); } });
+        const ctx = el.getContext('2d');
+        if (histogramChart) histogramChart.destroy();
+        if (!filteredBuckets.length) {
+            histogramChart = new Chart(ctx, { type: 'bar', data: { labels: ['Sin datos'], datasets: [{ label: 'Alumnos', data: [1], backgroundColor: '#e9ecef' }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } } });
+            return;
+        }
+
+        histogramChart = new Chart(ctx, {
+            type: 'bar',
+            data: { labels: filteredLabels, datasets: [{ label: 'Alumnos', data: filteredBuckets, backgroundColor: '#6f42c1' }] },
+            plugins: [valueLabelPlugin],
+            options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, precision: 0 } }, plugins: { valueLabelPlugin: { color: '#fff', font: '12px Arial' } } }
+        });
+    }
+
+    // Barra apilada por curso con estados (Inscrito/Cursando/Aprobado/Reprobado)
+    function renderCourseStatusStacked(list) {
+        const el = document.getElementById('courseStatusStacked');
+        if (!el) return;
+        const byCourse = {};
+        list.forEach(s => {
+            const course = s.Curso || 'Sin curso';
+            if (!byCourse[course]) byCourse[course] = { Inscrito: 0, Cursando: 0, Aprobado: 0, Reprobado: 0 };
+            const st = s.Estado || 'Inscrito';
+            if (byCourse[course][st] === undefined) byCourse[course][st] = 0;
+            byCourse[course][st]++;
+        });
+        // Eliminar cursos sin alumnos (suma total 0)
+        const allCourses = Object.keys(byCourse);
+        const labels = allCourses.filter(c => {
+            const t = (byCourse[c].Inscrito || 0) + (byCourse[c].Cursando || 0) + (byCourse[c].Aprobado || 0) + (byCourse[c].Reprobado || 0);
+            return t > 0;
+        });
+        const inscritos = labels.map(l => byCourse[l].Inscrito || 0);
+        const cursando = labels.map(l => byCourse[l].Cursando || 0);
+        const aprobados = labels.map(l => byCourse[l].Aprobado || 0);
+        const reprobados = labels.map(l => byCourse[l].Reprobado || 0);
+
+        const ctx = el.getContext('2d');
+        if (stackedChart) stackedChart.destroy();
+        if (!labels.length) {
+            stackedChart = new Chart(ctx, { type: 'bar', data: { labels: ['Sin datos'], datasets: [{ label: 'Sin datos', data: [1], backgroundColor: '#e9ecef' }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } } });
+            return;
+        }
+
+        stackedChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels,
+                datasets: [
+                    { label: 'Inscrito', data: inscritos, backgroundColor: '#6c757d' },
+                    { label: 'Cursando', data: cursando, backgroundColor: '#ffc107' },
+                    { label: 'Aprobado', data: aprobados, backgroundColor: '#198754' },
+                    { label: 'Reprobado', data: reprobados, backgroundColor: '#dc3545' }
+                ]
+            },
+            plugins: [valueLabelPlugin],
+            options: { responsive: true, maintainAspectRatio: false, scales: { x: { stacked: true }, y: { stacked: true, beginAtZero: true } }, plugins: { legend: { position: 'top' }, valueLabelPlugin: { color: '#000', font: '12px Arial' } } }
         });
     }
 
@@ -168,19 +265,17 @@
                 byCourse[s.Curso].count += 1;
             }
         });
-        const labels = Object.keys(byCourse);
-        const averages = labels.map(l => byCourse[l].count ? +(byCourse[l].sum / byCourse[l].count).toFixed(2) : 0);
+        // Solo mostrar cursos con al menos un alumno con nota > 0
+        const labels = Object.keys(byCourse).filter(l => byCourse[l].count > 0);
+        const averages = labels.map(l => +(byCourse[l].sum / byCourse[l].count).toFixed(2));
         const ctx = barEl.getContext('2d');
         if (barChart) barChart.destroy();
-        barChart = new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels,
-                datasets: [{ label: 'Promedio nota', data: averages, backgroundColor: '#0d6efd' }]
-            },
-            plugins: [valueLabelPlugin],
-            options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, max: 10 } }, plugins: { valueLabelPlugin: { color: '#000', font: '12px Arial', formatter: function (v) { return v; } } } }
-        });
+        if (!labels.length) {
+            barChart = new Chart(ctx, { type: 'bar', data: { labels: ['Sin datos'], datasets: [{ label: 'Sin datos', data: [1], backgroundColor: '#e9ecef' }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } } });
+            return;
+        }
+
+        barChart = new Chart(ctx, { type: 'bar', data: { labels, datasets: [{ label: 'Promedio nota', data: averages, backgroundColor: '#0d6efd' }] }, plugins: [valueLabelPlugin], options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, max: 10 } }, plugins: { valueLabelPlugin: { color: '#000', font: '12px Arial', formatter: function (v) { return v; } } } } });
     }
 
     // Gráficos para empleados
@@ -196,19 +291,23 @@
         const pieEl = document.getElementById('pieChart');
         if (!pieEl) return;
         const byDept = computeEmployeesByDepartment(list);
-        const labels = Object.keys(byDept);
-        const data = labels.map(l => byDept[l]);
+        // Filtrar departamentos con 0
+        const rawLabels = Object.keys(byDept);
+        const labels = [];
+        const data = [];
+        const colors = [];
+        rawLabels.forEach((l, i) => {
+            const v = byDept[l] || 0;
+            if (v && v > 0) { labels.push(l); data.push(v); colors.push(['#0d6efd', '#198754', '#ffc107', '#dc3545', '#6c757d'][i % 5]); }
+        });
         const ctx = pieEl.getContext('2d');
         if (pieChart) pieChart.destroy();
-        pieChart = new Chart(ctx, {
-            type: 'pie',
-            data: {
-                labels,
-                datasets: [{ data, backgroundColor: labels.map((_, i) => ['#0d6efd', '#198754', '#ffc107', '#dc3545', '#6c757d'][i % 5]) }]
-            },
-            plugins: [valueLabelPlugin],
-            options: { responsive: true, maintainAspectRatio: false, plugins: { valueLabelPlugin: { color: '#fff', font: '12px Arial', formatter: function (v) { return v; } } } }
-        });
+        if (!data.length) {
+            pieChart = new Chart(ctx, { type: 'pie', data: { labels: ['Sin datos'], datasets: [{ data: [1], backgroundColor: ['#e9ecef'] }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } } });
+            return;
+        }
+
+        pieChart = new Chart(ctx, { type: 'pie', data: { labels, datasets: [{ data, backgroundColor: colors }] }, plugins: [valueLabelPlugin], options: { responsive: true, maintainAspectRatio: false, plugins: { valueLabelPlugin: { color: '#fff', font: '12px Arial', formatter: function (v) { return v; } } } } });
     }
 
     function computeEmployeesByRole(list) {
@@ -223,38 +322,37 @@
         const barEl = document.getElementById('barChart');
         if (!barEl) return;
         const byRole = computeEmployeesByRole(list);
-        const labels = Object.keys(byRole);
-        const data = labels.map(l => byRole[l]);
+        // Filtrar roles con 0
+        const rawLabels = Object.keys(byRole);
+        const labels = [];
+        const data = [];
+        rawLabels.forEach(l => { const v = byRole[l] || 0; if (v && v > 0) { labels.push(l); data.push(v); } });
         const ctx = barEl.getContext('2d');
         if (barChart) barChart.destroy();
-        barChart = new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels,
-                datasets: [{ label: 'Cantidad por rol', data, backgroundColor: '#0d6efd' }]
-            },
-            plugins: [valueLabelPlugin],
-            options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true } }, plugins: { valueLabelPlugin: { color: '#000', font: '12px Arial', formatter: function (v) { return v; } } } }
-        });
+        if (!labels.length) {
+            barChart = new Chart(ctx, { type: 'bar', data: { labels: ['Sin datos'], datasets: [{ label: 'Sin datos', data: [1], backgroundColor: '#e9ecef' }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } } });
+            return;
+        }
+
+        barChart = new Chart(ctx, { type: 'bar', data: { labels, datasets: [{ label: 'Cantidad por rol', data, backgroundColor: '#0d6efd' }] }, plugins: [valueLabelPlugin], options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true } }, plugins: { valueLabelPlugin: { color: '#000', font: '12px Arial', formatter: function (v) { return v; } } } } });
     }
 
     // Gráfica exclusiva: actividades por empleado (barra)
     function renderEmployeeActivityChart(list) {
         const el = document.getElementById('employeeActivityChart');
         if (!el) return;
-        const labels = list.map(e => e.Nombre);
-        const data = list.map(e => e.ActividadesHoy || 0);
+        // Filtrar empleados sin actividades para que no se muestren valores 0
+        const labels = [];
+        const data = [];
+        list.forEach(e => { const v = e.ActividadesHoy || 0; if (v && v > 0) { labels.push(e.Nombre); data.push(v); } });
         const ctx = el.getContext('2d');
         if (employeeActivityChart) employeeActivityChart.destroy();
-        employeeActivityChart = new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels,
-                datasets: [{ label: 'Actividades hoy', data, backgroundColor: '#198754' }]
-            },
-            plugins: [valueLabelPlugin],
-            options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true } }, plugins: { valueLabelPlugin: { color: '#fff', font: '12px Arial', formatter: function (v) { return v; } } } }
-        });
+        if (!labels.length) {
+            employeeActivityChart = new Chart(ctx, { type: 'bar', data: { labels: ['Sin datos'], datasets: [{ label: 'Sin datos', data: [1], backgroundColor: '#e9ecef' }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } } });
+            return;
+        }
+
+        employeeActivityChart = new Chart(ctx, { type: 'bar', data: { labels, datasets: [{ label: 'Actividades hoy', data, backgroundColor: '#198754' }] }, plugins: [valueLabelPlugin], options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true } }, plugins: { valueLabelPlugin: { color: '#fff', font: '12px Arial', formatter: function (v) { return v; } } } } });
     }
 
     // --- Filtrado y actualización de tablas ---
@@ -296,6 +394,9 @@
         updateStudentCards(filtered);
         renderStudentPie(filtered);
         renderStudentBar(filtered);
+        // nuevas gráficas para alumnos
+        renderGradeHistogram(filtered);
+        renderCourseStatusStacked(filtered);
     }
 
     function resetStudentFilters() {
@@ -307,6 +408,9 @@
         updateStudentCards(students);
         renderStudentPie(students);
         renderStudentBar(students);
+        // nuevas gráficas para alumnos
+        renderGradeHistogram(students);
+        renderCourseStatusStacked(students);
     }
 
     function applyEmployeeFilters() {
@@ -409,9 +513,15 @@
         updateStudentCards(students);
         renderStudentPie(students);
         renderStudentBar(students);
+        // mostrar también las nuevas gráficas de alumnos
+        renderGradeHistogram(students);
+        renderCourseStatusStacked(students);
     }
 
     function onShowEmployeesView() {
+        // destruir gráficas específicas de alumnos si existen
+        if (histogramChart) { histogramChart.destroy(); histogramChart = null; }
+        if (stackedChart) { stackedChart.destroy(); stackedChart = null; }
         // renderizar gráficas de empleados
         renderEmployeePie(employees);
         renderEmployeeBar(employees);
@@ -424,6 +534,9 @@
         updateStudentCards(students);
         renderStudentPie(students);
         renderStudentBar(students);
+        // inicializar nuevas gráficas de alumnos
+        renderGradeHistogram(students);
+        renderCourseStatusStacked(students);
 
         // Listeners para filtros estudiantes
         $('#filterName').on('input', applyStudentFilters);

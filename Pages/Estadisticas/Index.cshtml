@@ -35,7 +35,6 @@
             <h2 id="pageTitle">Estadísticas de alumnos</h2>
             <p class="text-muted" id="pageSubtitle">Control y seguimiento: inscritos, cursando, aprobados y reprobados.</p>
         </div>
-        <div>
             <!-- Pestañas para cambiar entre Alumnos y Empleados -->
             <div class="btn-group" role="group" aria-label="Vistas">
                 <button id="tabStudents" class="btn btn-primary">Alumnos</button>
@@ -45,7 +44,8 @@
             <button id="btnExportTable" class="btn btn-success ms-2" title="Exportar tabla visible a Excel/CSV">Exportar a Excel</button>
         </div>
     </div>
-</div>
+
+<!-- (charts moved below) -->
 
 <!-- Submenu de filtros (colapsable) -->
 <div class="row mb-3">
@@ -274,6 +274,26 @@
             <h5>Promedio de nota por curso</h5>
             <div class="chart-container">
                 <canvas id="barChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Nuevas gráficas para alumnos: histograma de notas y barra apilada por curso -->
+<div class="row mt-3">
+    <div class="col-md-6">
+        <div class="card p-3">
+            <h5>Histograma de distribución de notas</h5>
+            <div class="chart-container">
+                <canvas id="gradeHistogramChart"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card p-3">
+            <h5>Composición por estado por curso</h5>
+            <div class="chart-container">
+                <canvas id="courseStatusStacked"></canvas>
             </div>
         </div>
     </div>
