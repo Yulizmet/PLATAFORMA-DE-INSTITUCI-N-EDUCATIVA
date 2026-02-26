@@ -45,20 +45,20 @@ namespace SchoolManager.Pages.Estadisticas
             try
             {
                 var raw = (from user in _context.Users
-                           join person in _context.Persons on user.PersonId equals person.Id into personJoin
+                           join person in _context.Persons on user.PersonId equals person.PersonId into personJoin
                            from person in personJoin.DefaultIfEmpty()
-                           join userRole in _context.UserRoles on user.Id equals userRole.UserId into roleJoin
+                           join userRole in _context.UserRoles on user.UserId equals userRole.UserId into roleJoin
                            from userRole in roleJoin.DefaultIfEmpty()
-                           join role in _context.Roles on userRole.RoleId equals role.Id into roleDetailJoin
+                           join role in _context.Roles on userRole.RoleId equals role.RoleId into roleDetailJoin
                            from role in roleDetailJoin.DefaultIfEmpty()
-                           join finalGrade in _context.GradeFinalGrades on user.Id equals finalGrade.StudentId into gradeJoin
+                           join finalGrade in _context.grades_FinalGrades on user.UserId equals finalGrade.StudentId into gradeJoin
                            from finalGrade in gradeJoin.DefaultIfEmpty()
-                           join subject in _context.GradeSubjects on (finalGrade != null ? finalGrade.SubjectId : -1) equals subject.Id into subjectJoin
+                           join subject in _context.grades_Subjects on (finalGrade != null ? finalGrade.SubjectId : -1) equals subject.SubjectId into subjectJoin
                            from subject in subjectJoin.DefaultIfEmpty()
                            where role != null && role.Name == "Student"
                            select new
                            {
-                               user.Id,
+                               user.UserId,
                                FirstName        = (string?)person.FirstName,
                                LastName         = (string?)person.LastNamePaternal,
                                Genero           = (string?)person.Gender,
@@ -73,14 +73,14 @@ namespace SchoolManager.Pages.Estadisticas
                            .ToList();
 
                 Students = raw
-                    .GroupBy(x => x.Id)
+                    .GroupBy(x => x.UserId)
                     .Select(g =>
                     {
                         var s = g.First();
                         var nombre = $"{s.FirstName ?? string.Empty} {s.LastName ?? string.Empty}".Trim();
                         return new StudentStatisticsVM
                         {
-                            Id               = s.Id,
+                            Id               = s.UserId,
                             Nombre           = string.IsNullOrWhiteSpace(nombre) ? "Sin nombre" : nombre,
                             Genero           = string.IsNullOrWhiteSpace(s.Genero) ? "N/A" : s.Genero,
                             Curso            = string.IsNullOrWhiteSpace(s.Curso) ? "Sin asignar" : s.Curso,
@@ -106,16 +106,16 @@ namespace SchoolManager.Pages.Estadisticas
             try
             {
                 var raw = (from user in _context.Users
-                           join person in _context.Persons on user.PersonId equals person.Id into personJoin
+                           join person in _context.Persons on user.PersonId equals person.PersonId into personJoin
                            from person in personJoin.DefaultIfEmpty()
-                           join userRole in _context.UserRoles on user.Id equals userRole.UserId into roleJoin
+                           join userRole in _context.UserRoles on user.UserId equals userRole.UserId into roleJoin
                            from userRole in roleJoin.DefaultIfEmpty()
-                           join role in _context.Roles on userRole.RoleId equals role.Id into roleDetailJoin
+                           join role in _context.Roles on userRole.RoleId equals role.RoleId into roleDetailJoin
                            from role in roleDetailJoin.DefaultIfEmpty()
                            where role != null && role.Name == "Teacher"
                            select new
                            {
-                               user.Id,
+                               user.UserId,
                                FirstName         = (string?)person.FirstName,
                                LastName          = (string?)person.LastNamePaternal,
                                Genero            = (string?)person.Gender,
@@ -127,14 +127,14 @@ namespace SchoolManager.Pages.Estadisticas
                            .ToList();
 
                 Employees = raw
-                    .GroupBy(x => x.Id)
+                    .GroupBy(x => x.UserId)
                     .Select(g =>
                     {
                         var e = g.First();
                         var nombre = $"{e.FirstName ?? string.Empty} {e.LastName ?? string.Empty}".Trim();
                         return new EmployeeStatisticsVM
                         {
-                            Id                = e.Id,
+                            Id                = e.UserId,
                             Nombre            = string.IsNullOrWhiteSpace(nombre) ? "Sin nombre" : nombre,
                             Genero            = string.IsNullOrWhiteSpace(e.Genero) ? "N/A" : e.Genero,
                             Departamento      = string.IsNullOrWhiteSpace(e.Departamento) ? "Sin asignar" : e.Departamento,
