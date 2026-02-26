@@ -1,0 +1,142 @@
+:root{
+    --school-primary: #620900; /* 620900 */
+    --school-dark:    #090909; /* 090909 */
+    --school-white:   #FFFFFF; /* FFFFFF */
+    --school-accent:  #8C1B1B; /* 8C1B1B */
+    --school-warm:    #B1A596; /* B1A596 */
+    --school-light:   #D5D0CB; /* D5D0CB */
+}
+
+/* Fondo general y tipografía */
+body {
+    background: linear-gradient(180deg, var(--school-light) 0%, #fff 60%);
+    color: var(--school-dark);
+    font-family: "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+/* Encabezados de la página */
+#pageTitle {
+    color: var(--school-primary);
+    font-weight: 700;
+    letter-spacing: 0.2px;
+}
+#pageSubtitle {
+    color: rgba(9,9,9,0.72);
+    margin-top: 4px;
+}
+
+/* Botones: prioridad visual y contrastes */
+.btn-primary {
+    background-color: var(--school-primary) !important;
+    border-color: var(--school-accent) !important;
+    color: var(--school-white) !important;
+    box-shadow: none;
+}
+.btn-outline-primary {
+    color: var(--school-primary) !important;
+    border-color: var(--school-primary) !important;
+    background: transparent !important;
+}
+.btn-secondary, .btn-outline-secondary {
+    background: linear-gradient(180deg, rgba(177,165,150,0.08), transparent) !important;
+    border-color: rgba(177,165,150,0.35) !important;
+    color: var(--school-dark) !important;
+}
+
+/* Tarjetas */
+.card {
+    background: linear-gradient(180deg, var(--school-white), rgba(213,208,203,0.6));
+    border: 1px solid rgba(177,165,150,0.45);
+    border-radius: 10px;
+    color: var(--school-dark);
+}
+
+/* Estadísticas rápidas */
+.display-6 {
+    color: var(--school-dark);
+    font-weight: 600;
+}
+
+/* Submenu de filtros */
+.filter-submenu {
+    border: 1px solid rgba(177,165,150,0.45);
+    padding: 12px;
+    border-radius: 8px;
+    background: linear-gradient(180deg, rgba(213,208,203,0.95), rgba(255,255,255,0.6));
+}
+
+/* Encabezados de tablas — asegurar contraste y visibilidad */
+/* Se aplica directamente a th/td para sobreescribir posibles clases de Bootstrap */
+.table thead th,
+.table thead td,
+.table thead.table-light th,
+.table thead.table-light td {
+    background-color: var(--school-primary) !important;
+    color: var(--school-white) !important;
+    border-bottom: 2px solid rgba(177,165,150,0.30) !important;
+}
+
+/* Si el thead tiene la clase table-light, quitar su fondo por defecto (evita mezcla de estilos) */
+.table thead.table-light {
+    background-color: transparent !important;
+}
+
+/* Filas y rayado */
+.table tbody tr {
+    background: transparent;
+}
+.table-striped tbody tr:nth-of-type(odd) {
+    background-color: rgba(177,165,150,0.06);
+}
+.table th, .table td {
+    vertical-align: middle;
+}
+
+/* Badges — permitir colores contextuales de Bootstrap */
+/* Estilo común para todas las badges, sin forzar fondo */
+.badge {
+    color: var(--school-white);
+    font-weight: 600;
+    border-radius: 6px;
+    padding: .35em .6em;
+    border: 1px solid rgba(0,0,0,0.04);
+}
+
+/* Si la badge NO tiene una clase 'bg-*', aplicar color de acento escolar */
+.badge:not([class*="bg-"]) {
+    background-color: var(--school-accent);
+    color: var(--school-white);
+}
+
+/* Ajustes visuales de títulos internos */
+h5, .h6 {
+    color: var(--school-primary);
+    font-weight: 600;
+}
+
+/* Contenedor de gráficas: mantener altura pero no tocar colores del canvas */
+.chart-container {
+    height: 300px;
+    position: relative;
+    width: 100%;
+}
+.chart-container canvas {
+    width: 100% !important;
+    height: 100% !important;
+    display: block;
+    background: transparent;
+}
+
+/* Pequeños detalles y accesibilidad */
+a, .link {
+    color: var(--school-primary);
+}
+.card p, .card .text-muted {
+    color: rgba(9,9,9,0.7);
+}
+
+/* Responsive tweaks */
+@media (max-width: 576px) {
+    .display-6 { font-size: 1.4rem; }
+    .card { padding: 10px; }
+}
