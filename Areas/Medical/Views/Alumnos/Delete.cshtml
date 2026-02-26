@@ -1,0 +1,59 @@
+﻿@model PIBitacoras.Models.Alumno
+
+@{
+    ViewData["Title"] = "Eliminar alumno";
+}
+
+<div class="container mt-4">
+
+    <div class="card shadow border-0">
+
+        <!-- HEADER -->
+        <div class="card-header bg-danger text-white">
+            <h4 class="mb-0">ELIMINAR REGISTRO MÉDICO</h4>
+        </div>
+
+        <!-- BODY -->
+        <div class="card-body">
+
+            <h5 class="mb-4">¿Seguro que deseas eliminar este registro?</h5>
+
+            <div class="row mb-3">
+
+                <div class="col-md-4">
+                    <strong>Peso:</strong><br />
+                    @Model.Peso
+                </div>
+
+                <div class="col-md-4">
+                    <strong>Alergias:</strong><br />
+                    @(string.IsNullOrEmpty(Model.Alergias) ? "Ninguna" : Model.Alergias)
+                </div>
+
+                <div class="col-md-4">
+                    <strong>Condiciones:</strong><br />
+                    @(string.IsNullOrEmpty(Model.CondicionesCronicas) ? "Ninguna" : Model.CondicionesCronicas)
+                </div>
+
+            </div>
+
+            <form asp-action="Delete" method="post">
+                <input type="hidden" asp-for="Id" />
+
+                <div class="d-flex justify-content-between mt-4">
+
+                    <a asp-action="Index" class="btn btn-secondary px-4">
+                        Cancelar
+                    </a>
+
+                    <button type="submit" class="btn btn-danger px-4">
+                        Eliminar definitivamente
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+    </div>
+</div>

@@ -1,0 +1,146 @@
+﻿@model PIBitacoras.Models.Psicologia
+
+@{
+    ViewData["Title"] = "Nueva Bitácora Psicológica";
+}
+
+<div class="container mt-4">
+
+    <div class="card shadow-lg border-0">
+
+        <!-- HEADER -->
+        <div class="card-header bg-dark text-white">
+            <h3 class="mb-0">
+                REGISTRO PSICOLÓGICO
+            </h3>
+        </div>
+
+        <!-- BODY -->
+        <div class="card-body p-4">
+
+            <form asp-action="Create" method="post">
+
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+                <!-- BUSCAR ALUMNO -->
+                <div class="row">
+
+                    <div class="col-md-4 mb-3">
+                        <label class="fw-bold">Matrícula</label>
+                        <input id="matricula" class="form-control" placeholder="Escribe matrícula" />
+                    </div>
+
+                    <div class="col-md-2 mb-3">
+                        <label>.</label>
+                        <button type="button" onclick="buscarAlumno()" class="btn btn-dark form-control">
+                            Buscar
+                        </button>
+                    </div>
+
+                </div>
+
+                <div class="row">
+
+                    <div class="col-md-4 mb-3">
+                        <label>Nombre</label>
+                        <input id="nombre" class="form-control" readonly />
+                    </div>
+
+                    <div class="col-md-4 mb-3">
+                        <label>Apellido paterno</label>
+                        <input id="paterno" class="form-control" readonly />
+                    </div>
+
+                    <div class="col-md-4 mb-3">
+                        <label>Apellido materno</label>
+                        <input id="materno" class="form-control" readonly />
+                    </div>
+
+                </div>
+
+                <!-- ID PRE INSCRIPCION (HIDDEN) -->
+                <input type="hidden" asp-for="PreenrollmentId" id="preid" />
+
+                <hr />
+
+                <!-- ASISTENCIA -->
+                <div class="mb-3">
+                    <label asp-for="AttendanceStatus" class="fw-bold">Asistencia</label>
+                    <select asp-for="AttendanceStatus" class="form-control">
+                        <option value="">Seleccionar</option>
+                        <option value="Asistió">Asistió</option>
+                        <option value="No asistió">No asistió</option>
+                        <option value="Justificado">Justificado</option>
+                    </select>
+                </div>
+
+                <!-- OBSERVACIONES -->
+                <div class="mb-3">
+                    <label asp-for="PsychologyObservations" class="fw-bold">Observaciones psicológicas</label>
+                    <textarea asp-for="PsychologyObservations" class="form-control" rows="4"></textarea>
+                </div>
+
+                <!-- FECHA AUTO -->
+                <div class="mb-3">
+                    <label class="fw-bold">Fecha de cita</label>
+                    <input class="form-control" value="@DateTime.Now.ToString("dd/MM/yyyy HH:mm")" readonly />
+                </div>
+
+                <!-- FOLIO AUTO -->
+                <div class="mb-3">
+                    <label class="fw-bold">Folio</label>
+                    <input asp-for="Fol" class="form-control" readonly placeholder="Se generará automáticamente" />
+                </div>
+
+                <hr />
+
+                <!-- BOTONES -->
+                <div class="d-flex justify-content-between">
+
+                    <a asp-action="Index" class="btn btn-secondary px-4">
+                        Cancelar
+                    </a>
+
+                    <button type="submit" class="btn btn-success px-5">
+                        Guardar registro
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+    </div>
+
+</div>
+
+@section Scripts {
+    <script>
+
+        function buscarAlumno(){
+
+            var matricula = $("#matricula").val();
+
+            if(matricula === ""){
+                alert("Escribe matrícula");
+                return;
+            }
+
+            $.get("/Psicologia/BuscarPorMatricula", { matricula: matricula }, function(data){
+
+                if(data == null){
+                    alert("Alumno no encontrado");
+                    return;
+                }
+
+                $("#preid").val(data.preId);
+                $("#nombre").val(data.nombre);
+                $("#paterno").val(data.paterno);
+                $("#materno").val(data.materno);
+
+            });
+
+        }
+
+    </script>
+}
