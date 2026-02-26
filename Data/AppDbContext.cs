@@ -64,6 +64,11 @@ namespace SchoolManager.Data
         public DbSet<tutorship_interview_answer> TutorshipInterviewAnswers { get; set; }
         #endregion
 
+        //Social Service
+        public DbSet<social_service_assignment> SocialServiceAssignments { get; set; }
+        public DbSet<social_service_log> SocialServiceLogs { get; set; }
+        public DbSet<social_service_attendance> SocialServiceAttendances { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);

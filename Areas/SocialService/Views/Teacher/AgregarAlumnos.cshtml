@@ -1,0 +1,103 @@
+@model IEnumerable<SchoolManager.Models.users_user>
+@using Microsoft.EntityFrameworkCore
+@using Microsoft.Extensions.DependencyInjection
+
+<h3>Agregar Alumnos</h3>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        @TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+<div class="mb-3">
+    <a href="/SocialService/Teacher/Alumnos" class="btn btn-secondary">
+        <i class="bi bi-arrow-left"></i> Regresar a Alumnos Asignados
+    </a>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h5 class="mb-0">Estudiantes Disponibles</h5>
+    </div>
+    <div class="card-body">
+        @if (Model.Any())
+        {
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th style="width:40%">Nombre</th>
+                            <th class="text-center">Semestre</th>
+                            <th>Email</th>
+                            <th class="text-center">Acción</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var student in Model)
+                        {
+                            var fullName = $"{student.Person.FirstName} {student.Person.LastNamePaternal} {student.Person.LastNameMaternal}";
+
+                            // Obtener el grado del estudiante desde grades_final_grades
+                            var studentGradeLevel = ViewContext.HttpContext.RequestServices
+                                .GetService<SchoolManager.Data.AppDbContext>()
+                                ?.grades_FinalGrades
+                                .Include(fg => fg.Subject)
+                                    .ThenInclude(s => s.GradeLevel)
+                                .Where(fg => fg.StudentId == student.UserId)
+                                .Select(fg => fg.Subject.GradeLevel.Name)
+                                .FirstOrDefault();
+
+                            <tr>
+                                <td>@fullName</td>
+                                <td class="text-center">
+                                    @if (!string.IsNullOrEmpty(studentGradeLevel))
+                                    {
+                                        <span class="badge bg-primary">@studentGradeLevel</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">N/A</span>
+                                    }
+                                </td>
+                                <td>@student.Email</td>
+                                <td class="text-center">
+                                    <form method="post" action="/SocialService/Teacher/AsignarAlumno" style="display:inline;">
+                                        <input type="hidden" name="studentId" value="@student.UserId" />
+                                        <button type="submit" class="btn btn-success btn-sm">
+                                            <i class="bi bi-plus-circle"></i> Asignar
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        else
+        {
+            <div class="alert alert-info">
+                <i class="bi bi-info-circle"></i> No hay estudiantes disponibles para asignar. 
+                Todos los estudiantes ya están asignados a tu lista.
+            </div>
+        }
+    </div>
+</div>
+
+<style>
+    .table-hover tbody tr:hover {
+        background-color: rgba(0, 123, 255, 0.1);
+        cursor: pointer;
+    }
+</style>
