@@ -1,219 +1,54 @@
-@model List<SchoolManager.Areas.SocialService.ViewModels.AsignarHorasViewModel>
-
+@page
 @{
-    ViewData["Title"] = "Resumen de Horas Pendientes";
+    ViewData["Title"] = "Asignar Horas";
 }
 
-<!-- Hero Section -->
-<div class="ss-hero fade-in">
-    <div class="container">
-        <h2 class="mb-2">
-            <i class="bi bi-hourglass-split me-2"></i>
-            Resumen de Horas Pendientes de Aprobación
-        </h2>
-        <p>Alumnos con bitácoras pendientes de revisar y aprobar</p>
-    </div>
-</div>
+<h3>Asignar Horas a Alumnos</h3>
 
-@if (TempData["Success"] != null)
-{
-    <div class="alert alert-success alert-dismissible fade show" role="alert">
-        @TempData["Success"]
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-    </div>
-}
+<table class="table table-bordered mt-4">
+    <thead class="table-dark">
+        <tr>
+            <th>Alumno</th>
+            <th>Tipo</th>
+            <th>Horas a asignar</th>
+            <th>Acción</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>Juan Pérez</td>
+            <td>
+                <select class="form-select">
+                    <option>Prácticas Profesionales</option>
+                    <option>Servicio Social</option>
+                </select>
+            </td>
+            <td>
+                <input type="number" class="form-control" placeholder="Ej. 20" />
+            </td>
+            <td>
+                <button class="btn btn-success btn-sm">
+                    Asignar
+                </button>
+            </td>
+        </tr>
 
-@if (TempData["Error"] != null)
-{
-    <div class="alert alert-danger alert-dismissible fade show" role="alert">
-        @TempData["Error"]
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-    </div>
-}
-
-<div class="mb-3">
-    <a href="/SocialService/Teacher/Dashboard" class="btn btn-secondary">
-        <i class="bi bi-arrow-left"></i> Regresar al Dashboard
-    </a>
-</div>
-
-@if (Model != null && Model.Any())
-{
-    <div class="row">
-        <div class="col-md-12 mb-4">
-            <div class="card shadow-custom">
-                <div class="card-header">
-                    <h5 class="mb-0">
-                        <i class="bi bi-people-fill me-2"></i>
-                        Alumnos con Bitácoras Pendientes
-                    </h5>
-                </div>
-                <div class="card-body">
-                    <div class="table-responsive">
-                        <table class="table table-hover">
-                            <thead>
-                                <tr>
-                                    <th style="width: 35%">Alumno</th>
-                                    <th class="text-center">Grupo</th>
-                                    <th class="text-center">Bitácoras Pendientes</th>
-                                    <th class="text-center">Horas Prácticas</th>
-                                    <th class="text-center">Horas Servicio Social</th>
-                                    <th class="text-center">Acción</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach (var alumno in Model)
-                                {
-                                    <tr>
-                                        <td>
-                                            <strong>@alumno.StudentName</strong>
-                                        </td>
-                                        <td class="text-center">
-                                            @(alumno.GroupName ?? "N/A")
-                                        </td>
-                                        <td class="text-center">
-                                            <span class="badge bg-warning">
-                                                @alumno.BitacorasPendientes.Count
-                                            </span>
-                                        </td>
-                                        <td class="text-center">
-                                            <span class="badge bg-primary">
-                                                @alumno.TotalHorasPracticasPendientes h
-                                            </span>
-                                        </td>
-                                        <td class="text-center">
-                                            <span class="badge bg-info">
-                                                @alumno.TotalHorasServicioSocialPendientes h
-                                            </span>
-                                        </td>
-                                        <td class="text-center">
-                                            <a href="/SocialService/Teacher/RevisarBitacorasAlumno/@alumno.StudentId" 
-                                               class="btn btn-primary btn-sm">
-                                                <i class="bi bi-eye-fill me-1"></i> Revisar y Aprobar
-                                            </a>
-                                        </td>
-                                    </tr>
-                                }
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Resumen de totales -->
-    <div class="row">
-        <div class="col-md-12 mb-4">
-            <div class="card">
-                <div class="card-header bg-info text-white">
-                    <h5 class="mb-0">
-                        <i class="bi bi-bar-chart-fill me-2"></i>
-                        Resumen Total
-                    </h5>
-                </div>
-                <div class="card-body">
-                    <div class="row text-center">
-                        <div class="col-md-4">
-                            <div class="stat-card">
-                                <h2 class="text-warning">@Model.Sum(a => a.BitacorasPendientes.Count)</h2>
-                                <p>Bitácoras Pendientes</p>
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="stat-card">
-                                <h2 class="text-primary">@Model.Sum(a => a.TotalHorasPracticasPendientes)</h2>
-                                <p>Horas Prácticas Totales</p>
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="stat-card">
-                                <h2 class="text-info">@Model.Sum(a => a.TotalHorasServicioSocialPendientes)</h2>
-                                <p>Horas Servicio Social Totales</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Desglose por alumno -->
-    <div class="row">
-        @foreach (var alumno in Model)
-        {
-            <div class="col-md-6 mb-4">
-                <div class="card border-primary">
-                    <div class="card-header bg-primary text-white">
-                        <h6 class="mb-0">
-                            <i class="bi bi-person-fill me-2"></i>
-                            @alumno.StudentName
-                        </h6>
-                    </div>
-                    <div class="card-body">
-                        <p class="mb-2">
-                            <strong>Grupo:</strong> @(alumno.GroupName ?? "N/A")
-                        </p>
-                        <hr />
-                        <h6 class="text-muted mb-3">Bitácoras Pendientes:</h6>
-                        <div class="table-responsive">
-                            <table class="table table-sm">
-                                <thead>
-                                    <tr>
-                                        <th>Semana</th>
-                                        <th class="text-center">Prácticas</th>
-                                        <th class="text-center">Servicio Social</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach (var bitacora in alumno.BitacorasPendientes)
-                                    {
-                                        <tr>
-                                            <td>@bitacora.Week</td>
-                                            <td class="text-center">
-                                                <span class="badge bg-primary">@bitacora.HoursPracticas h</span>
-                                            </td>
-                                            <td class="text-center">
-                                                <span class="badge bg-info">@bitacora.HoursServicioSocial h</span>
-                                            </td>
-                                        </tr>
-                                    }
-                                </tbody>
-                                <tfoot>
-                                    <tr class="table-active">
-                                        <td><strong>Total:</strong></td>
-                                        <td class="text-center">
-                                            <strong>@alumno.TotalHorasPracticasPendientes h</strong>
-                                        </td>
-                                        <td class="text-center">
-                                            <strong>@alumno.TotalHorasServicioSocialPendientes h</strong>
-                                        </td>
-                                    </tr>
-                                </tfoot>
-                            </table>
-                        </div>
-                        <div class="text-end mt-3">
-                            <a href="/SocialService/Teacher/RevisarBitacorasAlumno/@alumno.StudentId" 
-                               class="btn btn-success">
-                                <i class="bi bi-check-circle-fill me-1"></i> Revisar y Aprobar
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        }
-    </div>
-}
-else
-{
-    <div class="alert alert-info">
-        <i class="bi bi-info-circle-fill me-2"></i>
-        <strong>No hay bitácoras pendientes de aprobar.</strong>
-        <p class="mb-0 mt-2">Todos tus alumnos tienen sus bitácoras aprobadas o no han registrado ninguna aún.</p>
-    </div>
-    <div class="text-center mt-4">
-        <a href="/SocialService/Teacher/Alumnos" class="btn btn-primary">
-            <i class="bi bi-people-fill me-1"></i> Ver Mis Alumnos
-        </a>
-    </div>
-}
+        <tr>
+            <td>Ana López</td>
+            <td>
+                <select class="form-select">
+                    <option>Prácticas Profesionales</option>
+                    <option>Servicio Social</option>
+                </select>
+            </td>
+            <td>
+                <input type="number" class="form-control" />
+            </td>
+            <td>
+                <button class="btn btn-success btn-sm">
+                    Asignar
+                </button>
+            </td>
+        </tr>
+    </tbody>
+</table>

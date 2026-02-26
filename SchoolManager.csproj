@@ -52,7 +52,5 @@
 	  <None Update="libwkhtmltox.dll">
 		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	  </None>
-    <Folder Include="Docs\" />
-    <Folder Include="Scripts\" />
   </ItemGroup>
 </Project>

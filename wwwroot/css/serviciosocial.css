@@ -1,0 +1,530 @@
+﻿/* ================================
+   PALETA CLARA PROFESIONAL (TONOS ROJOS)
+   Colores claros, contrastes accesibles y acentos en rojo
+================================ */
+:root {
+    --color-principal: #0a6b5a; /* Firebrick red */
+    --topbar-color: #0fa68f; /* teal for topbar like example */
+    --color-acento: #ff6b6b; /* Claro, para hover y badges */
+    --color-fondo: #fbfbfc; /* Muy claro */
+    --color-card: #ffffff; /* Cartas blancas */
+    --color-borde: #efebeb; /* Borde sutil */
+    --color-texto: #2b2b2b; /* Texto principal */
+    --color-texto-suave: #6b6b6b; /* Texto secundario */
+    --color-success: #2ea44f; /* Verde para presente */
+    --color-danger: #e85a5a; /* Rojo para ausente */
+}
+
+/* ================================
+   BASE GENERAL
+================================ */
+html, body {
+    height: 100%;
+}
+
+body {
+    margin: 0;
+    font-family: 'Inter', 'Segoe UI', Roboto, sans-serif;
+    background-color: var(--color-fondo);
+    color: var(--color-texto);
+}
+
+/* Space for fixed topbar */
+body { padding-top: 86px; }
+
+h1, h2, h3, h4, h5 {
+    color: var(--color-principal);
+    font-weight: 700;
+    margin-bottom: 18px;
+}
+
+p {
+    color: var(--color-texto-suave);
+}
+
+/* ================================
+   CONTENEDOR GENERAL
+================================ */
+.container {
+    max-width: 1150px;
+    margin: auto;
+    padding: 28px 20px;
+}
+
+/* ================================
+   NAVBAR LIMPIO Y CENTRADO
+================================ */
+
+.navbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 70px;
+    background-color: var(--topbar-color);
+    display: flex;
+    align-items: center;
+    justify-content: center; /* centra el título */
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    z-index: 1000;
+}
+
+/* Nombre centrado */
+.brand-center {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: white;
+    letter-spacing: 0.5px;
+}
+
+/* Contenedor botón derecha */
+.nav-right {
+    position: absolute;
+    right: 40px;
+}
+
+.nav-left {
+    position: absolute;
+    left: 40px;
+}
+
+/* Botón cerrar sesión */
+.btn-logout {
+    background-color: #ffffff;
+    color: var(--topbar-color);
+    padding: 8px 18px;
+    border-radius: 10px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.25s ease;
+}
+
+    .btn-logout:hover {
+        background-color: #f3f3f3;
+        transform: translateY(-2px);
+    }
+
+/* Ajuste espacio por navbar fijo */
+body {
+    padding-top: 90px;
+}
+
+
+/* ================================
+   LOGIN CENTRADO (DEFINITIVO)
+================================ */
+.login-container {
+    min-height: 100vh;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: var(--color-fondo);
+}
+
+.login-card {
+    width: 100%;
+    max-width: 460px;
+}
+
+    .login-card .card-body {
+        padding: 36px;
+    }
+
+/* ================================
+   CARDS GENERALES
+================================ */
+.card {
+    background-color: var(--color-card);
+    border-radius: 12px;
+    border: 1px solid var(--color-borde);
+    box-shadow: 0 10px 30px rgba(16,24,40,0.04);
+    padding: 28px;
+}
+
+.card-body {
+    padding: 30px;
+}
+
+/* ================================
+   DASHBOARDS
+================================ */
+.dashboard-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 35px;
+    margin-top: 40px;
+}
+
+.dashboard-card {
+    text-align: center;
+}
+
+    .dashboard-card h5 {
+        margin-bottom: 15px;
+    }
+
+    .dashboard-card p {
+        margin-bottom: 15px;
+    }
+
+/* ================================
+   BOTONES
+================================ */
+
+/* Botones tipo link (ver alumnos, tomar lista, etc.) */
+.btn-primary,
+.btn-outline-primary {
+    background-color: transparent;
+    border: none;
+    color: var(--color-principal);
+    font-weight: 600;
+    padding: 0;
+}
+
+    .btn-primary:hover,
+    .btn-outline-primary:hover {
+        color: var(--color-acento);
+        text-decoration: underline;
+    }
+
+/* Botón principal (login, guardar) */
+.btn-full {
+    width: 100%;
+    margin-top: 18px;
+    padding: 12px 0;
+    background-color: var(--color-principal);
+    color: #fff;
+    border-radius: 10px;
+    border: none;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+    .btn-full:hover {
+        background-color: var(--color-acento);
+    }
+
+/* ================================
+   FORMULARIOS
+================================ */
+.form-control,
+.form-select {
+    border-radius: 8px;
+    border: 1px solid var(--color-borde);
+    padding: 10px 12px;
+}
+
+    .form-control:focus,
+    .form-select:focus {
+        border-color: var(--color-principal);
+        box-shadow: 0 0 0 0.12rem rgba(178,34,34,0.12);
+    }
+
+/* ================================
+   HORAS (SEPARADAS)
+================================ */
+.horas-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 50px;
+    margin-top: 40px;
+}
+
+.horas-card {
+    padding: 35px;
+    text-align: center;
+}
+
+    .horas-card h5 {
+        margin-bottom: 20px;
+    }
+
+    .horas-card p {
+        margin-bottom: 14px;
+    }
+
+/* ================================
+   PROGRESO
+================================ */
+.progress {
+    height: 16px;
+    background-color: #e9ecef;
+    border-radius: 8px;
+    margin-top: 20px;
+}
+
+.progress-bar {
+    background-color: var(--color-principal);
+}
+
+/* ================================
+   BITÁCORAS
+================================ */
+.bitacora-container {
+    max-width: 850px;
+    margin: auto;
+}
+
+.bitacora-item {
+    background-color: #ffffff;
+    border: 1px solid var(--color-borde);
+    border-radius: 14px;
+    padding: 30px;
+    margin-bottom: 40px;
+}
+
+    .bitacora-item h6 {
+        color: var(--color-principal);
+        font-weight: 600;
+        margin-bottom: 15px;
+    }
+
+    .bitacora-item p {
+        margin-bottom: 10px;
+    }
+
+/* ================================
+   TABLAS
+================================ */
+.table {
+    background-color: var(--color-card);
+    border-radius: 10px;
+    overflow: hidden;
+    border: 1px solid var(--color-borde);
+}
+
+    .table th,
+    .table td {
+        padding: 12px 14px;
+        vertical-align: middle;
+        border-bottom: 1px solid #f4f4f6;
+    }
+
+    .table thead {
+        background-color: #fff5f5;
+        color: var(--color-principal);
+        font-weight: 700;
+    }
+
+    /* Round header corners and give subtle border separation */
+    .table thead th:first-child {
+        border-top-left-radius: 10px;
+    }
+
+    .table thead th:last-child {
+        border-top-right-radius: 10px;
+    }
+
+    /* Keep table compact inside a centered card */
+    .card .table {
+        max-width: 860px;
+        margin: 6px auto;
+        box-shadow: none;
+        border: none;
+        background: transparent;
+    }
+
+    /* Header cell style */
+    .card .table thead th {
+        background-color: #fff1f1;
+        border-bottom: 1px solid #f4eaea;
+        text-align: left;
+        padding: 14px 18px;
+    }
+
+    /* Slight row separators and lighter fonts */
+    .card .table tbody td { color: var(--color-texto); }
+    .card .table tbody tr { border-bottom: 1px solid rgba(0,0,0,0.03); }
+    .card .table tbody tr:last-child { border-bottom: none; }
+
+    .card .table tbody td:nth-child(2) { color: var(--color-texto-suave); font-weight:600; }
+
+    /* Round bottom corners of table to match card */
+    .card .table tbody tr:last-child td:first-child {
+        border-bottom-left-radius: 10px;
+    }
+
+    .card .table tbody tr:last-child td:last-child {
+        border-bottom-right-radius: 10px;
+    }
+
+    /* Make headings inside the card sit nicely */
+    .card h3 { margin-top: 0; margin-bottom: 18px; }
+
+/* Platforms card on Index */
+.platforms-wrapper { max-width:680px; margin:12px auto; }
+.platforms-title { text-align:center; font-size:1.6rem; font-weight:800; margin-bottom:18px; }
+.platforms-sep { height:1px; background: rgba(0,0,0,0.06); margin:18px 0; }
+.platform-box { border:2px solid var(--topbar-color); border-radius:8px; padding:28px; margin:14px 0; text-align:center; color:var(--topbar-color); cursor:pointer; background:#fff; }
+.platform-icon { font-size:34px; margin-bottom:8px; }
+.platform-label { font-weight:700; color:#0a6b5a; }
+
+    .table tbody tr:hover {
+        background-color: #fffaf9;
+    }
+
+/* Badges para asistencia */
+.badge-present {
+    display: inline-block;
+    padding: 6px 8px;
+    border-radius: 999px;
+    background-color: var(--color-success);
+    color: #fff;
+    font-weight: 600;
+    font-size: 0.85rem;
+}
+
+.badge-absent {
+    display: inline-block;
+    padding: 6px 8px;
+    border-radius: 999px;
+    background-color: var(--color-danger);
+    color: #fff;
+    font-weight: 600;
+    font-size: 0.85rem;
+}
+
+.attendance-history {
+    font-size: 0.9rem;
+    color: var(--color-texto-suave);
+}
+
+/* Ajuste para checkboxes en la tabla */
+.table input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+}
+
+/* Buttons inside tables */
+
+.table a.btn {
+    display: inline-block;
+    background-color: var(--color-principal);
+    color: #fff !important;
+    padding: 6px 10px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 600;
+    box-shadow: 0 3px 8px rgba(178,34,34,0.12);
+}
+
+.table a.btn:hover { background-color: var(--color-acento); }
+
+/* Ensure the main container places the card inside a clear white area */
+.container > .card {
+    background: #fff;
+    padding: 22px;
+}
+
+/* Tighter spacing for table rows */
+.card .table tbody td { padding: 12px 18px; }
+
+/* Improve the overall page spacing so the content sits inside the white box */
+.content-wrapper {
+    padding: 30px 0 80px 0;
+}
+
+/* ================================
+   TEXTOS
+================================ */
+.text-muted {
+    color: var(--color-texto-suave) !important;
+}
+
+/* ================================
+   IMPRESIÓN
+================================ */
+@media print {
+    body {
+        background-color: #fff;
+    }
+
+    .navbar,
+    .btn,
+    .btn-full {
+        display: none !important;
+    }
+
+    .card {
+        box-shadow: none;
+        border: 1px solid #ccc;
+    }
+}
+
+/* ================================
+   CREAR BITÁCORA
+================================ */
+
+.bitacora-form-container {
+    max-width: 900px;
+    margin: 40px auto;
+}
+
+.form-label {
+    font-weight: 500;
+    margin-bottom: 8px;
+    display: block;
+}
+
+/* Campo pequeño (semana / horas) */
+.input-small {
+    max-width: 260px;
+}
+
+/* Textareas grandes */
+.textarea-large {
+    resize: vertical;
+    min-height: 140px;
+}
+
+/* Inputs de horas en fila */
+.horas-inputs {
+    display: flex;
+    gap: 40px;
+    flex-wrap: wrap;
+}
+
+/* Semana en línea */
+.form-group-inline {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+/* Botón guardar estilo link */
+.bitacora-form-container .btn-primary {
+    margin-top: 10px;
+}
+
+/* ================================
+   BITÁCORA – TEXTAREAS ANCHAS
+================================ */
+
+/* Forzar que actividades y observaciones ocupen todo el ancho */
+.bitacora-form-container textarea {
+    width: 100%;
+    max-width: 100%;
+}
+
+/* Dar más presencia horizontal */
+.textarea-large {
+    min-height: 160px;
+}
+
+/* Asegurar que los bloques no estén en columnas */
+.bitacora-form-container .mb-4 {
+    width: 100%;
+}
+/* Separación general entre cards */
+.card {
+    margin-bottom: 40px;
+}
+a,
+a:visited,
+a:hover,
+a:focus,
+a:active {
+    color: var(--color-principal) !important;
+}
