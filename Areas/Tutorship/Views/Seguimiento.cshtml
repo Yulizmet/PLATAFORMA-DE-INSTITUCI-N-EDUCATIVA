@@ -1,111 +1,140 @@
-﻿@{
+﻿@model SchoolManager.Models.users_user
+
+@{
     ViewData["Title"] = "Seguimiento Académico";
+
+    var historial = ViewBag.Historial as List<SchoolManager.Models.tutorship_monitoring> ?? new List<SchoolManager.Models.tutorship_monitoring>();
 }
 
 <div class="container mt-4">
 
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger text-center">@TempData["Error"]</div>
+    }
+    @if (TempData["Exito"] != null)
+    {
+        <div class="alert alert-success text-center">@TempData["Exito"]</div>
+    }
+
     <div class="row justify-content-center mb-5">
         <div class="col-md-8">
-            <div class="input-group input-group-lg shadow-sm">
-                <input type="text" class="form-control" placeholder="Buscar por Nombre o Matrícula..."
-                       style="border-color: var(--utt-red);">
-                <button class="btn btn-utt-primary" type="button">
-                    Buscar Alumno
-                </button>
-            </div>
+            <form method="get" asp-action="Seguimiento">
+                <div class="input-group input-group-lg shadow-sm">
+                    <input type="text" name="matriculaBuscar" class="form-control" placeholder="Buscar por Matrícula..."
+                           value="@ViewBag.Matricula" style="border-color: var(--utt-red);" required>
+                    <button class="btn btn-utt-primary" type="submit">
+                        <i class="bi bi-search"></i> Buscar Alumno
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 
-    <div class="row">
-        <div class="col-md-4">
-            <div class="card border-0 shadow-sm" style="background-color: var(--utt-light);">
+    @if (Model != null)
+    {
+        string nombreCompleto = $"{Model.Person.FirstName} {Model.Person.LastNamePaternal}";
 
-                <div class="card-header bg-transparent border-0 pt-3 d-flex justify-content-between align-items-center">
-                    <h5 class="fw-bold m-0" style="color: var(--utt-dark-red);">Nuevo Feedback</h5>
+        <div class="row">
+            <div class="col-md-4">
+                <div class="card border-0 shadow-sm" style="background-color: var(--utt-light);">
 
-                    <a asp-controller="Entrevista" asp-action="DetalleEntrevista"
-                       class="btn btn-sm btn-outline-secondary rounded-circle d-flex align-items-center justify-content-center"
-                       style="width: 30px; height: 30px;"
-                       title="Ver Detalles del Alumno">
-                        <i class="bi bi-info-lg"></i>
-                    </a>
-                </div>
+                    <div class="card-header bg-transparent border-0 pt-3 d-flex justify-content-between align-items-center">
+                        <h5 class="fw-bold m-0" style="color: var(--utt-dark-red);">Nuevo Feedback</h5>
 
-                <div class="card-body">
-                    <h6 class="mb-3 text-muted">Alumno: Ana Karen</h6>
+                        <a asp-controller="Tutorship" asp-action="VerEntrevistaAlumno" asp-route-id="@Model.UserId"
+                           class="btn btn-sm btn-outline-secondary rounded-circle d-flex align-items-center justify-content-center"
+                           style="width: 30px; height: 30px;"
+                           title="Ver Expediente del Alumno">
+                            <i class="bi bi-info-lg"></i>
+                        </a>
+                    </div>
 
-                    <form asp-action="GuardarSeguimiento" method="post" enctype="multipart/form-data">
+                    <div class="card-body">
+                        <h6 class="mb-3 text-muted">Alumno: @nombreCompleto</h6>
 
-                        <div class="mb-3">
-                            <label class="form-label fw-bold">Tipo</label>
-                            <select class="form-select" style="border-color: var(--utt-beige);">
-                                <option>Académico</option>
-                                <option>Conductual</option>
-                                <option>Psicológico</option>
-                            </select>
-                        </div>
+                        <form asp-action="GuardarSeguimiento" method="post" enctype="multipart/form-data">
 
-                        <div class="mb-3">
-                            <label class="form-label fw-bold">Observaciones</label>
-                            <textarea class="form-control" rows="5" style="border-color: var(--utt-beige);"></textarea>
-                        </div>
+                            <input type="hidden" name="studentId" value="@Model.UserId" />
+                            <input type="hidden" name="matricula" value="@ViewBag.Matricula" />
 
-                        <div class="mb-4">
-                            <label class="form-label fw-bold">Adjuntar Evidencia</label>
-                            <div class="input-group">
-                                <input type="file" class="form-control" name="ArchivoAdjunto"
-                                       accept=".pdf,.jpg,.jpeg,.png"
-                                       style="border-color: var(--utt-beige);">
-                                <label class="input-group-text bg-white" style="border-color: var(--utt-beige);">
-                                    <i class="bi bi-paperclip text-muted"></i>
-                                </label>
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Tipo</label>
+                                <select class="form-select" name="tipo" style="border-color: var(--utt-beige);">
+                                    <option value="Académico">Académico</option>
+                                    <option value="Conductual">Conductual</option>
+                                    <option value="Psicológico">Psicológico</option>
+                                </select>
                             </div>
-                            <div class="form-text small text-muted">
-                                * Justificantes médicos, reportes firmados (PDF o Imagen).
+
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Observaciones</label>
+                                <textarea class="form-control" name="observaciones" rows="5" style="border-color: var(--utt-beige);" required></textarea>
+                            </div>
+
+                            <div class="mb-4">
+                                <label class="form-label fw-bold">Adjuntar Evidencia</label>
+                                <div class="input-group">
+                                    <input type="file" class="form-control" name="ArchivoAdjunto"
+                                           accept=".pdf,.jpg,.jpeg,.png"
+                                           style="border-color: var(--utt-beige);">
+                                    <label class="input-group-text bg-white" style="border-color: var(--utt-beige);">
+                                        <i class="bi bi-paperclip text-muted"></i>
+                                    </label>
+                                </div>
+                                <div class="form-text small text-muted">
+                                    * Justificantes médicos, reportes firmados (PDF o Imagen).
+                                </div>
+                            </div>
+
+                            <button type="submit" class="btn btn-utt-primary w-100">Guardar Reporte</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-8">
+                <h4 class="mb-3 fw-bold" style="color: var(--utt-black);">Historial de Seguimiento</h4>
+
+                @if (!historial.Any())
+                {
+                    <div class="alert alert-light border text-center text-muted">
+                        Este alumno no tiene reportes previos.
+                    </div>
+                }
+                else
+                {
+                    foreach (var reporte in historial)
+                    {
+                        // Cambiamos el color de la tarjeta dependiendo del tipo de reporte
+                        string colorBorde = reporte.PerformanceLevel == "Conductual" ? "var(--utt-beige)" : "var(--utt-red)";
+
+                        <div class="card mb-3 shadow-sm border-0" style="border-left: 5px solid @colorBorde !important;">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <h6 class="mb-0 fw-bold" style="color: var(--utt-black);">
+                                            Reporte de Tutoría
+                                        </h6>
+
+                                        @if (reporte.FilePath != "Sin archivo")
+                                        {
+                                            <a href="@reporte.FilePath" target="_blank" class="badge bg-light text-primary border text-decoration-none">
+                                                <i class="bi bi-paperclip"></i> Ver Archivo
+                                            </a>
+                                        }
+                                    </div>
+                                    <div class="text-end">
+                                        <small class="text-muted d-block">@reporte.Date.ToString("dd MMM yyyy")</small>
+                                        <small class="badge bg-light text-secondary border">@reporte.PerformanceLevel</small>
+                                    </div>
+                                </div>
+                                <p class="card-text text-secondary mt-2">@reporte.DetailedObservations</p>
                             </div>
                         </div>
-
-                        <button type="submit" class="btn btn-utt-primary w-100">Guardar Reporte</button>
-                    </form>
-                </div>
+                    }
+                }
             </div>
         </div>
-
-        <div class="col-md-8">
-            <h4 class="mb-3 fw-bold" style="color: var(--utt-black);">Historial de Seguimiento</h4>
-
-            <div class="card mb-3 shadow-sm border-0" style="border-left: 5px solid var(--utt-red) !important;">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center mb-2">
-                        <div class="d-flex align-items-center gap-2">
-                            <h6 class="mb-0 fw-bold" style="color: var(--utt-red);">Revisión de Calificaciones</h6>
-                            <span class="badge bg-light text-dark border"><i class="bi bi-paperclip"></i> 1 Adjunto</span>
-                        </div>
-                        <div class="text-end">
-                            <small class="text-muted d-block">05 Feb 2026</small>
-                            <small class="badge bg-light text-secondary border">Académico</small>
-                        </div>
-                    </div>
-                    <p class="card-text text-secondary mt-2">El alumno presenta dificultades en Matemáticas...</p>
-                </div>
-            </div>
-
-            <div class="card mb-3 shadow-sm border-0" style="border-left: 5px solid var(--utt-beige) !important;">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center mb-2">
-                        <div class="d-flex align-items-center gap-2">
-                            <h6 class="mb-0 fw-bold" style="color: var(--utt-black);">Justificante Médico</h6>
-                            <span class="badge bg-light text-dark border"><i class="bi bi-paperclip"></i> PDF</span>
-                        </div>
-                        <div class="text-end">
-                            <small class="text-muted d-block">05 Feb 2026</small>
-                            <small class="badge bg-light text-secondary border">Conductual</small>
-                        </div>
-                    </div>
-                    <p class="card-text text-secondary mt-2">Se entregó receta médica por inasistencia.</p>
-                </div>
-            </div>
-
-        </div>
-    </div>
+    }
 </div>

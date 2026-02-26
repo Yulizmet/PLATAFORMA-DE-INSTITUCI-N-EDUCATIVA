@@ -10,34 +10,26 @@ namespace SchoolManager.Areas.Tutorship.Controllers
     {
         private readonly AppDbContext _context;
 
-        // ==========================================
-        // VARIABLES DE PRUEBA (Sistema de tu compañero)
-        // Rol 1 = Alumno | Rol 2 = Maestro
-        // ==========================================
-        private readonly int _simulatedRoleId = 1; // Puesto en 1 para que puedas probar la Entrevista
-        private readonly int _simulatedUserId = 11; // Puesto en 11 para usar tu alumno de prueba
+        
+        private readonly int _simulatedRoleId = 2; 
+        private readonly int _simulatedUserId = 10; 
 
         public TutorshipController(AppDbContext context)
         {
             _context = context;
         }
 
-        // ==========================================
         // SEGURIDAD
-        // ==========================================
         public IActionResult AccesoDenegado()
         {
             return Content("No tienes permiso para ver esta pantalla. Tu rol actual es: " + _simulatedRoleId);
         }
 
-        // ==========================================
         // VISTA PRINCIPAL (Auto-aprovisionamiento integrado)
-        // ==========================================
         public async Task<IActionResult> Controlador()
         {
-            ViewBag.RoleId = _simulatedRoleId; // De tu compañero
+            ViewBag.RoleId = _simulatedRoleId; 
 
-            // 1. AUTO-APROVISIONAMIENTO: Revisamos si ya existe la entrevista
             var entrevistaExistente = await _context.TutorshipInterviews.FirstOrDefaultAsync(e => e.StudentId == _simulatedUserId);
 
             if (entrevistaExistente == null)
@@ -53,7 +45,6 @@ namespace SchoolManager.Areas.Tutorship.Controllers
                 await _context.SaveChangesAsync();
             }
 
-            // 2. Buscamos el nombre del usuario para darle la bienvenida
             var usuario = await _context.Users.Include(u => u.Person)
                 .FirstOrDefaultAsync(u => u.UserId == _simulatedUserId);
 
@@ -62,30 +53,24 @@ namespace SchoolManager.Areas.Tutorship.Controllers
             return View("~/Areas/Tutorship/Views/Controlador.cshtml");
         }
 
-        // ==========================================
         // MÓDULOS DEL ALUMNO (Rol 1)
-        // ==========================================
         public async Task<IActionResult> EntrevistaInicial()
         {
-            // Seguridad de tu compañero
             if (_simulatedRoleId != 1) return RedirectToAction(nameof(AccesoDenegado));
             ViewBag.RoleId = _simulatedRoleId;
 
-            // 1. Traemos los datos básicos del alumno
             var usuario = await _context.Users
                 .Include(u => u.Person)
                 .FirstOrDefaultAsync(u => u.UserId == _simulatedUserId);
 
             if (usuario == null) return NotFound("Usuario no encontrado.");
 
-            // 2. Buscamos su matrícula en la tabla de preinscripciones
             var matriculaAlumno = await _context.PreenrollmentGenerals
                 .Where(p => p.UserId == _simulatedUserId)
                 .Select(p => p.Matricula)
                 .FirstOrDefaultAsync();
             ViewBag.Matricula = matriculaAlumno ?? "Sin asignar";
 
-            // 3. Traemos su entrevista generada y sus respuestas (para bloquear la vista si ya la llenó)
             var entrevista = await _context.TutorshipInterviews
                 .Include(e => e.Answers)
                 .FirstOrDefaultAsync(e => e.StudentId == _simulatedUserId);
@@ -98,10 +83,8 @@ namespace SchoolManager.Areas.Tutorship.Controllers
         [HttpPost]
         public async Task<IActionResult> GuardarEntrevista(EntrevistaViewModel modelo)
         {
-            // Seguridad de tu compañero
             if (_simulatedRoleId != 1) return RedirectToAction(nameof(AccesoDenegado));
 
-            // 1. Buscamos el expediente
             var entrevista = await _context.TutorshipInterviews
                 .Include(e => e.Answers)
                 .FirstOrDefaultAsync(e => e.StudentId == modelo.UserId);
@@ -112,7 +95,6 @@ namespace SchoolManager.Areas.Tutorship.Controllers
             entrevista.DateCompleted = DateTime.Now;
             _context.TutorshipInterviews.Update(entrevista);
 
-            // 2. MODO UPDATE: Si ya había respuestas previas
             if (entrevista.Answers != null && entrevista.Answers.Any())
             {
                 foreach (var respuesta in entrevista.Answers)
@@ -132,7 +114,6 @@ namespace SchoolManager.Areas.Tutorship.Controllers
                 }
                 _context.TutorshipInterviewAnswers.UpdateRange(entrevista.Answers);
             }
-            // 3. MODO INSERT: Si es la primera vez que la llena
             else
             {
                 string catPersonal = "Aspectos Personales y Familiares";
@@ -175,9 +156,7 @@ namespace SchoolManager.Areas.Tutorship.Controllers
             return View("~/Areas/Tutorship/Views/DetalleEntrevista.cshtml", entrevista);
         }
 
-        // ==========================================
         // MÓDULOS DEL MAESTRO (Rol 2)
-        // ==========================================
         public async Task<IActionResult> VerEntrevistaAlumno(int id)
         {
             if (_simulatedRoleId != 2) return RedirectToAction(nameof(AccesoDenegado));
@@ -218,11 +197,96 @@ namespace SchoolManager.Areas.Tutorship.Controllers
             return View("~/Areas/Tutorship/Views/Asistencia.cshtml");
         }
 
-        public IActionResult Seguimiento()
+        public async Task<IActionResult> Seguimiento(string matriculaBuscar)
         {
             if (_simulatedRoleId != 2) return RedirectToAction(nameof(AccesoDenegado));
             ViewBag.RoleId = _simulatedRoleId;
-            return View("~/Areas/Tutorship/Views/Seguimiento.cshtml");
+
+            if (string.IsNullOrEmpty(matriculaBuscar))
+            {
+                return View("~/Areas/Tutorship/Views/Seguimiento.cshtml");
+            }
+
+            
+            var preinscripcion = await _context.PreenrollmentGenerals
+                .Where(p => p.Matricula == matriculaBuscar)
+                .Select(p => new
+                {
+                    UserId = p.UserId,
+                    Matricula = p.Matricula
+                })
+                .FirstOrDefaultAsync();
+
+            if (preinscripcion == null || preinscripcion.UserId == null)
+            {
+                TempData["Error"] = "No se encontró ningún alumno con la matrícula: " + matriculaBuscar;
+                return View("~/Areas/Tutorship/Views/Seguimiento.cshtml");
+            }
+
+            var alumno = await _context.Users
+                .Include(u => u.Person)
+                .FirstOrDefaultAsync(u => u.UserId == preinscripcion.UserId);
+
+            if (alumno == null)
+            {
+                TempData["Error"] = "El alumno existe pero no tiene datos personales registrados.";
+                return View("~/Areas/Tutorship/Views/Seguimiento.cshtml");
+            }
+
+            var historial = await _context.TutorshipMonitorings
+                .Where(m => m.StudentId == alumno.UserId)
+                .OrderByDescending(m => m.Date)
+                .ToListAsync();
+
+            ViewBag.Matricula = preinscripcion.Matricula;
+            ViewBag.Historial = historial;
+
+            return View("~/Areas/Tutorship/Views/Seguimiento.cshtml", alumno);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> GuardarSeguimiento(int studentId, string matricula, string tipo, string observaciones, IFormFile ArchivoAdjunto)
+        {
+            string rutaArchivoBaseDeDatos = "Sin archivo";
+
+            if (ArchivoAdjunto != null && ArchivoAdjunto.Length > 0)
+            {
+                string carpetaUploads = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "seguimiento");
+
+                if (!Directory.Exists(carpetaUploads))
+                {
+                    Directory.CreateDirectory(carpetaUploads);
+                }
+
+                string nombreArchivoUnico = Guid.NewGuid().ToString() + "_" + ArchivoAdjunto.FileName;
+
+                string rutaFisicaCompleta = Path.Combine(carpetaUploads, nombreArchivoUnico);
+
+                using (var stream = new FileStream(rutaFisicaCompleta, FileMode.Create))
+                {
+                    await ArchivoAdjunto.CopyToAsync(stream);
+                }
+
+                rutaArchivoBaseDeDatos = "/uploads/seguimiento/" + nombreArchivoUnico;
+            }
+
+            var nuevoReporte = new tutorship_monitoring
+            {
+                StudentId = studentId,
+                TeacherId = _simulatedUserId, 
+                Date = DateTime.Now,
+                PerformanceLevel = tipo ?? "General",
+                DetailedObservations = observaciones ?? "Sin observaciones",
+                ActionPlan = "N/A",
+                FilePath = rutaArchivoBaseDeDatos 
+            };
+
+            _context.TutorshipMonitorings.Add(nuevoReporte);
+            await _context.SaveChangesAsync();
+
+            TempData["Exito"] = "Reporte guardado correctamente.";
+
+            return RedirectToAction("Seguimiento", new { matriculaBuscar = matricula });
         }
     }
 }
