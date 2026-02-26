@@ -64,6 +64,9 @@ namespace SchoolManager.Data
         public DbSet<tutorship_interview_answer> TutorshipInterviewAnswers { get; set; }
         #endregion
 
+        // Foro (Noticias y Publicaciones)
+        public DbSet<ForoPublicacion> ForoPublicaciones { get; set; }
+        public DbSet<ForoImagen> ForoImagenes { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -499,6 +502,26 @@ namespace SchoolManager.Data
             modelBuilder.Entity<tutorship>().HasOne(t => t.Student).WithMany().HasForeignKey(t => t.StudentId).OnDelete(DeleteBehavior.Restrict);
             modelBuilder.Entity<tutorship>().HasOne(t => t.Teacher).WithMany().HasForeignKey(t => t.TeacherId).OnDelete(DeleteBehavior.Restrict);
             #endregion
+
+            #region 6. Foro Configuration
+
+            modelBuilder.Entity<ForoPublicacion>().ToTable("foro_publicacion");
+            modelBuilder.Entity<ForoImagen>().ToTable("foro_imagen");
+
+            modelBuilder.Entity<ForoPublicacion>()
+                .HasOne(f => f.Usuario)
+                .WithMany(u => u.ForoPublicaciones)
+                .HasForeignKey(f => f.UsuarioId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<ForoImagen>()
+                .HasOne(i => i.Publicacion)
+                .WithMany(p => p.Imagenes)
+                .HasForeignKey(i => i.PublicacionId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            #endregion
+
         }
     }
 }

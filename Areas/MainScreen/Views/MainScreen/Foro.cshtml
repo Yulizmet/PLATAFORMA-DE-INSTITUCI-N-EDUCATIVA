@@ -1,0 +1,104 @@
+﻿@{
+    ViewData["Title"] = "Administrador - Foro";
+    Layout = "~/Areas/MainScreen/Views/Shared/_Layout.cshtml";
+}
+
+<section class="admin-section">
+    <div class="container">
+
+        <div class="admin-card">
+
+            <h2 class="admin-title mb-4">Nueva Publicación</h2>
+
+            <!-- Tipo de Diseño -->
+            <div class="mb-4">
+                <label class="form-label fw-semibold">Selecciona el Diseño</label>
+
+                <div class="design-buttons">
+                    <button type="button" class="design-btn active" data-style="clasico">Clásico</button>
+                    <button type="button" class="design-btn" data-style="destacado">Destacado</button>
+                    <button type="button" class="design-btn" data-style="minimalista">Minimalista</button>
+                    <button type="button" class="design-btn" data-style="banner">Banner</button>
+                    <button type="button" class="design-btn" data-style="horizontal">Horizontal</button>
+                </div>
+            </div>
+
+            <!-- Título -->
+            <div class="mb-4">
+                <label class="form-label fw-semibold">Título *</label>
+                <input type="text" class="form-control" placeholder="Ingresa el título de la publicación">
+            </div>
+
+            <!-- Descripción -->
+            <div class="mb-4">
+                <label class="form-label fw-semibold">Descripción *</label>
+                <textarea class="form-control" rows="5"
+                          placeholder="Escribe el contenido completo..."></textarea>
+            </div>
+
+            <!-- Link -->
+            <div class="mb-4">
+                <label class="form-label fw-semibold">Link Externo</label>
+                <input type="url" class="form-control" placeholder="https://...">
+            </div>
+
+            <!-- Imagen -->
+            <div class="mb-4">
+                <label class="form-label fw-semibold">Imagen</label>
+                <input type="file" class="form-control">
+            </div>
+
+            <!-- Fechas -->
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">Fecha Inicio</label>
+                    <input type="datetime-local" class="form-control">
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">Fecha Fin</label>
+                    <input type="datetime-local" class="form-control">
+                </div>
+            </div>
+
+            <!-- Botones -->
+            <div class="d-flex gap-3">
+                <button class="btn btn-calificaciones">Publicar</button>
+                <button class="btn btn-servicio">Vista Previa</button>
+                <button class="btn btn-outline-danger">Cancelar</button>
+            </div>
+
+        </div>
+
+        <!-- VISTA PREVIA SIMULADA -->
+        <div class="preview-section mt-5">
+            <h4 class="mb-4">Vista Previa</h4>
+
+            <div id="previewContainer" class="preview-card clasico-style">
+                <h3 id="previewTitle">Título de ejemplo</h3>
+                <p id="previewDesc">
+                    Aquí se mostrará una simulación de cómo los alumnos verán esta publicación.
+                </p>
+                <a href="#" class="btn btn-calificaciones btn-sm">Leer más</a>
+            </div>
+        </div>
+
+        <script>
+            const buttons = document.querySelectorAll('.design-btn');
+            const preview = document.getElementById('previewContainer');
+
+            buttons.forEach(btn => {
+                btn.addEventListener('click', function () {
+
+                    buttons.forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+
+                    const style = this.dataset.style;
+
+                    preview.className = "preview-card " + style + "-style";
+                });
+            });
+        </script>
+
+    </div>
+</section>
