@@ -48,6 +48,7 @@
     <Folder Include="Migrations\" />
     <Folder Include="Areas\Tutorship\Controllers\" />
     <Folder Include="Areas\Tutorship\Views\" />
+    <Folder Include="wwwroot\uploads\interview\" />
     <Folder Include="wwwroot\uploads\seguimiento\" />
 
 	  <None Update="libwkhtmltox.dll">

@@ -1,7 +1,14 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using System;
+using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using SchoolManager.Data;
 using SchoolManager.Models;
+using System.Collections.Generic;
 
 namespace SchoolManager.Areas.Tutorship.Controllers
 {
@@ -9,14 +16,15 @@ namespace SchoolManager.Areas.Tutorship.Controllers
     public class TutorshipController : Controller
     {
         private readonly AppDbContext _context;
+        private readonly IWebHostEnvironment _webHostEnvironment;
 
-        
-        private readonly int _simulatedRoleId = 2; 
-        private readonly int _simulatedUserId = 10; 
+        private readonly int _simulatedRoleId = 2;
+        private readonly int _simulatedUserId = 10;
 
-        public TutorshipController(AppDbContext context)
+        public TutorshipController(AppDbContext context, IWebHostEnvironment webHostEnvironment)
         {
             _context = context;
+            _webHostEnvironment = webHostEnvironment;
         }
 
         // SEGURIDAD
@@ -28,7 +36,7 @@ namespace SchoolManager.Areas.Tutorship.Controllers
         // VISTA PRINCIPAL (Auto-aprovisionamiento integrado)
         public async Task<IActionResult> Controlador()
         {
-            ViewBag.RoleId = _simulatedRoleId; 
+            ViewBag.RoleId = _simulatedRoleId;
 
             var entrevistaExistente = await _context.TutorshipInterviews.FirstOrDefaultAsync(e => e.StudentId == _simulatedUserId);
 
@@ -81,7 +89,8 @@ namespace SchoolManager.Areas.Tutorship.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> GuardarEntrevista(EntrevistaViewModel modelo)
+        // INTEGRACIÓN AQUÍ: Añadimos IFormFile FotoPerfil como parámetro
+        public async Task<IActionResult> GuardarEntrevista(EntrevistaViewModel modelo, IFormFile FotoPerfil)
         {
             if (_simulatedRoleId != 1) return RedirectToAction(nameof(AccesoDenegado));
 
@@ -93,6 +102,37 @@ namespace SchoolManager.Areas.Tutorship.Controllers
 
             entrevista.Status = "Completada";
             entrevista.DateCompleted = DateTime.Now;
+
+            
+            if (FotoPerfil != null && FotoPerfil.Length > 0)
+            {
+                string folderPath = Path.Combine(_webHostEnvironment.WebRootPath, "uploads", "interview");
+
+                if (!Directory.Exists(folderPath))
+                {
+                    Directory.CreateDirectory(folderPath);
+                }
+
+                if (!string.IsNullOrEmpty(entrevista.FilePath) && entrevista.FilePath != "Sin archivo")
+                {
+                    string oldFilePath = Path.Combine(_webHostEnvironment.WebRootPath, entrevista.FilePath.TrimStart('/'));
+                    if (System.IO.File.Exists(oldFilePath))
+                    {
+                        System.IO.File.Delete(oldFilePath);
+                    }
+                }
+
+                string uniqueFileName = Guid.NewGuid().ToString() + "_" + Path.GetFileName(FotoPerfil.FileName);
+                string fullPath = Path.Combine(folderPath, uniqueFileName);
+
+                using (var fileStream = new FileStream(fullPath, FileMode.Create))
+                {
+                    await FotoPerfil.CopyToAsync(fileStream);
+                }
+
+                entrevista.FilePath = "/uploads/interview/" + uniqueFileName;
+            }
+
             _context.TutorshipInterviews.Update(entrevista);
 
             if (entrevista.Answers != null && entrevista.Answers.Any())
@@ -156,7 +196,6 @@ namespace SchoolManager.Areas.Tutorship.Controllers
             return View("~/Areas/Tutorship/Views/DetalleEntrevista.cshtml", entrevista);
         }
 
-        // MÓDULOS DEL MAESTRO (Rol 2)
         public async Task<IActionResult> VerEntrevistaAlumno(int id)
         {
             if (_simulatedRoleId != 2) return RedirectToAction(nameof(AccesoDenegado));
@@ -177,15 +216,71 @@ namespace SchoolManager.Areas.Tutorship.Controllers
             return View("~/Areas/Tutorship/Views/DetalleEntrevista.cshtml", entrevista);
         }
 
-        public async Task<IActionResult> ListaDeAlumnos()
+        public async Task<IActionResult> ListaDeAlumnos(int? grado, string? grupo)
         {
             if (_simulatedRoleId != 2) return RedirectToAction(nameof(AccesoDenegado));
             ViewBag.RoleId = _simulatedRoleId;
 
-            var listaAlumnos = await _context.Users
+            ViewBag.GradoSeleccionado = grado;
+            ViewBag.GrupoSeleccionado = grupo;
+
+            ViewBag.GradosDisponibles = await _context.grades_GradeGroups
+                .Select(g => g.GradeLevelId)
+                .Distinct()
+                .OrderBy(g => g)
+                .ToListAsync();
+
+            ViewBag.GruposDisponibles = await _context.grades_GradeGroups
+                .Select(g => g.Name)
+                .Distinct()
+                .OrderBy(g => g)
+                .ToListAsync();
+
+
+
+            var query = _context.Users
                 .Include(u => u.Person)
                 .Where(u => u.UserRoles.Any(ur => ur.RoleId == 1))
-                .ToListAsync();
+                .AsQueryable();
+
+
+
+            if (grado.HasValue && !string.IsNullOrEmpty(grupo))
+            {
+                var grupoDb = await _context.grades_GradeGroups
+                    .FirstOrDefaultAsync(g => g.GradeLevelId == grado.Value && g.Name == grupo);
+
+                if (grupoDb != null)
+                {
+                    query = query.Where(u => _context.grades_Enrollments
+                        .Any(e => e.StudentId == u.UserId && e.GroupId == grupoDb.GroupId));
+                }
+                else
+                {
+                    query = query.Where(u => false);
+                    ViewBag.MensajeFiltro = "No se encontró ningún grupo " + grado + grupo + " en el sistema.";
+                }
+            }
+
+
+            var listaAlumnos = await query.ToListAsync();
+
+            var userIds = listaAlumnos.Select(u => u.UserId).ToList();
+
+            ViewBag.FotosPerfil = await _context.TutorshipInterviews
+    .Where(e => userIds.Contains(e.StudentId) && e.FilePath != null && e.FilePath != "Sin archivo")
+    .ToDictionaryAsync(e => e.StudentId, e => e.FilePath);
+
+
+            ViewBag.Matriculas = await _context.PreenrollmentGenerals
+                .Where(p => p.UserId != null && userIds.Contains(p.UserId.Value))
+                .Select(p => new { p.UserId, p.Matricula })
+                .ToDictionaryAsync(p => p.UserId.Value, p => p.Matricula);
+
+            ViewBag.Grupos = await _context.grades_Enrollments
+                .Include(e => e.Group)
+                .Where(e => userIds.Contains(e.StudentId))
+                .ToDictionaryAsync(e => e.StudentId, e => e.Group.GradeLevelId + e.Group.Name);
 
             return View("~/Areas/Tutorship/Views/ListaDeAlumnos.cshtml", listaAlumnos);
         }
@@ -207,7 +302,6 @@ namespace SchoolManager.Areas.Tutorship.Controllers
                 return View("~/Areas/Tutorship/Views/Seguimiento.cshtml");
             }
 
-            
             var preinscripcion = await _context.PreenrollmentGenerals
                 .Where(p => p.Matricula == matriculaBuscar)
                 .Select(p => new
@@ -251,7 +345,7 @@ namespace SchoolManager.Areas.Tutorship.Controllers
 
             if (ArchivoAdjunto != null && ArchivoAdjunto.Length > 0)
             {
-                string carpetaUploads = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "seguimiento");
+                string carpetaUploads = Path.Combine(_webHostEnvironment.WebRootPath, "uploads", "seguimiento");
 
                 if (!Directory.Exists(carpetaUploads))
                 {
@@ -273,12 +367,12 @@ namespace SchoolManager.Areas.Tutorship.Controllers
             var nuevoReporte = new tutorship_monitoring
             {
                 StudentId = studentId,
-                TeacherId = _simulatedUserId, 
+                TeacherId = _simulatedUserId,
                 Date = DateTime.Now,
                 PerformanceLevel = tipo ?? "General",
                 DetailedObservations = observaciones ?? "Sin observaciones",
                 ActionPlan = "N/A",
-                FilePath = rutaArchivoBaseDeDatos 
+                FilePath = rutaArchivoBaseDeDatos
             };
 
             _context.TutorshipMonitorings.Add(nuevoReporte);
