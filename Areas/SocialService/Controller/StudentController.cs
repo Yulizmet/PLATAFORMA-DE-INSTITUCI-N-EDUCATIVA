@@ -50,11 +50,29 @@ namespace SchoolManager.Areas.SocialService.Controllers
             int requiredHoursPracticas = 240;
             int requiredHoursServicioSocial = 480;
 
+            // Obtener el nombre del asesor asignado
+            var assignment = _context.SocialServiceAssignments
+                .Where(a => a.StudentId == currentStudentId && a.IsActive)
+                .Select(a => new 
+                {
+                    TeacherFirstName = a.Teacher.Person.FirstName,
+                    TeacherLastNamePaternal = a.Teacher.Person.LastNamePaternal,
+                    TeacherLastNameMaternal = a.Teacher.Person.LastNameMaternal
+                })
+                .FirstOrDefault();
+
+            string teacherName = "Sin asignar";
+            if (assignment != null)
+            {
+                teacherName = $"{assignment.TeacherFirstName} {assignment.TeacherLastNamePaternal} {assignment.TeacherLastNameMaternal}";
+            }
+
             // Pasar datos a la vista
             ViewBag.TotalHoursPracticas = totalHoursPracticas;
             ViewBag.RemainingHoursPracticas = Math.Max(0, requiredHoursPracticas - totalHoursPracticas);
             ViewBag.TotalHoursServicioSocial = totalHoursServicioSocial;
             ViewBag.RemainingHoursServicioSocial = Math.Max(0, requiredHoursServicioSocial - totalHoursServicioSocial);
+            ViewBag.TeacherName = teacherName;
 
             return View();
         }

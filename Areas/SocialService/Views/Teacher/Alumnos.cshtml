@@ -1,4 +1,6 @@
 @model IEnumerable<SchoolManager.Models.social_service_assignment>
+@using Microsoft.EntityFrameworkCore
+@using Microsoft.Extensions.DependencyInjection
 
 <h3>Alumnos Asignados</h3>
 
@@ -34,7 +36,8 @@
             <table class="table">
                 <thead>
                     <tr>
-                        <th style="width:45%">Nombre</th>
+                        <th style="width:40%">Nombre</th>
+                        <th class="text-center">Semestre</th>
                         <th class="text-center">Grupo</th>
                         <th class="text-center">Fecha de Asignación</th>
                         <th class="text-center">Bitácoras</th>
@@ -45,8 +48,29 @@
                     @foreach (var assignment in Model)
                     {
                         var fullName = $"{assignment.Student.Person.FirstName} {assignment.Student.Person.LastNamePaternal} {assignment.Student.Person.LastNameMaternal}";
+
+                        // Obtener el grado del estudiante desde grades_final_grades
+                        var studentGradeLevel = ViewContext.HttpContext.RequestServices
+                            .GetService<SchoolManager.Data.AppDbContext>()
+                            ?.grades_FinalGrades
+                            .Include(fg => fg.Subject)
+                                .ThenInclude(s => s.GradeLevel)
+                            .Where(fg => fg.StudentId == assignment.StudentId)
+                            .Select(fg => fg.Subject.GradeLevel.Name)
+                            .FirstOrDefault();
+
                         <tr>
                             <td>@fullName</td>
+                            <td class="text-center">
+                                @if (!string.IsNullOrEmpty(studentGradeLevel))
+                                {
+                                    <span class="badge bg-primary">@studentGradeLevel</span>
+                                }
+                                else
+                                {
+                                    <span class="text-muted">N/A</span>
+                                }
+                            </td>
                             <td class="text-center">@(assignment.GroupName ?? "N/A")</td>
                             <td class="text-center">@assignment.AssignedDate.ToString("dd/MM/yyyy")</td>
                             <td class="text-center">

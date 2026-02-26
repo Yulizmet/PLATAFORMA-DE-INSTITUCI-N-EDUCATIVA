@@ -22,8 +22,38 @@ namespace SchoolManager.Areas.SocialService.Controllers
             return RedirectToAction("Dashboard");
         }
 
-        public IActionResult Dashboard()
+        public async Task<IActionResult> Dashboard()
         {
+            int currentTeacherId = GetCurrentTeacherId();
+            DateTime today = DateTime.Today;
+
+            // 1. Obtener cantidad de alumnos asignados
+            var alumnosAsignados = await _context.SocialServiceAssignments
+                .Where(a => a.TeacherId == currentTeacherId && a.IsActive)
+                .CountAsync();
+
+            // 2. Obtener cantidad de bitácoras pendientes de aprobar
+            var studentIds = await _context.SocialServiceAssignments
+                .Where(a => a.TeacherId == currentTeacherId && a.IsActive)
+                .Select(a => a.StudentId)
+                .ToListAsync();
+
+            var bitacorasPendientes = await _context.SocialServiceLogs
+                .Where(log => studentIds.Contains(log.StudentId) && !log.IsApproved)
+                .CountAsync();
+
+            // 3. Obtener cantidad de asistencias registradas hoy
+            var asistenciasHoy = await _context.SocialServiceAttendances
+                .Where(att => studentIds.Contains(att.StudentId) 
+                    && att.Date.Date == today
+                    && att.IsPresent)
+                .CountAsync();
+
+            // Pasar las estadísticas a la vista
+            ViewBag.AlumnosAsignados = alumnosAsignados;
+            ViewBag.BitacorasPendientes = bitacorasPendientes;
+            ViewBag.AsistenciasHoy = asistenciasHoy;
+
             return View();
         }
 
