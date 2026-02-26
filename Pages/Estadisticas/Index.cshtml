@@ -33,9 +33,9 @@
     <div class="col-12 d-flex justify-content-between align-items-center">
         <div>
             <h2 id="pageTitle">Estadísticas de alumnos</h2>
-            <p class="text-muted" id="pageSubtitle">Control y seguimiento de alumnos</p>
+            <p class="text-muted" id="pageSubtitle">Control y seguimiento: inscritos, cursando, aprobados y reprobados.</p>
         </div>
-            <!-- (Se eliminó el botón de pestaña; la sección de alumnos permanece visible) -->
+            <!-- Pestañas eliminadas: Vista fija de Alumnos (sin botón de pestañas) -->
             <!-- Botón de exportar (usa tabla visible y respeta filtros aplicados) -->
             <button id="btnExportTable" class="btn btn-success ms-2" title="Exportar tabla visible a Excel/CSV">Exportar a Excel</button>
         </div>
@@ -90,7 +90,7 @@
                 </div>
             </div>
 
-            <!-- (Se eliminó el bloque de filtros para Empleados) -->
+            <!-- Filtros de empleados removidos -->
         </div>
     </div>
 </div>
@@ -179,7 +179,7 @@
     </div>
 </div>
 
-<!-- (Se eliminó la vista de Empleados) -->
+<!-- Sección de empleados removida -->
 
 <div class="row mt-4">
     <div class="col-md-6">
@@ -222,10 +222,9 @@
 
 @section Scripts {
     <script>
-        // datos serializados para JS: ahora incluye alumnos y empleados
+        // datos serializados para JS: solo alumnos (se removieron empleados)
         window.__estadisticasData = {
-            students: @Html.Raw(Model.JsonStudents),
-            employees: @Html.Raw(Model.JsonEmployees)
+            students: @Html.Raw(Model.JsonStudents)
         };
     </script>
 
@@ -233,25 +232,31 @@
     <script src="~/js/estadisticas.js" asp-append-version="true"></script>
 
     <script>
-        // Lógica simplificada: no hay pestañas, se muestra la sección de alumnos y se controla el toggle de filtros
+        // Lógica simplificada: vista fija de alumnos y comportamiento del submenu de filtros
         (function () {
-            const viewStudents    = document.getElementById('viewStudents');
             const filtersStudents = document.getElementById('filtersStudents');
-            const filtersArea     = document.getElementById('filtersArea');
-            const toggleFilters   = document.getElementById('toggleFilters');
-            const pageTitle       = document.getElementById('pageTitle');
-            const pageSubtitle    = document.getElementById('pageSubtitle');
-            const studentStats    = document.getElementById('studentStats');
+            const filtersArea = document.getElementById('filtersArea');
+            const toggleFilters = document.getElementById('toggleFilters');
+            const pageTitle = document.getElementById('pageTitle');
+            const pageSubtitle = document.getElementById('pageSubtitle');
+            const studentStats = document.getElementById('studentStats');
 
-            function showStudents() {
-                if (viewStudents) viewStudents.classList.remove('d-none');
-                if (filtersStudents) filtersStudents.classList.remove('d-none');
-                if (studentStats) studentStats.classList.remove('d-none');
-                if (pageTitle) pageTitle.textContent = 'Estadísticas de alumnos';
-                if (pageSubtitle) pageSubtitle.textContent = 'Control y seguimiento de alumnos';
+            // Asegurar que la vista de alumnos esté visible
+            if (filtersStudents) {
+                filtersStudents.classList.remove('d-none');
+            }
+            if (studentStats) {
+                studentStats.classList.remove('d-none');
+            }
+            if (pageTitle) {
+                pageTitle.textContent = 'Estadísticas de alumnos';
+            }
+            if (pageSubtitle) {
+                pageSubtitle.textContent = 'Control y seguimiento: inscritos, cursando, aprobados y reprobados.';
             }
 
-            if (toggleFilters) {
+            // Toggle para submenu de filtros
+            if (toggleFilters && filtersArea) {
                 toggleFilters.addEventListener('click', function () {
                     if (filtersArea.classList.contains('show')) {
                         filtersArea.classList.remove('show');
@@ -262,9 +267,6 @@
                     }
                 });
             }
-
-            // Inicio: mostrar alumnos
-            showStudents();
         })();
     </script>
 }
