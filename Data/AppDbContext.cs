@@ -5,8 +5,7 @@ namespace SchoolManager.Data
 {
     public class AppDbContext : DbContext
     {
-        public AppDbContext(DbContextOptions<AppDbContext> options)
-            : base(options) { }
+        public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
 
         #region DbSets
         // Preenrollment (Inscripciones)
@@ -149,13 +148,6 @@ namespace SchoolManager.Data
             modelBuilder.Entity<preenrollment_docs>().ToTable("preenrollment_docs");
 
             // Índices únicos
-            modelBuilder.Entity<preenrollment_general>()
-                .HasIndex(p => p.Curp)
-                .IsUnique();
-
-            modelBuilder.Entity<preenrollment_general>()
-                .HasIndex(p => p.Email)
-                .IsUnique();
 
             modelBuilder.Entity<preenrollment_docs>()
                 .HasIndex(d => d.Curp)
@@ -178,7 +170,7 @@ namespace SchoolManager.Data
             // Relación: preenrollment_general -> users_user (UserId)
             modelBuilder.Entity<preenrollment_general>()
                 .HasOne(p => p.User)
-                .WithMany()
+                .WithMany(u => u.PreEnrollments)
                 .HasForeignKey(p => p.UserId)
                 .OnDelete(DeleteBehavior.Restrict);
 

@@ -21,5 +21,6 @@ namespace SchoolManager.Models
         public ICollection<users_userrole> UserRoles { get; set; }
         public ICollection<users_session> Sessions { get; set; }
         public ICollection<users_auditlog> AuditLogs { get; set; }
+        public ICollection<preenrollment_general> PreEnrollments { get; set; }
     }
 }
