@@ -62,11 +62,18 @@ namespace SchoolManager.Data
         public DbSet<tutorship_monitoring> TutorshipMonitorings { get; set; }
         public DbSet<tutorship_interview> TutorshipInterviews { get; set; }
         public DbSet<tutorship_interview_answer> TutorshipInterviewAnswers { get; set; }
-        #endregion
+
+        // Social Service (Servicio Social)
+        public DbSet<social_service_assignment> SocialServiceAssignments { get; set; } = default!;
+        public DbSet<social_service_attendance> SocialServiceAttendances { get; set; } = default!;
+        public DbSet<social_service_log> SocialServiceLogs { get; set; } = default!;
 
         // Foro (Noticias y Publicaciones)
         public DbSet<ForoPublicacion> ForoPublicaciones { get; set; }
         public DbSet<ForoImagen> ForoImagenes { get; set; }
+        #endregion
+
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -519,6 +526,39 @@ namespace SchoolManager.Data
                 .WithMany(p => p.Imagenes)
                 .HasForeignKey(i => i.PublicacionId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            #endregion
+
+            #region 7. Social Service Configuration
+
+            modelBuilder.Entity<social_service_assignment>().ToTable("social_service_assignment");
+            modelBuilder.Entity<social_service_attendance>().ToTable("social_service_attendance");
+            modelBuilder.Entity<social_service_log>().ToTable("social_service_log");
+
+            // Configuraciones específicas
+            modelBuilder.Entity<social_service_assignment>()
+                .HasIndex(a => new { a.TeacherId, a.StudentId })
+                .IsUnique();
+
+            modelBuilder.Entity<social_service_assignment>()
+                .Property(a => a.AssignedDate)
+                .HasDefaultValueSql("GETDATE()");
+
+            modelBuilder.Entity<social_service_attendance>()
+                .Property(a => a.Tipo)
+                .HasDefaultValue("Servicio Social");
+
+            modelBuilder.Entity<social_service_log>()
+                .Property(l => l.CreatedAt)
+                .HasDefaultValueSql("GETDATE()");
+
+            // Índices para mejorar búsquedas frecuentes
+            modelBuilder.Entity<social_service_attendance>()
+                .HasIndex(a => new { a.StudentId, a.Date });
+
+            modelBuilder.Entity<social_service_log>()
+                .HasIndex(l => new { l.StudentId, l.Week })
+                .IsUnique();
 
             #endregion
 
