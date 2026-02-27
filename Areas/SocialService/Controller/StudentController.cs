@@ -78,7 +78,7 @@ namespace SchoolManager.Areas.SocialService.Controllers
         }
 
         // Descargar un archivo relacionado con Servicio Social (ej: plantilla)
-        // Ejemplo de uso: /SocialService/Student/Download?filename=plantilla_bitacora.txt
+        // Ejemplo de uso: /SocialService/Student/Download?filename=plantilla_bitacora.pdf
         [HttpGet]
         public IActionResult Download(string filename)
         {
@@ -88,10 +88,25 @@ namespace SchoolManager.Areas.SocialService.Controllers
             // Evitar path traversal
             filename = Path.GetFileName(filename);
 
-            var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "servicio-social");
-            var fullPath = Path.Combine(uploadsFolder, filename);
+            // Priorizar carpeta dentro del área: Areas/SocialService/uploads
+            var areaUploads = Path.Combine(Directory.GetCurrentDirectory(), "Areas", "SocialService", "uploads");
+            var areaPath = Path.Combine(areaUploads, filename);
 
-            if (!System.IO.File.Exists(fullPath))
+            // Fallback a wwwroot/uploads/servicio-social
+            var wwwrootUploads = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "servicio-social");
+            var wwwrootPath = Path.Combine(wwwrootUploads, filename);
+
+            string fullPath = null;
+            if (System.IO.File.Exists(areaPath))
+            {
+                fullPath = areaPath;
+            }
+            else if (System.IO.File.Exists(wwwrootPath))
+            {
+                fullPath = wwwrootPath;
+            }
+
+            if (fullPath == null)
                 return NotFound();
 
             var provider = new FileExtensionContentTypeProvider();
