@@ -14,6 +14,8 @@
     <link rel="stylesheet" href="~/css/tramites.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/SchoolManager.styles.css" asp-append-version="true" />
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" />
 
 </head>
 <body>
@@ -24,77 +26,113 @@
     <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
     @await RenderSectionAsync("Scripts", required: false)
 
     <div class="container-fluid">
         <div class="row">
+
             <nav class="col-md-3 col-lg-2 d-md-block sidebar shadow-lg position-fixed">
-                <div class="position-sticky">
+                <div class="d-flex flex-column h-100">
+
+                    <div class="sidebar-scroll-container flex-grow-1">
                     <div class="text-center mb-4">
                         <i class="bi bi-person-badge fs-1 text-white opacity-50"></i>
                         <div class="text-white fw-bold mt-2">Sistema Integral Escolar</div>
                     </div>
 
-                    <h5 class="mb-3">Gestión de Trámites</h5>
+                    <h5 class="mb-3 text-center">Gestión de Trámites</h5>
 
-                    <ul class="nav flex-column">
-                        <li class="nav-item">
-                            <a class="nav-link @(currentController == "Dashboard" ? "active-item" : "")"
-                               asp-area="Procedures" asp-controller="Dashboard" asp-action="Index">
-                                <i class="bi bi-speedometer2"></i>
-                                <span>Panel de control</span>
-                            </a>
-                        </li>
+                    <div class="sidebar-group">
+                        <small class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-uppercase opacity-50">
+                            <span>Análisis</span>
+                        </small>
+                        <ul class="nav flex-column">
+                            <li class="nav-item">
+                                <a class="nav-link @(currentController == "Dashboard" ? "active-item" : "")"
+                                   asp-area="Procedures" asp-controller="Dashboard" asp-action="Index">
+                                        <i class="bi bi-clipboard-data"></i>
+                                    <span>Panel de control</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
 
-                        <li class="nav-item">
-                            <a class="nav-link @(currentController == "ProcedureManagement" ? "active-item" : "")"
-                               asp-area="Procedures" asp-controller="ProcedureManagement" asp-action="Index">
-                                <i class="bi bi-clock-history"></i>
-                                <span>Seguimiento</span>
-                            </a>
-                        </li>
+                    <div class="sidebar-group">
+                        <small class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-uppercase opacity-50">
+                            <span>Atención Escolar</span>
+                        </small>
+                        <ul class="nav flex-column">
+                            <li class="nav-item">
+                                <a class="nav-link @(currentController == "ProcedureManagement" ? "active-item" : "")"
+                                   asp-area="Procedures" asp-controller="ProcedureManagement" asp-action="Index">
+                                        <i class="bi bi-speedometer2"></i>
+                                    <span>Seguimiento</span>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link @(currentController == "Proceeding" ? "active-item" : "")"
+                                   asp-area="Procedures" asp-controller="Proceeding" asp-action="Index">
+                                    <i class="bi bi-folder2-open"></i>
+                                    <span>Expedientes</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
 
-                        <li class="nav-item">
-                            <a class="nav-link @(currentController == "Proceeding" ? "active-item" : "")"
-                               asp-area="Procedures" asp-controller="Proceeding" asp-action="Index">
-                                <i class="bi bi-folder2-open"></i>
-                                <span>Expedientes</span>
-                            </a>
-                        </li>
+                    <div class="sidebar-group">
+                        <small class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-uppercase opacity-50">
+                            <span>Administración</span>
+                        </small>
+                        <ul class="nav flex-column">
+                            <li class="nav-item">
+                                    <a class="nav-link @(currentController == "AdministrativeStaff" ? "active-item" : "")"
+                                       asp-area="Procedures" asp-controller="AdministrativeStaff" asp-action="Index">
+                                    <i class="bi bi-people"></i>
+                                    <span>Gestión de Personal</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
 
-                        <li class="nav-item">
-                            <a class="nav-link @(currentController == "ProcedureAreas" ? "active-item" : "")"
-                               asp-area="Procedures" asp-controller="ProcedureAreas" asp-action="Index">
-                                <i class="bi bi-diagram-3"></i>
-                                <span>Áreas</span>
-                            </a>
-                        </li>
+                    <div class="sidebar-group">
+                        <small class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-uppercase opacity-50">
+                            <span>Configuración</span>
+                        </small>
+                        <ul class="nav flex-column mb-5">
+                            <li class="nav-item">
+                                <a class="nav-link @(currentController == "ProcedureAreas" ? "active-item" : "")"
+                                   asp-area="Procedures" asp-controller="ProcedureAreas" asp-action="Index">
+                                    <i class="bi bi-diagram-3"></i>
+                                    <span>Áreas Responsables</span>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link @(currentController == "DocumentsCatalog" ? "active-item" : "")"
+                                   asp-area="Procedures" asp-controller="DocumentsCatalog" asp-action="Index">
+                                    <i class="bi bi-file-earmark-medical"></i>
+                                    <span>Catálogo de Documentos</span>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link @(currentController == "ProcedureStatus" ? "active-item" : "")"
+                                   asp-area="Procedures" asp-controller="ProcedureStatus" asp-action="Index">
+                                    <i class="bi bi-check-circle"></i>
+                                    <span>Estatus de Flujo</span>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link @(currentController == "ProcedureConfiguration" ? "active-item" : "")"
+                                   asp-area="Procedures" asp-controller="ProcedureConfiguration" asp-action="Index">
+                                    <i class="bi bi-gear"></i>
+                                    <span>Catálogo de Trámites</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
 
-                        <li class="nav-item">
-                            <a class="nav-link @(currentController == "DocumentsCatalog" ? "active-item" : "")"
-                               asp-area="Procedures" asp-controller="DocumentsCatalog" asp-action="Index">
-                                <i class="bi bi-file-earmark-medical"></i>
-                                <span>Documentos</span>
-                            </a>
-                        </li>
-
-                        <li class="nav-item">
-                            <a class="nav-link @(currentController == "ProcedureStatus" ? "active-item" : "")"
-                               asp-area="Procedures" asp-controller="ProcedureStatus" asp-action="Index">
-                                <i class="bi bi-check-circle"></i>
-                                <span>Estados</span>
-                            </a>
-                        </li>
-
-                        <li class="nav-item">
-                            <a class="nav-link @(currentController == "ProcedureConfiguration" ? "active-item" : "")"
-                               asp-area="Procedures" asp-controller="ProcedureConfiguration" asp-action="Index">
-                                <i class="bi bi-gear"></i>
-                                <span>Trámites</span>
-                            </a>
-                        </li>
-                    </ul>
+                    </div>
 
                     <div class="user-profile">
                         <div class="d-flex align-items-center">

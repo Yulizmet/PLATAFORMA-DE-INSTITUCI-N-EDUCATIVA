@@ -3,11 +3,60 @@
     ViewData["Title"] = "Historial de Solicitudes";
 }
 
+
+@section Scripts {
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+    <partial name="_DataTableConfig" />
+
+    <script>
+            function openMonitoring(id) {
+                $('#dynamicModalContent').html('');
+
+                Swal.fire({
+                    title: 'Cargando expediente...',
+                    text: 'Espere un momento por favor.',
+                    allowOutsideClick: false,
+                    showConfirmButton: false,
+                    didOpen: () => { Swal.showLoading(); }
+                });
+
+                $.get(`/Procedures/ProcedureManagement/Monitoring/${id}`, function (data) {
+                    Swal.close();
+
+                    $('#dynamicModalContent').html(data);
+
+                    const modalEl = document.getElementById('dynamicModal');
+                    const myModal = new bootstrap.Modal(modalEl);
+                    myModal.show();
+
+                }).fail(function(xhr) {
+                    Swal.close();
+                    console.error("Error al cargar:", xhr.responseText);
+                    Swal.fire('Error', 'No se pudo cargar el seguimiento. Verifique que la ruta sea correcta.', 'error');
+                });
+            }
+        function submitStep() {
+                const formData = $('#formUpdateStatus').serialize();
+
+                $.post('/Procedures/ProcedureManagement/UpdateStatus', formData, function (response) {
+                    if (response.success) {
+                        Swal.fire('¡Éxito!', response.message, 'success').then(() => {
+                            location.reload();
+                        });
+                    } else {
+                        Swal.fire('Error', response.message, 'error');
+                    }
+                });
+            }
+    </script>
+}
+
 <div class="container-fluid px-4 pt-5">
 
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h2 class="fw-bold mb-0"><i class="bi bi-folder2-open me-2 text-dark"></i>Historial de Solicitudes</h2>
+            <h2 class="fw-bold mb-0"><i class="bi bi-speedometer2 me-2 text-dark"></i>Historial de Solicitudes</h2>
             <p class="text-muted small">Administración y seguimiento de trámites emitidos.</p>
         </div>
         <div class="d-flex gap-2">
@@ -17,26 +66,32 @@
         </div>
     </div>
 
-    <div class="card shadow-sm border-0">
+    <partial name="_TableTools" />
+
+    <div class="card border-0 overflow-hidden">
         <div class="card-body p-0">
             <div class="table-responsive">
-                <table id="tableToCopy" class="table table-hover align-middle mb-0">
+                <table id="mainTable" class="table table-hover align-middle mb-0">
                     <thead class="small burgundy-header text-white">
                         <tr>
+                            <th class="no-sort text-center"> <input type="checkbox" id="checkAll"> </th>
                             <th class="ps-4">Folio / Fecha</th>
                             <th>Alumno / Remitente</th>
                             <th>Trámite / Asunto</th>
                             <th class="text-center">Docs</th>
                             <th>Estado Actual</th>
-                            <th class="actions text-center pe-4"> Acciones</th>
+                            <th class="no-sort actions text-center pe-4"> Acciones</th>
                         </tr>
                     </thead>
-                    <tbody>
+                    <tbody class="table-white">
                         @foreach (var item in Model)
                         {
                             var student = item.Preenrollments?.FirstOrDefault();
 
                             <tr>
+                                <td class="text-center">
+                                    <input type="checkbox" class="form-check-input row-checkbox" value="@item.Id" />
+                                </td>
                                 <td class="ps-4">
                                     <div class="fw-bold burgundy-color">@item.Folio</div>
                                     <small class="text-muted">@item.DateUpdated.ToString("dd/MM/yyyy hh:mm tt")</small>
@@ -118,7 +173,7 @@
                                 </td>
 
                                 <td class="text-center pe-4">
-                                    <button class="btn btn-sm btn-secondary px-3 shadow-sm rounded-pill"
+                                    <button class="btn btn-sm btn-light border shadow-sm px-3 shadow-sm rounded-pill"
                                             onclick="openMonitoring(@item.Id)">
                                         <i class="bi bi-gear-fill me-1"></i> Gestionar
                                     </button>
@@ -139,47 +194,3 @@
         </div>
     </div>
 </div>
-
-@section Scripts {
-    <script>
-        function openMonitoring(id) {
-            $('#dynamicModalContent').html('');
-
-            Swal.fire({
-                title: 'Cargando expediente...',
-                text: 'Espere un momento por favor.',
-                allowOutsideClick: false,
-                showConfirmButton: false,
-                didOpen: () => { Swal.showLoading(); }
-            });
-
-            $.get(`/Procedures/ProcedureManagement/Monitoring/${id}`, function (data) {
-                Swal.close();
-
-                $('#dynamicModalContent').html(data);
-
-                const modalEl = document.getElementById('dynamicModal');
-                const myModal = new bootstrap.Modal(modalEl);
-                myModal.show();
-
-            }).fail(function(xhr) {
-                Swal.close();
-                console.error("Error al cargar:", xhr.responseText);
-                Swal.fire('Error', 'No se pudo cargar el seguimiento. Verifique que la ruta sea correcta.', 'error');
-            });
-        }
-    function submitStep() {
-            const formData = $('#formUpdateStatus').serialize();
-
-            $.post('/Procedures/ProcedureManagement/UpdateStatus', formData, function (response) {
-                if (response.success) {
-                    Swal.fire('¡Éxito!', response.message, 'success').then(() => {
-                        location.reload();
-                    });
-                } else {
-                    Swal.fire('Error', response.message, 'error');
-                }
-            });
-        }
-    </script>
-}

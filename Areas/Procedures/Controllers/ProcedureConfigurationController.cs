@@ -24,23 +24,47 @@ namespace SchoolManager.Areas.Procedures.Controllers
         public async Task<IActionResult> Index()
         {
             var data = await _context.ProcedureTypes
-            .Include(p => p.ProcedureArea)
-            .Include(p => p.Requirements)
-                .ThenInclude(r => r.ProcedureTypeDocument)
-            .Include(p => p.ProcedureFlow)
-                    .ThenInclude(f => f.ProcedureStatus)
-            .ToListAsync();
+                .Include(p => p.ProcedureArea)
+                .Include(p => p.Requirements).ThenInclude(r => r.ProcedureTypeDocument)
+                .Include(p => p.ProcedureFlow).ThenInclude(f => f.ProcedureStatus)
+                .ToListAsync();
 
             return View(data);
+        }
+
+        //MÉTODOS DE APOYO
+        private async Task PrepareDropdowns()
+        {
+            ViewData["IdArea"] = new SelectList(await _context.ProcedureAreas.ToListAsync(), "Id", "Name");
+            ViewData["IdTypeDocument"] = new SelectList(await _context.ProcedureTypeDocuments.ToListAsync(), "Id", "Name");
+
+            var filteredStatus = await _context.ProcedureStatus
+                .Where(s => s.Name != "Rechazado" && s.Name != "Cancelado")
+                .OrderBy(s => s.Id)
+                .ToListAsync();
+            ViewData["IdStatus"] = new SelectList(filteredStatus, "Id", "Name");
+        }
+
+        private async Task EnsureDefaultFlow(int procedureTypeId)
+        {
+            var rejectedStatus = await _context.ProcedureStatus.FirstOrDefaultAsync(s => s.Name == "Rechazado");
+            var cancelledStatus = await _context.ProcedureStatus.FirstOrDefaultAsync(s => s.Name == "Cancelado");
+
+            if (rejectedStatus != null)
+            {
+                _context.ProcedureFlow.Add(new procedure_flow { IdTypeProcedure = procedureTypeId, IdStatus = rejectedStatus.Id, StepOrder = 90 });
+            }
+
+            if (cancelledStatus != null)
+            {
+                _context.ProcedureFlow.Add(new procedure_flow { IdTypeProcedure = procedureTypeId, IdStatus = cancelledStatus.Id, StepOrder = 99 });
+            }
         }
 
         [HttpGet]
         public async Task<IActionResult> Create()
         {
-            ViewData["IdArea"] = new SelectList(await _context.ProcedureAreas.ToListAsync(), "Id", "Name");
-            ViewData["IdTypeDocument"] = new SelectList(await _context.ProcedureTypeDocuments.ToListAsync(), "Id", "Name");
-            ViewData["IdStatus"] = new SelectList(await _context.ProcedureStatus.OrderBy(s => s.Id).ToListAsync(), "Id", "Name");
-
+            await PrepareDropdowns();
             return PartialView("_CreateModal");
         }
 
@@ -48,20 +72,13 @@ namespace SchoolManager.Areas.Procedures.Controllers
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null) return NotFound();
-
             var procedureType = await _context.ProcedureTypes
-                .Include(p => p.Requirements)
-                    .ThenInclude(r => r.ProcedureTypeDocument)
-                .Include(p => p.ProcedureFlow)
-                    .ThenInclude(f => f.ProcedureStatus)
+                .Include(p => p.Requirements).ThenInclude(r => r.ProcedureTypeDocument)
+                .Include(p => p.ProcedureFlow).ThenInclude(f => f.ProcedureStatus)
                 .FirstOrDefaultAsync(p => p.Id == id);
 
             if (procedureType == null) return NotFound();
-
-            ViewData["IdArea"] = new SelectList(await _context.ProcedureAreas.ToListAsync(), "Id", "Name", procedureType.IdArea);
-            ViewData["IdTypeDocument"] = new SelectList(await _context.ProcedureTypeDocuments.ToListAsync(), "Id", "Name");
-            ViewData["IdStatus"] = new SelectList(await _context.ProcedureStatus.OrderBy(s => s.Id).ToListAsync(), "Id", "Name");
-
+            await PrepareDropdowns();
             return PartialView("_EditModal", procedureType);
         }
 
@@ -83,10 +100,17 @@ namespace SchoolManager.Areas.Procedures.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var procedureType = await _context.ProcedureTypes.FindAsync(id);
+            var procedureType = await _context.ProcedureTypes
+                .Include(p => p.Requirements)
+                .Include(p => p.ProcedureFlow)
+                .FirstOrDefaultAsync(p => p.Id == id);
+
             if (procedureType != null)
             {
+                _context.ProcedureTypeRequirements.RemoveRange(procedureType.Requirements);
+                _context.ProcedureFlow.RemoveRange(procedureType.ProcedureFlow);
                 _context.ProcedureTypes.Remove(procedureType);
+
                 await _context.SaveChangesAsync();
                 return Json(new { success = true });
             }
@@ -97,10 +121,7 @@ namespace SchoolManager.Areas.Procedures.Controllers
         [HttpGet]
         public async Task<IActionResult> BulkEdit()
         {
-            ViewData["IdArea"] = new SelectList(await _context.ProcedureAreas.ToListAsync(), "Id", "Name");
-            ViewData["IdTypeDocument"] = new SelectList(await _context.ProcedureTypeDocuments.ToListAsync(), "Id", "Name");
-            ViewData["IdStatus"] = new SelectList(await _context.ProcedureStatus.OrderBy(s => s.Id).ToListAsync(), "Id", "Name");
-
+            await PrepareDropdowns();
             return PartialView("_BulkEditModal");
         }
 
@@ -115,19 +136,10 @@ namespace SchoolManager.Areas.Procedures.Controllers
             ModelState.Remove("ProcedureFlow");
             ModelState.Remove("DateUpdated");
 
-            if (requirementsList != null)
-                for (int i = 0; i < requirementsList.Count; i++)
-                {
-                    ModelState.Remove($"requirementsList[{i}].ProcedureType");
-                    ModelState.Remove($"requirementsList[{i}].ProcedureTypeDocument");
-                }
-
-            if (flowList != null)
-                for (int i = 0; i < flowList.Count; i++)
-                {
-                    ModelState.Remove($"flowList[{i}].ProcedureType");
-                    ModelState.Remove($"flowList[{i}].ProcedureStatus");
-                }
+            if (flowList != null && flowList.Any(f => f.StepOrder >= 90))
+            {
+                return Json(new { success = false, errors = new[] { "El orden de los pasos debe ser menor a 90. Los números 90 a 99 están reservados." } });
+            }
 
             if (ModelState.IsValid)
             {
@@ -141,6 +153,7 @@ namespace SchoolManager.Areas.Procedures.Controllers
                         ptTarget = procedureType;
                         ptTarget.DateUpdated = DateTime.Now;
                         _context.ProcedureTypes.Add(ptTarget);
+                        await _context.SaveChangesAsync();
                     }
                     else
                     {
@@ -149,7 +162,7 @@ namespace SchoolManager.Areas.Procedures.Controllers
                             .Include(p => p.ProcedureFlow)
                             .FirstOrDefaultAsync(p => p.Id == procedureType.Id);
 
-                        if (ptTarget == null) return Json(new { success = false, errors = new[] { "Trámite no encontrado." } });
+                        if (ptTarget == null) return Json(new { success = false, errors = new[] { "No encontrado" } });
 
                         ptTarget.Name = procedureType.Name;
                         ptTarget.IdArea = procedureType.IdArea;
@@ -159,43 +172,39 @@ namespace SchoolManager.Areas.Procedures.Controllers
                         _context.ProcedureFlow.RemoveRange(ptTarget.ProcedureFlow);
                     }
 
-                    if (requirementsList != null && requirementsList.Any())
+                    if (requirementsList != null)
                     {
-                        foreach (var req in requirementsList)
-                        {
-                            req.Id = 0;
-                            ptTarget.Requirements.Add(req);
-                        }
+                        foreach (var req in requirementsList) { req.Id = 0; ptTarget.Requirements.Add(req); }
                     }
 
-                    if (flowList != null && flowList.Any())
+                    if (flowList != null)
                     {
-                        foreach (var flow in flowList)
-                        {
-                            flow.Id = 0;
-                            ptTarget.ProcedureFlow.Add(flow);
-                        }
+                        foreach (var flow in flowList) { flow.Id = 0; ptTarget.ProcedureFlow.Add(flow); }
                     }
+
+                    await EnsureDefaultFlow(ptTarget.Id);
 
                     await _context.SaveChangesAsync();
                     await transaction.CommitAsync();
-
                     return Json(new { success = true });
                 }
                 catch (Exception ex)
                 {
                     await transaction.RollbackAsync();
-                    return Json(new { success = false, errors = new[] { "Error: " + ex.Message } });
+                    return Json(new { success = false, errors = new[] { ex.Message } });
                 }
             }
-
-            var modelErrors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToList();
-            return Json(new { success = false, errors = modelErrors });
+            return Json(new { success = false, errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage) });
         }
 
         [HttpPost]
         public async Task<IActionResult> SaveBulkUpdate([FromBody] BulkUpdateViewModel data)
         {
+            if (data.FlowList != null && data.FlowList.Any(f => f.StepOrder >= 90))
+            {
+                return Json(new { success = false, message = "No se pueden usar órdenes >= 90 (reservados para estados automáticos)." });
+            }
+
             using var transaction = await _context.Database.BeginTransactionAsync();
             try
             {
@@ -208,20 +217,15 @@ namespace SchoolManager.Areas.Procedures.Controllers
                 foreach (var p in procedures)
                 {
                     if (!string.IsNullOrEmpty(data.Name)) p.Name = data.Name;
-
                     if (data.IdArea > 0) p.IdArea = data.IdArea;
-
                     p.DateUpdated = DateTime.Now;
+
                     if (data.RequirementsList != null && data.RequirementsList.Any())
                     {
                         _context.ProcedureTypeRequirements.RemoveRange(p.Requirements);
                         foreach (var req in data.RequirementsList)
                         {
-                            p.Requirements.Add(new procedure_type_requirements
-                            {
-                                IdTypeDocument = req.IdTypeDocument,
-                                IsRequired = req.IsRequired
-                            });
+                            p.Requirements.Add(new procedure_type_requirements { IdTypeDocument = req.IdTypeDocument, IsRequired = req.IsRequired });
                         }
                     }
 
@@ -230,12 +234,10 @@ namespace SchoolManager.Areas.Procedures.Controllers
                         _context.ProcedureFlow.RemoveRange(p.ProcedureFlow);
                         foreach (var flow in data.FlowList)
                         {
-                            p.ProcedureFlow.Add(new procedure_flow
-                            {
-                                IdStatus = flow.IdStatus,
-                                StepOrder = flow.StepOrder
-                            });
+                            p.ProcedureFlow.Add(new procedure_flow { IdStatus = flow.IdStatus, StepOrder = flow.StepOrder });
                         }
+
+                        await EnsureDefaultFlow(p.Id);
                     }
                 }
 
@@ -249,8 +251,6 @@ namespace SchoolManager.Areas.Procedures.Controllers
                 return Json(new { success = false, message = ex.Message });
             }
         }
-
-
 
         [HttpPost]
         public async Task<IActionResult> BulkDelete([FromBody] List<int> ids)

@@ -1,0 +1,50 @@
+﻿@model SchoolManager.Models.procedure_staff
+
+<div class="modal fade" id="editStaffModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header bg-burgundy text-white">
+                <h5 class="modal-title"><i class="bi bi-pencil-square me-2"></i>Editar Asignación de Personal</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="formEditStaff" method="post" asp-action="EditStaff">
+                @* Campo oculto para el ID del registro *@
+                <input type="hidden" asp-for="Id" />
+                <input type="hidden" asp-for="IdUser" />
+
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Usuario</label>
+                        <input type="text" class="form-control bg-light"
+                               value="@(Model.User?.Person?.FirstName) @(Model.User?.Person?.LastNamePaternal) (@Model.User?.Username)"
+                               readonly disabled />
+                        <div class="form-text">El usuario no puede ser modificado.</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Área de Responsabilidad</label>
+                        <select asp-for="IdArea" class="form-select" required
+                                asp-items="@(new SelectList(ViewBag.Areas, "Id", "Name"))">
+                            <option value="">-- Selecciona un área --</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Puesto / Cargo</label>
+                        <input asp-for="JobPosition" type="text" class="form-control" placeholder="Ej: Jefe de Departamento" required />
+                    </div>
+
+                    <div class="form-check form-switch mt-4">
+                        <input class="form-check-input" type="checkbox" asp-for="IsSuperAdmin">
+                        <label class="form-check-label fw-bold" asp-for="IsSuperAdmin">¿Es SuperAdmin?</label>
+                        <div class="small text-muted">Permite ver trámites de todas las áreas.</div>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-burgundy">Actualizar Cambios</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

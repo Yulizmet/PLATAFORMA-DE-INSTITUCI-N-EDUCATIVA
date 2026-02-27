@@ -11,5 +11,9 @@
         public bool IsActive { get; set; }
         public DateTime CreatedDate { get; set; }
         public string? CareerName { get; set; }
+
+        public string Initials => !string.IsNullOrEmpty(FullName)
+            ? string.Join("", FullName.Split(' ').Where(x => x.Length > 0).Select(x => x[0]).Take(2)).ToUpper()
+            : "??";
     }
 }

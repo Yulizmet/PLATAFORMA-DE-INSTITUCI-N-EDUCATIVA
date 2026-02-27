@@ -1,0 +1,57 @@
+﻿<div class="modal fade" id="quickUserModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header bg-dark text-white">
+                <h5 class="modal-title"><i class="bi bi-person-plus-fill me-2"></i>Crear Usuario Staff Completo</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="formQuickUser" asp-action="QuickCreateStaff" method="post">
+                <div class="modal-body">
+                    <div class="alert alert-info small">
+                        Este botón es temporal. Crea automáticamente el registro en Personas, Usuarios y le asigna el Rol 3 (Staff).
+                    </div>
+                    <div class="row g-2">
+                        <div class="col-md-12 mb-2">
+                            <label class="form-label fw-bold">Nombre(s)</label>
+                            <input type="text" name="FirstName" class="form-control" placeholder="Ej: Emily Yuliet" required />
+                        </div>
+                        <div class="col-md-6 mb-2">
+                            <label class="form-label fw-bold">Apellido paterno</label>
+                            <input type="text" name="LastNamePaternal" class="form-control" required />
+                        </div>
+                        <div class="col-md-6 mb-2">
+                            <label class="form-label fw-bold">Apellido materno</label>
+                            <input type="text" name="LastNameMaternal" class="form-control" required />
+                        </div>
+                        <div class="col-md-6 mb-2">
+                            <label class="form-label fw-bold">CURP</label>
+                            <input type="text" name="Curp" class="form-control" maxlength="18" required />
+                        </div>
+                        <div class="col-md-6 mb-2">
+                            <label class="form-label fw-bold">Género</label>
+                            <select name="Gender" class="form-select">
+                                <option value="M">Masculino</option>
+                                <option value="F">Femenino</option>
+                            </select>
+                        </div>
+                        <div class="col-md-12 mb-2">
+                            <label class="form-label fw-bold">Email</label>
+                            <input type="email" name="Email" class="form-control" placeholder="staff@school.com" required />
+                        </div>
+                        <div class="col-md-12 mb-2">
+                            <label class="form-label fw-bold">Nombre de Usuario</label>
+                            <input type="text" name="Username" class="form-control" placeholder="ej: emily.pena" required />
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                    <button type="button" class="btn btn btn-dark" onclick="fillTestData()">
+                        <i class="bi bi-lightning-fill"></i> Llenar datos de prueba
+                    </button>
+                    <button type="submit" class="btn btn-dark">Ejecutar INSERTs</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

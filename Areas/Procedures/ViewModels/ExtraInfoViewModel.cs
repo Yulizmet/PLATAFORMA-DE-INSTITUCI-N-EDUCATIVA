@@ -9,7 +9,6 @@
         public string UserMessage { get; set; } = null!;
         public DateTime LastUpdate { get; set; }
 
-        // --- Info del Solicitante (Aspirante o Alumno) ---
         public string StudentFullName { get; set; } = null!;
         public string Matricula { get; set; } = null!;
         public string Email { get; set; } = null!;

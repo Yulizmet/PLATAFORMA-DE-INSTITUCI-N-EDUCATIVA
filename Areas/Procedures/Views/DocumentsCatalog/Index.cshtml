@@ -5,10 +5,56 @@
     ViewBag.EntityName = "documentos";
 }
 
+@section Scripts {
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+    <partial name="_DataTableConfig" />
+
+    <script>
+        window.loadModal = async function(url) {
+            try {
+                const response = await fetch(url);
+                const html = await response.text();
+                const container = document.getElementById('modalContainer');
+                container.innerHTML = html;
+                const modalElement = container.querySelector('.modal');
+
+                if (modalElement) {
+                    const myModal = new bootstrap.Modal(modalElement);
+                    myModal.show();
+                }
+            } catch (error) {
+                Swal.fire('Error', 'Fallo en la carga del modal', 'error');
+            }
+        };
+
+        $(document).off("submit", ".modal form").on("submit", ".modal form", async function (e) {
+            e.preventDefault();
+            const form = e.target;
+
+            try {
+                const response = await fetch(form.action, {
+                    method: form.method,
+                    body: new FormData(form)
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    location.reload();
+                } else {
+                    Swal.fire('Atención', result.errors ? result.errors.join("\n") : "Error al procesar", 'warning');
+                }
+            } catch (error) {
+                Swal.fire('Error', 'Error crítico al procesar la solicitud', 'error');
+            }
+        });
+    </script>
+}
+
 <div id="modalContainer"></div>
 
 <div class="container-fluid px-4 pt-5">
-
     <div class="d-flex justify-content-between align-items-start mb-4">
         <div>
             <h2 class="fw-bold mb-1">
@@ -16,26 +62,32 @@
             </h2>
             <p class="text-muted small mb-0">Configura los tipos de documentos requeridos para los trámites.</p>
         </div>
-        <button class="btn btn-success shadow-sm px-4" onclick="loadModal('/Procedures/DocumentsCatalog/Create')">
+        <button class="btn btn-burgundy shadow-sm" onclick="loadModal('/Procedures/DocumentsCatalog/Create')">
             <i class="bi bi-plus-circle me-2"></i> Agregar documento
         </button>
     </div>
+
     <partial name="_TableTools" />
-    <div class="card shadow-sm border-0 overflow-hidden">
+
+    <div class="card border-0 overflow-hidden">
         <div class="card-body p-0">
-            <table id="tableToCopy" class="table table-hover align-middle mb-0">
-                <thead class="burgundy-header text-white ps-4">
+            <table id="mainTable" class="table table-hover align-middle mb-0">
+                <thead class="burgundy-header text-white">
                     <tr>
-                        <th class="ps-4">Nombre del Documento</t>
-                        <th>Descripción</th>
-                        <th>Última modificación</th>
-                        <th class="actions text-center pe-4">Acciones</th>
+                        <th class="no-sort text-center"> <input type="checkbox" id="checkAll"> </th>
+                        <th class="ps-4" style="width: 30%;">Nombre del Documento</th>
+                        <th style="width: 40%;">Descripción</th>
+                        <th style="width: 20%;">Última modificación</th>
+                        <th class="no-sort text-center pe-4" style="width: 10%;">Acciones</th>
                     </tr>
                 </thead>
-                <tbody>
+                <tbody class="table-white">
                     @foreach (var item in Model)
                     {
                         <tr>
+                            <td class="text-center">
+                                <input type="checkbox" class="form-check-input row-checkbox" value="@item.Id" />
+                            </td>
                             <td class="ps-4 fw-bold text-dark">@item.Name</td>
                             <td class="text-muted">@(string.IsNullOrEmpty(item.Description) ? "Sin descripción" : item.Description)</td>
                             <td class="text-muted small">
@@ -43,17 +95,17 @@
                             </td>
                             <td class="actions text-center pe-4">
                                 <div class="btn-group">
-                                    <button class="btn btn-sm btn-warning me-2"
+                                    <button class="btn btn-sm btn-light border shadow-sm me-2"
                                             style="width:32px; height:32px; padding:0;"
                                             onclick="loadModal('/Procedures/DocumentsCatalog/Edit/@item.Id')"
                                             title="Editar">
-                                        <i class="bi bi-pencil-square"></i>
+                                        <i class="bi bi-pencil-square text-warning"></i>
                                     </button>
-                                    <button class="btn btn-sm btn-danger"
+                                    <button class="btn btn-sm btn-light border shadow-sm"
                                             style="width:32px; height:32px; padding:0;"
                                             onclick="loadModal('/Procedures/DocumentsCatalog/Delete/@item.Id')"
                                             title="Eliminar">
-                                        <i class="bi bi-trash-fill"></i>
+                                        <i class="bi bi-trash-fill text-danger"></i>
                                     </button>
                                 </div>
                             </td>
@@ -64,51 +116,3 @@
         </div>
     </div>
 </div>
-
-<script>
-    async function loadModal(url) {
-        try {
-            const response = await fetch(url);
-            if (!response.ok) throw new Error(`Error en el servidor: ${response.status}`);
-
-            const html = await response.text();
-            const container = document.getElementById('modalContainer');
-            container.innerHTML = html;
-
-            const modalElement = container.querySelector('.modal');
-            if (modalElement) {
-                const myModal = new bootstrap.Modal(modalElement);
-                myModal.show();
-            }
-        } catch (error) {
-            Swal.fire('Error', 'No se pudo cargar la ventana: ' + error.message, 'error');
-        }
-    }
-
-    document.addEventListener("submit", async function (e) {
-        const form = e.target;
-        if (!form.closest(".modal")) return;
-
-        e.preventDefault();
-
-        try {
-            const response = await fetch(form.action, {
-                method: form.method,
-                body: new FormData(form)
-            });
-
-            const result = await response.json();
-
-            if (result.success) {
-                const modalEl = form.closest(".modal");
-                const modal = bootstrap.Modal.getInstance(modalEl);
-                if (modal) modal.hide();
-                location.reload();
-            } else {
-                Swal.fire('Atención', result.errors.join("\n"), 'warning');
-            }
-        } catch (error) {
-            Swal.fire('Error', 'Error al procesar la solicitud', 'error');
-        }
-    });
-</script>

@@ -1,0 +1,35 @@
+﻿@model SchoolManager.Areas.Procedures.ViewModels.StaffViewModel
+
+<div class="modal fade" id="activateModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title"><i class="bi bi-person-check-fill me-2"></i>Restaurar Accesos Administrativos</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body text-center py-4">
+                <i class="bi bi-person-badge text-success" style="font-size: 4rem;"></i>
+                <h4 class="fw-bold mt-3">¿Reactivar este perfil?</h4>
+                <p class="mb-1">Se restaurarán las facultades de gestión para:</p>
+                <p class="fs-5 fw-bold text-success">@Model.FullName</p>
+
+                <div class="badge bg-success-subtle text-success border border-success-subtle p-2 mb-3">
+                    Área a reintegrar: @Model.AreaName
+                </div>
+
+                <div class="alert alert-success small mx-3 mt-2">
+                    <i class="bi bi-info-circle-fill me-1"></i>
+                    El usuario podrá <strong>gestionar trámites nuevamente</strong> y recuperará el acceso administrativo a su área asignada.
+                </div>
+            </div>
+            <div class="modal-footer bg-light">
+                <form id="formActivateStaff">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="id" value="@Model.Id" />
+                    <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" onclick="confirmActivateLogic()" class="btn btn-success px-4">Confirmar Reactivación</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

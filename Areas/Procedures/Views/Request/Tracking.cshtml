@@ -10,12 +10,12 @@
     <div class="container">
         <div class="d-flex justify-content-between align-items-end mb-4">
             <div>
-                <h2 class="burgundy-color fw-bold mb-1">
+                <h2 class="burgundy-color fw-bold mb-1 merriweather-font">
                     <i class="bi bi-journal-text me-2"></i>Mis Trámites
                 </h2>
                 <p class="text-muted small mb-0">Consulta el historial y estado de tus solicitudes vigentes.</p>
             </div>
-            <a asp-action="Requests" class="btn btn-burgundy px-4 shadow-sm" style="background-color: var(--burgundy); color: white; border-radius: 50px; font-weight: 600;">
+            <a asp-action="Requests" class="btn btn-burgundy px-4 shadow-sm merriweather-font" style="background-color: var(--burgundy); color: white; border-radius: 50px; font-weight: 600;">
                 <i class="bi bi-plus-lg me-2"></i>Nueva Solicitud
             </a>
         </div>
@@ -26,7 +26,7 @@
             <div class="card-body p-0">
                 <div class="table-responsive">
                     <table class="table table-hover align-middle mb-0">
-                        <thead class="custom-table-header">
+                        <thead class="custom-table-header merriweather-font">
                             <tr>
                                 <th class="ps-4">Folio</th>
                                 <th>Fecha Registro</th>
@@ -95,15 +95,18 @@
                                                 <i class="bi bi-cloud-download-fill"></i>
                                             </a>
 
-                                            @if (item.ProcedureFlow?.ProcedureStatus?.Name != "Finalizado" &&
-                                                                                    item.ProcedureFlow?.ProcedureStatus?.Name != "Cancelado")
-                                            {
-                                                <button type="button" class="btn btn-action btn-danger"
-                                                        onclick="confirmCancel(@item.Id, '@item.Folio')"
-                                                        title="Cancelar Trámite">
-                                                    <i class="bi bi-x-circle-fill"></i>
-                                                </button>
+                                            @{
+                                                bool isClosed = item.ProcedureFlow?.ProcedureStatus?.Name == "Finalizado" ||
+                                                item.ProcedureFlow?.ProcedureStatus?.Name == "Cancelado";
                                             }
+
+                                            <button type="button"
+                                                    class="btn btn-action @(isClosed ? "btn-secondary opacity-50" : "btn-danger")"
+                                                    onclick="@(isClosed ? "" : $"confirmCancel({item.Id}, '{item.Folio}')")"
+                                                    title="@(isClosed ? "Este trámite ya no se puede cancelar" : "Cancelar Trámite")"
+                                                    @(isClosed ? "disabled" : "")>
+                                                <i class="bi bi-x-circle-fill"></i>
+                                            </button>
                                         </div>
                                     </td>
                                 </tr>

@@ -1,0 +1,96 @@
+﻿<script>
+    let reqIndex = 0;
+    let flowIndex = 0;
+
+        $(document).ready(function () {
+        const table = $('#mainTable').DataTable({
+            "language": { "url": "//cdn.datatables.net/plug-ins/1.10.24/i18n/Spanish.json" },
+            "pageLength": 5,
+            "lengthMenu": [5, 10, 15, 20, 50, 100],
+            "responsive": true,
+            "autoWidth": false,
+            "dom": '<"dt-header-container d-flex align-items-center justify-content-between gap-3"l <"central-tools flex-fill d-flex justify-content-center"> <"search-box">>rt<"dt-footer-container d-flex align-items-center justify-content-between px-0" <"footer-left"> p>',
+            "columnDefs": [{ "targets": 'no-sort', "orderable": false }],
+            "order": [[1, "asc"]],
+            "initComplete": function() {
+                $('#tools-container').appendTo('.central-tools');
+                $('#tableSearch').parent().appendTo('.search-box');
+                $('#staffCounter').appendTo('.footer-left').removeClass('d-none');
+                $('.dataTables_info').remove();
+            }
+        });
+
+        $('#tableSearch').on('keyup', function () {
+            table.search(this.value).draw();
+            $('#countNumber').text(table.rows({ filter: 'applied' }).count());
+        });
+
+        $(document).on('change', '#checkAll', function () {
+            const isChecked = $(this).is(':checked');
+            $('.row-checkbox').prop('checked', isChecked);
+            $('.row-checkbox').closest('tr').toggleClass('table-active', isChecked);
+            updateBulkBar();
+        });
+
+        $(document).on('change', '.row-checkbox', function () {
+            const total = $('.row-checkbox').length;
+            const selected = $('.row-checkbox:checked').length;
+            $('#checkAll').prop('checked', total === selected);
+            $(this).closest('tr').toggleClass('table-active', $(this).is(':checked'));
+            updateBulkBar();
+        });
+    });
+
+    // --- FUNCIONES GLOBALES (FUERA DEL READY) ---
+    async function loadModal(url) {
+        try {
+            const response = await fetch(url);
+            const html = await response.text();
+            const container = document.getElementById('modalContainer');
+            container.innerHTML = html;
+            const modalElement = container.querySelector('.modal');
+
+            if (modalElement) {
+                const myModal = new bootstrap.Modal(modalElement);
+                myModal.show();
+                reqIndex = $('#pillsContainer .badge').length;
+                flowIndex = $('#flowContainer .flow-item').length;
+            }
+        } catch (error) {
+            Swal.fire('Error', 'Fallo en la carga: ' + error.message, 'error');
+        }
+    }
+
+    function updateBulkBar() {
+        const count = $('.row-checkbox:checked').length;
+        const bar = $('#bulkActionsBar');
+        if (count > 0) {
+            $('#selectedCount').text(count + (count === 1 ? ' seleccionado' : ' seleccionados'));
+            bar.removeClass('d-none').addClass('animate__animated animate__fadeInUp');
+        } else {
+            bar.addClass('d-none');
+            $('#checkAll').prop('checked', false);
+        }
+    }
+
+    function deselectAll() {
+        $('.row-checkbox, #checkAll').prop('checked', false).closest('tr').removeClass('table-active');
+        $('#bulkActionsBar').addClass('d-none');
+    }
+
+    $(document).on('click', '.btn-remove-pill', function() { $(this).closest('.badge').remove(); reorderAll(); });
+    $(document).on('click', '.btn-remove-flow', function() { $(this).closest('.flow-item').remove(); reorderAll(); });
+
+    function reorderAll() {
+        $('#pillsContainer .badge').each(function(i) {
+            $(this).find('input[name*="IdTypeDocument"]').attr('name', `requirementsList[${i}].IdTypeDocument`);
+            $(this).find('input[name*="IsRequired"]').attr('name', `requirementsList[${i}].IsRequired`);
+        });
+        $('#flowContainer .flow-item').each(function(i) {
+            $(this).find('input.step-order-input').attr('name', `flowList[${i}].StepOrder`);
+            $(this).find('input[type="hidden"]').attr('name', `flowList[${i}].IdStatus`);
+        });
+        reqIndex = $('#pillsContainer .badge').length;
+        flowIndex = $('#flowContainer .flow-item').length;
+    }
+</script>

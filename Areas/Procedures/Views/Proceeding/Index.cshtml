@@ -5,33 +5,127 @@
     Layout = "_ProceduresLayout";
 }
 
-<div class="container-fluid px-4 py-4">
+
+@section Scripts
+{
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+    <partial name="_DataTableConfig" />
+
+    <script>
+         function loadDeactivateModal(id) {
+            $('#modalContainer').html('');
+
+            $.get('/Procedures/Proceeding/Deactivate/' + id, function (data) {
+                $('#modalContainer').html(data);
+
+                const modalElement = document.getElementById('deactivateModal');
+                const myModal = new bootstrap.Modal(modalElement);
+                myModal.show();
+            }).fail(function() {
+                Swal.fire('Error', 'No se pudo cargar el formulario de baja.', 'error');
+            });
+        }
+         function confirmDeactivateLogic() {
+            const form = document.getElementById('formDeleteStudent');
+            const formData = new FormData(form);
+
+            fetch('/Procedures/Proceeding/DeactivateConfirmed', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire('¡Baja Exitosa!', data.message, 'success')
+                        .then(() => location.reload());
+                } else {
+                    Swal.fire('Error', data.message, 'error');
+                }
+            });
+        }
+
+        function loadActivateModal(id) {
+            $('#modalContainer').html('');
+
+            $.get('/Procedures/Proceeding/Activate/' + id, function (data) {
+                $('#modalContainer').html(data);
+
+                const modalElement = document.getElementById('activateModal');
+                const myModal = new bootstrap.Modal(modalElement);
+                myModal.show();
+            }).fail(function() {
+                Swal.fire('Error', 'No se pudo cargar el formulario de reactivación.', 'error');
+            });
+        }
+
+        function confirmActivateLogic() {
+            const form = document.getElementById('formActivateStudent');
+            const formData = new FormData(form);
+
+            fetch('/Procedures/Proceeding/ActivateConfirmed', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire('¡Expediente Activo!', data.message, 'success')
+                        .then(() => location.reload());
+                } else {
+                    Swal.fire('Error', data.message, 'error');
+                }
+            })
+            .catch(error => {
+                Swal.fire('Error', 'Ocurrió un error en la comunicación con el servidor.', 'error');
+            });
+        }
+    </script>
+}
+
+<div id="modalContainer"></div>
+
+<div class="container-fluid  px-4 py-4 pt-5">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2 class="fw-bold text-dark"><i class="bi bi-folder2-open me-2"></i>Expedientes Escolares</h2>
         <button class="btn btn-burgundy shadow-sm"><i class="bi bi-person-plus me-1"></i> Nuevo Alumno</button>
     </div>
 
-    <div class="card shadow-sm border-0 rounded-4">
+    <partial name="_TableTools" />
+
+    <div class="card border-0 overflow-hidden">
         <div class="card-body p-0">
             <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0">
-                    <thead class="bg-light">
+                <table id="mainTable" class="table table-hover align-middle mb-0">
+                    <thead class="small bg-burgundy text-white">
                         <tr>
-                            <th class="ps-4">Alumno</th>
+                            <th class="no-sort text-center"> <input type="checkbox" id="checkAll"> </th>
+                            <th class="ps-4">Alumno / Contacto</th>
                             <th>Identificador</th>
-                            <th>Usuario</th>
+                            <th>Carrera</th>
+                            @* <th class="text-center">Trámites</th> *@
                             <th>Estado</th>
                             <th>Fecha Registro</th>
-                            <th class="text-end pe-4">Acciones</th>
+                            <th class="text-center pe-4">Acciones</th>
                         </tr>
                     </thead>
-                    <tbody>
+                    <tbody class="table-white">
                         @foreach (var item in Model)
                         {
                             <tr>
+                                <td class="text-center">
+                                    <input type="checkbox" class="form-check-input row-checkbox" value="@item.PersonId" />
+                                </td>
                                 <td class="ps-4">
-                                    <div class="fw-bold">@item.FullName</div>
-                                    <small class="text-muted">@item.Email</small>
+                                    <div class="d-flex align-items-center">
+                                        <div class="avatar-circle bg-burgundy-light text-white me-3">
+                                            @item.Initials
+                                        </div>
+                                        <div>
+                                            <div class="fw-bold text-dark">@item.FullName</div>
+                                            <small class="text-muted"><i class="bi bi-envelope me-1"></i>@item.Email</small>
+                                        </div>
+                                    </div>
                                 </td>
                                 <td>
                                     @if (!string.IsNullOrEmpty(item.Matricula) && item.Matricula != "0")
@@ -43,21 +137,56 @@
                                         <span class="badge bg-light text-secondary border">Folio: @item.Folio</span>
                                     }
                                 </td>
-                                <td><code class="text-burgundy">@item.Username</code></td>
+                                <td>
+                                    <span class="small fw-bold">@item.CareerName</span>
+                                </td>
+                                @* <td class="text-center">
+                                    <span class="badge rounded-pill bg-info text-white">5</span>
+                                </td> *@
                                 <td>
                                     @if (item.IsActive)
                                     {
-                                        <span class="badge bg-success-subtle text-success rounded-pill">Activo</span>
+                                        <span class="badge bg-success-subtle text-success rounded-pill border border-success">Activo</span>
                                     }
                                     else
                                     {
-                                        <span class="badge bg-danger-subtle text-danger rounded-pill">Inactivo</span>
+                                        <span class="badge bg-danger-subtle text-danger rounded-pill border border-danger">Inactivo</span>
                                     }
                                 </td>
-                                <td>@item.CreatedDate.ToString("dd/MM/yyyy")</td>
-                                <td class="text-end pe-4">
-                                    <button class="btn btn-sm btn-outline-secondary border-0"><i class="bi bi-pencil-square"></i></button>
-                                    <button class="btn btn-sm btn-outline-burgundy border-0"><i class="bi bi-eye"></i></button>
+                                <td>
+                                    <div class="small">@item.CreatedDate.ToString("dd/MM/yyyy")</div>
+                                    <div class="text-muted" style="font-size: 0.7rem;">@item.CreatedDate.ToString("hh:mm tt")</div>
+                                </td>
+                                <td class="text-center pe-4">
+                                    <div class="btn-group">
+                                        <a asp-area="Procedures"
+                                           asp-controller="Proceeding"
+                                           asp-action="Details"
+                                           asp-route-id="@item.PersonId"
+                                           class="btn btn-sm btn-light border shadow-sm me-2"
+                                           title="Ver Detalles">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                        <button class="btn btn-sm btn-light border shadow-sm me-2" onclick="editStudent('@item.PersonId')" title="Editar">
+                                            <i class="bi bi-pencil-square text-warning"></i>
+                                        </button>
+                                        @if (item.IsActive)
+                                        {
+                                            <button class="btn btn-sm btn-light border shadow-sm"
+                                                    title="Dar de Baja"
+                                                    onclick="loadDeactivateModal(@item.PersonId)">
+                                                <i class="bi bi-person-x-fill text-danger"></i>
+                                            </button>
+                                        }
+                                        else
+                                        {
+                                            <button class="btn btn-sm btn-light border shadow-sm"
+                                                    title="Reactivar"
+                                                    onclick="loadActivateModal(@item.PersonId)">
+                                                <i class="bi bi-person-check-fill text-success"></i>
+                                            </button>
+                                        }
+                                    </div>
                                 </td>
                             </tr>
                         }
