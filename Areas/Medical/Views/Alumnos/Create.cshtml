@@ -1,0 +1,120 @@
+﻿@* @model PIBitacoras.Models.Alumno
+
+@{
+    ViewData["Title"] = "Registro Médico de Alumno";
+}
+
+<div class="container mt-4">
+    <div class="card shadow">
+
+        <div class="card-header bg-dark text-white">
+            <h3 class="mb-0">REGISTRO MÉDICO DE ALUMNO</h3>
+        </div>
+
+        <div class="card-body">
+            <form asp-action="Create" method="post">
+
+                <!-- ===================== DATOS POR MATRICULA ===================== -->
+
+                <div class="row">
+
+                    <div class="col-md-4 mb-3">
+                        <label class="fw-bold">Matrícula</label>
+                        <input id="matricula" class="form-control" placeholder="Escribe matrícula" />
+                    </div>
+
+                    <div class="col-md-2 mb-3">
+                        <label>.</label>
+                        <button type="button" onclick="buscar()" class="btn btn-dark form-control">
+                            BUSCAR
+                        </button>
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label>Nombre</label>
+                        <input id="nombre" class="form-control" readonly />
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label>Apellido Paterno</label>
+                        <input id="paterno" class="form-control" readonly />
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label>Apellido Materno</label>
+                        <input id="materno" class="form-control" readonly />
+                    </div>
+
+                    <div class="col-md-4 mb-3">
+                        <label>Tipo de Sangre</label>
+                        <input id="sangre" class="form-control" readonly />
+                    </div>
+
+                    <input type="hidden" asp-for="PreenrollmentId" id="preid" />
+
+                </div>
+
+                <hr />
+
+                <!-- ===================== DATOS MEDICOS ===================== -->
+                <div class="row">
+
+                    <div class="col-md-4 mb-3">
+                        <label class="fw-bold">Peso</label>
+                        <input asp-for="Peso" class="form-control" placeholder="Ej: 65" />
+                    </div>
+
+                    <div class="col-md-8 mb-3">
+                        <label class="fw-bold">Alergias</label>
+                        <input asp-for="Alergias" class="form-control" placeholder="Ej: Penicilina" />
+                    </div>
+
+                    <div class="col-md-12 mb-3">
+                        <label class="fw-bold">Condiciones Crónicas</label>
+                        <textarea asp-for="CondicionesCronicas" class="form-control"></textarea>
+                    </div>
+
+                </div>
+
+                <hr />
+
+                <div class="d-flex justify-content-between">
+                    <a asp-controller="Home" asp-action="Index" class="btn btn-secondary">
+                        Cancelar
+                    </a>
+
+                    <button type="submit" class="btn btn-success px-5">
+                        Guardar Registro
+                    </button>
+                </div>
+
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    async function buscar(){
+
+        let matricula = document.getElementById("matricula").value;
+
+        if(matricula === ""){
+            alert("Ingrese matrícula");
+            return;
+        }
+
+        let res = await fetch('/Alumnos/BuscarPorMatricula?matricula=' + matricula);
+        let data = await res.json();
+
+        if(data == null){
+            alert("Alumno no encontrado");
+            return;
+        }
+
+        document.getElementById("nombre").value = data.nombre;
+        document.getElementById("paterno").value = data.paterno;
+        document.getElementById("materno").value = data.materno;
+        document.getElementById("sangre").value = data.sangre;
+        document.getElementById("preid").value = data.preenrollmentId;
+    }
+</script> *@

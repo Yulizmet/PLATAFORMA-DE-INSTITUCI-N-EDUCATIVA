@@ -24,6 +24,18 @@ body {
     /*font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;*/
 }
 
+/* ===== FUENTE INTER PARA SUBTÍTULOS Y TEXTO SECUNDARIO ===== */
+
+.sistema-subtitle,
+.users-subtitle,
+.text-muted,
+.user-card p,
+.sistema-card p,
+.footer-custom p,
+.small-text {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
 h1 {
     font-weight: 900;
 }
@@ -361,4 +373,108 @@ p {
 
 .bg-burgundy {
     background-color: #8C1B1B !important;
+}
+
+/* ===== ADMIN FORO ===== */
+
+.admin-section {
+    padding: 100px 0;
+    background-color: #f3f3f3;
+}
+
+.admin-card {
+    background: white;
+    border-radius: 20px;
+    padding: 50px;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.08);
+    max-width: 900px;
+    margin: auto;
+}
+
+.admin-title {
+    font-family: 'Merriweather', serif;
+    font-size: 32px;
+    font-weight: 700;
+}
+
+.preview-section {
+    max-width: 900px;
+    margin: auto;
+}
+
+.preview-card {
+    background: white;
+    border-radius: 20px;
+    padding: 40px;
+    box-shadow: 0 15px 40px rgba(0,0,0,0.07);
+}
+
+/* ===== BOTONES DE DISEÑO ===== */
+
+.design-buttons {
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+.design-btn {
+    border: 2px solid #D42D2D;
+    background: white;
+    color: #D42D2D;
+    padding: 8px 18px;
+    border-radius: 30px;
+    font-weight: 600;
+    transition: 0.3s ease;
+}
+
+    .design-btn:hover {
+        background: #D42D2D;
+        color: white;
+    }
+
+    .design-btn.active {
+        background: #8C1B1B;
+        color: white;
+        border-color: #8C1B1B;
+    }
+
+/* ===== ESTILOS DE VISTA PREVIA ===== */
+
+.preview-card {
+    border-radius: 20px;
+    padding: 40px;
+    transition: all 0.3s ease;
+}
+
+/* Clásico */
+.clasico-style {
+    background: white;
+}
+
+/* Destacado */
+.destacado-style {
+    background: linear-gradient(135deg, #8C1B1B, #D42D2D);
+    color: white;
+}
+
+/* Minimalista */
+.minimalista-style {
+    background: #f9f9f9;
+    border: 1px solid #ddd;
+}
+
+/* Banner */
+.banner-style {
+    background: #8C1B1B;
+    color: white;
+    text-align: center;
+    padding: 60px;
+}
+
+/* Horizontal */
+.horizontal-style {
+    background: white;
+    display: flex;
+    flex-direction: column;
+    border-left: 6px solid #D42D2D;
 }

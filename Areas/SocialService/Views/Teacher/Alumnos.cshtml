@@ -1,92 +1,103 @@
-@page
-@{
-    ViewData["Title"] = "Alumnos Asignados";
-}
+@model IEnumerable<SchoolManager.Models.social_service_assignment>
+@using Microsoft.EntityFrameworkCore
+@using Microsoft.Extensions.DependencyInjection
 
 <h3>Alumnos Asignados</h3>
 
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        @TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+<div class="mb-3">
+    <a href="/SocialService/Teacher/AgregarAlumnos" class="btn btn-success">
+        <i class="bi bi-plus-circle"></i> Agregar Alumnos
+    </a>
+    <a href="/SocialService/Teacher/Dashboard" class="btn btn-secondary">
+        <i class="bi bi-arrow-left"></i> Regresar al Dashboard
+    </a>
+</div>
+
 <div class="card">
     <div class="card-body">
-        <table class="table">
-            <thead>
-                <tr>
-                    <th style="width:60%">Nombre</th>
-                    <th class="text-center">Grupo</th>
-                    <th class="text-center">Bitácoras</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>Andrés Miguel García López</td>
-                    <td class="text-center">5° A</td>
-                    <td class="text-center">
-                        <a class="btn" href="/Profesor/RevisarBitacorasAlumno/1" style="background-color:var(--color-principal);color:#fff;padding:6px 12px;border-radius:8px;">Revisar (2)</a>
-                    </td>
-                </tr>
-                <tr>
-                    <td>Beatriz Elena Ramírez Torres</td>
-                    <td class="text-center">5° A</td>
-                    <td class="text-center">
-                        <a class="btn" href="/Profesor/RevisarBitacorasAlumno/2" style="background-color:var(--color-principal);color:#fff;padding:6px 12px;border-radius:8px;">Revisar (2)</a>
-                    </td>
-                </tr>
-                <tr>
-                    <td>Diana Patricia Flores Medina</td>
-                    <td class="text-center">5° B</td>
-                    <td class="text-center">
-                        <a class="btn" href="/Profesor/RevisarBitacorasAlumno/3" style="background-color:var(--color-principal);color:#fff;padding:6px 12px;border-radius:8px;">Revisar (2)</a>
-                    </td>
-                </tr>
-                <tr>
-                    <td>Emilio Javier Castro Rey</td>
-                    <td class="text-center">5° A</td>
-                    <td class="text-center">
-                        <a class="btn" href="/Profesor/RevisarBitacorasAlumno/4" style="background-color:var(--color-principal);color:#fff;padding:6px 12px;border-radius:8px;">Revisar (2)</a>
-                    </td>
-                </tr>
-                <tr>
-                    <td>Fernanda Lucía Ortega Vega</td>
-                    <td class="text-center">5° B</td>
-                    <td class="text-center">
-                        <a class="btn" href="/Profesor/RevisarBitacorasAlumno/5" style="background-color:var(--color-principal);color:#fff;padding:6px 12px;border-radius:8px;">Revisar (2)</a>
-                    </td>
-                </tr>
-                <tr>
-                    <td>Helena Sofía Núñez Prado</td>
-                    <td class="text-center">5° A</td>
-                    <td class="text-center">
-                        <a class="btn" href="/Profesor/RevisarBitacorasAlumno/6" style="background-color:var(--color-principal);color:#fff;padding:6px 12px;border-radius:8px;">Revisar (2)</a>
-                    </td>
-                </tr>
-                <tr>
-                    <td>Jimena Alejandra Soto Rivas</td>
-                    <td class="text-center">5° A</td>
-                    <td class="text-center">
-                        <a class="btn" href="/Profesor/RevisarBitacorasAlumno/7" style="background-color:var(--color-principal);color:#fff;padding:6px 12px;border-radius:8px;">Revisar (2)</a>
-                    </td>
-                </tr>
-                <tr>
-                    <td>Laura Isabel Peña Gil</td>
-                    <td class="text-center">5° B</td>
-                    <td class="text-center">
-                        <a class="btn" href="/Profesor/RevisarBitacorasAlumno/8" style="background-color:var(--color-principal);color:#fff;padding:6px 12px;border-radius:8px;">Revisar (2)</a>
-                    </td>
-                </tr>
-                <tr>
-                    <td>Natalia Verónica Suárez León</td>
-                    <td class="text-center">5° A</td>
-                    <td class="text-center">
-                        <a class="btn" href="/Profesor/RevisarBitacorasAlumno/9" style="background-color:var(--color-principal);color:#fff;padding:6px 12px;border-radius:8px;">Revisar (2)</a>
-                    </td>
-                </tr>
-                <tr>
-                    <td>Valeria Marcela Quiroz Peña</td>
-                    <td class="text-center">5° B</td>
-                    <td class="text-center">
-                        <a class="btn" href="/Profesor/RevisarBitacorasAlumno/10" style="background-color:var(--color-principal);color:#fff;padding:6px 12px;border-radius:8px;">Revisar (2)</a>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
+        @if (Model.Any())
+        {
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th style="width:40%">Nombre</th>
+                        <th class="text-center">Semestre</th>
+                        <th class="text-center">Grupo</th>
+                        <th class="text-center">Fecha de Asignación</th>
+                        <th class="text-center">Bitácoras</th>
+                        <th class="text-center">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var assignment in Model)
+                    {
+                        var fullName = $"{assignment.Student.Person.FirstName} {assignment.Student.Person.LastNamePaternal} {assignment.Student.Person.LastNameMaternal}";
+
+                        // Obtener el grado del estudiante desde grades_final_grades
+                        var studentGradeLevel = ViewContext.HttpContext.RequestServices
+                            .GetService<SchoolManager.Data.AppDbContext>()
+                            ?.grades_FinalGrades
+                            .Include(fg => fg.Subject)
+                                .ThenInclude(s => s.GradeLevel)
+                            .Where(fg => fg.StudentId == assignment.StudentId)
+                            .Select(fg => fg.Subject.GradeLevel.Name)
+                            .FirstOrDefault();
+
+                        <tr>
+                            <td>@fullName</td>
+                            <td class="text-center">
+                                @if (!string.IsNullOrEmpty(studentGradeLevel))
+                                {
+                                    <span class="badge bg-primary">@studentGradeLevel</span>
+                                }
+                                else
+                                {
+                                    <span class="text-muted">N/A</span>
+                                }
+                            </td>
+                            <td class="text-center">@(assignment.GroupName ?? "N/A")</td>
+                            <td class="text-center">@assignment.AssignedDate.ToString("dd/MM/yyyy")</td>
+                            <td class="text-center">
+                                <a class="btn btn-sm btn-info" href="/SocialService/Teacher/RevisarBitacorasAlumno/@assignment.StudentId">
+                                    <i class="bi bi-journal-text"></i> Revisar
+                                </a>
+                            </td>
+                            <td class="text-center">
+                                <form method="post" action="/SocialService/Teacher/DesasignarAlumno" style="display:inline;">
+                                    <input type="hidden" name="studentId" value="@assignment.StudentId" />
+                                    <button type="submit" class="btn btn-danger btn-sm" 
+                                            onclick="return confirm('¿Está seguro de desasignar a este alumno?');">
+                                        <i class="bi bi-trash"></i> Desasignar
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+        else
+        {
+            <div class="alert alert-info">
+                <i class="bi bi-info-circle"></i> No hay alumnos asignados. 
+                <a href="/SocialService/Teacher/AgregarAlumnos">Haz clic aquí para agregar alumnos.</a>
+            </div>
+        }
     </div>
 </div>
