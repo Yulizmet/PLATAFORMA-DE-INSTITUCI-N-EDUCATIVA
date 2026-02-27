@@ -16,6 +16,7 @@ namespace SchoolManager.Pages.Estadisticas
         {
             _context = context;
         }
+        // Propiedades para almacenar los datos de estudiantes y empleados
 
         public List<StudentStatisticsVM> Students { get; private set; } = new();
         public List<EmployeeStatisticsVM> Employees { get; private set; } = new();
