@@ -16,6 +16,7 @@ namespace SchoolManager.Models
         [Precision(3, 2)]
         public decimal MinPassingGrade { get; set; } = 6.0m; 
         // Relaciones
+        // Relaciones
         public ICollection<grades_group> Groups { get; set; } = new List<grades_group>();
         public ICollection<grades_subjects> Subjects { get; set; } = new List<grades_subjects>();
     }
