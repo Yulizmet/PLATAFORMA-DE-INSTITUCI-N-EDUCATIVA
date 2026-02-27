@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text.Json;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using SchoolManager.Data;
-//using SchoolManager.ViewModels;
+using SchoolManager.ViewModels;
 
 namespace SchoolManager.Pages.Estadisticas
 {
