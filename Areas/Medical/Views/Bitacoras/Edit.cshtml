@@ -1,0 +1,83 @@
+﻿@* @model PIBitacoras.Models.Bitacora
+
+@{
+    ViewData["Title"] = "Editar bitácora clínica";
+}
+
+<div class="container mt-4">
+
+    <div class="card shadow-lg border-0">
+
+        <!-- HEADER -->
+        <div class="card-header bg-warning text-dark">
+            <h3 class="mb-0">EDITAR BITÁCORA CLÍNICA</h3>
+        </div>
+
+        <!-- BODY -->
+        <div class="card-body p-4">
+
+            <form asp-action="Edit" method="post">
+
+                <input type="hidden" asp-for="Id" />
+                <input type="hidden" asp-for="IdAlumno" />
+
+                <div class="row g-4">
+
+                    <div class="col-md-6">
+                        <label class="fw-bold">Motivo de Consulta</label>
+                        <input asp-for="MotivoConsulta" class="form-control" />
+                        <span asp-validation-for="MotivoConsulta" class="text-danger"></span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="fw-bold">Signos Vitales</label>
+                        <input asp-for="SignosVitales" class="form-control" />
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="fw-bold">Estado</label>
+                        <select asp-for="Estado" class="form-control">
+                            <option value="Estable">Estable</option>
+                            <option value="Observación">En observación</option>
+                            <option value="Finalizado">Finalizado</option>
+                        </select>
+                    </div>
+
+                </div>
+
+                <hr class="mt-4" />
+
+                <div class="mb-4">
+                    <label class="fw-bold">Observaciones</label>
+                    <textarea asp-for="Observaciones"
+                              class="form-control"
+                              rows="4"></textarea>
+                </div>
+
+                <hr />
+
+                <div class="d-flex justify-content-between">
+
+                    <a asp-action="Index" class="btn btn-secondary px-4">
+                        Cancelar
+                    </a>
+
+                    <button type="submit" class="btn btn-warning text-white px-4">
+                        Guardar cambios
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+    </div>
+</div>
+
+<style>
+    .form-control {
+        background: #f8f9fa;
+        border-radius: 8px;
+        font-weight: 600;
+    }
+</style> *@

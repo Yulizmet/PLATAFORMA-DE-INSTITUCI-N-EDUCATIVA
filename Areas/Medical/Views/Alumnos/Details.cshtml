@@ -1,0 +1,125 @@
+﻿@model PIBitacoras.Models.AlumnoDetalleVM
+
+@{
+    ViewData["Title"] = "Información del Alumno";
+}
+
+<div class="container mt-4">
+
+    <div class="card shadow-lg border-0">
+
+        <!-- HEADER -->
+        <div class="card-header bg-dark text-white">
+            <h3 class="mb-0">
+                INFORMACIÓN DEL ALUMNO
+            </h3>
+        </div>
+
+        <!-- BODY -->
+        <div class="card-body p-4">
+
+            <div class="row g-4">
+
+                <!-- COLUMNA IZQUIERDA -->
+                <div class="col-md-6">
+
+                    <div class="info-box">
+                        <label>Matrícula</label>
+                        <div class="info-value">@Model.Matricula</div>
+                    </div>
+
+                    <div class="info-box">
+                        <label>Nombre del Alumno</label>
+                        <div class="info-value">
+                            @Model.Nombre @Model.Paterno @Model.Materno
+                        </div>
+                    </div>
+
+                    <div class="info-box">
+                        <label>Tipo de Sangre</label>
+                        <div class="info-value text-danger fw-bold">
+                            @Model.Sangre
+                        </div>
+                    </div>
+
+                    <div class="info-box">
+                        <label>Fecha de Registro</label>
+                        <div class="info-value">
+                            @Model.FechaCreacion.ToString("dd/MM/yyyy hh:mm tt")
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- COLUMNA DERECHA -->
+                <div class="col-md-6">
+
+                    <div class="info-box">
+                        <label>Peso</label>
+                        <div class="info-value">
+                            @(Model.Peso.HasValue? Model.Peso + " kg" : "No registrado")
+                        </div>
+                    </div>
+
+                    <div class="info-box">
+                        <label>Alergias</label>
+                        <div class="info-value">
+                            @(string.IsNullOrEmpty(Model.Alergias) ? "Ninguna" : Model.Alergias)
+                        </div>
+                    </div>
+
+                    <div class="info-box">
+                        <label>Condiciones Crónicas</label>
+                        <div class="info-value">
+                            @(string.IsNullOrEmpty(Model.CondicionesCronicas) ? "Ninguna" : Model.CondicionesCronicas)
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+
+            <hr class="mt-4" />
+
+            <!-- BOTONES -->
+            <div class="d-flex justify-content-between">
+
+                <a asp-action="Index" class="btn btn-secondary px-4">
+                    Regresar
+                </a>
+
+                <a asp-action="Edit" asp-route-id="@Model.Id"
+                   class="btn btn-warning text-white px-4">
+                    Editar Alumno
+                </a>
+
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<style>
+
+    .info-box {
+        margin-bottom: 18px;
+    }
+
+        .info-box label {
+            font-weight: 700;
+            color: #6c757d;
+            display: block;
+            font-size: 14px;
+            margin-bottom: 3px;
+        }
+
+    .info-value {
+        font-size: 18px;
+        font-weight: 600;
+        color: #212529;
+        background: #f8f9fa;
+        padding: 10px 14px;
+        border-radius: 8px;
+    }
+
+</style>
