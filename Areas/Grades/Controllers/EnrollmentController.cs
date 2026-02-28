@@ -19,6 +19,7 @@ namespace SchoolManager.Areas.Grades.Controllers
 
         // GET: Enrollment/ByGroup/5
         // GET: Enrollment/ByGroup/5
+        // GET: Enrollment/ByGroup/5
         public async Task<IActionResult> ByGroup(int? groupId)
         {
             if (groupId == null) return NotFound();

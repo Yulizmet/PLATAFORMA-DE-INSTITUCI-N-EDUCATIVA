@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
@@ -60,15 +60,15 @@ namespace SchoolManager.Pages.Estadisticas
                            select new
                            {
                                user.UserId,
-                               FirstName        = (string?)person.FirstName,
-                               LastName         = (string?)person.LastNamePaternal,
-                               Genero           = (string?)person.Gender,
-                               Curso            = (string?)subject.Name,
-                               Semestre         = finalGrade != null ? finalGrade.GroupId : 0,
-                               Nota             = finalGrade != null ? (double)finalGrade.Value : 0.0,
+                               FirstName = (string?)person.FirstName,
+                               LastName = (string?)person.LastNamePaternal,
+                               Genero = (string?)person.Gender,
+                               Curso = (string?)subject.Name,
+                               Semestre = finalGrade != null ? finalGrade.GroupId : 0,
+                               Nota = finalGrade != null ? (double)finalGrade.Value : 0.0,
                                FechaInscripcion = user.CreatedDate,
-                               HasGrade         = finalGrade != null,
-                               Passed           = finalGrade != null && finalGrade.Passed
+                               HasGrade = finalGrade != null,
+                               Passed = finalGrade != null && finalGrade.Passed
                            })
                            .Distinct()
                            .ToList();
@@ -81,16 +81,16 @@ namespace SchoolManager.Pages.Estadisticas
                         var nombre = $"{s.FirstName ?? string.Empty} {s.LastName ?? string.Empty}".Trim();
                         return new StudentStatisticsVM
                         {
-                            Id               = s.UserId,
-                            Nombre           = string.IsNullOrWhiteSpace(nombre) ? "Sin nombre" : nombre,
-                            Genero           = string.IsNullOrWhiteSpace(s.Genero) ? "N/A" : s.Genero,
-                            Curso            = string.IsNullOrWhiteSpace(s.Curso) ? "Sin asignar" : s.Curso,
-                            Semestre         = s.Semestre,
-                            Nota             = s.Nota,
+                            Id = s.UserId,
+                            Nombre = string.IsNullOrWhiteSpace(nombre) ? "Sin nombre" : nombre,
+                            Genero = string.IsNullOrWhiteSpace(s.Genero) ? "N/A" : s.Genero,
+                            Curso = string.IsNullOrWhiteSpace(s.Curso) ? "Sin asignar" : s.Curso,
+                            Semestre = s.Semestre,
+                            Nota = s.Nota,
                             FechaInscripcion = s.FechaInscripcion,
-                            Estado           = !s.HasGrade ? "Inscrito"
-                                             : s.Passed    ? "Aprobado"
-                                             :               "Reprobado"
+                            Estado = !s.HasGrade ? "Inscrito"
+                                             : s.Passed ? "Aprobado"
+                                             : "Reprobado"
                         };
                     })
                     .ToList();
@@ -117,11 +117,11 @@ namespace SchoolManager.Pages.Estadisticas
                            select new
                            {
                                user.UserId,
-                               FirstName         = (string?)person.FirstName,
-                               LastName          = (string?)person.LastNamePaternal,
-                               Genero            = (string?)person.Gender,
-                               Departamento      = (string?)role.Name,
-                               Rol               = (string?)role.Name,
+                               FirstName = (string?)person.FirstName,
+                               LastName = (string?)person.LastNamePaternal,
+                               Genero = (string?)person.Gender,
+                               Departamento = (string?)role.Name,
+                               Rol = (string?)role.Name,
                                FechaContratacion = (DateTime?)userRole.CreatedDate
                            })
                            .Distinct()
@@ -135,12 +135,12 @@ namespace SchoolManager.Pages.Estadisticas
                         var nombre = $"{e.FirstName ?? string.Empty} {e.LastName ?? string.Empty}".Trim();
                         return new EmployeeStatisticsVM
                         {
-                            Id                = e.UserId,
-                            Nombre            = string.IsNullOrWhiteSpace(nombre) ? "Sin nombre" : nombre,
-                            Genero            = string.IsNullOrWhiteSpace(e.Genero) ? "N/A" : e.Genero,
-                            Departamento      = string.IsNullOrWhiteSpace(e.Departamento) ? "Sin asignar" : e.Departamento,
-                            Rol               = string.IsNullOrWhiteSpace(e.Rol) ? "Sin rol" : e.Rol,
-                            ActividadesHoy    = 0,
+                            Id = e.UserId,
+                            Nombre = string.IsNullOrWhiteSpace(nombre) ? "Sin nombre" : nombre,
+                            Genero = string.IsNullOrWhiteSpace(e.Genero) ? "N/A" : e.Genero,
+                            Departamento = string.IsNullOrWhiteSpace(e.Departamento) ? "Sin asignar" : e.Departamento,
+                            Rol = string.IsNullOrWhiteSpace(e.Rol) ? "Sin rol" : e.Rol,
+                            ActividadesHoy = 0,
                             FechaContratacion = e.FechaContratacion ?? DateTime.Now
                         };
                     })
