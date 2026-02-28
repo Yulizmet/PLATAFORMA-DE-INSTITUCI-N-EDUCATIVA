@@ -249,7 +249,7 @@ namespace SchoolManager.Areas.Grades.Controllers
             // return int.Parse(userId);
 
             // TEMPORAL PARA PRUEBAS ESTATICO CON VALOR 5
-            return 9; 
+            return 4; 
         }
     }
 }   
