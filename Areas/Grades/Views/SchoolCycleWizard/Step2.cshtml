@@ -1,0 +1,331 @@
+﻿@* /Areas/Grades/Views/SchoolCycleWizard/Step2.cshtml *@
+@model SchoolManager.Areas.Grades.ViewModels.Wizard.SchoolCycleWizardViewModel
+
+@{
+    ViewData["Title"] = "Paso 2: Crear Materias";
+    Layout = "~/Areas/MainScreen/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <div class="sistema-card">
+                <!-- Barra de progreso -->
+                <div class="progress mb-4" style="height: 10px;">
+                    <div class="progress-bar bg-success" role="progressbar" style="width: 40%;" aria-valuenow="40" aria-valuemin="0" aria-valuemax="100"></div>
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h3 class="fw-bold mb-0">Paso 2/5: Crear Materias</h3>
+                    <span class="badge bg-info" style="font-size: 1rem;">
+                        Nivel: @Model.LevelName
+                    </span>
+                </div>
+
+                <p class="text-muted mb-4">
+                    Agrega todas las materias para este nivel. Para cada materia, puedes configurar sus unidades.
+                </p>
+
+                <form asp-action="Step2" method="post" id="subjectsForm">
+                    <!-- CAMPOS OCULTOS PARA DATOS DEL NIVEL -->
+                    <input type="hidden" name="LevelName" value="@(Model.LevelName ?? "")" />
+                    <input type="hidden" name="StartDate" value="@(Model.StartDate?.ToString("yyyy-MM-dd") ?? "")" />
+                    <input type="hidden" name="EndDate" value="@(Model.EndDate?.ToString("yyyy-MM-dd") ?? "")" />
+                    <input type="hidden" name="MinPassingGrade" value="@(Model.MinPassingGrade?.ToString() ?? "")" />
+                    <!-- Lista de materias -->
+                    <div id="subjectsContainer">
+                        @for (int i = 0; i < Model.Subjects.Count; i++)
+                        {
+                            <div class="subject-item card mb-3" data-index="@i">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-start mb-3">
+                                        <div class="flex-grow-1 me-3">
+                                            <input type="hidden" name="Subjects[@i].TempId" value="@Model.Subjects[i].TempId" />
+                                            <input type="text" name="Subjects[@i].Name" value="@Model.Subjects[i].Name"
+                                                   class="form-control subject-name" placeholder="Nombre de la materia (ej. Matemáticas I)" required />
+                                        </div>
+                                        <div>
+                                            <button type="button" class="btn btn-sm btn-outline-primary me-2 toggle-units" data-index="@i">
+                                                <i class="bi @(Model.Subjects[i].ShowUnits ? "bi-chevron-up" : "bi-chevron-down")"></i>
+                                                Unidades
+                                            </button>
+                                            <button type="button" class="btn btn-sm btn-outline-danger remove-subject">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <!-- Panel de unidades (colapsable) -->
+                                    <div class="units-panel @(Model.Subjects[i].ShowUnits ? "" : "d-none")" id="units-panel-@i">
+                                        <div class="border-top pt-3 mt-2">
+                                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                                <h6 class="fw-semibold mb-0">Unidades</h6>
+                                                <button type="button" class="btn btn-sm btn-outline-success add-unit" data-subject-index="@i">
+                                                    <i class="bi bi-plus-circle me-1"></i>Agregar Unidad
+                                                </button>
+                                            </div>
+
+                                            <div class="units-container" id="units-container-@i">
+                                                @for (int j = 0; j < Model.Subjects[i].Units.Count; j++)
+                                                {
+                                                    <div class="unit-item d-flex align-items-center mb-2">
+                                                        <input type="hidden" name="Subjects[@i].Units[@j].Number" value="@Model.Subjects[i].Units[j].Number" />
+                                                        <span class="badge bg-secondary me-2" style="width: 40px;">U@(Model.Subjects[i].Units[j].Number)</span>
+                                                        <span class="me-3">Unidad @(Model.Subjects[i].Units[j].Number)</span>
+                                                        <div class="form-check form-switch ms-auto">
+                                                            <input type="checkbox" class="form-check-input"
+                                                                   name="Subjects[@i].Units[@j].IsOpen" value="true"
+                                                                   @(Model.Subjects[i].Units[j].IsOpen ? "checked" : "") />
+                                                            <input type="hidden" name="Subjects[@i].Units[@j].IsOpen" value="false" />
+                                                            <label class="form-check-label">Abierta</label>
+                                                        </div>
+                                                        <button type="button" class="btn btn-sm btn-outline-danger ms-2 remove-unit">
+                                                            <i class="bi bi-x"></i>
+                                                        </button>
+                                                    </div>
+                                                }
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+
+                    <!-- Botón para agregar materia -->
+                    <div class="text-center my-4">
+                        <button type="button" id="addSubjectBtn" class="btn btn-outline-primary">
+                            <i class="bi bi-plus-circle me-2"></i>Agregar Materia
+                        </button>
+                    </div>
+
+                    <!-- Botones de navegación -->
+                    <div class="d-flex justify-content-between mt-4">
+                        <a asp-action="Step1" class="btn btn-secondary">
+                            <i class="bi bi-arrow-left me-2"></i>Regresar
+                        </a>
+                        <div>
+                            <button type="submit" name="saveType" value="draft" class="btn btn-outline-secondary me-2">
+                                Guardar Borrador
+                            </button>
+                            <button type="submit" name="saveType" value="continue" class="btn btn-calificaciones">
+                                Continuar <i class="bi bi-arrow-right ms-2"></i>
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Template para nueva materia (oculto) -->
+<template id="subject-template">
+    <div class="subject-item card mb-3" data-index="__INDEX__">
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-start mb-3">
+                <div class="flex-grow-1 me-3">
+                    <input type="hidden" name="Subjects[__INDEX__].TempId" value="__TEMPID__" />
+                    <input type="text" name="Subjects[__INDEX__].Name" class="form-control subject-name" placeholder="Nombre de la materia (ej. Matemáticas I)" required />
+                </div>
+                <div>
+                    <button type="button" class="btn btn-sm btn-outline-primary me-2 toggle-units" data-index="__INDEX__">
+                        <i class="bi bi-chevron-down"></i> Unidades
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-danger remove-subject">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Panel de unidades (inicialmente oculto) -->
+            <div class="units-panel d-none" id="units-panel-__INDEX__">
+                <div class="border-top pt-3 mt-2">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h6 class="fw-semibold mb-0">Unidades</h6>
+                        <button type="button" class="btn btn-sm btn-outline-success add-unit" data-subject-index="__INDEX__">
+                            <i class="bi bi-plus-circle me-1"></i>Agregar Unidad
+                        </button>
+                    </div>
+                    <div class="units-container" id="units-container-__INDEX__"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</template>
+
+<!-- Template para nueva unidad -->
+<template id="unit-template">
+    <div class="unit-item d-flex align-items-center mb-2" data-unit-number="__UNITNUMBER__">
+        <input type="hidden" name="Subjects[__SUBJECTINDEX__].Units[__UNITINDEX__].Number" value="__UNITNUMBER__" />
+        <span class="badge bg-secondary me-2" style="width: 40px;">U__UNITNUMBER__</span>
+        <span class="me-3">Unidad __UNITNUMBER__</span>
+        <div class="form-check form-switch ms-auto">
+            <input type="checkbox" class="form-check-input"
+                   name="Subjects[__SUBJECTINDEX__].Units[__UNITINDEX__].IsOpen" value="true" checked />
+            <input type="hidden" name="Subjects[__SUBJECTINDEX__].Units[__UNITINDEX__].IsOpen" value="false" />
+            <label class="form-check-label">Abierta</label>
+        </div>
+        <button type="button" class="btn btn-sm btn-outline-danger ms-2 remove-unit">
+            <i class="bi bi-x"></i>
+        </button>
+    </div>
+</template>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            let subjectCount = @(Model.Subjects?.Count ?? 0)
+            // Mostrar/ocultar panel de unidades
+            document.addEventListener('click', function(e) {
+                if (e.target.closest('.toggle-units')) {
+                    const btn = e.target.closest('.toggle-units');
+                    const index = btn.dataset.index;
+                    const panel = document.getElementById(`units-panel-${index}`);
+                    const icon = btn.querySelector('i');
+
+                    if (panel.classList.contains('d-none')) {
+                        panel.classList.remove('d-none');
+                        icon.classList.remove('bi-chevron-down');
+                        icon.classList.add('bi-chevron-up');
+                    } else {
+                        panel.classList.add('d-none');
+                        icon.classList.remove('bi-chevron-up');
+                        icon.classList.add('bi-chevron-down');
+                    }
+                }
+            });
+
+            // Agregar nueva materia
+            document.getElementById('addSubjectBtn').addEventListener('click', function() {
+                const template = document.getElementById('subject-template');
+                const newIndex = subjectCount++;
+                const tempId = -newIndex - 100; // ID temporal negativo
+
+                let html = template.innerHTML.replace(/__INDEX__/g, newIndex);
+                html = html.replace(/__TEMPID__/g, tempId);
+
+                const tempDiv = document.createElement('div');
+                tempDiv.innerHTML = html;
+                const newSubject = tempDiv.firstElementChild;
+
+                document.getElementById('subjectsContainer').appendChild(newSubject);
+
+                // Actualizar data-index en los botones
+                newSubject.querySelector('.toggle-units').dataset.index = newIndex;
+                newSubject.querySelector('.add-unit').dataset.subjectIndex = newIndex;
+            });
+
+            // Eliminar materia
+            document.addEventListener('click', function(e) {
+                if (e.target.closest('.remove-subject')) {
+                    const btn = e.target.closest('.remove-subject');
+                    const subjectItem = btn.closest('.subject-item');
+                    if (subjectItem && confirm('¿Estás seguro de eliminar esta materia?')) {
+                        subjectItem.remove();
+                    }
+                }
+            });
+
+            // Agregar unidad
+            document.addEventListener('click', function(e) {
+                if (e.target.closest('.add-unit')) {
+                    const btn = e.target.closest('.add-unit');
+                    const subjectIndex = btn.dataset.subjectIndex;
+                    const container = document.getElementById(`units-container-${subjectIndex}`);
+
+                    if (!container) return;
+
+                    const currentUnits = container.children.length;
+                    const unitNumber = currentUnits + 1;
+                    const unitIndex = currentUnits;
+
+                    const template = document.getElementById('unit-template');
+                    let html = template.innerHTML
+                        .replace(/__SUBJECTINDEX__/g, subjectIndex)
+                        .replace(/__UNITINDEX__/g, unitIndex)
+                        .replace(/__UNITNUMBER__/g, unitNumber);
+
+                    const tempDiv = document.createElement('div');
+                    tempDiv.innerHTML = html;
+                    const newUnit = tempDiv.firstElementChild;
+
+                    container.appendChild(newUnit);
+                }
+            });
+
+            // Eliminar unidad
+            document.addEventListener('click', function(e) {
+                if (e.target.closest('.remove-unit')) {
+                    const btn = e.target.closest('.remove-unit');
+                    const unitItem = btn.closest('.unit-item');
+                    const container = unitItem.closest('.units-container');
+
+                    if (unitItem && confirm('¿Estás seguro de eliminar esta unidad?')) {
+                        unitItem.remove();
+
+                        // Renumerar unidades restantes
+                        const remainingUnits = container.children;
+                        for (let i = 0; i < remainingUnits.length; i++) {
+                            const unit = remainingUnits[i];
+                            const newNumber = i + 1;
+
+                            // Actualizar badge
+                            const badge = unit.querySelector('.badge');
+                            badge.textContent = 'U' + newNumber;
+
+                            // Actualizar texto
+                            const span = unit.querySelector('span.me-3');
+                            span.textContent = 'Unidad ' + newNumber;
+
+                            // Actualizar inputs ocultos
+                            const hiddenNumber = unit.querySelector('input[type="hidden"][name$=".Number"]');
+                            if (hiddenNumber) {
+                                const nameAttr = hiddenNumber.name;
+                                hiddenNumber.name = nameAttr.replace(/Units\[\d+\]\.Number/, `Units[${i}].Number`);
+                                hiddenNumber.value = newNumber;
+                            }
+
+                            // Actualizar checkbox
+                            const checkbox = unit.querySelector('input[type="checkbox"]');
+                            if (checkbox) {
+                                const nameAttr = checkbox.name;
+                                checkbox.name = nameAttr.replace(/Units\[\d+\]\.IsOpen/, `Units[${i}].IsOpen`);
+                            }
+
+                            // Actualizar hidden checkbox
+                            const hiddenCheckbox = unit.querySelector('input[type="hidden"][name$=".IsOpen"]');
+                            if (hiddenCheckbox) {
+                                const nameAttr = hiddenCheckbox.name;
+                                hiddenCheckbox.name = nameAttr.replace(/Units\[\d+\]\.IsOpen/, `Units[${i}].IsOpen`);
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Validación del formulario
+            document.getElementById('subjectsForm').addEventListener('submit', function(e) {
+                const subjects = document.querySelectorAll('.subject-item');
+                let isValid = true;
+
+                subjects.forEach(subject => {
+                    const nameInput = subject.querySelector('.subject-name');
+                    if (!nameInput.value.trim()) {
+                        nameInput.classList.add('is-invalid');
+                        isValid = false;
+                    } else {
+                        nameInput.classList.remove('is-invalid');
+                    }
+                });
+
+                if (!isValid) {
+                    e.preventDefault();
+                    alert('Por favor, llena todos los nombres de las materias.');
+                }
+            });
+        });
+    </script>
+}

@@ -19,7 +19,7 @@ namespace SchoolManager.Areas.Grades.Controllers
         // GET: FinalGrades/Index
         public async Task<IActionResult> Index(int? groupId, int? subjectId)
         {
-            var teacherId = 9; // Temporal, igual que en GradeCapture
+            var teacherId = 4; // Temporal, igual que en GradeCapture
 
             var classes = await _context.grades_TeacherSubjectGroups
                 .Include(tsg => tsg.TeacherSubject)
