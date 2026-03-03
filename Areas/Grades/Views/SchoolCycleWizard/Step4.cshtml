@@ -54,59 +54,80 @@
                         <input type="hidden" name="Groups[@i].Name" value="@(Model.Groups[i].Name ?? "")" />
                     }
 
-                    <div id="assignmentsContainer">
-                        @for (int i = 0; i < Model.Assignments.Count; i++)
-                        {
-                            <div class="assignment-item card mb-4" data-subject-index="@i">
-                                <div class="card-header bg-light">
-                                    <h5 class="fw-bold mb-0">@Model.Assignments[i].SubjectName</h5>
-                                    <input type="hidden" name="Assignments[@i].SubjectTempId" value="@Model.Assignments[i].SubjectTempId" />
-                                </div>
-                                <div class="card-body">
-                                    <div class="row">
-                                        <!-- Selector de profesor -->
-                                        <div class="col-md-6 mb-3">
-                                            <label class="form-label fw-semibold">Profesor</label>
-                                            <select name="Assignments[@i].TeacherId" class="form-select teacher-select">
-                                                <option value="">-- Seleccionar profesor --</option>
-                                                @foreach (var teacher in ViewBag.Teachers)
-                                                {
-                                                    if (teacher.Value == Model.Assignments[i].TeacherId?.ToString())
-                                                    {
-                                                        <option value="@teacher.Value" selected>@teacher.Text</option>
-                                                    }
-                                                    else
-                                                    {
-                                                        <option value="@teacher.Value">@teacher.Text</option>
-                                                    }
-                                                }
-                                            </select>
-                                        </div>
+<div id="assignmentsContainer">
+    @for (int i = 0; i < Model.Assignments.Count; i++)
+    {
+        <div class="assignment-item card mb-4">
+            <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                <h5 class="fw-bold mb-0">@Model.Assignments[i].SubjectName</h5>
+                <input type="hidden" name="Assignments[@i].SubjectTempId" value="@Model.Assignments[i].SubjectTempId" />
+                <input type="hidden" name="Assignments[@i].SubjectName"   value="@Model.Assignments[i].SubjectName" />
+            </div>
+            <div class="card-body">
 
-                                        <!-- Grupos disponibles -->
-                                        <div class="col-md-6 mb-3">
-                                            <label class="form-label fw-semibold">Grupos</label>
-                                            <div class="border rounded p-3" style="max-height: 150px; overflow-y: auto;">
-                                                @for (int j = 0; j < Model.Groups.Count; j++)
-                                                {
-                                                    <div class="form-check">
-                                                        <input type="checkbox" class="form-check-input group-checkbox"
-                                                               name="Assignments[@i].SelectedGroupIds" value="@Model.Groups[j].TempId"
-                                                               id="group_@(i)_@(j)"
-                                                               @(Model.Assignments[i].SelectedGroupIds.Contains(Model.Groups[j].TempId) ? "checked" : "") />
-                                                        <label class="form-check-label" for="group_@(i)_@(j)">
-                                                            @Model.Groups[j].Name
-                                                        </label>
-                                                    </div>
-                                                }
+                <div class="teacher-assignments-list" data-subject-index="@i">
+                    @for (int t = 0; t < Model.Assignments[i].TeacherAssignments.Count; t++)
+                    {
+                        <div class="teacher-row border rounded p-3 mb-2 position-relative">
+                            <div class="row">
+                                <div class="col-md-6 mb-2">
+                                    <label class="form-label fw-semibold">Profesor</label>
+                                    <select name="Assignments[@i].TeacherAssignments[@t].TeacherId"
+                                            class="form-select teacher-select">
+                                        <option value="">-- Seleccionar profesor --</option>
+                                        @foreach (var teacher in ViewBag.Teachers)
+                                        {
+                                            var selected = teacher.Value == Model.Assignments[i].TeacherAssignments[t].TeacherId?.ToString();
+                                            if (selected)
+                                            {
+                                                <option value="@teacher.Value" selected>@teacher.Text</option>
+                                            }
+                                            else
+                                            {
+                                                <option value="@teacher.Value">@teacher.Text</option>
+                                            }
+                                        }
+                                    </select>
+                                </div>
+                                <div class="col-md-5 mb-2">
+                                    <label class="form-label fw-semibold">Grupos</label>
+                                    <div class="border rounded p-2" style="max-height:130px; overflow-y:auto;">
+                                        @for (int g = 0; g < Model.Groups.Count; g++)
+                                        {
+                                            var isChecked = Model.Assignments[i].TeacherAssignments[t].SelectedGroupIds.Contains(Model.Groups[g].TempId);
+                                            <div class="form-check">
+                                                <input type="checkbox" class="form-check-input group-checkbox"
+                                                       name="Assignments[@i].TeacherAssignments[@t].SelectedGroupIds"
+                                                       value="@Model.Groups[g].TempId"
+                                                       id="g_@(i)_@(t)_@(g)"
+                                                       @(isChecked ? "checked" : "") />
+                                                <label class="form-check-label" for="g_@(i)_@(t)_@(g)">
+                                                    @Model.Groups[g].Name
+                                                </label>
                                             </div>
-                                        </div>
+                                        }
                                     </div>
                                 </div>
+                                <div class="col-md-1 d-flex align-items-end mb-2">
+                                    <button type="button" class="btn btn-outline-danger btn-sm btn-remove-teacher"
+                                            title="Eliminar">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </div>
                             </div>
-                        }
-                    </div>
+                        </div>
+                    }
+                </div>
 
+                <button type="button" class="btn btn-outline-secondary btn-sm btn-add-teacher"
+                        data-subject-index="@i">
+                    <i class="bi bi-plus-circle me-1"></i>Agregar otro profesor
+                </button>
+
+            </div>
+        </div>
+    }
+</div>
                     <!-- Botones de navegación -->
                     <div class="d-flex justify-content-between mt-4">
                         <a asp-action="Step3" class="btn btn-secondary">
@@ -128,61 +149,112 @@
 </div>
 
 @section Scripts {
-    <partial name="_ValidationScriptsPartial" />
-
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Función para validar que cada materia con profesor tenga al menos un grupo
-            function validateAssignments() {
-                const assignments = document.querySelectorAll('.assignment-item');
-                let isValid = true;
-                let errorMessage = '';
-
-                assignments.forEach(assignment => {
-                    const teacherSelect = assignment.querySelector('.teacher-select');
-                    const checkboxes = assignment.querySelectorAll('.group-checkbox:checked');
-                    const subjectName = assignment.querySelector('.card-header h5').innerText;
-
-                    // Si seleccionó profesor pero no grupos
-                    if (teacherSelect.value && checkboxes.length === 0) {
-                        isValid = false;
-                        errorMessage += `• ${subjectName}: Tiene profesor pero no tiene grupos asignados.\n`;
-                        assignment.classList.add('border-danger');
-                    }
-                    // Si seleccionó grupos pero no profesor
-                    else if (!teacherSelect.value && checkboxes.length > 0) {
-                        isValid = false;
-                        errorMessage += `• ${subjectName}: Tiene grupos asignados pero no tiene profesor.\n`;
-                        assignment.classList.add('border-danger');
-                    }
-                    else {
-                        assignment.classList.remove('border-danger');
-                    }
-                });
-
-                if (!isValid) {
-                    alert('Por favor corrige los siguientes errores:\n\n' + errorMessage);
-                }
-
-                return isValid;
+        // Plantilla de grupos para clonar
+        const groupsTemplate = `
+            @for (int g = 0; g < Model.Groups.Count; g++)
+            {
+                    <text>
+                    <div class="form-check">
+                        <input type="checkbox" class="form-check-input group-checkbox"
+                               name="__NAME__" value="@Model.Groups[g].TempId" id="__ID__@(g)" />
+                        <label class="form-check-label" for="__ID__@(g)">@Model.Groups[g].Name</label>
+                    </div>
+                    </text>
             }
+        `;
 
-            // Validar al enviar el formulario
-            document.getElementById('assignmentsForm').addEventListener('submit', function(e) {
-                if (!validateAssignments()) {
-                    e.preventDefault();
-                }
+        function buildTeacherRow(subjectIndex, teacherIndex) {
+            const teacherOptions = `@foreach (var t in ViewBag.Teachers) {
+                <text><option value="@t.Value">@t.Text</option></text>
+        }
+`;
+
+        const groupsHtml = groupsTemplate
+            .replace(/__NAME__/g, `Assignments[${subjectIndex}].TeacherAssignments[${teacherIndex}].SelectedGroupIds`)
+            .replace(/__ID__/g,   `g_${subjectIndex}_${teacherIndex}_`);
+
+        return `
+            <div class="teacher-row border rounded p-3 mb-2 position-relative">
+                <div class="row">
+                    <div class="col-md-6 mb-2">
+                        <label class="form-label fw-semibold">Profesor</label>
+                        <select name="Assignments[${subjectIndex}].TeacherAssignments[${teacherIndex}].TeacherId"
+                                class="form-select teacher-select">
+                            <option value="">-- Seleccionar profesor --</option>
+                            ${teacherOptions}
+                        </select>
+                    </div>
+                    <div class="col-md-5 mb-2">
+                        <label class="form-label fw-semibold">Grupos</label>
+                        <div class="border rounded p-2" style="max-height:130px; overflow-y:auto;">
+                            ${groupsHtml}
+                        </div>
+                    </div>
+                    <div class="col-md-1 d-flex align-items-end mb-2">
+                        <button type="button" class="btn btn-outline-danger btn-sm btn-remove-teacher">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>`;
+    }
+
+    // Agregar fila de profesor
+    document.querySelectorAll('.btn-add-teacher').forEach(btn => {
+        btn.addEventListener('click', function () {
+            const subjectIndex = parseInt(this.dataset.subjectIndex);
+            const list = this.previousElementSibling;
+            const teacherIndex = list.querySelectorAll('.teacher-row').length;
+            list.insertAdjacentHTML('beforeend', buildTeacherRow(subjectIndex, teacherIndex));
+        });
+    });
+
+    // Eliminar fila de profesor (delegado)
+    document.addEventListener('click', function (e) {
+        if (e.target.closest('.btn-remove-teacher')) {
+            const row = e.target.closest('.teacher-row');
+            const list = row.closest('.teacher-assignments-list');
+            if (list.querySelectorAll('.teacher-row').length > 1) {
+                row.remove();
+                // Re-indexar nombres
+                reindexTeacherRows(list);
+            } else {
+                alert('Debe haber al menos un profesor por materia.');
+            }
+        }
+    });
+
+    function reindexTeacherRows(list) {
+        const subjectIndex = list.dataset.subjectIndex;
+        list.querySelectorAll('.teacher-row').forEach((row, t) => {
+            row.querySelectorAll('[name]').forEach(el => {
+                el.name = el.name.replace(/TeacherAssignments\[\d+\]/, `TeacherAssignments[${t}]`);
             });
-
-            // Quitar borde rojo al corregir
-            document.querySelectorAll('.teacher-select, .group-checkbox').forEach(input => {
-                input.addEventListener('change', function() {
-                    const assignment = this.closest('.assignment-item');
-                    if (assignment) {
-                        assignment.classList.remove('border-danger');
-                    }
-                });
+            row.querySelectorAll('[id]').forEach(el => {
+                el.id = el.id.replace(/g_\d+_\d+_/, `g_${subjectIndex}_${t}_`);
+            });
+            row.querySelectorAll('[for]').forEach(el => {
+                el.htmlFor = el.htmlFor.replace(/g_\d+_\d+_/, `g_${subjectIndex}_${t}_`);
             });
         });
-    </script>
+    }
+
+    // Validación al enviar
+    document.getElementById('assignmentsForm').addEventListener('submit', function (e) {
+        let errors = [];
+        document.querySelectorAll('.assignment-item').forEach(card => {
+            const subjectName = card.querySelector('.card-header h5').innerText;
+            card.querySelectorAll('.teacher-row').forEach(row => {
+                const teacher = row.querySelector('.teacher-select').value;
+                const groups  = row.querySelectorAll('.group-checkbox:checked').length;
+                if (teacher && groups === 0)
+                    errors.push(`• ${subjectName}: Profesor seleccionado sin grupos.`);
+                if (!teacher && groups > 0)
+                    errors.push(`• ${subjectName}: Grupos seleccionados sin profesor.`);
+            });
+        });
+        if (errors.length) { e.preventDefault(); alert('Corrige:\n\n' + errors.join('\n')); }
+    });
+</script>
 }

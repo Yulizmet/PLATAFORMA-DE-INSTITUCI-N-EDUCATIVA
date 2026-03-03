@@ -115,7 +115,9 @@
                     </div>
                     <div class="card-body">
                         @{
-                            var asignacionesConProfesor = Model.Assignments.Where(a => a.TeacherId.HasValue).ToList();
+                            var asignacionesConProfesor = Model.Assignments
+                            .Where(a => a.TeacherAssignments.Any(ta => ta.TeacherId.HasValue))
+                            .ToList();
                         }
                         @if (asignacionesConProfesor.Any())
                         {
@@ -131,27 +133,30 @@
                                     <tbody>
                                         @foreach (var assignment in asignacionesConProfesor)
                                         {
-                                            var gruposAsignados = Model.Groups
-                                            .Where(g => assignment.SelectedGroupIds.Contains(g.TempId))
-                                            .Select(g => g.Name)
-                                            .ToList();
-                                            <tr>
-                                                <td class="fw-semibold">@assignment.SubjectName</td>
-                                                <td>@assignment.TeacherName</td>
-                                                <td>
-                                                    @if (gruposAsignados.Any())
-                                                    {
-                                                        foreach (var group in gruposAsignados)
+                                            foreach (var ta in assignment.TeacherAssignments.Where(ta => ta.TeacherId.HasValue))
+                                            {
+                                                var gruposAsignados = Model.Groups
+                                                .Where(g => ta.SelectedGroupIds.Contains(g.TempId))
+                                                .Select(g => g.Name)
+                                                .ToList();
+                                                <tr>
+                                                    <td class="fw-semibold">@assignment.SubjectName</td>
+                                                    <td>@ta.TeacherName</td>
+                                                    <td>
+                                                        @if (gruposAsignados.Any())
                                                         {
-                                                            <span class="badge bg-secondary me-1">@group</span>
+                                                            foreach (var group in gruposAsignados)
+                                                            {
+                                                                <span class="badge bg-secondary me-1">@group</span>
+                                                            }
                                                         }
-                                                    }
-                                                    else
-                                                    {
-                                                        <span class="text-muted">Sin grupos</span>
-                                                    }
-                                                </td>
-                                            </tr>
+                                                        else
+                                                        {
+                                                            <span class="text-muted">Sin grupos</span>
+                                                        }
+                                                    </td>
+                                                </tr>
+                                            }
                                         }
                                     </tbody>
                                 </table>

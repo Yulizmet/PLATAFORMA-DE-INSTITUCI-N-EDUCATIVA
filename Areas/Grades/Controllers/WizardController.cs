@@ -151,7 +151,7 @@ namespace SchoolManager.Areas.Grades.Controllers
             model.CurrentStep = 4;
             var gruposEnModelo = model.Groups?.Count ?? 0;
 
-            // 👇 IMPORTANTE: Asegurar que los grupos existen
+            // IMPORTANTE: Asegurar que los grupos existen
             if (model.Groups == null || !model.Groups.Any())
             {
                 TempData["Error"] = "Debes crear al menos un grupo antes de asignar profesores.";
@@ -174,59 +174,45 @@ namespace SchoolManager.Areas.Grades.Controllers
             {
                 SubjectTempId = s.TempId,
                 SubjectName = s.Name,
-                SelectedGroupIds = new List<int>()
+                TeacherAssignments = new List<TeacherGroupAssignment>
+                {
+                    new TeacherGroupAssignment()
+                }
             }).ToList();
 
             return View(model);
         }
 
-        // POST: /Grades/SchoolCycleWizard/Step4
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Step4(SchoolCycleWizardViewModel model)
         {
-            // Validar que los valores requeridos existan
             if (!model.StartDate.HasValue)
-            {
-                TempData["Error"] = "La fecha de inicio es requerida";
-                return RedirectToAction("Step1");
-            }
+            { TempData["Error"] = "La fecha de inicio es requerida"; return RedirectToAction("Step1"); }
 
             if (!model.EndDate.HasValue)
-            {
-                TempData["Error"] = "La fecha de fin es requerida";
-                return RedirectToAction("Step1");
-            }
+            { TempData["Error"] = "La fecha de fin es requerida"; return RedirectToAction("Step1"); }
 
             if (!model.MinPassingGrade.HasValue)
-            {
-                TempData["Error"] = "La calificación mínima es requerida";
-                return RedirectToAction("Step1");
-            }
+            { TempData["Error"] = "La calificación mínima es requerida"; return RedirectToAction("Step1"); }
 
             if (string.IsNullOrEmpty(model.LevelName))
-            {
-                TempData["Error"] = "El nombre del nivel es requerido";
-                return RedirectToAction("Step1");
-            }
+            { TempData["Error"] = "El nombre del nivel es requerido"; return RedirectToAction("Step1"); }
 
-            // --- SAVE EVERYTHING TO DATABASE ---
-            // 1. Create GradeLevel
-            TempData["WizardData"] = JsonSerializer.Serialize(model);
-
+            // 1. Crear GradeLevel
             var newLevel = new grades_grade_level
             {
                 Name = model.LevelName!,
-                StartDate = DateOnly.FromDateTime(model.StartDate.Value), // Ya validado
-                EndDate = DateOnly.FromDateTime(model.EndDate.Value),     // Ya validado
+                StartDate = DateOnly.FromDateTime(model.StartDate.Value),
+                EndDate = DateOnly.FromDateTime(model.EndDate.Value),
                 IsOpen = true,
-                MinPassingGrade = model.MinPassingGrade.Value             // Ya validado
+                MinPassingGrade = model.MinPassingGrade.Value
             };
             _context.grades_GradeLevels.Add(newLevel);
             await _context.SaveChangesAsync();
 
-            // 2. Create Subjects and Units
-            var subjectIdMap = new Dictionary<int, int>(); // Maps TempId to real ID
+            // 2. Crear Materias y Unidades
+            var subjectIdMap = new Dictionary<int, int>();
             foreach (var subjectVm in model.Subjects)
             {
                 var newSubject = new grades_subjects
@@ -238,22 +224,20 @@ namespace SchoolManager.Areas.Grades.Controllers
                 await _context.SaveChangesAsync();
                 subjectIdMap[subjectVm.TempId] = newSubject.SubjectId;
 
-                // Create Units
                 foreach (var unit in subjectVm.Units)
                 {
-                    var newUnit = new grades_subject_unit
+                    _context.grades_SubjectUnits.Add(new grades_subject_unit
                     {
                         SubjectId = newSubject.SubjectId,
                         UnitNumber = unit.Number,
                         IsOpen = unit.IsOpen
-                    };
-                    _context.grades_SubjectUnits.Add(newUnit);
+                    });
                 }
             }
             await _context.SaveChangesAsync();
 
-            // 3. Create Groups
-            var groupIdMap = new Dictionary<int, int>(); // Maps TempId to real ID
+            // 3. Crear Grupos
+            var groupIdMap = new Dictionary<int, int>();
             foreach (var groupVm in model.Groups)
             {
                 var newGroup = new grades_group
@@ -266,46 +250,51 @@ namespace SchoolManager.Areas.Grades.Controllers
                 groupIdMap[groupVm.TempId] = newGroup.GroupId;
             }
 
-            // 4. Create Assignments (TeacherSubject and TeacherSubjectGroup)
+            // 4. Crear asignaciones profe → materia → grupos
             foreach (var assignmentVm in model.Assignments)
             {
-                if (assignmentVm.TeacherId.HasValue && assignmentVm.TeacherId > 0)
+                if (!subjectIdMap.ContainsKey(assignmentVm.SubjectTempId)) continue;
+                var realSubjectId = subjectIdMap[assignmentVm.SubjectTempId];
+
+                foreach (var ta in assignmentVm.TeacherAssignments)
                 {
-                    // Find or create TeacherSubject
+                    if (!ta.TeacherId.HasValue || ta.TeacherId <= 0 || !ta.SelectedGroupIds.Any())
+                        continue;
+
+                    // Buscar o crear TeacherSubject
                     var teacherSubject = await _context.grades_TeacherSubjects
-                        .FirstOrDefaultAsync(ts => ts.TeacherId == assignmentVm.TeacherId && ts.SubjectId == subjectIdMap[assignmentVm.SubjectTempId]);
+                        .FirstOrDefaultAsync(ts => ts.TeacherId == ta.TeacherId && ts.SubjectId == realSubjectId);
 
                     if (teacherSubject == null)
                     {
                         teacherSubject = new grades_teacher_subject
                         {
-                            TeacherId = assignmentVm.TeacherId.Value,
-                            SubjectId = subjectIdMap[assignmentVm.SubjectTempId]
+                            TeacherId = ta.TeacherId.Value,
+                            SubjectId = realSubjectId
                         };
                         _context.grades_TeacherSubjects.Add(teacherSubject);
                         await _context.SaveChangesAsync();
                     }
 
-                    // Assign selected groups
-                    foreach (var groupTempId in assignmentVm.SelectedGroupIds)
+                    // Asignar grupos a ese profe
+                    foreach (var groupTempId in ta.SelectedGroupIds)
                     {
-                        var teacherSubjectGroup = new grades_teacher_subject_group
+                        if (!groupIdMap.ContainsKey(groupTempId)) continue;
+
+                        _context.grades_TeacherSubjectGroups.Add(new grades_teacher_subject_group
                         {
                             TeacherSubjectId = teacherSubject.TeacherSubjectId,
                             GroupId = groupIdMap[groupTempId]
-                        };
-                        _context.grades_TeacherSubjectGroups.Add(teacherSubjectGroup);
+                        });
                     }
                 }
             }
             await _context.SaveChangesAsync();
 
-            // Clear session and redirect to summary
             TempData.Remove("WizardData");
-            TempData["Success"] = "School cycle configured successfully.";
+            TempData["Success"] = "Ciclo escolar configurado exitosamente.";
             return RedirectToAction("Summary", new { levelId = newLevel.GradeLevelId });
         }
-
         // GET: /Grades/SchoolCycleWizard/Summary/5
         public async Task<IActionResult> Summary(int levelId)
         {

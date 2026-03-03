@@ -65,8 +65,17 @@ namespace SchoolManager.Areas.Grades.ViewModels.Wizard
     {
         public int SubjectTempId { get; set; }
         public string? SubjectName { get; set; }
-        public int? TeacherId { get; set; }
+        public List<TeacherGroupAssignment> TeacherAssignments { get; set; } = new()
+            {
+                new TeacherGroupAssignment() // Siempre empieza con 1 fila
+            };
         public string? TeacherName { get; set; }
-        public List<int> SelectedGroupIds { get; set; } = new List<int>();
+    }
+    public class TeacherGroupAssignment
+    {
+        public int? TeacherId { get; set; }
+        public string? TeacherName { get; set; } // ← necesaria para el resumen
+
+        public List<int> SelectedGroupIds { get; set; } = new();
     }
 }
