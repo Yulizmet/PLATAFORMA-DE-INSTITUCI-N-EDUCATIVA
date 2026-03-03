@@ -108,6 +108,12 @@ namespace SchoolManager.Areas.MainScreen.Controllers
             return View();
         }
 
+        [Route("/Foro")]
+        public IActionResult Foro()
+        {
+            return View();
+        }
+
         [Route("/ProcesoInscripcion")]
         public IActionResult ProcesosInscripcion()
         {

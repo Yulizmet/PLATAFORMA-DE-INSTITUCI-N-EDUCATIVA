@@ -1,0 +1,112 @@
+﻿@* /Areas/Grades/Views/SchoolCycleWizard/Summary.cshtml *@
+@model grades_grade_level
+
+@{
+    ViewData["Title"] = "Configuración Completada";
+    Layout = "~/Areas/MainScreen/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <div class="sistema-card">
+                <!-- Icono de éxito -->
+                <div class="text-center mb-4">
+                    <div class="sistema-icon icon-calificaciones mx-auto mb-3" style="width: 100px; height: 100px; background-color: #d4edda;">
+                        <i class="bi bi-check-circle-fill" style="font-size: 3rem; color: #28a745;"></i>
+                    </div>
+                    <h2 class="fw-bold">¡Configuración Completada!</h2>
+                    <p class="text-muted">El ciclo escolar se ha creado exitosamente</p>
+                </div>
+
+                <!-- Resumen del nivel -->
+                <div class="card mb-4 border-success">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="mb-0"><i class="bi bi-layers me-2"></i>Nivel Escolar</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <strong>Nombre:</strong> @Model.Name
+                            </div>
+                            <div class="col-md-4">
+                                <strong>Período:</strong> @Model.StartDate.ToString("dd/MM/yyyy") - @Model.EndDate.ToString("dd/MM/yyyy")
+                            </div>
+                            <div class="col-md-4">
+                                <strong>Calificación mínima:</strong>
+                                <span class="badge bg-danger">@Model.MinPassingGrade.ToString("F1")</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Resumen de materias -->
+                <div class="card mb-4">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0"><i class="bi bi-book me-2"></i>Materias Creadas (@Model.Subjects.Count)</h5>
+                    </div>
+                    <div class="card-body">
+                        @if (Model.Subjects.Any())
+                        {
+                            <div class="table-responsive">
+                                <table class="table table-sm">
+                                    <thead>
+                                        <tr>
+                                            <th>Materia</th>
+                                            <th class="text-center">Unidades</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var subject in Model.Subjects)
+                                        {
+                                            <tr>
+                                                <td>@subject.Name</td>
+                                                <td class="text-center">
+                                                    <span class="badge bg-info">@subject.Units.Count</span>
+                                                </td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        }
+                        else
+                        {
+                            <p class="text-muted mb-0">No se crearon materias</p>
+                        }
+                    </div>
+                </div>
+
+                <!-- Resumen de grupos -->
+                <div class="card mb-4">
+                    <div class="card-header bg-info text-white">
+                        <h5 class="mb-0"><i class="bi bi-people me-2"></i>Grupos Creados (@Model.Groups.Count)</h5>
+                    </div>
+                    <div class="card-body">
+                        @if (Model.Groups.Any())
+                        {
+                            foreach (var group in Model.Groups)
+                            {
+                                <span class="badge bg-secondary me-2 mb-2 p-2">@group.Name</span>
+                            }
+                        }
+                        else
+                        {
+                            <p class="text-muted mb-0">No se crearon grupos</p>
+                        }
+                    </div>
+                </div>
+
+                <!-- Acciones finales -->
+                <div class="d-flex justify-content-center gap-3 mt-4">
+                    <a asp-action="Index" asp-controller="GradeCapture" class="btn btn-calificaciones">
+                        <i class="bi bi-pencil-square me-2"></i>Ir a Capturar Calificaciones
+                    </a>
+                    <a asp-area="MainScreen" asp-controller="MainScreen" asp-action="PanelAdministrativo" class="btn btn-secondary">
+                        <i class="bi bi-arrow-left me-2"></i>Volver al Panel
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

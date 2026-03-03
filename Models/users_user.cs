@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel;
+using SchoolManager.Models;
 
 namespace SchoolManager.Models
 {
@@ -22,5 +23,7 @@ namespace SchoolManager.Models
         public ICollection<users_session> Sessions { get; set; }
         public ICollection<users_auditlog> AuditLogs { get; set; }
         public ICollection<preenrollment_general> PreEnrollments { get; set; }
+
+        public ICollection<ForoPublicacion> ForoPublicaciones { get; set; }
     }
 }
