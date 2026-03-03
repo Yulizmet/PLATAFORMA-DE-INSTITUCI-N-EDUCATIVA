@@ -21,6 +21,7 @@ namespace SchoolManager.Services
             return type.ToLower() switch
             {
                 "persons" => await SearchPersons(term),
+                "persons_no_account" => await SearchPersonsWithoutAccount(term),
                 "students" => await SearchUsersByRole(term, "Student"),
                 "teachers" => await SearchUsersByRole(term, "Teacher"),
                 "admins" => await SearchUsersByRole(term, "Admin"),
@@ -140,6 +141,38 @@ namespace SchoolManager.Services
                 IsActive = u.IsActive,
                 CreatedDate = u.CreatedDate,
                 Type = "user"
+            }).ToList();
+        }
+        
+        private async Task<List<SearchResult>> SearchPersonsWithoutAccount(string term)
+        {
+            var query = await _context.Persons
+                .Where(p => p.IsActive &&
+                            p.User == null &&
+                            (p.FirstName.Contains(term) ||
+                             p.LastNamePaternal.Contains(term) ||
+                             p.LastNameMaternal.Contains(term) ||
+                             p.Curp.Contains(term) ||
+                             p.Email.Contains(term)))
+                .Take(10)
+                .ToListAsync();
+
+            return query.Select(p => new SearchResult
+            {
+                Id = p.PersonId,
+                PersonId = p.PersonId,
+                FirstName = p.FirstName,
+                LastNamePaternal = p.LastNamePaternal,
+                LastNameMaternal = p.LastNameMaternal,
+                FullName = $"{p.FirstName} {p.LastNamePaternal} {p.LastNameMaternal}",
+                BirthDate = p.BirthDate,
+                Gender = p.Gender,
+                Curp = p.Curp,
+                Email = p.Email,
+                Phone = p.Phone,
+                IsActive = p.IsActive,
+                CreatedDate = p.CreatedDate,
+                Type = "person"
             }).ToList();
         }
 
