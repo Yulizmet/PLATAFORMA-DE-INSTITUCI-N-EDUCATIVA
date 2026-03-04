@@ -556,6 +556,21 @@ textarea.form-control {
     white-space: pre-wrap;
 }
 
+/* Fecha de creación estilizada */
+.bitacora-modal .creation-date {
+    background: var(--ss-gray-100);
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    border-left: 3px solid var(--rojo-principal);
+    margin-top: 1rem;
+}
+
+.bitacora-modal .creation-date p {
+    margin-bottom: 0;
+    color: var(--ss-gray-700);
+    font-size: 0.9rem;
+}
+
 .bitacora-modal .hours-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
@@ -569,6 +584,120 @@ textarea.form-control {
     border-radius: 8px;
     text-align: center;
     border-left: 3px solid var(--rojo-principal);
+}
+
+/* ====== BITÁCORAS DEL PROFESOR ====== */
+.teacher-bitacora-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+    gap: 1.5rem;
+    padding-bottom: 2rem;
+}
+
+.teacher-bitacora-card {
+    background: white;
+    border-radius: 12px;
+    box-shadow: var(--ss-shadow-md);
+    transition: var(--ss-transition);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.teacher-bitacora-card:hover {
+    box-shadow: var(--ss-shadow-xl);
+    transform: translateY(-4px);
+}
+
+.teacher-bitacora-card.approved {
+    border: 2px solid var(--ss-success);
+}
+
+.teacher-bitacora-card.pending {
+    border: 2px solid var(--ss-warning);
+}
+
+.teacher-card-header {
+    padding: 1rem 1.5rem;
+    background: linear-gradient(135deg, var(--rojo-principal), var(--rojo-claro));
+    color: white;
+}
+
+.teacher-card-header.approved {
+    background: linear-gradient(135deg, #28a745, #20c997);
+}
+
+.teacher-card-header h6 {
+    margin: 0;
+    font-weight: 700;
+    font-size: 1.1rem;
+}
+
+.teacher-card-body {
+    padding: 1.5rem;
+    flex: 1;
+}
+
+.teacher-card-body .activity-text {
+    max-height: 4.5em;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    word-wrap: break-word;
+    word-break: break-word;
+    color: var(--ss-gray-600);
+    line-height: 1.5;
+    margin-bottom: 1rem;
+}
+
+.teacher-hours-display {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+.teacher-hour-item {
+    background: var(--ss-gray-50);
+    padding: 0.75rem;
+    border-radius: 8px;
+    text-align: center;
+    border-left: 3px solid var(--rojo-principal);
+}
+
+.teacher-hour-item .hour-label {
+    font-size: 0.8rem;
+    color: var(--ss-gray-600);
+    margin-bottom: 0.25rem;
+}
+
+.teacher-hour-item .hour-value {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--rojo-principal);
+}
+
+.approval-form {
+    border-top: 2px dashed var(--ss-gray-200);
+    padding-top: 1rem;
+    margin-top: 1rem;
+}
+
+.approval-section {
+    background: #d4edda;
+    padding: 1rem;
+    border-radius: 8px;
+    border-left: 4px solid var(--ss-success);
+    margin-top: 1rem;
+}
+
+/* Responsive para bitácoras del profesor */
+@media (max-width: 768px) {
+    .teacher-bitacora-grid {
+        grid-template-columns: 1fr;
+    }
 }
 
 /* Card de bitácora con estado */
