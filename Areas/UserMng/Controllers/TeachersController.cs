@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SchoolManager.Areas.UserMng.ViewModels;
 using SchoolManager.Data;
@@ -7,6 +8,8 @@ using Microsoft.EntityFrameworkCore;
 namespace SchoolManager.Areas.UserMng.Controllers;
 
 [Area("UserMng")]
+[Authorize(Roles = "Administrator")]
+
 public class TeachersController : Controller
 {
     private readonly AppDbContext _context;

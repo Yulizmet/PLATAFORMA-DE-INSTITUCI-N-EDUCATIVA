@@ -22,7 +22,7 @@ namespace SchoolManager.Areas.Grades.Controllers
 #pragma warning restore CS1998 // El método asincrónico carece de operadores "await" y se ejecutará de forma sincrónica
         {
             // ⚠️ TEMPORAL: ID del estudiante para pruebas (cambiar cuando haya autenticación)
-            int studentId = 9; // Cambia esto por un ID real de estudiante en tu BD
+            int studentId = 11; // Cambia esto por un ID real de estudiante en tu BD
 
             return RedirectToAction(nameof(Details), new { studentId });
         }
