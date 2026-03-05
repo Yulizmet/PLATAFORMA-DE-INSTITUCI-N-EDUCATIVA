@@ -1,0 +1,494 @@
+﻿@model List<SchoolManager.Areas.Procedures.Models.procedure_permission>
+
+@{
+    ViewData["Title"] = "Gestión de Permisos";
+    Layout = "_ProceduresLayout";
+}
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            let activeTab = localStorage.getItem('activeGestorTab');
+            if (activeTab) {
+                $(`#mainGestorTabs button[data-bs-target="${activeTab}"]`).tab('show');
+            }
+
+            $('button[data-bs-toggle="pill"]').on('shown.bs.tab', function (e) {
+                localStorage.setItem('activeGestorTab', $(e.target).attr('data-bs-target'));
+            });
+
+            refreshTables();
+        });
+
+        function refreshTables() {
+            const catalogUrl = '@Url.Action("GetCatalogTable", "Permissions")';
+            const jobsUrl = '@Url.Action("GetJobsTable", "Permissions")';
+
+            $("#catalogTableContainer").load(catalogUrl, function(response, status, xhr) {
+                if (status === "error") console.error("Error cargando Catálogo:", xhr.status, xhr.statusText);
+            });
+
+            $("#jobsTableContainer").load(jobsUrl, function(response, status, xhr) {
+                if (status === "error") console.error("Error cargando Puestos:", xhr.status, xhr.statusText);
+            });
+        }
+
+        function filterByArea(idArea) {
+            if (idArea) {
+                window.location.href = '@Url.Action("Index", "Permissions")?idArea=' + idArea;
+            }
+        }
+
+        function loadModuleModal(id = 0, moduleName = '') {
+            const cleanModuleName = encodeURIComponent(moduleName);
+            const url = `@Url.Action("GetModuleModal", "Permissions")?id=${id}&moduleName=${cleanModuleName}`;
+
+            $("#modalContainer").load(url, function (response, status, xhr) {
+                if (status === "error") {
+                    Swal.fire('Error 500', 'El servidor no pudo procesar la solicitud del modal.', 'error');
+                } else {
+                    $("#modalModule").modal('show');
+                }
+            });
+        }
+
+        function loadJobModal(id = 0) {
+            const url = '@Url.Action("GetJobModal", "Permissions")?id=' + id;
+
+            $("#modalContainer").load(url, function (response, status, xhr) {
+                if (status === "error") {
+                    Swal.fire('Error', 'No se encontró el recurso del puesto.', 'error');
+                } else {
+                    $("#modalJob").modal('show');
+                }
+            });
+        }
+
+        function loadAssignJobModal() {
+            const idArea = '@ViewBag.SelectedAreaId';
+            if (!idArea || idArea === '0') {
+                Swal.fire('Atención', 'Por favor, selecciona un área administrativa primero.', 'warning');
+                return;
+            }
+
+            const url = '@Url.Action("GetAssignJobModal", "Permissions")?idArea=' + idArea;
+
+            $("#modalContainer").load(url, function (response, status, xhr) {
+                if (status === "error") {
+                    Swal.fire('Error', 'No se pudo cargar el selector de puestos.', 'error');
+                } else {
+                    $("#modalAssignJob").modal('show');
+                }
+            });
+        }
+
+        $(document).on('submit', '#formPermissions', function (e) {
+            e.preventDefault();
+            const form = $(this);
+
+            Swal.fire({
+                title: 'Guardando...',
+                text: 'Actualizando privilegios',
+                allowOutsideClick: false,
+                didOpen: () => { Swal.showLoading(); }
+            });
+
+            $.post(form.attr('action'), form.serialize(), function (r) {
+                if (r.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Matriz Actualizada',
+                        confirmButtonColor: '#620900'
+                    });
+                } else {
+                    Swal.fire('Error', r.message || 'Error desconocido', 'error');
+                }
+            }).fail(function() {
+                Swal.fire('Error Crítico', 'No se pudo conectar con el servidor.', 'error');
+            });
+        });
+
+        function openDeleteModal(id, type) {
+            const url = '@Url.Action("GetDeleteModal", "Permissions")';
+
+            $("#modalContainer").load(`${url}?id=${id}&type=${type}`, function (response, status, xhr) {
+                if (status === "error") {
+                    Swal.fire('Error', 'No se pudo cargar el modal de eliminación', 'error');
+                } else {
+                    $("#deleteModal").modal('show');
+                }
+            });
+        }
+
+        $(document).on('submit', '#formModuleCatalog, #formJobPosition', function (e) {
+            e.preventDefault();
+            const form = $(this);
+            const modalId = form.closest('.modal').attr('id');
+
+            $.post(form.attr('action'), form.serialize(), function (r) {
+                if (r.success) {
+                    $(`#${modalId}`).modal('hide');
+                    Swal.fire({
+                        icon: 'success',
+                        title: '¡Guardado!',
+                        text: r.message,
+                        timer: 1500,
+                        showConfirmButton: false
+                    });
+                    refreshTables();
+                } else {
+                    Swal.fire('Error', r.message, 'error');
+                }
+            });
+        });
+
+        $(document).on('submit', '#formDeleteGeneric', function (e) {
+            e.preventDefault();
+            const form = $(this);
+
+            $.post(form.attr('action'), form.serialize(), function (r) {
+                $("#deleteModal").modal('hide');
+
+                if (r.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Eliminado',
+                        text: r.message || 'El registro ha sido removido.',
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
+                    refreshTables();
+                } else {
+                    Swal.fire('Error', r.message || 'No se pudo eliminar el registro', 'error');
+                }
+            }).fail(function() {
+                Swal.fire('Error Crítico', 'Comunicación fallida con el servidor', 'error');
+            });
+        });
+
+        function initModules(idArea) {
+            if (!idArea) {
+                Swal.fire('Error', 'No se ha detectado el ID del área.', 'error');
+                return;
+            }
+
+            Swal.fire({
+                title: '¿Generar matriz base?',
+                text: "Se crearán reglas de acceso para todos los módulos del catálogo en esta área.",
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#620900',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Sí, generar',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    Swal.fire({ title: 'Procesando...', didOpen: () => { Swal.showLoading(); } });
+
+                    $.post('@Url.Action("InitModules", "Permissions")', { idArea: idArea }, function (r) {
+                        if (r.success) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: '¡Listo!',
+                                text: r.message,
+                                confirmButtonColor: '#620900'
+                            }).then(() => {
+                                window.location.reload();
+                            });
+                        } else {
+                            Swal.fire('Atención', r.message, 'warning');
+                        }
+                    }).fail(function() {
+                        Swal.fire('Error', 'No se pudo completar la operación.', 'error');
+                    });
+                }
+            });
+        }
+
+        $(document).on('submit', '#formAssignJob', function (e) {
+            e.preventDefault();
+            const form = $(this);
+
+            Swal.fire({
+                title: 'Generando matriz...',
+                text: 'Esto puede tardar unos segundos',
+                didOpen: () => { Swal.showLoading(); }
+            });
+
+            $.post(form.attr('action'), form.serialize(), function (r) {
+                if (r.success) {
+                    $("#modalAssignJob").modal('hide');
+                    Swal.fire({
+                        icon: 'success',
+                        title: '¡Éxito!',
+                        text: r.message,
+                        confirmButtonColor: '#620900'
+                    }).then(() => {
+                        window.location.reload();
+                    });
+                } else {
+                    Swal.fire('Error', r.message, 'error');
+                }
+            });
+        });
+
+        $(document).on('change', '.master-check', function () {
+            const isChecked = $(this).is(':checked');
+            const targetGroup = $(this).data('target-group');
+
+            $(`.child-check-${targetGroup}`).each(function () {
+                $(this).prop('checked', isChecked);
+            });
+        });
+
+        $(document).on('change', '[class^="child-check-"]', function () {
+            if ($(this).is(':checked')) {
+                const modId = $(this).attr('class').split('child-check-')[1];
+                $(`.master-check[data-target-group="${modId}"]`).prop('checked', true);
+            }
+        });
+    </script>
+}
+
+<div id="modalContainer"></div>
+
+<div class="container-fluid px-4 pt-5">
+    <div class="mb-4">
+        <h2 class="fw-bold text-dark mb-1">
+            <i class="bi bi-shield-lock text-burgundy"></i> Matriz de Permisos
+        </h2>
+        <p class="text-muted small">Configura el catálogo global y asigna accesos específicos por departamento.</p>
+    </div>
+
+    <ul class="nav nav-pills nav-pills-burgundy mb-4 p-2 rounded-4" id="mainGestorTabs" role="tablist">
+        <li class="nav-item">
+            <button class="nav-link" data-bs-toggle="pill" data-bs-target="#catalog-pane" type="button">
+                <i class="bi bi-collection-play me-2"></i> Módulos y Botones
+            </button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link" data-bs-toggle="pill" data-bs-target="#jobs-pane" type="button">
+                <i class="bi bi-person-vcard me-2"></i> Puestos de trabajo
+            </button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link" data-bs-toggle="pill" data-bs-target="#permissions-pane" type="button">
+                <i class="bi bi-shield-lock-fill me-2"></i> Matriz de Permisos
+            </button>
+        </li>
+    </ul>
+
+    <div class="tab-content" id="mainGestorContent">
+        @* PESTAÑA 1 *@
+        <div class="tab-pane fade show active" id="catalog-pane" role="tabpanel">
+            <div class="card border-0 shadow-sm mb-4 rounded-4 overflow-hidden border-start border-4 border-burgundy">
+                <div class="card-body bg-light" style="padding: 1.5rem !important">
+                    <div class="row align-items-center">
+                        <div class="col-md-7">
+                            <h5 class="mb-0 fw-bold text-dark">
+                                <i class="bi bi-collection-play me-2 text-burgundy"></i> Catálogo Global de Módulos
+                            </h5>
+                            <p class="text-muted small mb-0">Gestiona los elementos base que aparecerán en las matrices.</p>
+                        </div>
+                        <div class="col-md-5 text-end">
+                            <button class="btn btn-burgundy btn-sm px-4 shadow-sm" onclick="loadModuleModal(0)">
+                                <i class="bi bi-plus-circle me-1"></i> Agregar Módulo
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+                <div class="card-body p-0" id="catalogTableContainer">
+                </div>
+            </div>
+        </div>
+
+        @* PESTAÑA 2 *@
+        <div class="tab-pane fade" id="jobs-pane" role="tabpanel">
+            <div class="card border-0 shadow-sm mb-4 rounded-4 overflow-hidden border-start border-4 border-burgundy">
+                <div class="card-body bg-light" style="padding: 1.5rem !important">
+                    <div class="row align-items-center">
+                        <div class="col-md-7">
+                            <h5 class="mb-0 fw-bold text-dark">
+                                <i class="bi bi-person-vcard me-2 text-burgundy"></i> Puestos Registrados
+                            </h5> 
+                            <p class="text-muted small mb-0">Define los perfiles laborales para la asignación de accesos.</p>
+                        </div>
+                        <div class="col-md-5 text-end">
+                            <button class="btn btn-burgundy btn-sm px-4 shadow-sm" onclick="loadJobModal()">
+                                <i class="bi bi-person-plus me-1"></i> Nuevo Puesto
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+                <div class="card-body p-0" id="jobsTableContainer">
+                </div>
+            </div>
+        </div>
+
+        @* PESTAÑA 3 *@
+        <div class="tab-pane fade" id="permissions-pane" role="tabpanel">
+            <div class="card border-0 shadow-sm mb-4 rounded-4 overflow-hidden border-start border-4 border-burgundy">
+                <div class="card-body bg-light" style="padding: 1.5rem !important">
+                    <div class="row align-items-center">
+                        <div class="col-md-7">
+                            <div class="input-group">
+                                <span class="input-group-text bg-white" style="border-radius: 10px 0px 0px 10px !important"><i class="bi bi-building"></i></span>
+                                <select class="form-select fw-bold border-0" asp-items="ViewBag.Areas" onchange="filterByArea(this.value)" style="border: 1px solid #ced4da !important">
+                                    <option value="">-- Selecciona área para gestionar --</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-5 text-end">
+                            @if (ViewBag.SelectedAreaId != null)
+                            {
+                                <button type="button" class="btn btn-burgundy btn-sm me-2" onclick="loadAssignJobModal()">
+                                    <i class="bi bi-person-add me-1"></i> Asignar Puesto
+                                </button>
+                                <button type="submit" form="formPermissions" class="btn btn-burgundy btn-sm shadow-sm">
+                                    <i class="bi bi-save2"></i> Guardar Todo
+                                </button>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            @if (Model != null && Model.Any())
+            {
+                var jobGroups = Model.GroupBy(p => p.IdJobPosition).ToList();
+
+                <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+                    <div class="card-header bg-white border-bottom-0 pt-3">
+                        <ul class="nav nav-tabs nav-tabs-burgundy px-3" id="secondaryGestorTabs" role="tablist">
+                            @for (int j = 0; j < jobGroups.Count; j++)
+                            {
+                                var jobName = jobGroups[j].First().JobPosition?.Name ?? "Puesto";
+                                <li class="nav-item">
+                                    <button class="nav-link @(j == 0 ? "active" : "") fw-bold px-4"
+                                            data-bs-toggle="tab"
+                                            data-bs-target="#job-content-@j"
+                                            type="button">
+                                        @jobName
+                                    </button>
+                                </li>
+                            }
+                        </ul>
+                    </div>
+
+                    <div class="card-body p-0">
+                        <form id="formPermissions" asp-action="SavePermissions" method="post">
+                            @Html.AntiForgeryToken()
+
+                            <div class="tab-content">
+                                @for (int j = 0; j < jobGroups.Count; j++)
+                                {
+                                    <div class="tab-pane fade @(j == 0 ? "show active" : "") p-3" id="job-content-@j" role="tabpanel">
+
+                                        <div class="accordion accordion-flush border rounded-3 overflow-hidden shadow-sm" id="accordionModules-@j">
+                                            @{
+                                                var moduleGroups = jobGroups[j].GroupBy(p => p.ModuleCatalog.ModuleName).ToList();
+                                                for (int m = 0; m < moduleGroups.Count; m++)
+                                                {
+                                                    var mainModule = moduleGroups[m].FirstOrDefault(x => x.ModuleCatalog.ButtonName == null);
+                                                    var buttons = moduleGroups[m].Where(x => x.ModuleCatalog.ButtonName != null).ToList();
+                                                    string modId = $"mod_{j}_{m}";
+
+                                                    <div class="accordion-item border-bottom">
+                                                        <div class="accordion-header d-flex align-items-center bg-white pe-3">
+                                                            <button class="accordion-button collapsed fw-bold text-dark bg-transparent shadow-none"
+                                                                    type="button" data-bs-toggle="collapse" data-bs-target="#@modId">
+                                                                <i class="bi bi-folder2-open me-2 text-burgundy"></i> @moduleGroups[m].Key
+                                                            </button>
+
+                                                            @if (mainModule != null)
+                                                            {
+                                                                int idx = Model.IndexOf(mainModule);
+                                                                <div class="ms-auto d-flex gap-3 align-items-center py-2">
+                                                                    <input type="hidden" name="permissions[@idx].Id" value="@mainModule.Id" />
+                                                                    <div class="text-center small">
+                                                                        <span class="text-muted fw-bold" style="font-size: 0.65rem;">ACCESO</span><br />
+                                                                        <input type="checkbox" name="permissions[@idx].CanView" value="true"
+                                                                               @(mainModule.CanView ? "checked" : "")
+                                                                               data-target-group="@modId"
+                                                                               class="form-check-input custom-check master-check mt-1" />
+                                                                        <input type="hidden" name="permissions[@idx].CanView" value="false" />
+                                                                    </div>
+                                                                </div>
+                                                            }
+                                                        </div>
+
+                                                        <div id="@modId" class="accordion-collapse collapse" data-bs-parent="#accordionModules-@j">
+                                                            <div class="accordion-body bg-light-subtle p-0">
+                                                                <ul class="list-group list-group-flush">
+                                                                    @foreach (var btn in buttons)
+                                                                    {
+                                                                        int bIdx = Model.IndexOf(btn);
+                                                                        <li class="list-group-item d-flex align-items-center ps-5 py-2 border-0 border-bottom small">
+                                                                            <input type="hidden" name="permissions[@bIdx].Id" value="@btn.Id" />
+
+                                                                            <div class="flex-grow-1 text-secondary">
+                                                                                <i class="bi bi-arrow-return-right me-2"></i>
+                                                                                @btn.ModuleCatalog.ButtonName
+                                                                            </div>
+
+                                                                            <div class="form-check form-switch">
+                                                                                <input type="checkbox" name="permissions[@bIdx].CanView"
+                                                                                       value="true" @(btn.CanView ? "checked" : "")
+                                                                                       class="form-check-input child-check-@modId" />
+
+                                                                                <input type="hidden" name="permissions[@bIdx].CanView" value="false" />
+                                                                            </div>
+                                                                        </li>
+                                                                        @if (!buttons.Any())
+                                                                        {
+                                                                            <li class="list-group-item ps-5 py-2 text-muted small italic">
+                                                                                Sin botones configurados para este módulo.
+                                                                            </li>
+                                                                        }
+                                                                    }
+                                                                </ul>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                }
+                                            }
+                                        </div>
+
+                                    </div>
+                                }
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            }
+            else if (ViewBag.SelectedAreaId != null)
+            {
+                <div class="text-center py-5 rounded-4 bg-white shadow-sm">
+                    <i class="bi bi-shield-slash display-1 text-muted opacity-25"></i>
+                    <h4 class="mt-3 fw-bold">Sin configuración de acceso</h4>
+                    <p class="text-muted">El área seleccionada no tiene reglas de acceso definidas.</p>
+                    <button class="btn btn-burgundy mt-2" onclick="initModules(@ViewBag.SelectedAreaId)">
+                        <i class="bi bi-plus-circle me-1"></i> Crear matriz base para esta área
+                    </button>
+                </div>
+            }
+
+            else
+
+            {
+
+                <div class="text-center py-5 opacity-50">
+                    <i class="bi bi-building-gear display-1"></i>
+                    <h4 class="mt-3">Esperando selección de área...</h4>
+                    <p>Selecciona un departamento en el menú superior para gestionar sus permisos.</p>
+                </div>
+            }
+        </div>
+        </div>
+    </div>

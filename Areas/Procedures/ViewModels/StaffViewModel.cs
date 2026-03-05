@@ -6,6 +6,14 @@
         public int UserId { get; set; }
         public int PersonId { get; set; }
 
+        public string FirstName { get; set; } = null!;
+        public string LastNamePaternal { get; set; } = null!;
+        public string LastNameMaternal { get; set; } = null!;
+        public string Curp { get; set; } = null!;
+        public string BirthDate { get; set; } = null!;
+        public string Gender { get; set; } = null!;
+        public string Nationality { get; set; } = null!;
+
         public string FullName { get; set; } = null!;
         public string Username { get; set; } = null!;
         public string Email { get; set; } = null!;

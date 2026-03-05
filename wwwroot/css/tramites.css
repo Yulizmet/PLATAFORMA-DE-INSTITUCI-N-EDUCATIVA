@@ -334,7 +334,56 @@
 ==============================================================================*/
 .bg-burgundy, .burgundy-header, .card-header-burgundy {
     background-color: var(--burgundy) !important;
+    color: #fff !important;
+}
+
+.border-burgundy {
+    border-left: 4px solid #620900 !important;
+}
+
+.nav-pills-burgundy .nav-link.active {
+    background-color: #620900 !important;
     color: white !important;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+
+#secondaryGestorTabs .nav-link {
+    color: #000000 !important;
+    border: none !important;
+    border-bottom: 3px solid transparent !important;
+    background: transparent !important;
+}
+
+    #secondaryGestorTabs .nav-link.active {
+        color: #620900 !important;
+        border-bottom: 3px solid #620900 !important;
+    }
+
+.custom-check:checked {
+    background-color: #620900 !important;
+    border-color: #620900 !important;
+}
+
+.form-switch .form-check-input:checked {
+    background-color: #620900 !important;
+    border-color: #620900 !important;
+}
+
+.text-burgundy {
+    color: #620900;
+}
+
+
+.nav-pills-burgundy .nav-link:hover:not(.active) {
+    color: #620900;
+    background-color: rgba(98, 9, 0, 0.05);
+}
+
+.nav-pills-burgundy .nav-link {
+    color: #555;
+    transition: all 0.3s ease;
 }
 
 .card-header-burgundy {
@@ -343,6 +392,15 @@
 
 .burgundy-color {
     color: var(--burgundy) !important;
+}
+
+.form-check-input-burgundy:checked {
+    background-color: var(--burgundy) !important;
+    border-color: var(--burgundy) !important;
+}
+
+.form-check-input-burgundy:focus {
+    background-image: url(data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='3' fill='rgba%280, 0, 0, 0.25%29'/%3e%3c/svg%3e) !important;
 }
 
 .burgundy-border {
@@ -457,8 +515,32 @@
     border-right: none;
 }
 
+.expediente-label {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    color: #40484f;
+    font-weight: 800;
+}
+
+.expediente-value {
+    border-bottom: 1px solid #dee2e6;
+    padding-bottom: 2px;
+    font-weight: 500;
+    min-height: 25px;
+    color: #212529;
+}
+
+.section-header {
+    background-color: #e6e6e6;
+    border-left: 4px solid #620900;
+    padding: 8px 15px;
+    font-weight: bold;
+    margin-top: 25px;
+    margin-bottom: 15px;
+}
+
 /* ========================================================================
-   ESTILOS MAESTROS DATA TABLES - RE-DISEÑO NICOLLE
+   ESTILOS MAESTROS DATA TABLES
    ======================================================================== */
 
 /* --- 1. HEADER (ICONOS DE ORDENADO) --- */

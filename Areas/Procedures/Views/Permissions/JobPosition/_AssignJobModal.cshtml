@@ -1,0 +1,33 @@
+﻿<div class="modal fade" id="modalAssignJob" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow rounded-4">
+            <div class="modal-header bg-burgundy text-white">
+                <h5 class="modal-title">Asignar Puesto a Área</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="formAssignJob" action="@Url.Action("InitJobPermissions", "Permissions")" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="idArea" value="@ViewBag.IdArea" />
+                <div class="modal-body p-4">
+                    <p class="text-muted small mb-4">
+                        Selecciona un puesto para generar su matriz de permisos en esta área.
+                    </p>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small text-muted text-uppercase">Puesto de Trabajo</label>
+                        <select name="idJobPosition" class="form-select border-2" required>
+                            <option value="">-- Seleccione un puesto --</option>
+                            @foreach (var job in ViewBag.Jobs)
+                            {
+                                <option value="@job.Id">@job.Name</option>
+                            }
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-burgundy">Inicializar Permisos</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

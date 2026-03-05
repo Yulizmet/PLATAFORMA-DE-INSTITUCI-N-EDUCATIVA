@@ -1,0 +1,68 @@
+﻿@model SchoolManager.Areas.Procedures.Models.procedure_module_catalog
+
+@{
+    bool isEdit = Model.Id > 0;
+
+    bool isButton = !string.IsNullOrEmpty(Model.ButtonName) || (Model.Id == 0 && !string.IsNullOrEmpty(Model.ModuleName));
+
+    bool isMainModule = string.IsNullOrEmpty(Model.ButtonName);
+}
+
+<div class="modal fade" id="modalModule" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg rounded-4">
+            <div class="modal-header bg-burgundy text-white">
+                <h5 class="modal-title fw-bold">
+                    <i class="bi @(isButton ? "bi-command" : "bi-collection-play") me-2"></i>
+                    @(isEdit ? "Editar" : "Nuevo") @(isButton ? "Botón" : "Módulo")
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form asp-action="SaveModuleToCatalog" method="post" id="formModuleCatalog">
+                @Html.AntiForgeryToken()
+                <input type="hidden" asp-for="Id" />
+
+                <div class="modal-body p-4">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small text-muted text-uppercase">Nombre del Módulo</label>
+                        <input type="text" name="ModuleName" value="@Model.ModuleName"
+                               class="form-control border-2 @(isButton ? "bg-light shadow-none" : "")"
+                               readonly="@(isButton)"
+                               required
+                               placeholder="Ej: Expedientes" />
+
+                        @if (isButton)
+                        {
+                            <div class="form-text small text-primary opacity-75 mt-1">
+                                <i class="bi bi-info-circle me-1"></i>
+                                Estás trabajando en el módulo: <strong>@Model.ModuleName</strong>
+                            </div>
+                        }
+                    </div>
+
+                    @if (isButton)
+                    {
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small text-muted text-uppercase">Identificador del Botón</label>
+                            <input type="text" asp-for="ButtonName" class="form-control border-2" required placeholder="Ej: btn-guardar" />
+                        </div>
+                    }
+
+                    @if (!isButton)
+                    {
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small text-muted text-uppercase">Ruta / URL de Acceso</label>
+                            <input type="text" asp-for="Route" class="form-control border-2" placeholder="/Procedures/Tablero/Index" />
+                        </div>
+                    }
+                </div>
+                <div class="modal-footer border-0 bg-light">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn bg-burgundy shadow-sm">
+                        Guardar Cambios
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

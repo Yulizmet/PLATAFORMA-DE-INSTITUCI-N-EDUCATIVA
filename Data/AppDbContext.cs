@@ -1,6 +1,10 @@
 ﻿using DocumentFormat.OpenXml.Vml.Office;
+using Humanizer.Configuration;
 using Microsoft.EntityFrameworkCore;
+using SchoolManager.Areas.Procedures.Models;
 using SchoolManager.Models;
+using System.Configuration;
+using System.Numerics;
 
 namespace SchoolManager.Data
 {
@@ -22,11 +26,14 @@ namespace SchoolManager.Data
 
 
 
-        // Procedures (Trámites - El área que actualizamos hoy)
+        // Procedures (Trámites)
         public DbSet<procedure_areas> ProcedureAreas { get; set; }
         public DbSet<procedure_documents> ProcedureDocuments { get; set; }
         public DbSet<procedure_flow> ProcedureFlow { get; set; }
         public DbSet<procedure_monitoring> ProcedureMonitoring { get; set; }
+        public DbSet<procedure_job_position> ProcedureJobPosition { get; set; }
+        public DbSet<procedure_module_catalog> ProcedureModuleCatalog { get; set; }
+        public DbSet<procedure_permission> ProcedurePermissions { get; set; }
         public DbSet<procedure_request> ProcedureRequest { get; set; }
         public DbSet<procedure_staff> ProcedureStaff { get; set; }
         public DbSet<procedure_status> ProcedureStatus { get; set; }
@@ -70,13 +77,19 @@ namespace SchoolManager.Data
         {
             base.OnModelCreating(modelBuilder);
 
-            //Procedures
             #region 1. Procedures Configuration
             modelBuilder.Entity<procedure_status>().ToTable("procedure_status");
             modelBuilder.Entity<procedure_areas>().ToTable("procedure_areas");
             modelBuilder.Entity<procedure_documents>().ToTable("procedure_documents");
             modelBuilder.Entity<procedure_type_documents>().ToTable("procedure_type_documents");
             modelBuilder.Entity<procedure_type_requirements>().ToTable("procedure_type_requirements");
+            modelBuilder.Entity<procedure_permission>().ToTable("procedure_permission");
+            modelBuilder.Entity<procedure_types>().ToTable("procedure_types");
+            modelBuilder.Entity<procedure_flow>().ToTable("procedure_flow");
+            modelBuilder.Entity<procedure_request>().ToTable("procedure_request");
+            modelBuilder.Entity<procedure_monitoring>().ToTable("procedure_monitoring");
+            modelBuilder.Entity<procedure_job_position>().ToTable("procedure_job_position");
+            modelBuilder.Entity<procedure_module_catalog>().ToTable("procedure_module_catalog");
 
             modelBuilder.Entity<procedure_status>(entity =>
             {
@@ -91,8 +104,29 @@ namespace SchoolManager.Data
             });
 
             modelBuilder.Entity<procedure_types>(entity => {
-                entity.ToTable("procedure_types");
                 entity.HasOne(d => d.ProcedureArea).WithMany(p => p.ProcedureTypes).HasForeignKey(d => d.IdArea);
+            });
+
+            modelBuilder.Entity<procedure_job_position>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Name).IsRequired().HasMaxLength(150);
+            });
+
+            modelBuilder.Entity<procedure_module_catalog>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.ModuleName).IsRequired().HasMaxLength(100);
+                entity.Property(e => e.ButtonName).HasMaxLength(100);
+                entity.Property(e => e.Route).HasMaxLength(255);
+            });
+
+            modelBuilder.Entity<procedure_permission>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.HasOne(d => d.Area).WithMany().HasForeignKey(d => d.IdArea).OnDelete(DeleteBehavior.Cascade).HasConstraintName("FK_Permission_Area");
+                entity.HasOne(d => d.JobPosition).WithMany().HasForeignKey(d => d.IdJobPosition).OnDelete(DeleteBehavior.Cascade).HasConstraintName("FK_Permission_Job");
+                entity.HasOne(d => d.ModuleCatalog).WithMany().HasForeignKey(d => d.IdModuleCatalog).OnDelete(DeleteBehavior.Cascade).HasConstraintName("FK_Permission_Catalog");
             });
 
             modelBuilder.Entity<procedure_flow>(entity => {
@@ -111,21 +145,11 @@ namespace SchoolManager.Data
                 entity.Property(p => p.DateUpdated).HasDefaultValueSql("GETDATE()");
             });
 
-            modelBuilder.Entity<procedure_staff>()
-                .HasIndex(s => s.IdUser)
-                .IsUnique();
-
-            modelBuilder.Entity<procedure_staff>()
-                .HasOne(s => s.User)
-                .WithMany()
-                .HasForeignKey(s => s.IdUser)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            modelBuilder.Entity<procedure_staff>()
-                .HasOne(s => s.ProcedureArea)
-                .WithMany()
-                .HasForeignKey(s => s.IdArea)
-                .OnDelete(DeleteBehavior.Restrict);
+            modelBuilder.Entity<procedure_staff>(entity => {
+                entity.HasIndex(s => s.IdUser).IsUnique();
+                entity.HasOne(s => s.User).WithMany().HasForeignKey(s => s.IdUser).OnDelete(DeleteBehavior.Restrict);
+                entity.HasOne(s => s.ProcedureArea).WithMany().HasForeignKey(s => s.IdArea).OnDelete(DeleteBehavior.Restrict);
+            });
 
             modelBuilder.Entity<procedure_monitoring>(entity => {
                 entity.ToTable("procedure_monitoring");

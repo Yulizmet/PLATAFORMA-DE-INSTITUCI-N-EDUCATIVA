@@ -1,0 +1,92 @@
+﻿@model SchoolManager.Areas.Procedures.ViewModels.StaffViewModel
+
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <a asp-action="Index" class="btn btn-link text-decoration-none text-secondary p-0 mb-2">
+                <i class="bi bi-arrow-left-circle-fill fs-5 me-1"></i> Regresar al personal
+            </a>
+            <h2 class="fw-bold text-dark">Expediente Administrativo</h2>
+        </div>
+        <div class="text-end">
+            <a asp-action="EditAdministrativeStaff" asp-route-id="@Model.Id" class="btn btn-burgundy rounded-pill px-4 shadow-sm">
+                <i class="bi bi-pencil-square me-2"></i>Editar Información
+            </a>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-md-4">
+            <div class="card shadow-sm border-0 rounded-4 text-center p-4">
+                <div class="avatar-circle bg-burgundy-light text-white mx-auto mb-3 shadow">
+                    @Model.Initials
+                </div>
+                <h4 class="fw-bold mb-1">@Model.FullName</h4>
+                <p class="text-muted mb-3">@Model.JobPosition</p>
+                <div class="d-flex justify-content-center gap-2 mb-3">
+                    @if (Model.IsSuperAdmin)
+                    {
+                        <span class="badge bg-warning text-dark rounded-pill"><i class="bi bi-shield-lock-fill me-1"></i>SuperAdmin</span>
+                    }
+                    @if (Model.IsActive)
+                    {
+                        <span class="badge bg-success-subtle text-success border border-success rounded-pill px-3">Activo</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-danger-subtle text-danger border border-danger rounded-pill px-3">Inactivo</span>
+                    }
+                </div>
+                <hr class="my-2 opacity-50">
+                <div class="text-start">
+                    <label class="small text-muted text-uppercase fw-bold">Usuario</label>
+                    <p class="text-break">@Model.Username</p>
+                    <label class="small text-muted text-uppercase fw-bold">Correo Institucional</label>
+                    <p class="text-break">@Model.Email</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-8">
+            <div class="card shadow-sm border-0 rounded-4 overflow-hidden">
+                <div class="bg-burgundy text-white p-3">
+                    <h5 class="mb-0 fw-bold"><i class="bi bi-file-earmark-person me-2"></i>Información Detallada</h5>
+                </div>
+                <div class="card-body p-4">
+                    <div class="section-header text-uppercase small mb-3">Identidad y Personales</div>
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-5">
+                            <label class="expediente-label">CURP</label>
+                            <div class="expediente-value">@Model.Curp</div>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="expediente-label">Género</label>
+                            <div class="expediente-value">@Model.Gender</div>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="expediente-label">Fecha de Nacimiento</label>
+                            <div class="expediente-value">@Model.BirthDate</div>
+                        </div>
+                    </div>
+
+                    <div class="section-header text-uppercase small mb-3">Asignación Laboral</div>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="expediente-label">Área de Adscripción</label>
+                            <div class="expediente-value fw-bold text-dark"><i class="bi bi-building me-1"></i> @Model.AreaName</div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="expediente-label">Roles Asignados</label>
+                            <div class="d-flex flex-wrap gap-1 mt-1">
+                                @foreach (var role in Model.Roles)
+                                {
+                                    <span class="badge bg-light text-dark border rounded-pill">@role</span>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

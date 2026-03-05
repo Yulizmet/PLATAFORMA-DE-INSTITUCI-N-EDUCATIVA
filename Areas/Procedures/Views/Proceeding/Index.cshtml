@@ -26,7 +26,8 @@
                 Swal.fire('Error', 'No se pudo cargar el formulario de baja.', 'error');
             });
         }
-         function confirmDeactivateLogic() {
+        
+        function confirmDeactivateLogic() {
             const form = document.getElementById('formDeleteStudent');
             const formData = new FormData(form);
 
@@ -80,6 +81,148 @@
                 Swal.fire('Error', 'Ocurrió un error en la comunicación con el servidor.', 'error');
             });
         }
+
+        window.loadQuickStudentModal = function() {
+            $.get('/Procedures/Proceeding/QuickAddStudent', function (data) {
+                $('#modalContainer').html(data);
+                const modalElement = document.getElementById('quickStudentModal');
+                const myModal = new bootstrap.Modal(modalElement);
+                myModal.show();
+
+                $('#formQuickStudent').on('submit', function(e) {
+                    e.preventDefault();
+                    $.post($(this).attr('action'), $(this).serialize(), function(r) {
+                        if(r.success) {
+                            myModal.hide();
+                            Swal.fire('¡Éxito!', r.message, 'success').then(() => location.reload());
+                        } else {
+                            Swal.fire('Error', r.message, 'error');
+                        }
+                    });
+                });
+            });
+        };
+
+        function fillStudentData() {
+            const r = Math.floor(Math.random() * 900) + 100;
+            $('input[name="FirstName"]').val("Alumno");
+            $('input[name="LastNamePaternal"]').val("Prueba");
+            $('input[name="Curp"]').val("CURP" + r + r + "XTSXXX00");
+            $('input[name="Email"]').val("alumno" + r + "@@email.com");
+            $('input[name="Username"]').val("alum." + r);
+            $('input[name="Matricula"]').val("2616" + r + "99");
+        }
+
+        $(document).on('input', 'input[name="Curp"]', function() {
+            this.value = this.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+        });
+
+        $(document).on('input', 'input[name="ZipCode"]', function() {
+            this.value = this.value.replace(/[^0-9]/g, '').substring(0, 5);
+        });
+
+       $(document).ready(function() {
+            const dtToday = new Date();
+            let month = dtToday.getMonth() + 1;
+            let day = dtToday.getDate();
+            const year = dtToday.getFullYear();
+
+            if(month < 10) month = '0' + month.toString();
+            if(day < 10) day = '0' + day.toString();
+
+            const maxDate = year + '-' + month + '-' + day;
+            $('input[name="BirthDate"]').attr('max', maxDate);
+        });
+
+        function editStudent(personId) {
+            window.location.href = '/Procedures/Proceeding/Edit/' + personId;
+        }
+
+        $(document).on('submit', '#formEditExpediente', function (e) {
+            let isValid = true;
+            const curpInput = $('input[name="Curp"]');
+            const curpVal = curpInput.val().trim();
+            const curpRegex = /^[A-Z]{4}[0-9]{6}[A-Z]{5}[A-Z0-9]{2}$/;
+            const cpInput = $('input[name="ZipCode"]');
+            const cpVal = cpInput.val().trim();
+            const cpRegex = /^[0-9]{5}$/;
+
+            const birthDateInput = $('input[name="BirthDate"]');
+            const birthDate = new Date(birthDateInput.val());
+            const today = new Date();
+
+            if (birthDate >= today) {
+                birthDateInput.addClass('is-invalid');
+                Swal.fire({
+                    title: 'Fecha Inválida',
+                    text: 'La fecha de nacimiento no puede ser futura.',
+                    icon: 'warning',
+                    confirmButtonColor: '#620900'
+                });
+                return false;
+            }
+
+            if (cpVal.length > 0 && !cpRegex.test(cpVal)) {
+                cpInput.addClass('is-invalid');
+
+                Swal.fire({
+                    title: 'Código Postal Inválido',
+                    text: 'El C.P. debe consistir en exactamente 5 números.',
+                    icon: 'error',
+                    confirmButtonColor: '#620900'
+                });
+
+                const tabTrigger = new bootstrap.Tab(document.getElementById('domicilio-tab'));
+                tabTrigger.show();
+
+                e.preventDefault();
+                return false;
+            }
+
+            $('.form-control').removeClass('is-invalid');
+
+            if (curpVal.length !== 18 || !curpRegex.test(curpVal)) {
+                curpInput.addClass('is-invalid');
+                isValid = false;
+
+                Swal.fire({
+                    title: 'CURP Inválida',
+                    text: 'La CURP debe tener 18 caracteres: 4 letras, 6 números, 5 letras y 2 finales (letra o número). Sin caracteres especiales.',
+                    icon: 'error',
+                    confirmButtonColor: '#620900'
+                });
+            }
+
+            if (!isValid) {
+                e.preventDefault();
+                return false;
+            }
+
+
+            fetch(form.action, {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire({
+                        title: '¡Actualizado!',
+                        text: data.message,
+                        icon: 'success',
+                        confirmButtonColor: '#620900'
+                    }).then(() => {
+                        window.location.href = '/Procedures/Proceeding/Index';
+                    });
+                } else {
+                    Swal.fire('Error', data.message, 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                Swal.fire('Error de conexión', 'No se pudo comunicar con el servidor.', 'error');
+            });
+        });
     </script>
 }
 
@@ -88,7 +231,9 @@
 <div class="container-fluid  px-4 py-4 pt-5">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2 class="fw-bold text-dark"><i class="bi bi-folder2-open me-2"></i>Expedientes Escolares</h2>
-        <button class="btn btn-burgundy shadow-sm"><i class="bi bi-person-plus me-1"></i> Nuevo Alumno</button>
+        <button class="btn btn-burgundy shadow-sm" onclick="loadQuickStudentModal()">
+            <i class="bi bi-plus-circle me-1"></i> Añadir Alumno
+        </button>
     </div>
 
     <partial name="_TableTools" />
@@ -112,7 +257,7 @@
                     <tbody class="table-white">
                         @foreach (var item in Model)
                         {
-                            <tr>
+                            <tr class="@(item.IsActive ? "" : "opacity-50 bg-light")">
                                 <td class="text-center">
                                     <input type="checkbox" class="form-check-input row-checkbox" value="@item.PersonId" />
                                 </td>
@@ -159,19 +304,24 @@
                                 </td>
                                 <td class="text-center pe-4">
                                     <div class="btn-group">
-                                        <a asp-area="Procedures"
-                                           asp-controller="Proceeding"
-                                           asp-action="Details"
-                                           asp-route-id="@item.PersonId"
-                                           class="btn btn-sm btn-light border shadow-sm me-2"
-                                           title="Ver Detalles">
-                                            <i class="bi bi-eye"></i>
-                                        </a>
-                                        <button class="btn btn-sm btn-light border shadow-sm me-2" onclick="editStudent('@item.PersonId')" title="Editar">
-                                            <i class="bi bi-pencil-square text-warning"></i>
-                                        </button>
                                         @if (item.IsActive)
                                         {
+                                            @* Botones habilitados si el alumno está ACTIVO *@
+                                            <a asp-area="Procedures"
+                                               asp-controller="Proceeding"
+                                               asp-action="Details"
+                                               asp-route-id="@item.PersonId"
+                                               class="btn btn-sm btn-light border shadow-sm me-2"
+                                               title="Ver Detalles">
+                                                <i class="bi bi-eye"></i>
+                                            </a>
+
+                                            <button class="btn btn-sm btn-light border shadow-sm me-2"
+                                                    title="Editar Alumno"
+                                                    onclick="editStudent('@item.PersonId')">
+                                                <i class="bi bi-pencil-square text-warning"></i>
+                                            </button>
+
                                             <button class="btn btn-sm btn-light border shadow-sm"
                                                     title="Dar de Baja"
                                                     onclick="loadDeactivateModal(@item.PersonId)">
@@ -180,8 +330,18 @@
                                         }
                                         else
                                         {
+                                            <button class="btn btn-sm btn-light border shadow-sm me-2 opacity-50"
+                                                    disabled title="Activa el expediente para ver detalles">
+                                                <i class="bi bi-eye text-muted"></i>
+                                            </button>
+
+                                            <button class="btn btn-sm btn-light border shadow-sm me-2 opacity-50"
+                                                    disabled title="Activa el expediente para editar">
+                                                <i class="bi bi-pencil-square text-muted"></i>
+                                            </button>
+
                                             <button class="btn btn-sm btn-light border shadow-sm"
-                                                    title="Reactivar"
+                                                    title="Reactivar Expediente"
                                                     onclick="loadActivateModal(@item.PersonId)">
                                                 <i class="bi bi-person-check-fill text-success"></i>
                                             </button>

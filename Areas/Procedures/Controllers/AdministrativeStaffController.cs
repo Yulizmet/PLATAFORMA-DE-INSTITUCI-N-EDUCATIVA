@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using SchoolManager.Areas.Procedures.ViewModels;
 using SchoolManager.Data;
@@ -19,8 +20,6 @@ namespace SchoolManager.Areas.Procedures.Controllers
 
         public async Task<IActionResult> Index()
         {
-            ViewBag.Areas = await _context.ProcedureAreas.OrderBy(a => a.Name).ToListAsync();
-
             var staff = await _context.ProcedureStaff
                 .Include(s => s.User).ThenInclude(u => u.Person)
                 .Include(s => s.User).ThenInclude(u => u.UserRoles).ThenInclude(ur => ur.Role)
@@ -225,6 +224,109 @@ namespace SchoolManager.Areas.Procedures.Controllers
             catch (Exception ex)
             {
                 return Json(new { success = false, message = "Error: " + ex.Message });
+            }
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> DetailsStaff(int id)
+        {
+            var staff = await _context.ProcedureStaff
+                .Include(s => s.User).ThenInclude(u => u.Person)
+                .Include(s => s.User).ThenInclude(u => u.UserRoles).ThenInclude(ur => ur.Role)
+                .Include(s => s.ProcedureArea)
+                .FirstOrDefaultAsync(s => s.Id == id);
+
+            if (staff == null) return NotFound();
+
+            var viewModel = new StaffViewModel
+            {
+                Id = staff.Id,
+                FullName = $"{staff.User.Person.FirstName} {staff.User.Person.LastNamePaternal} {staff.User.Person.LastNameMaternal}",
+                Username = staff.User.Username,
+                Email = staff.User.Email,
+                Curp = staff.User.Person.Curp,
+                Gender = staff.User.Person.Gender == "M" ? "Masculino" : "Femenino",
+                Nationality = "Mexicana",
+                BirthDate = staff.User.Person.BirthDate?.ToString("dd/MM/yyyy") ?? "N/A",
+                JobPosition = staff.JobPosition,
+                AreaName = staff.ProcedureArea.Name,
+                IsSuperAdmin = staff.IsSuperAdmin,
+                IsActive = staff.IsActive,
+                Roles = staff.User.UserRoles.Select(ur => ur.Role.Name).ToList()
+            };
+
+            return View("AdministrativeStaff", viewModel);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> EditAdministrativeStaff(int id)
+        {
+            var staff = await _context.ProcedureStaff
+                .Include(s => s.User).ThenInclude(u => u.Person)
+                .FirstOrDefaultAsync(s => s.Id == id);
+
+            if (staff == null || staff.User?.Person == null)
+            {
+                return NotFound("No se encontraron los datos del personal.");
+            }
+
+            var viewModel = new StaffViewModel
+            {
+                Id = staff.Id,
+                PersonId = staff.User.Person.PersonId,
+                UserId = staff.IdUser,
+                FirstName = staff.User.Person.FirstName,
+                LastNamePaternal = staff.User.Person.LastNamePaternal,
+                LastNameMaternal = staff.User.Person.LastNameMaternal,
+                Curp = staff.User.Person.Curp,
+                BirthDate = staff.User.Person.BirthDate?.ToString("yyyy-MM-dd") ?? "",
+                Gender = staff.User.Person.Gender,
+                JobPosition = staff.JobPosition,
+                IsActive = staff.IsActive,
+                IsSuperAdmin = staff.IsSuperAdmin,
+                Email = staff.User.Email,
+                Username = staff.User.Username
+            };
+
+            return View(viewModel);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> UpdateStaff(StaffViewModel model)
+        {
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try
+            {
+                var staff = await _context.ProcedureStaff
+                    .Include(s => s.User).ThenInclude(u => u.Person)
+                    .FirstOrDefaultAsync(s => s.Id == model.Id);
+
+                if (staff == null) return Json(new { success = false, message = "Registro no encontrado." });
+
+                staff.User.Person.FirstName = model.FirstName;
+                staff.User.Person.LastNamePaternal = model.LastNamePaternal;
+                staff.User.Person.LastNameMaternal = model.LastNameMaternal;
+                staff.User.Person.Curp = model.Curp;
+                staff.User.Person.Gender = model.Gender;
+                staff.User.Person.Email = model.Email;
+
+                if (DateTime.TryParse(model.BirthDate, out DateTime fecha))
+                    staff.User.Person.BirthDate = fecha;
+
+                staff.User.Username = model.Username;
+                staff.User.Email = model.Email;
+
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+
+                return Json(new { success = true, message = "Expediente administrativo actualizado correctamente." });
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                var errorMessage = ex.InnerException != null ? ex.InnerException.Message : ex.Message;
+                return Json(new { success = false, message = "Error: " + errorMessage });
             }
         }
 

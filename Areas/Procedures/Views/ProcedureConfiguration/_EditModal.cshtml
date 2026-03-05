@@ -10,9 +10,9 @@
         <div class="modal-content shadow-lg border-0 rounded-4">
             <form id="formProcedureMaster" method="post" action="/Procedures/ProcedureConfiguration/SaveProcedureMaster">
                 @Html.AntiForgeryToken()
-                <div class="modal-header bg-warning text-dark py-3">
+                <div class="modal-header bg-burgundy text-white">
                     <h5 class="modal-title fw-bold"><i class="bi bi-gear-fill me-2"></i>Configuración Maestra de Trámite</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body p-4">
                     <input type="hidden" asp-for="Id" />
@@ -119,8 +119,8 @@
 
                 </div>
                 <div class="modal-footer bg-light border-top-0 rounded-bottom-4">
-                    <button type="button" class="btn btn-outline-secondary px-4 fw-bold" data-bs-dismiss="modal">Cerrar</button>
-                    <button type="submit" class="btn btn-warning px-5 fw-bold shadow-sm">Actualizar Trámite</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                    <button type="submit" class="btn bg-burgundy text-white shadow-sm">Actualizar Trámite</button>
                 </div>
             </form>
         </div>

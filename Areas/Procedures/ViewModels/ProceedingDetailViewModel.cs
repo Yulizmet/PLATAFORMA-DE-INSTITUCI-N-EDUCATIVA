@@ -3,6 +3,8 @@
     public class ProceedingDetailViewModel
     {
         // Identity
+
+        public int PersonId { get; set; }
         public string FirstName { get; set; } = null!;
         public string LastNamePaternal { get; set; } = null!;
         public string LastNameMaternal { get; set; } = null!;

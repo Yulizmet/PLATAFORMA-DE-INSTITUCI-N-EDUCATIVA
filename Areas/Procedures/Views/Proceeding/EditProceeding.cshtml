@@ -1,0 +1,219 @@
+﻿@model SchoolManager.Areas.Procedures.ViewModels.ProceedingDetailViewModel
+
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <input type="hidden" name="PersonId" value="@Model.PersonId" />
+        <div>
+            <a asp-action="Index" class="btn btn-link text-decoration-none text-secondary p-0 mb-2">
+                <i class="bi bi-arrow-left-circle-fill fs-5 me-1"></i> Regresar al listado
+            </a>
+            <h2 class="fw-bold text-dark">Editar Expediente Escolar</h2>
+            <p class="text-muted small">Actualiza la información oficial del alumno en el sistema.</p>
+        </div>
+        <div class="text-end">
+            <span class="badge bg-burgundy p-2 px-3 rounded-pill">Matrícula: @Model.Matricula</span>
+        </div>
+    </div>
+
+    <form id="formEditExpediente" asp-action="UpdateProceeding" method="post">
+        <input type="hidden" asp-for="Matricula" />
+
+        <div class="card shadow-sm border-0 rounded-4 overflow-hidden">
+            <ul class="nav nav-tabs bg-light border-0 px-3 pt-2" id="expedienteTabs" role="tablist">
+                <li class="nav-item">
+                    <button class="nav-link active fw-bold py-3" id="generales-tab" data-bs-toggle="tab" data-bs-target="#generales" type="button">
+                        <i class="bi bi-person-vcard me-2"></i>Identidad
+                    </button>
+                </li>
+                <li class="nav-item">
+                    <button class="nav-link fw-bold py-3" id="escolares-tab" data-bs-toggle="tab" data-bs-target="#escolares" type="button">
+                        <i class="bi bi-mortarboard me-2"></i>Académicos
+                    </button>
+                </li>
+                <li class="nav-item">
+                    <button class="nav-link fw-bold py-3" id="salud-tab" data-bs-toggle="tab" data-bs-target="#salud" type="button">
+                        <i class="bi bi-heart-pulse me-2"></i>Salud y Social
+                    </button>
+                </li>
+                <li class="nav-item">
+                    <button class="nav-link fw-bold py-3" id="domicilio-tab" data-bs-toggle="tab" data-bs-target="#domicilio" type="button">
+                        <i class="bi bi-geo-alt me-2"></i>Domicilio
+                    </button>
+                </li>
+            </ul>
+
+            <div class="tab-content p-4" id="expedienteTabsContent">
+
+                <div class="tab-pane fade show active" id="generales" role="tabpanel">
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold small text-muted">Apellido Paterno</label>
+                            <input asp-for="LastNamePaternal" class="form-control shadow-sm border-2" />
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold small text-muted">Apellido Materno</label>
+                            <input asp-for="LastNameMaternal" class="form-control shadow-sm border-2" />
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold small text-muted">Nombre(s)</label>
+                            <input asp-for="FirstName" class="form-control shadow-sm border-2" />
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold small text-muted">CURP</label>
+                            <input asp-for="Curp" class="form-control shadow-sm border-2" />
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold small text-muted">Fecha de Nacimiento</label>
+                            <input type="date" asp-for="BirthDate" class="form-control shadow-sm border-2" />
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold small text-muted">Estado Civil</label>
+                            <select asp-for="MaritalStatus" class="form-select shadow-sm border-2">
+                                <option value="SOLTERO(A)">Soltero(a)</option>
+                                <option value="CASADO(A)">Casado(a)</option>
+                                <option value="DIVORCIADO(A)">Divorciado(a)</option>
+                                <option value="VIUDO(A)">Viudo(a)</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold small text-muted">Sexo</label>
+                            <select asp-for="Gender" class="form-select shadow-sm border-2">
+                                <option value="H">Hombre</option>
+                                <option value="M">Mujer</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold small text-muted">Tipo de Sangre</label>
+                            <input asp-for="BloodType" class="form-control shadow-sm border-2" placeholder="Ej. O+" />
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tab-pane fade" id="escolares" role="tabpanel">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small text-muted">Escuela de Procedencia</label>
+                            <input asp-for="PreviousSchool" class="form-control shadow-sm border-2" />
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold small text-muted">Título obtenido</label>
+                            <input asp-for="PreviousDegree" class="form-control shadow-sm border-2" />
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label fw-bold small text-muted">Promedio</label>
+                            <input asp-for="PreviousAverage" class="form-control shadow-sm border-2 text-center" />
+                        </div>
+                        <div class="col-md-12">
+                            <label class="form-label fw-bold small text-muted">Beca Vigente</label>
+                            <input asp-for="Beca" class="form-control shadow-sm border-2" />
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tab-pane fade" id="salud" role="tabpanel">
+                    <div class="row g-4 align-items-center">
+                        <div class="col-md-4">
+                            <div class="form-check form-switch p-3 border rounded-3 bg-light">
+                                <input class="form-check-input ms-0 me-2" type="checkbox" asp-for="IsIndigena">
+                                <label class="form-check-label fw-bold">¿Es Indígena?</label>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-check form-switch p-3 border rounded-3 bg-light">
+                                <input class="form-check-input ms-0 me-2" type="checkbox" asp-for="HasIncapacidad">
+                                <label class="form-check-label fw-bold">¿Tiene Discapacidad?</label>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-check form-switch p-3 border rounded-3 bg-light">
+                                <input class="form-check-input ms-0 me-2" type="checkbox" asp-for="HasDisease">
+                                <label class="form-check-label fw-bold">¿Enfermedad Crónica?</label>
+                            </div>
+                        </div>
+                        <div class="col-md-12 mt-4">
+                            <label class="form-label fw-bold small text-muted text-uppercase">Observaciones Médicas</label>
+                            <textarea asp-for="HealthComments" class="form-control shadow-sm border-2" rows="3" placeholder="Alergias, medicamentos, etc."></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tab-pane fade" id="domicilio" role="tabpanel">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small text-muted text-uppercase small">Calle</label>
+                            <input asp-for="Street" class="form-control shadow-sm border-2" />
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label fw-bold small text-muted text-uppercase small">Núm. Ext</label>
+                            <input asp-for="ExtNum" class="form-control shadow-sm border-2" />
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label fw-bold small text-muted text-uppercase small">Núm. Int</label>
+                            <input asp-for="IntNum" class="form-control shadow-sm border-2" />
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold small text-muted text-uppercase small">Colonia</label>
+                            <input asp-for="Colony" class="form-control shadow-sm border-2" />
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label fw-bold small text-muted text-uppercase small">C.P.</label>
+                            <input asp-for="ZipCode" class="form-control shadow-sm border-2" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small text-muted text-uppercase small">Ciudad y Estado</label>
+                            <input asp-for="CityState" class="form-control shadow-sm border-2" />
+                        </div>
+                        <div class="col-md-12">
+                            <label class="form-label fw-bold small text-muted text-uppercase small">e-mail personal</label>
+                            <div class="input-group shadow-sm">
+                                <span class="input-group-text bg-light border-2"><i class="bi bi-envelope"></i></span>
+                                <input asp-for="Email" class="form-control border-2" type="email" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card-footer bg-light border-top p-4 d-flex justify-content-between align-items-center">
+                <p class="text-muted small mb-0"><i class="bi bi-info-circle me-1"></i> Asegúrese de que los datos coincidan con los documentos oficiales.</p>
+                <div>
+                    <button asp-action="Index" type="reset" class="btn btn-outline-secondary me-2 px-4 rounded-pill">Descartar</button>
+                    <button type="submit" class="btn btn-burgundy px-5 rounded-pill shadow">
+                        <i class="bi bi-save2 me-2"></i>Guardar Cambios
+                    </button>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <style>
+        .nav-tabs .nav-link {
+            color: #6c757d;
+            border: none;
+            border-bottom: 3px solid transparent;
+            font-size: 0.9rem;
+        }
+
+            .nav-tabs .nav-link.active {
+                color: #620900 !important;
+                background: none !important;
+                border-bottom: 3px solid #620900 !important;
+            }
+
+        .form-control:focus, .form-select:focus {
+            border-color: #620900 !important;
+            box-shadow: 0 0 0 0.25rem rgba(98, 9, 0, 0.1) !important;
+        }
+
+        .form-check-input:checked {
+            background-color: #620900 !important;
+            border-color: #620900 !important;
+        }
+
+        .border-dashed {
+            border: 2px dashed #dee2e6;
+        }
+    </style>
+}

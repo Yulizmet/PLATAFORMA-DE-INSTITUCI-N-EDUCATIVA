@@ -1,35 +1,5 @@
 ﻿@model SchoolManager.Areas.Procedures.ViewModels.ProceedingDetailViewModel
 
-<style>
-    .expediente-label {
-        font-size: 0.75rem;
-        text-transform: uppercase;
-        color: #6c757d;
-        font-weight: 600;
-    }
-
-    .expediente-value {
-        border-bottom: 1px solid #dee2e6;
-        padding-bottom: 2px;
-        font-weight: 500;
-        min-height: 25px;
-        color: #212529;
-    }
-
-    .section-header {
-        background-color: #f8f9fa;
-        border-left: 4px solid #620900;
-        padding: 8px 15px;
-        font-weight: bold;
-        margin-top: 25px;
-        margin-bottom: 15px;
-    }
-
-    .bg-burgundy {
-        background-color: #620900 !important;
-    }
-</style>
-
 <div class="container py-4">
     <div class="mb-3">
         <a asp-action="Index" class="btn btn-link text-decoration-none text-secondary p-0">
@@ -44,7 +14,6 @@
         </div>
 
         <div class="card-body p-4 pt-2">
-            @* SECCIÓN 1: IDENTIDAD *@
             <div class="section-header text-uppercase small">Información de Identidad</div>
             <div class="row g-3">
                 <div class="col-md-4">
@@ -61,7 +30,7 @@
                 </div>
                 <div class="col-md-3">
                     <label class="expediente-label">CURP</label>
-                    <div class="expediente-value fw-bold">@Model.Curp</div>
+                    <div class="expediente-value">@Model.Curp</div>
                 </div>
                 <div class="col-md-3">
                     <label class="expediente-label">Sexo</label>
@@ -77,7 +46,22 @@
                 </div>
             </div>
 
-            @* SECCIÓN 2: ANTECEDENTES ESCOLARES *@
+            <div class="section-header text-uppercase small">Información Académica Actual</div>
+            <div class="row g-3">
+                <div class="col-md-8">
+                    <label class="expediente-label">Carrera / Programa</label>
+                    <div class="expediente-value text-burgundy fw-bold">
+                        <i class="bi bi-mortarboard-fill me-1"></i> @Model.CareerName
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <label class="expediente-label">Generación</label>
+                    <div class="expediente-value">
+                        <span class="badge bg-secondary">@Model.Generation</span>
+                    </div>
+                </div>
+            </div>
+
             <div class="section-header text-uppercase small">Antecedentes Escolares</div>
             <div class="row g-3">
                 <div class="col-md-6">
@@ -94,7 +78,6 @@
                 </div>
             </div>
 
-            @* SECCIÓN 3: SALUD Y SOCIOCULTURAL *@
             <div class="section-header text-uppercase small">Información de Salud y Social</div>
             <div class="row g-3">
                 <div class="col-md-3 text-center border-end">
@@ -115,7 +98,6 @@
                 </div>
             </div>
 
-            @* SECCIÓN 4: DOMICILIO *@
             <div class="section-header text-uppercase small">Domicilio</div>
             <div class="row g-3">
                 <div class="col-md-4">
@@ -140,29 +122,9 @@
                 </div>
                 <div class="col-md-6">
                     <label class="expediente-label">e-mail personal</label>
-                    <div class="expediente-value fw-bold">@Model.Email</div>
+                    <div class="expediente-value">@Model.Email</div>
                 </div>
             </div>
-
-           @*  @* DOCUMENTACIÓN DIGITAL
-            @if (Model.DigitalFiles.Any())
-            {
-                <div class="section-header text-uppercase small">Documentos Digitales</div>
-                <div class="row g-2">
-                    @foreach (var doc in Model.DigitalFiles)
-                    {
-                        <div class="col-md-4">
-                            <div class="p-2 border rounded bg-white d-flex align-items-center">
-                                <i class="bi bi-file-pdf text-danger fs-4 me-2"></i>
-                                <div class="overflow-hidden">
-                                    <div class="small fw-bold text-truncate" title="@doc.FileName">@doc.FileName</div>
-                                    <a href="@doc.FilePath" target="_blank" class="small text-primary text-decoration-none">Ver archivo</a>
-                                </div>
-                            </div>
-                        </div>
-                    }
-                </div>
-            } *@
         </div>
 
         <div class="card-footer bg-white border-top-0 p-4 text-end">

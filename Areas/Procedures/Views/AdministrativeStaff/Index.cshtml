@@ -11,110 +11,97 @@
     <partial name="_DataTableConfig" />
 
     <script>
-        $(document).ready(function () {
-            window.loadCreateStaffModal = function() {
-                $.get('/Procedures/AdministrativeStaff/Create', function (data) {
-                    $('#modalContainer').html(data);
+        function editStaff(id) {
+            window.location.href = '/Procedures/AdministrativeStaff/EditAdministrativeStaff/' + id;
+        }
 
-                    const modalElement = document.getElementById('createStaffModal');
-                    const myModal = new bootstrap.Modal(modalElement);
-                    myModal.show();
+        function loadEditStaffModal(id) {
+            $.get('/Procedures/AdministrativeStaff/Edit/' + id, function (data) {
+                $('#modalContainer').html(data);
+                const modalElement = document.getElementById('editStaffModal');
+                const myModal = new bootstrap.Modal(modalElement);
+                myModal.show();
 
-                    $(modalElement).on('shown.bs.modal', function () {
-                        $('#UserSearch').select2({
-                            dropdownParent: $(modalElement),
-                            theme: 'bootstrap-5',
-                            ajax: {
-                                url: '/Procedures/AdministrativeStaff/SearchUsers',
-                                dataType: 'json',
-                                delay: 250,
-                                data: function (params) { return { term: params.term }; },
-                                processResults: function (data) { return { results: data }; }
-                            },
-                            minimumInputLength: 3
-                        });
-                    });
-
-                    $('#formCreateStaff').on('submit', function(e) {
-                        e.preventDefault();
-                        const form = $(this);
-                        $.post(form.attr('action'), form.serialize(), function(response) {
-                            if(response.success) {
-                                myModal.hide();
-                                Swal.fire({
-                                    icon: 'success',
-                                    title: '¡Éxito!',
-                                    text: response.message,
-                                    confirmButtonColor: '#620900'
-                                }).then(() => { location.reload(); });
-                            } else {
-                                Swal.fire({ icon: 'error', title: 'Error', text: response.message });
-                            }
-                        });
+                $('#formEditStaff').on('submit', function(e) {
+                    e.preventDefault();
+                    const form = $(this);
+                    $.post(form.attr('action'), form.serialize(), function(response) {
+                        if(response.success) {
+                            myModal.hide();
+                            Swal.fire({
+                                icon: 'success',
+                                title: '¡Actualizado!',
+                                text: response.message,
+                                confirmButtonColor: '#620900'
+                            }).then(() => { location.reload(); });
+                        } else {
+                            Swal.fire({ icon: 'error', title: 'Error', text: response.message });
+                        }
                     });
                 });
-            };
+            });
+        }
 
-            window.loadEditStaffModal = function(id) {
-                $.get('/Procedures/AdministrativeStaff/Edit/' + id, function (data) {
-                    $('#modalContainer').html(data);
+        function loadDeactivateModal(id) {
+            $.get('/Procedures/AdministrativeStaff/Deactivate/' + id, function (data) {
+                $('#modalContainer').html(data);
+                const modalElement = document.getElementById('deactivateModal');
+                const myModal = new bootstrap.Modal(modalElement);
+                myModal.show();
+            });
+        }
 
-                    const modalElement = document.getElementById('editStaffModal');
-                    const myModal = new bootstrap.Modal(modalElement);
-                    myModal.show();
+        function loadActivateModal(id) {
+            $.get('/Procedures/AdministrativeStaff/Activate/' + id, function (data) {
+                $('#modalContainer').html(data);
+                const modalElement = document.getElementById('activateModal');
+                const myModal = new bootstrap.Modal(modalElement);
+                myModal.show();
+            });
+        }
 
-                    $('#formEditStaff').on('submit', function(e) {
-                        e.preventDefault();
-                        const form = $(this);
-                        $.post(form.attr('action'), form.serialize(), function(response) {
-                            if(response.success) {
-                                myModal.hide();
-                                Swal.fire({
-                                    icon: 'success',
-                                    title: '¡Actualizado!',
-                                    text: response.message,
-                                    confirmButtonColor: '#620900'
-                                }).then(() => { location.reload(); });
-                            } else {
-                                Swal.fire({ icon: 'error', title: 'Error', text: response.message });
-                            }
-                        });
+        function loadCreateStaffModal() {
+            $.get('/Procedures/AdministrativeStaff/Create', function (data) {
+                $('#modalContainer').html(data);
+                const modalElement = document.getElementById('createStaffModal');
+                const myModal = new bootstrap.Modal(modalElement);
+                myModal.show();
+
+                $(modalElement).on('shown.bs.modal', function () {
+                    $('#UserSearch').select2({
+                        dropdownParent: $(modalElement),
+                        theme: 'bootstrap-5',
+                        ajax: {
+                            url: '/Procedures/AdministrativeStaff/SearchUsers',
+                            dataType: 'json',
+                            delay: 250,
+                            data: function (params) { return { term: params.term }; },
+                            processResults: function (data) { return { results: data }; }
+                        },
+                        minimumInputLength: 3
                     });
                 });
-            };
+            });
+        }
 
-            window.loadDeactivateModal = function(id) {
-                $.get('/Procedures/AdministrativeStaff/Deactivate/' + id, function (data) {
-                    $('#modalContainer').html(data);
-                    const modalElement = document.getElementById('deactivateModal');
-                    const myModal = new bootstrap.Modal(modalElement);
-                    myModal.show();
-                });
-            };
-
-            window.loadActivateModal = function(id) {
-                $.get('/Procedures/AdministrativeStaff/Activate/' + id, function (data) {
-                    $('#modalContainer').html(data);
-                    const modalElement = document.getElementById('activateModal');
-                    const myModal = new bootstrap.Modal(modalElement);
-                    myModal.show();
-                });
-            };
-        });
-
+        function loadQuickUserModal() {
+            $.get('/Procedures/AdministrativeStaff/QuickAddUser', function (data) {
+                $('#modalContainer').html(data);
+                const modalElement = document.getElementById('quickUserModal');
+                const myModal = new bootstrap.Modal(modalElement);
+                myModal.show();
+            });
+        }
 
         function confirmDeactivateLogic() {
             const form = $('#formDeactivateStaff');
             $.post('/Procedures/AdministrativeStaff/DeactivateStaff', form.serialize(), function (response) {
                 if (response.success) {
-                    const modalElement = document.getElementById('deactivateModal');
-                    bootstrap.Modal.getInstance(modalElement).hide();
                     Swal.fire({
                         icon: 'success',
-                        title: '¡Baja Aplicada!',
-                        text: response.message,
-                        confirmButtonColor: '#620900'
-                    }).then(() => { location.reload(); });
+                        title: '¡Éxito!',
+                        text: response.message
+                    }).then(() => location.reload());
                 } else {
                     Swal.fire('Error', response.message, 'error');
                 }
@@ -125,48 +112,27 @@
             const form = $('#formActivateStaff');
             $.post('/Procedures/AdministrativeStaff/ActivateStaff', form.serialize(), function (response) {
                 if (response.success) {
-                    const modalElement = document.getElementById('activateModal');
-                    bootstrap.Modal.getInstance(modalElement).hide();
                     Swal.fire({
                         icon: 'success',
-                        title: '¡Usuario Reactivado!',
-                        text: 'El personal ha recuperado sus permisos administrativos.',
-                        confirmButtonColor: '#198754'
-                    }).then(() => { location.reload(); });
+                        title: '¡Éxito!',
+                        text: 'Personal reactivado'
+                    }).then(() => location.reload());
                 } else {
                     Swal.fire('Error', response.message, 'error');
                 }
             });
         }
-        window.loadQuickUserModal = function() {
-            $.get('/Procedures/AdministrativeStaff/QuickAddUser', function (data) {
-                $('#modalContainer').html(data);
-                const modalElement = document.getElementById('quickUserModal');
-                const myModal = new bootstrap.Modal(modalElement);
-                myModal.show();
 
-                $('#formQuickUser').on('submit', function(e) {
-                    e.preventDefault();
-                    const form = $(this);
-                    $.post(form.attr('action'), form.serialize(), function(response) {
-                        if(response.success) {
-                            myModal.hide();
-                            Swal.fire('¡Listo!', response.message, 'success').then(() => {
-                                loadCreateStaffModal();
-                            });
-                        } else {
-                            Swal.fire('Error', response.message, 'error');
-                        }
-                    });
-                });
-            });
-        };
+        $(document).ready(function () {
+            // Inicialización de componentes adicionales si es necesario
+        });
+
         function fillTestData() {
             const random = Math.floor(Math.random() * 1000);
             $('input[name="FirstName"]').val("Usuario");
             $('input[name="LastNamePaternal"]').val("Prueba");
             $('input[name="LastNameMaternal"]').val("Staff");
-            $('input[name="Curp"]').val("CURPTEST" + random + "XXXXXX");
+            $('input[name="Curp"]').val("CURP" + random + random + "XXXXXX00");
             $('input[name="Email"]').val("test" + random + "@@email.com");
             $('input[name="Username"]').val("user.test" + random);
         }
@@ -184,8 +150,8 @@
             <p class="text-muted mb-0">Administra a los responsables de cada área y sus permisos.</p>
         </div>
         <div class="d-flex gap-2">
-            <button class="btn btn-outline-dark shadow-sm" onclick="loadQuickUserModal()">
-                <i class="bi bi-magic me-1"></i> Añadir Staff (Test)
+            <button class="btn btn-burgundy shadow-sm" onclick="loadQuickUserModal()">
+                <i class="bi bi-plus-circle me-1"></i> Añadir Personal
             </button>
             <button class="btn btn-burgundy shadow-sm" onclick="loadCreateStaffModal()">
                 <i class="bi bi-person-plus-fill me-2"></i> Asignar Personal
@@ -262,29 +228,53 @@
                                         </span>
                                     }
                                 </td>
-                                <td class="text-end pe-4">
-                                    <button class="btn btn-sm btn-light border shadow-sm me-2"
-                                            onclick="loadEditStaffModal(@item.Id)"
-                                            title="Editar">
-                                        <i class="bi bi-pencil-square text-warning"></i>
-                                    </button>
-
-                                    @if (item.IsActive)
-                                    {
-                                        <button class="btn btn-sm btn-light border shadow-sm"
-                                                title="Dar de Baja"
-                                                onclick="loadDeactivateModal(@item.Id)">
-                                            <i class="bi bi-person-x-fill text-danger"></i>
-                                        </button>
-                                    }
-                                    else
-                                    {
-                                        <button class="btn btn-sm btn-light border shadow-sm"
-                                                title="Reactivar"
-                                                onclick="loadActivateModal(@item.Id)">
-                                            <i class="bi bi-person-check-fill text-success"></i>
-                                        </button>
-                                    }
+                                <td class="text-center">
+                                    <div class="btn-group">
+                                        @if (item.IsActive)
+                                        {
+                                            <a asp-controller="AdministrativeStaff"
+                                                asp-action="DetailsStaff"
+                                                asp-route-id="@item.Id"
+                                                class="btn btn-sm btn-light border shadow-sm me-2"
+                                                title="Ver Detalles">
+                                                <i class="bi bi-eye"></i>
+                                            </a>
+                                            <a asp-controller="AdministrativeStaff"
+                                               asp-action="EditAdministrativeStaff"
+                                               asp-route-id="@item.Id"
+                                               class="btn btn-sm btn-light border shadow-sm me-2"
+                                               title="Editar Persona">
+                                                <i class="bi bi-pencil-square text-warning"></i>
+                                            </a>
+                                            <button class="btn btn-sm btn-light border shadow-sm me-2"
+                                                    onclick="loadEditStaffModal(@item.Id)"
+                                                    title="Asignar Área">
+                                                <i class="bi bi-plus-circle text-success"></i>
+                                            </button>
+                                            <button class="btn btn-sm btn-light border shadow-sm"
+                                                    title="Dar de Baja"
+                                                    onclick="loadDeactivateModal(@item.Id)">
+                                                <i class="bi bi-person-x-fill text-danger"></i>
+                                            </button>
+                                        }
+                                        else
+                                        {
+                                            <button class="btn btn-sm btn-light border shadow-sm me-2 opacity-50" disabled>
+                                                <i class="bi bi-eye-slash text-muted"></i>
+                                            </button>
+                                            <button class="btn btn-sm btn-light border shadow-sm me-2 opacity-50" disabled>
+                                                <i class="bi bi-pencil text-muted"></i>
+                                            </button>
+                                            <button class="btn btn-sm btn-light border shadow-sm me-2 opacity-50" disabled>
+                                                <i class="bi bi-plus-square text-muted"></i>
+                                            </button>
+                                            <button class="btn btn-sm btn-light border shadow-sm"
+                                                    title="Reactivar"
+                                                    onclick="loadActivateModal(@item.Id)">
+                                                <i class="bi bi-person-check-fill text-success"></i>
+                                            </button>
+                                        }
+                                    </div>
                                 </td>
                             </tr>
                         }

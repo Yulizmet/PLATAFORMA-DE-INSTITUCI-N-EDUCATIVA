@@ -8,7 +8,7 @@
             <form id="formCreateStaff" method="post" asp-action="CreateStaff">
                 <div class="modal-body">
                     <div class="mb-3">
-                        <label class="form-label fw-bold">1. Buscar Usuario Existente</label>
+                        <label class="form-label fw-bold">Buscar Usuario Existente</label>
                         <select id="UserSearch" name="IdUser" class="form-select" style="width: 100%" required>
                             <option value="">Escribe nombre o usuario...</option>
                         </select>
@@ -16,7 +16,7 @@
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label fw-bold">2. Área de Responsabilidad</label>
+                        <label class="form-label fw-bold">Área de Responsabilidad</label>
                         <select name="IdArea" class="form-select" required>
                             <option value="">-- Selecciona un área --</option>
                             @if (ViewBag.Areas != null)
@@ -30,7 +30,7 @@
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label fw-bold">3. Puesto / Cargo</label>
+                        <label class="form-label fw-bold">Puesto / Cargo</label>
                         <input type="text" name="JobPosition" class="form-control" placeholder="Ej: Jefe de Departamento" required />
                     </div>
 

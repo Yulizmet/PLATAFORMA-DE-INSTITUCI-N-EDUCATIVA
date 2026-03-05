@@ -5,7 +5,7 @@
         <div class="modal-content border-0 shadow-lg rounded-4">
             <form method="post" action="/Procedures/ProcedureStatus/Create">
                 @Html.AntiForgeryToken()
-                <div class="modal-header bg-success text-white">
+                <div class="modal-header bg-burgundy text-white">
                     <h5 class="modal-title fw-bold"><i class="bi bi-file-earmark-plus-fill me-2"></i>Nuevo Estado Maestro</h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
@@ -58,8 +58,8 @@
                     </div>
                 </div>
                 <div class="modal-footer bg-light border-0">
-                    <button type="button" class="btn btn-outline-secondary px-4 fw-bold" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="submit" class="btn btn-success px-5 shadow-sm fw-bold">Guardar Estado</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn bg-burgundy text-white shadow-sm">Guardar Estado</button>
                 </div>
             </form>
         </div>
