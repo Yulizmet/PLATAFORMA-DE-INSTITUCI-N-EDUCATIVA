@@ -42,7 +42,7 @@ namespace SchoolManager.Areas.Procedures.Controllers
                 .Include(r => r.ProcedureDocuments)
                 .Include(r => r.User).ThenInclude(u => u.Person)
                 .Include(r => r.User).ThenInclude(u => u.Preenrollments)
-                .Include(r => r.Preenrollments).ThenInclude(p => p.User).ThenInclude(u => u.Person)
+                .Include(r => r.Preenrollments).ThenInclude(p => p.User).ThenInclude(u => u!.Person)
                 .Include(r => r.ProcedureMonitorings).ThenInclude(m => m.ProcedureFlow).ThenInclude(f => f.ProcedureStatus)
                 .Include(r => r.ProcedureMonitorings).ThenInclude(m => m.User)
                 .FirstOrDefaultAsync(r => r.Id == id);
@@ -50,7 +50,6 @@ namespace SchoolManager.Areas.Procedures.Controllers
             if (request == null) return NotFound();
 
             var currentPreenrollment = request.Preenrollments.FirstOrDefault();
-
             var globalMatricula = currentPreenrollment?.Matricula ??
                                   request.User?.Preenrollments?.FirstOrDefault(p => p.Matricula != "0")?.Matricula;
 
@@ -61,7 +60,9 @@ namespace SchoolManager.Areas.Procedures.Controllers
                 ProcedureName = request.ProcedureType?.Name ?? "Trámite",
                 CurrentStatus = request.ProcedureFlow?.ProcedureStatus?.Name ?? "N/A",
                 UserMessage = request.Message,
+                CreationDate = request.DateCreated,
                 LastUpdate = request.DateUpdated,
+                TerminatedDate = request.DateTerminated,
 
                 StudentFullName = currentPreenrollment?.User?.Person != null
                     ? $"{currentPreenrollment.User.Person.FirstName} {currentPreenrollment.User.Person.LastNamePaternal} {currentPreenrollment.User.Person.LastNameMaternal}"
@@ -70,19 +71,11 @@ namespace SchoolManager.Areas.Procedures.Controllers
                         : "Usuario sin expediente"),
 
                 Matricula = (globalMatricula != null && globalMatricula != "0") ? globalMatricula : "S/M",
-
                 Email = request.User?.Person?.Email ?? request.User?.Email ?? "N/A",
                 ApplicantFolio = currentPreenrollment?.Folio ?? "N/A",
                 IsAspirante = request.User == null || (globalMatricula == "0" || globalMatricula == null),
-
                 Documents = request.ProcedureDocuments.Select(d => new DocumentDetail { FileName = d.Name, FilePath = d.FilePath }).ToList()
             };
-
-            var flujoInicial = await _context.ProcedureFlow
-                .Include(f => f.ProcedureStatus)
-                .Where(f => f.IdTypeProcedure == request.IdTypeProcedure)
-                .OrderBy(f => f.StepOrder)
-                .FirstOrDefaultAsync();
 
             var historyList = request.ProcedureMonitorings.Select(m => new MonitoringStep
             {
@@ -94,12 +87,18 @@ namespace SchoolManager.Areas.Procedures.Controllers
                 TextColor = m.ProcedureFlow?.ProcedureStatus?.TextColor ?? "#ffffff"
             }).ToList();
 
+            var flujoInicial = await _context.ProcedureFlow
+                .Include(f => f.ProcedureStatus)
+                .Where(f => f.IdTypeProcedure == request.IdTypeProcedure)
+                .OrderBy(f => f.StepOrder)
+                .FirstOrDefaultAsync();
+
             historyList.Add(new MonitoringStep
             {
                 StatusName = flujoInicial?.ProcedureStatus?.Name ?? "Solicitud Iniciada",
-                AdminComment = "El usuario ha iniciado el proceso.",
+                AdminComment = "El usuario ha registrado la solicitud exitosamente.",
                 Date = request.DateCreated,
-                UpdatedBy = "sistema",
+                UpdatedBy = "Sistema",
                 BackgroundColor = flujoInicial?.ProcedureStatus?.BackgroundColor ?? "#17a2b8",
                 TextColor = flujoInicial?.ProcedureStatus?.TextColor ?? "#ffffff"
             });
@@ -108,15 +107,13 @@ namespace SchoolManager.Areas.Procedures.Controllers
 
             var steps = await _context.ProcedureFlow
                 .Include(f => f.ProcedureStatus)
-                .Where(f => f.IdTypeProcedure == request.IdTypeProcedure)
+                .Where(f => f.IdTypeProcedure == request.IdTypeProcedure && f.ProcedureStatus.Name != "Cancelado")
                 .OrderBy(f => f.StepOrder)
                 .ToListAsync();
 
-            var selectListItems = steps.Select((f, index) => new {
+            var selectListItems = steps.Select(f => new {
                 Id = f.Id,
-                DisplayName = f.StepOrder == 99 ? $"🔴 {f.ProcedureStatus.Name}" :
-                              f.StepOrder >= 90 ? $"🔴 {f.ProcedureStatus.Name}" :
-                              $"🟢 {f.ProcedureStatus.Name}"
+                DisplayName = f.StepOrder >= 90 ? $"🔴 {f.ProcedureStatus.Name}" : $"🟢 {f.ProcedureStatus.Name}"
             });
 
             ViewBag.Statuses = new SelectList(selectListItems, "Id", "DisplayName", request.IdProcedureFlow);
@@ -127,13 +124,36 @@ namespace SchoolManager.Areas.Procedures.Controllers
         [HttpPost]
         public async Task<IActionResult> UpdateStatus(int requestId, int newFlowId, string adminComment)
         {
+            using var transaction = await _context.Database.BeginTransactionAsync();
             try
             {
-                var request = await _context.ProcedureRequest.FindAsync(requestId);
+                var request = await _context.ProcedureRequest
+                    .Include(r => r.ProcedureType)
+                    .FirstOrDefaultAsync(r => r.Id == requestId);
+
                 if (request == null) return Json(new { success = false, message = "Solicitud no encontrada" });
 
-                request.IdProcedureFlow = newFlowId;
+                var newFlowStep = await _context.ProcedureFlow
+                    .Include(f => f.ProcedureStatus)
+                    .FirstOrDefaultAsync(f => f.Id == newFlowId);
+
+                if (newFlowStep == null) return Json(new { success = false, message = "Estado de flujo no válido" });
+
+                request.IdProcedureFlow = newFlowId; 
                 request.DateUpdated = DateTime.Now;
+
+                bool isFinalStatus = newFlowStep.StepOrder >= 90 ||
+                                     newFlowStep.ProcedureStatus.Name.ToLower().Contains("aprobado") ||
+                                     newFlowStep.ProcedureStatus.Name.ToLower().Contains("finalizado");
+
+                if (isFinalStatus)
+                {
+                    request.DateTerminated = DateTime.Now;
+                }
+                else
+                {
+                    request.DateTerminated = null;
+                }
 
                 var monitoring = new procedure_monitoring
                 {
@@ -141,16 +161,23 @@ namespace SchoolManager.Areas.Procedures.Controllers
                     IdProcedureFlow = newFlowId,
                     Comment = adminComment,
                     DateUpdated = DateTime.Now,
-                    IdUser = 3
+                    IdUser = 3 // Recuerda cambiar esto por el ID del usuario logueado después
                 };
 
                 _context.ProcedureMonitoring.Add(monitoring);
-                await _context.SaveChangesAsync();
 
-                return Json(new { success = true, message = "Estatus actualizado correctamente" });
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+
+                return Json(new
+                {
+                    success = true,
+                    message = isFinalStatus ? "Trámite finalizado con éxito" : "Estatus actualizado correctamente"
+                });
             }
             catch (Exception ex)
             {
+                await transaction.RollbackAsync();
                 return Json(new { success = false, message = "Error: " + ex.Message });
             }
         }

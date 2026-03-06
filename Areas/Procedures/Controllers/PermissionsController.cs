@@ -31,7 +31,7 @@ namespace SchoolManager.Areas.Procedures.Controllers
                     .Include(p => p.ModuleCatalog)
                     .Where(p => p.IdArea == idArea.Value)
                     .OrderBy(p => p.IdJobPosition)
-                    .ThenBy(p => p.ModuleCatalog.ModuleName)
+                    .ThenBy(p => p.ModuleCatalog!.ModuleName)
                     .ToListAsync();
 
                 return View(permissions);
@@ -203,7 +203,7 @@ namespace SchoolManager.Areas.Procedures.Controllers
         [HttpGet]
         public async Task<IActionResult> GetModuleModal(int id, string? moduleName = null)
         {
-            procedure_module_catalog model;
+            procedure_module_catalog? model;
 
             if (id > 0)
             {
@@ -411,6 +411,7 @@ namespace SchoolManager.Areas.Procedures.Controllers
             }
             catch (Exception ex)
             {
+                Console.WriteLine(ex);
                 return Json(new { success = false, message = "No se puede eliminar: el puesto tiene permisos asignados en áreas." });
             }
         }

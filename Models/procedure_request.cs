@@ -15,8 +15,9 @@ namespace SchoolManager.Models
         [Required]
         public DateTime DateCreated { get; set; } = DateTime.Now;
 
-        [Required]
-        public DateTime DateUpdated { get; set; } = DateTime.Now;
+        public DateTime? DateUpdated { get; set; }
+
+        public DateTime? DateTerminated { get; set; }
 
         [Required]
         [MaxLength(200)]

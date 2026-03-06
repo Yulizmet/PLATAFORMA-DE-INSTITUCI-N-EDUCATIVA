@@ -45,17 +45,96 @@
     background-color: #fff;
 }
 
+
+body {
+    background-color: #f3f3f3 !important;
+}
+
+@media (max-width: 767.98px) {
+    .sidebar {
+        position: absolute;
+        left: -100%;
+    }
+
+        .sidebar.show {
+            left: 0;
+        }
+
+    .main-content {
+        margin-left: 0 !important;
+        width: 100% !important;
+    }
+}
+
+/*============================================================================
+    DASHBOARD
+==============================================================================*/
+
+.card {
+    border-radius: 15px;
+    transition: 0.3s;
+    position: relative;
+    overflow: hidden;
+}
+
+    .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
+    }
+
+.card-icon {
+    position: absolute;
+    right: 15px;
+    top: 15px;
+    opacity: 0.15;
+    font-size: 2.2rem;
+}
+
+.chart-container {
+    position: relative;
+    height: 300px;
+    width: 100%;
+}
+
+.accent-total {
+    border-left: 6px solid #8C1B1B !important;
+}
+
+.accent-action {
+    border-left: 6px solid #B1A596 !important;
+}
+
+.accent-course {
+    border-left: 6px solid #620900 !important;
+}
+
+.accent-done {
+    border-left: 6px solid #28a745 !important;
+}
+
+.accent-cancel {
+    border-left: 6px solid #6c757d !important;
+}
+
+.metric-big {
+    font-size: 3rem;
+    font-weight: 800;
+    color: #620900;
+}
+
 /*============================================================================
     LAYOUT: SIDEBAR (Procedures)
 ==============================================================================*/
 .sidebar {
     background-color: var(--burgundy) !important;
-    min-height: 100vh;
+    height: 100vh;
     color: white;
-    padding-top: 2rem;
     z-index: 1000;
     display: flex;
     flex-direction: column;
+    top: 0;
+    left: 0;
+    overflow: hidden;
 }
 
     .sidebar .position-sticky {
@@ -85,7 +164,7 @@
         display: flex;
         align-items: center;
         gap: 12px;
-        padding: 0.8rem 1.5rem;
+        padding: 0.5rem 1.5rem;
     }
 
         .sidebar .nav-link:hover {
@@ -102,8 +181,8 @@
 
 
 .sidebar-scroll-container {
+    height: calc(100vh - 120px);
     overflow-y: auto;
-    overflow-x: hidden;
     padding-bottom: 20px;
 }
 
@@ -400,7 +479,7 @@
 }
 
 .form-check-input-burgundy:focus {
-    background-image: url(data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='3' fill='rgba%280, 0, 0, 0.25%29'/%3e%3c/svg%3e) !important;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3E%3Ccircle r='3' fill='rgba(98, 9, 0, 0.25)'/%3E%3C/svg%3E") !important;
 }
 
 .burgundy-border {
@@ -783,11 +862,110 @@ table.dataTable thead .sorting_desc:after {
     color: #ffffff !important;
     border-color: #620900 !important;
 }
+
+/*============================================================================
+    LAYOUT: SIDEBAR & MAIN CONTENT (Ajuste Final Consolidado)
+==============================================================================*/
+:root {
+    --sidebar-width: 260px;
+    --sidebar-collapsed-width: 80px;
+}
+
+.sidebar {
+    width: var(--sidebar-width);
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    top: 0;
+    left: 0;
+}
+
+    .sidebar.collapsed {
+        width: var(--sidebar-collapsed-width);
+    }
+
+.sidebar-scroll-container {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+#sidebarToggle, #sidebarToggle:focus, #sidebarToggle:active {
+    outline: none !important;
+    box-shadow: none !important;
+    border: none !important;
+    background: transparent !important;
+    color: white !important;
+    transition: transform 0.3s ease;
+}
+
+/*.sidebar.collapsed #sidebarToggle {
+    transform: rotate(180deg);
+}*/
+
+.user-profile {
+    flex-shrink: 0;
+    margin-top: 0.5rem;
+    background: rgba(0,0,0,0.2);
+    border-top: 1px solid rgba(255,255,255,.1);
+}
+
+.user-info-text {
+    line-height: 1.1 !important;
+    display: flex;
+    flex-direction: column;
+}
+
+.user-name {
+    font-size: 1rem;
+    font-weight: 700;
+    margin-bottom: 4px !important;
+    white-space: nowrap;
+}
+
+.last-connection {
+    font-size: 0.75rem !important;
+    font-weight: 700;
+    opacity: 0.6;
+}
+
+/* Ocultar textos al colapsar */
+.sidebar.collapsed .user-info-text,
+.sidebar.collapsed .sidebar-text,
+.sidebar.collapsed .logout-text,
+.sidebar.collapsed h5,
+.sidebar.collapsed span,
+.sidebar.collapsed .sidebar-heading {
+    display: none !important;
+}
+
+.sidebar.collapsed .user-profile {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.main-content {
+    margin-left: var(--sidebar-width);
+    width: calc(100% - var(--sidebar-width));
+    min-height: 100vh;
+    padding: 2rem;
+    background-color: #f3f3f3;
+    transition: all 0.3s ease;
+}
+
+/* Sincronización de margen cuando el sidebar se cierra */
+.sidebar.collapsed + .main-content {
+    margin-left: var(--sidebar-collapsed-width);
+    width: calc(100% - var(--sidebar-collapsed-width));
+}
+
 /*============================================================================
     RESPONSIVE & PRINT
 ==============================================================================*/
 .main-content {
-    margin-left: 16.666667%;
+    margin-left: 250px;
 }
 
 @media (max-width: 992px) {

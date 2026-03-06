@@ -18,7 +18,10 @@
         public string Username { get; set; } = null!;
         public string Email { get; set; } = null!;
 
-        public string JobPosition { get; set; } = null!;
+        public int IdJobPosition { get; set; }
+
+        public string JobPositionName { get; set; } = null!;
+
         public string AreaName { get; set; } = null!;
         public int IdArea { get; set; }
         public bool IsSuperAdmin { get; set; }

@@ -24,6 +24,7 @@ namespace SchoolManager.Areas.Procedures.Controllers
                 .Include(s => s.User).ThenInclude(u => u.Person)
                 .Include(s => s.User).ThenInclude(u => u.UserRoles).ThenInclude(ur => ur.Role)
                 .Include(s => s.ProcedureArea)
+                .Include(s => s.ProcedureJobPosition)
                 .Select(s => new StaffViewModel
                 {
                     Id = s.Id,
@@ -31,12 +32,14 @@ namespace SchoolManager.Areas.Procedures.Controllers
                     FullName = $"{s.User.Person.FirstName} {s.User.Person.LastNamePaternal} {s.User.Person.LastNameMaternal}",
                     Username = s.User.Username,
                     Email = s.User.Email,
-                    JobPosition = s.JobPosition,
+                    IdJobPosition = s.IdJobPosition,
+                    JobPositionName = s.ProcedureJobPosition.Name,
                     AreaName = s.ProcedureArea.Name,
                     IsSuperAdmin = s.IsSuperAdmin,
                     IsActive = s.IsActive,
-                    Roles = s.User.UserRoles.Select(ur => ur.Role.Name).ToList()
-                }).ToListAsync();
+                    Roles = s.User.UserRoles.Select(ur => ur!.Role!.Name).ToList()
+                })
+                .ToListAsync();
 
             return View(staff);
         }
@@ -65,16 +68,16 @@ namespace SchoolManager.Areas.Procedures.Controllers
         [HttpGet]
         public async Task<IActionResult> Create()
         {
-            ViewBag.Areas = await _context.ProcedureAreas
-                .OrderBy(a => a.Name)
-                .ToListAsync();
+            ViewBag.Areas = await _context.ProcedureAreas.OrderBy(a => a.Name).ToListAsync();
+
+            ViewBag.JobPositions = await _context.ProcedureJobPosition.OrderBy(j => j.Name).ToListAsync();
 
             return PartialView("_CreateModal");
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> CreateStaff(int IdUser, int IdArea, string JobPosition, bool IsSuperAdmin)
+        public async Task<IActionResult> CreateStaff(int IdUser, int IdArea, int IdJobPosition, bool IsSuperAdmin)
         {
             try
             {
@@ -100,7 +103,7 @@ namespace SchoolManager.Areas.Procedures.Controllers
                 {
                     IdUser = IdUser,
                     IdArea = IdArea,
-                    JobPosition = JobPosition,
+                    IdJobPosition = IdJobPosition,
                     IsSuperAdmin = IsSuperAdmin,
                     IsActive = true,
                     CreatedDate = DateTime.Now
@@ -186,15 +189,14 @@ namespace SchoolManager.Areas.Procedures.Controllers
         public async Task<IActionResult> Edit(int id)
         {
             var staff = await _context.ProcedureStaff
-                .Include(s => s.User)
-                    .ThenInclude(u => u.Person)
+                .Include(s => s.User).ThenInclude(u => u.Person)
                 .FirstOrDefaultAsync(s => s.Id == id);
 
             if (staff == null) return NotFound();
 
-            ViewBag.Areas = await _context.ProcedureAreas
-                .OrderBy(a => a.Name)
-                .ToListAsync();
+            ViewBag.Areas = await _context.ProcedureAreas.OrderBy(a => a.Name).ToListAsync();
+
+            ViewBag.JobPositions = await _context.ProcedureJobPosition.OrderBy(j => j.Name).ToListAsync();
 
             return PartialView("_EditModal", staff);
         }
@@ -213,7 +215,7 @@ namespace SchoolManager.Areas.Procedures.Controllers
                 }
 
                 existingStaff.IdArea = staffData.IdArea;
-                existingStaff.JobPosition = staffData.JobPosition;
+                existingStaff.IdJobPosition = staffData.IdJobPosition;
                 existingStaff.IsSuperAdmin = staffData.IsSuperAdmin;
 
                 _context.ProcedureStaff.Update(existingStaff);
@@ -234,6 +236,7 @@ namespace SchoolManager.Areas.Procedures.Controllers
                 .Include(s => s.User).ThenInclude(u => u.Person)
                 .Include(s => s.User).ThenInclude(u => u.UserRoles).ThenInclude(ur => ur.Role)
                 .Include(s => s.ProcedureArea)
+                .Include(s => s.ProcedureJobPosition)
                 .FirstOrDefaultAsync(s => s.Id == id);
 
             if (staff == null) return NotFound();
@@ -248,11 +251,12 @@ namespace SchoolManager.Areas.Procedures.Controllers
                 Gender = staff.User.Person.Gender == "M" ? "Masculino" : "Femenino",
                 Nationality = "Mexicana",
                 BirthDate = staff.User.Person.BirthDate?.ToString("dd/MM/yyyy") ?? "N/A",
-                JobPosition = staff.JobPosition,
+                IdJobPosition = staff.IdJobPosition,
+                JobPositionName = staff.ProcedureJobPosition.Name,
                 AreaName = staff.ProcedureArea.Name,
                 IsSuperAdmin = staff.IsSuperAdmin,
                 IsActive = staff.IsActive,
-                Roles = staff.User.UserRoles.Select(ur => ur.Role.Name).ToList()
+                Roles = staff.User.UserRoles.Select(ur => ur!.Role!.Name).ToList()
             };
 
             return View("AdministrativeStaff", viewModel);
@@ -281,7 +285,7 @@ namespace SchoolManager.Areas.Procedures.Controllers
                 Curp = staff.User.Person.Curp,
                 BirthDate = staff.User.Person.BirthDate?.ToString("yyyy-MM-dd") ?? "",
                 Gender = staff.User.Person.Gender,
-                JobPosition = staff.JobPosition,
+                IdJobPosition = staff.IdJobPosition,
                 IsActive = staff.IsActive,
                 IsSuperAdmin = staff.IsSuperAdmin,
                 Email = staff.User.Email,

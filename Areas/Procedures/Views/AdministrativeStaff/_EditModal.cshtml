@@ -8,7 +8,6 @@
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <form id="formEditStaff" method="post" asp-action="EditStaff">
-                @* Campo oculto para el ID del registro *@
                 <input type="hidden" asp-for="Id" />
                 <input type="hidden" asp-for="IdUser" />
 
@@ -31,7 +30,16 @@
 
                     <div class="mb-3">
                         <label class="form-label fw-bold">Puesto / Cargo</label>
-                        <input asp-for="JobPosition" type="text" class="form-control" placeholder="Ej: Jefe de Departamento" required />
+                        <select asp-for="IdJobPosition" class="form-select" required>
+                            <option value="">-- Selecciona un puesto --</option>
+                            @if (ViewBag.JobPositions != null)
+                            {
+                                foreach (var job in (IEnumerable<dynamic>)ViewBag.JobPositions)
+                                {
+                                    <option value="@job.Id">@job.Name</option>
+                                }
+                            }
+                        </select>
                     </div>
 
                     <div class="form-check form-switch mt-4">

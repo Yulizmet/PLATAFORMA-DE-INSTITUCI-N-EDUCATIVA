@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using SchoolManager.Areas.Procedures.Models;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace SchoolManager.Models
@@ -16,8 +17,7 @@ namespace SchoolManager.Models
         public int IdArea { get; set; }
 
         [Required]
-        [StringLength(100)]
-        public string JobPosition { get; set; } = null!;
+        public int IdJobPosition { get; set; }
 
         public bool IsSuperAdmin { get; set; } = false;
 
@@ -26,6 +26,9 @@ namespace SchoolManager.Models
 
         [ForeignKey("IdUser")]
         public virtual users_user User { get; set; } = null!;
+
+        [ForeignKey("IdJobPosition")]
+        public virtual procedure_job_position ProcedureJobPosition { get; set; } = null!;
 
         [ForeignKey("IdArea")]
         public virtual procedure_areas ProcedureArea { get; set; } = null!;

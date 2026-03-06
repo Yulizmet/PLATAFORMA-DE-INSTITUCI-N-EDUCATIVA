@@ -191,10 +191,12 @@
                 $(this).find('input[name*="IdTypeDocument"]').attr('name', `requirementsList[${i}].IdTypeDocument`);
                 $(this).find('input[name*="IsRequired"]').attr('name', `requirementsList[${i}].IsRequired`);
             });
+
             $('#flowContainer .flow-item').each(function(i) {
                 $(this).find('input.step-order-input').attr('name', `flowList[${i}].StepOrder`);
                 $(this).find('input[type="hidden"]').attr('name', `flowList[${i}].IdStatus`);
             });
+
             reqIndex = $('#pillsContainer .badge').length;
             flowIndex = $('#flowContainer .flow-item').length;
         }
@@ -237,7 +239,7 @@
         </div>
     </div>
 
-    <div class="card border-0 overflow-hidden">
+    <div class="border-0 overflow-hidden">
         <div class="card-body p-0">
             <table id="mainTable" class="table table-hover">
                 <thead class="burgundy-header text-white">

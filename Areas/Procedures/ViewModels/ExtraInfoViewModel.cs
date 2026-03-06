@@ -7,7 +7,9 @@
         public string ProcedureName { get; set; } = null!;
         public string CurrentStatus { get; set; } = null!;
         public string UserMessage { get; set; } = null!;
-        public DateTime LastUpdate { get; set; }
+        public DateTime CreationDate { get; set; }
+        public DateTime? LastUpdate { get; set; }
+        public DateTime? TerminatedDate { get; set; }
 
         public string StudentFullName { get; set; } = null!;
         public string Matricula { get; set; } = null!;

@@ -68,7 +68,7 @@
 
     <partial name="_TableTools" />
 
-    <div class="card border-0 overflow-hidden">
+    <div class="border-0 overflow-hidden">
         <div class="card-body p-0">
             <div class="table-responsive">
                 <table id="mainTable" class="table table-hover align-middle mb-0">
@@ -94,7 +94,7 @@
                                 </td>
                                 <td class="ps-4">
                                     <div class="fw-bold burgundy-color">@item.Folio</div>
-                                    <small class="text-muted">@item.DateUpdated.ToString("dd/MM/yyyy hh:mm tt")</small>
+                                    <small class="text-muted">@item.DateCreated.ToString("dd/MM/yyyy hh:mm tt")</small>
                                 </td>
 
                                 <td>
@@ -163,20 +163,29 @@
                                     }
                                 </td>
 
+                                @{
+                                    bool isCancelled = item.ProcedureFlow?.ProcedureStatus?.Name == "Cancelado";
+                                }
+
                                 <td>
                                     <span class="badge rounded-pill shadow-sm"
                                           style="background-color: @(item.ProcedureFlow?.ProcedureStatus?.BackgroundColor ?? "#6c757d");
-                             color: @(item.ProcedureFlow?.ProcedureStatus?.TextColor ?? "#fff");
-                             padding: 0.5em 1em;">
+                                                 color: @(item.ProcedureFlow?.ProcedureStatus?.TextColor ?? "#fff");
+                                                 padding: 0.5em 1em;">
                                         @item.ProcedureFlow?.ProcedureStatus?.Name
                                     </span>
                                 </td>
 
-                                <td class="text-center pe-4">
-                                    <button class="btn btn-sm btn-light border shadow-sm px-3 shadow-sm rounded-pill"
-                                            onclick="openMonitoring(@item.Id)">
-                                        <i class="bi bi-gear-fill me-1"></i> Gestionar
-                                    </button>
+                                <td class="text-center">
+                                    <div class="btn-group">
+                                        <button class="btn btn-sm btn-light border text-dark shadow-sm px-3 shadow-sm rounded-pill"
+                                                onclick="openMonitoring(@item.Id)"
+                                                title="@(isCancelled ? "No se puede gestionar un trámite cancelado" : "Gestionar Trámite")"
+                                                @(isCancelled ? "disabled" : "")>
+                                            <i class="text-dark bi bi-gear-fill me-1 @(isCancelled ? "text-muted" : "text-primary")"></i>Gestionar
+                                        </button>
+
+                                    </div>
                                 </td>
                             </tr>
                         }

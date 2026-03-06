@@ -111,6 +111,28 @@
                             <span class="small text-muted"><i class="bi bi-envelope me-1"></i>@Model.Email</span>
                         </div>
                     </div>
+                    <div class="row g-2 mt-2 pt-2 border-top">
+                        <div class="col-md-4">
+                            <span class="small text-muted d-block">Fecha de Solicitud:</span>
+                            <span class="small fw-bold"><i class="bi bi-calendar-plus me-1"></i>@Model.CreationDate.ToString("dd/MM/yyyy")</span>
+                        </div>
+
+                        @if (Model.LastUpdate.HasValue)
+                        {
+                            <div class="col-md-4">
+                                <span class="small text-muted d-block">Último Movimiento:</span>
+                                <span class="small fw-bold burgundy-color"><i class="bi bi-clock-history me-1"></i>@Model.LastUpdate.Value.ToString("dd/MM/yyyy HH:mm")</span>
+                            </div>
+                        }
+
+                        @if (Model.TerminatedDate.HasValue)
+                        {
+                            <div class="col-md-4">
+                                <span class="small text-muted d-block">Fecha de Finalización:</span>
+                                <span class="small fw-bold text-success"><i class="bi bi-check-circle-fill me-1"></i>@Model.TerminatedDate.Value.ToString("dd/MM/yyyy")</span>
+                            </div>
+                        }
+                    </div>
                 </div>
             </div>
 
@@ -120,7 +142,7 @@
                 {
                     <div class="timeline-burgundy p-3 bg-light rounded-4 mb-3 ms-3 border shadow-sm">
                         <div class="d-flex justify-content-between align-items-center mb-2">
-                            <span class="badge shadow-sm" style="background-color: @(log.BackgroundColor); color: @(log.TextColor);">
+                            <span class="badge shadow-sm" style="background-color:@(log.BackgroundColor ?? "#6c757d"); color:@(log.TextColor ?? "#ffffff");">
                                 @log.StatusName
                             </span>
                             <small class="text-muted fw-bold">@log.Date.ToString("dd/MM/yyyy HH:mm")</small>

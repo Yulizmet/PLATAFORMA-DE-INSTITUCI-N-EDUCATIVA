@@ -1,5 +1,4 @@
-﻿using DocumentFormat.OpenXml.Bibliography;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SchoolManager.Areas.Procedures.ViewModels;
 using SchoolManager.Data;
@@ -27,15 +26,35 @@ namespace SchoolManager.Areas.Procedures.Controllers
 
             var vm = new DashboardViewModel
             {
-                TotalRequests = await _context.ProcedureRequest.CountAsync(),
+                SelectedYear = selectedYear,
+                TotalRequests = await solicitudesBase.CountAsync(),
                 ActionRequired = await solicitudesBase.CountAsync(r => r.ProcedureFlow.ProcedureStatus.IsActionRequiredByUser),
                 Done = await solicitudesBase.CountAsync(r => r.ProcedureFlow.ProcedureStatus.IsTerminalState),
                 InProgress = await solicitudesBase.CountAsync(r =>
                     !r.ProcedureFlow.ProcedureStatus.IsTerminalState &&
                     !r.ProcedureFlow.ProcedureStatus.IsActionRequiredByUser),
-
-                Cancelled = 0
+                Cancelled = await solicitudesBase.CountAsync(r => r.ProcedureFlow.ProcedureStatus.Name == "Cancelado")
             };
+
+            var closedStats = await solicitudesBase
+                .Where(r => r.DateTerminated != null)
+                .Select(r => EF.Functions.DateDiffMinute(r.DateCreated, r.DateTerminated!.Value))
+                .ToListAsync();
+
+            double avgClosedMin = closedStats.Any() ? closedStats.Average() : 0;
+            TimeSpan tsClosed = TimeSpan.FromMinutes(avgClosedMin);
+            vm.AvgResolutionTime = $"{(int)tsClosed.TotalDays}d {tsClosed.Hours}h {tsClosed.Minutes}m";
+            vm.AvgResolutionHours = tsClosed.TotalHours;
+
+            var openStats = await solicitudesBase
+                .Where(r => r.DateTerminated == null)
+                .Select(r => EF.Functions.DateDiffMinute(r.DateCreated, DateTime.Now))
+                .ToListAsync();
+
+            double avgOpenMin = openStats.Any() ? openStats.Average() : 0;
+            TimeSpan tsOpen = TimeSpan.FromMinutes(avgOpenMin);
+            vm.AvgWaitTime = $"{(int)tsOpen.TotalDays}d {tsOpen.Hours}h {tsOpen.Minutes}m";
+            vm.AvgWaitHours = tsOpen.TotalHours;
 
             var solicitudesMes = await solicitudesBase
                 .GroupBy(r => r.DateCreated.Month)

@@ -31,7 +31,19 @@
 
                     <div class="mb-3">
                         <label class="form-label fw-bold">Puesto / Cargo</label>
-                        <input type="text" name="JobPosition" class="form-control" placeholder="Ej: Jefe de Departamento" required />
+
+                        <select name="IdJobPosition" class="form-select" required>
+                            <option value="">-- Selecciona un puesto --</option>
+
+                            @if (ViewBag.JobPositions != null)
+                            {
+                                foreach (var job in ViewBag.JobPositions)
+                                {
+                                    <option value="@job.Id">@job.Name</option>
+                                }
+                            }
+
+                        </select>
                     </div>
 
                     <div class="form-check form-switch mt-4">
@@ -42,7 +54,7 @@
                 </div>
                 <div class="modal-footer bg-light">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="submit" class="btn btn-burgundy">Guardar Asignación</button>
+                    <button type="submit" class="btn bg-burgundy text-white">Guardar Asignación</button>
                 </div>
             </form>
         </div>

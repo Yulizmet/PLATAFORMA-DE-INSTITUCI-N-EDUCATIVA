@@ -66,7 +66,6 @@
                 const modalElement = document.getElementById('createStaffModal');
                 const myModal = new bootstrap.Modal(modalElement);
                 myModal.show();
-
                 $(modalElement).on('shown.bs.modal', function () {
                     $('#UserSearch').select2({
                         dropdownParent: $(modalElement),
@@ -79,6 +78,27 @@
                             processResults: function (data) { return { results: data }; }
                         },
                         minimumInputLength: 3
+                    });
+                });
+                $('#formCreateStaff').on('submit', function (e) {
+                    e.preventDefault();
+                    const form = $(this);
+                    $.post(form.attr('action'), form.serialize(), function (response) {
+                        if (response.success) {
+                            myModal.hide();
+                            Swal.fire({
+                                icon: 'success',
+                                title: '¡Éxito!',
+                                text: response.message,
+                                confirmButtonColor: '#620900'
+                            }).then(() => location.reload());
+                        } else {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error',
+                                text: response.message
+                            });
+                        }
                     });
                 });
             });
@@ -124,7 +144,6 @@
         }
 
         $(document).ready(function () {
-            // Inicialización de componentes adicionales si es necesario
         });
 
         function fillTestData() {
@@ -161,7 +180,7 @@
 
     <partial name="_TableTools" />
 
-    <div class="card border-0 overflow-hidden">
+    <div class="border-0 overflow-hidden">
         <div class="card-body p-0">
             <div class="table-responsive">
                 <table id="mainTable" class="table table-hover align-middle mb-0">
@@ -199,7 +218,11 @@
                                         @item.AreaName
                                     </span>
                                 </td>
-                                <td><span class="text-dark fw-medium">@item.JobPosition</span></td>
+                                <td>
+                                    <span class="text-dark fw-medium">
+                                        @item.JobPositionName
+                                    </span>
+                                </td>
                                 <td>
                                     @foreach (var role in item.Roles)
                                     {

@@ -7,60 +7,8 @@
     var espanol = new CultureInfo("es-MX");
 }
 
-<style>
-    body {
-        background: #f4f7f6;
-    }
-
-    .card {
-        border-radius: 15px;
-        transition: 0.3s;
-        position: relative;
-        overflow: hidden;
-    }
-
-        .card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
-        }
-
-    .card-icon {
-        position: absolute;
-        right: 15px;
-        top: 15px;
-        opacity: 0.15;
-        font-size: 2.2rem;
-    }
-
-    .chart-container {
-        position: relative;
-        height: 300px;
-        width: 100%;
-    }
-
-    .accent-total {
-        border-left: 6px solid #8C1B1B !important;
-    }
-
-    .accent-action {
-        border-left: 6px solid #B1A596 !important;
-    }
-
-    .accent-course {
-        border-left: 6px solid #620900 !important;
-    }
-
-    .accent-done {
-        border-left: 6px solid #28a745 !important;
-    }
-
-    .accent-cancel {
-        border-left: 6px solid #6c757d !important;
-    }
-</style>
-
 <div class="container-fluid px-4 py-4">
-
+    @* --- ENCABEZADO --- *@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h2 class="fw-bold mb-0 text-dark">Panel de Control Institucional</h2>
@@ -75,9 +23,9 @@
         </div>
 
         <div class="d-flex align-items-center gap-2">
-            <span class="fw-bold small text-uppercase text-muted" style="letter-spacing: 1px;">Periodo:</span>
-            <form method="get" class="d-flex align-items-center bg-white px-2 py-1 rounded-3 shadow-sm border">
-                <select name="year" onchange="this.form.submit()" class="form-select form-select-sm border-0 fw-bold" style="width:100px; cursor:pointer; background-color: transparent;">
+            <span class="fw-bold small text-uppercase text-muted">Periodo:</span>
+            <form method="get" class="bg-white px-2 py-1 rounded-3 shadow-sm border">
+                <select name="year" onchange="this.form.submit()" class="form-select form-select-sm border-0 fw-bold" style="width:100px; cursor:pointer;">
                     @for (int i = DateTime.Now.Year; i >= 2023; i--)
                     {
                         <option value="@i" selected="@(i == Model.SelectedYear)">@i</option>
@@ -87,106 +35,122 @@
         </div>
     </div>
 
+    @* --- CARDS DE MÉTRICAS --- *@
     <div class="row g-3 mb-5">
         <div class="col-xl col-md-4">
-            <div class="card shadow-sm border-0 h-100 accent-total">
-                <div class="card-body">
-                    <i class="bi bi-files card-icon"></i>
-                    <h6 class="text-muted small fw-bold">TOTAL SOLICITUDES</h6>
-                    <h2 class="fw-bold mb-0">@Model.TotalRequests</h2>
-                </div>
+            <div class="card shadow-sm border-0 h-100 accent-total p-3">
+                <h6 class="text-muted small fw-bold text-uppercase">Total Solicitudes</h6>
+                <h2 class="fw-bold mb-0">@Model.TotalRequests</h2>
             </div>
         </div>
         <div class="col-xl col-md-4">
-            <div class="card shadow-sm border-0 h-100 accent-action">
-                <div class="card-body">
-                    <i class="bi bi-person-exclamation card-icon"></i>
-                    <h6 class="text-muted small fw-bold">ACCIÓN REQUERIDA</h6>
-                    <h2 class="fw-bold mb-0">@Model.ActionRequired</h2>
-                </div>
+            <div class="card shadow-sm border-0 h-100 accent-action p-3">
+                <h6 class="text-muted small fw-bold text-uppercase">Acción Requerida</h6>
+                <h2 class="fw-bold mb-0">@Model.ActionRequired</h2>
             </div>
         </div>
         <div class="col-xl col-md-4">
-            <div class="card shadow-sm border-0 h-100 accent-course">
-                <div class="card-body">
-                    <i class="bi bi-gear-wide-connected card-icon"></i>
-                    <h6 class="text-muted small fw-bold">EN CURSO</h6>
-                    <h2 class="fw-bold mb-0">@Model.InProgress</h2>
-                </div>
+            <div class="card shadow-sm border-0 h-100 accent-course p-3">
+                <h6 class="text-muted small fw-bold text-uppercase">En Curso</h6>
+                <h2 class="fw-bold mb-0">@Model.InProgress</h2>
             </div>
         </div>
         <div class="col-xl col-md-6">
-            <div class="card shadow-sm border-0 h-100 accent-done">
-                <div class="card-body">
-                    <i class="bi bi-check-circle card-icon"></i>
-                    <h6 class="text-muted small fw-bold">FINALIZADAS</h6>
-                    <h2 class="fw-bold mb-0">@Model.Done</h2>
-                </div>
+            <div class="card shadow-sm border-0 h-100 accent-done p-3">
+                <h6 class="text-muted small fw-bold text-uppercase">Finalizadas</h6>
+                <h2 class="fw-bold mb-0">@Model.Done</h2>
             </div>
         </div>
         <div class="col-xl col-md-6">
-            <div class="card shadow-sm border-0 h-100 accent-cancel">
-                <div class="card-body">
-                    <i class="bi bi-x-octagon card-icon"></i>
-                    <h6 class="text-muted small fw-bold">CANCELADAS</h6>
-                    <h2 class="fw-bold mb-0">@Model.Cancelled</h2>
+            <div class="card shadow-sm border-0 h-100 accent-cancel p-3">
+                <h6 class="text-muted small fw-bold text-uppercase">Canceladas</h6>
+                <h2 class="fw-bold mb-0">@Model.Cancelled</h2>
+            </div>
+        </div>
+    </div>
+
+    @* --- FILA 1 DE GRÁFICAS --- *@
+    <div class="row g-4 mb-4">
+        <div class="col-lg-6">
+            <div class="card shadow-sm border-0 p-4 h-100">
+                <h5 class="fw-bold mb-4"><i class="bi bi-graph-up me-2"></i>Tendencia Mensual</h5>
+                <div style="height: 300px;"><canvas id="monthChart"></canvas></div>
+            </div>
+        </div>
+        <div class="col-lg-3">
+            <div class="card shadow-sm border-0 p-4 h-100">
+                <h5 class="fw-bold mb-4"><i class="bi bi-pie-chart me-2"></i>Estatus</h5>
+                <div style="height: 300px;"><canvas id="statusChart"></canvas></div>
+            </div>
+        </div>
+        <div class="col-lg-3">
+            <div class="card shadow-sm border-0 p-4 h-100">
+                <h5 class="fw-bold mb-4 text-center"><i class="bi bi-clock-history me-2"></i>Eficiencia</h5>
+                <div style="height: 200px;"><canvas id="efficiencyChart"></canvas></div>
+                <div class="mt-3 small text-center">
+                    <div class="text-muted">Resolución: <strong>@Model.AvgResolutionTime</strong></div>
+                    <div class="text-muted">Espera (Abiertos): <strong>@Model.AvgWaitTime</strong></div>
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="row g-4 mb-4">
-        <div class="col-lg-8">
+    @* --- FILA 2 DE GRÁFICAS --- *@
+    <div class="row g-4">
+        <div class="col-lg-4">
             <div class="card shadow-sm border-0 p-4 h-100">
-                <h5 class="fw-bold mb-4 text-dark"><i class="bi bi-graph-up me-2"></i>Tendencia Mensual</h5>
-                <div class="chart-container"><canvas id="monthChart"></canvas></div>
+                <h5 class="fw-bold mb-4"><i class="bi bi-building me-2"></i>Por Área</h5>
+                <div style="height: 300px;"><canvas id="areaChart"></canvas></div>
             </div>
         </div>
         <div class="col-lg-4">
             <div class="card shadow-sm border-0 p-4 h-100">
-                <h5 class="fw-bold mb-4 text-dark"><i class="bi bi-pie-chart me-2"></i>Estatus Actual</h5>
-                <div class="chart-container"><canvas id="statusChart"></canvas></div>
+                <h5 class="fw-bold mb-4"><i class="bi bi-list-stars me-2"></i>Top 5 Trámites</h5>
+                <div style="height: 300px;"><canvas id="typeChart"></canvas></div>
             </div>
         </div>
-    </div>
-
-    <div class="row g-4">
-        <div class="col-lg-6">
+        <div class="col-lg-4">
             <div class="card shadow-sm border-0 p-4 h-100">
-                <h5 class="fw-bold mb-4 text-dark"><i class="bi bi-building me-2"></i>Solicitudes por Área</h5>
-                <div class="chart-container"><canvas id="areaChart"></canvas></div>
-            </div>
-        </div>
-        <div class="col-lg-6">
-            <div class="card shadow-sm border-0 p-4 h-100">
-                <h5 class="fw-bold mb-4 text-dark"><i class="bi bi-list-stars me-2"></i>Top 5 Trámites</h5>
-                <div class="chart-container"><canvas id="typeChart"></canvas></div>
+                <h5 class="fw-bold mb-4"><i class="bi bi-bar-chart-steps me-2"></i>Flujo Acumulado</h5>
+                <div style="height: 300px;"><canvas id="flowChart"></canvas></div>
             </div>
         </div>
     </div>
 </div>
 
 <script>
-        const commonOptions = {
+    // 1. Configuraciones Globales y Paleta de Colores
+    const commonOptions = {
         responsive: true,
         maintainAspectRatio: false,
         plugins: {
-            legend: { position: 'bottom' }
-        }
-    };
-
-    const integerScales = {
-        y: {
-            beginAtZero: true,
-            ticks: {
-                stepSize: 1,
-                precision: 0
+            legend: {
+                position: 'bottom',
+                labels: { boxWidth: 12, padding: 15, font: { size: 11 } }
+            },
+            tooltip: {
+                backgroundColor: 'rgba(0,0,0,0.8)',
+                padding: 10,
+                cornerRadius: 6
             }
         }
     };
 
-    // Gráfica Mensual
-       new Chart(document.getElementById('monthChart'), {
+    // Paleta variada y profesional para gráficas de barras
+    const variedBarColors = [
+        '#620900', // Burgundy Base
+        '#8C1B1B', // Burgundy Claro
+        '#B1A596', // Taupe/Beige
+        '#A67C52', // Café Suave
+        '#6c757d', // Gris Admin
+        '#556B2F', // Verde Oliva
+        '#4682B4'  // Azul Acero
+    ];
+
+    // --- GENERACIÓN DE GRÁFICAS ---
+
+    // 1. Tendencia Mensual (Línea) - FUNCIONANDO
+    new Chart(document.getElementById('monthChart'), {
         type: 'line',
         data: {
             labels: ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'],
@@ -196,20 +160,22 @@
                 borderColor: '#8C1B1B',
                 backgroundColor: 'rgba(140,27,27,0.1)',
                 fill: true,
-                tension: 0.4
+                tension: 0.4,
+                pointRadius: 4,
+                pointBackgroundColor: '#8C1B1B'
             }]
         },
         options: {
             ...commonOptions,
             scales: {
-                y: { ...integerScales.y, grid: { display: true } },
+                y: { beginAtZero: true, ticks: { stepSize: 1 }, grid: { color: 'rgba(0,0,0,0.05)' } },
                 x: { grid: { display: false } }
             }
         }
     });
 
-    // Gráfica de Estatus
-        new Chart(document.getElementById('statusChart'), {
+    // 2. Estatus (Doughnut) - FUNCIONANDO
+    new Chart(document.getElementById('statusChart'), {
         type: 'doughnut',
         data: {
             labels: ['Acción requerida', 'En curso', 'Finalizadas', 'Canceladas'],
@@ -218,55 +184,103 @@
                 backgroundColor: ['#B1A596', '#620900', '#28a745', '#6c757d']
             }]
         },
-        options: {
-            ...commonOptions,
-            cutout: '50%'
-        }
+        options: commonOptions
     });
 
-    // Gráfica por Área
-        new Chart(document.getElementById('areaChart'), {
+    // 3. Eficiencia (Barra comparativa) - FUNCIONANDO
+    new Chart(document.getElementById('efficiencyChart'), {
         type: 'bar',
         data: {
-            labels: @Html.Raw(Json.Serialize(Model.RequestsByArea.Keys)),
+            labels: ['Resolución (Cerrados)', 'Espera (Abiertos)'],
             datasets: [{
-                label: 'Total',
-                data: @Html.Raw(Json.Serialize(Model.RequestsByArea.Values)),
-                backgroundColor: '#620900',
-                borderRadius: 5
+                data: [@Model.AvgResolutionHours, @Model.AvgWaitHours],
+                backgroundColor: ['#28a745', '#620900'],
+                borderRadius: 6
             }]
         },
         options: {
-            indexAxis: 'y',
             ...commonOptions,
+            plugins: { ...commonOptions.plugins, legend: { display: false } },
             scales: {
-                x: {
-                    beginAtZero: true,
-                    ticks: { stepSize: 1, precision: 0 },
-                    grid: { display: false }
-                },
-                y: { grid: { display: false } }
+                y: { beginAtZero: true, title: { display: true, text: 'Horas Totales', font: { weight: 'bold' } } },
+                x: { grid: { display: false } }
             }
         }
     });
 
-    // Gráfica por Tipo
-        new Chart(document.getElementById('typeChart'), {
-        type: 'bar', // Cambiado de polarArea a bar para limpieza total
+    // 4. Por Área (Barra Horizontal) - ¡CORREGIDA!
+    new Chart(document.getElementById('areaChart'), {
+        type: 'bar',
+        data: {
+            labels: @Html.Raw(Json.Serialize(Model.RequestsByArea.Keys)),
+            datasets: [{
+                label: 'Solicitudes',
+                data: @Html.Raw(Json.Serialize(Model.RequestsByArea.Values)),
+                backgroundColor: variedBarColors[0], // Usamos el color base
+                borderRadius: 5
+            }]
+        },
+        options: {
+            ...commonOptions,
+            indexAxis: 'y', // Barra horizontal
+            plugins: { ...commonOptions.plugins, legend: { display: false } },
+            scales: {
+                x: {
+                    beginAtZero: true,
+                    grid: { display: false },
+                    ticks: {
+                        stepSize: 1, // Mantenemos stepSize aquí porque es el eje de datos
+                        precision: 0
+                    }
+                },
+                y: {
+                    grid: { display: false },
+                    ticks: { font: { size: 10 } }
+                }
+            }
+        }
+    });
+
+    // 5. Top 5 Trámites (Barra Vertical) - ¡COLORES VARIADOS!
+    new Chart(document.getElementById('typeChart'), {
+        type: 'bar',
         data: {
             labels: @Html.Raw(Json.Serialize(Model.RequestsByType.Keys)),
             datasets: [{
                 label: 'Cantidad',
                 data: @Html.Raw(Json.Serialize(Model.RequestsByType.Values)),
-                backgroundColor: ['#620900', '#8C1B1B', '#B1A596', '#D4D2D2', '#6c757d'],
-                borderRadius: 5
+                // Usamos la paleta variada definida arriba
+                backgroundColor: variedBarColors,
+                borderRadius: 6
             }]
         },
         options: {
             ...commonOptions,
+            plugins: { ...commonOptions.plugins, legend: { display: false } },
             scales: {
-                y: { ...integerScales.y },
-                x: { grid: { display: false } }
+                y: { beginAtZero: true, ticks: { stepSize: 1 }, grid: { color: 'rgba(0,0,0,0.05)' } },
+                x: { grid: { display: false }, ticks: { font: { size: 10 } } }
+            }
+        }
+    });
+
+    // 6. Flujo Acumulado (Stacked) - FUNCIONANDO
+    new Chart(document.getElementById('flowChart'), {
+        type: 'bar',
+        data: {
+            labels: ['Estado Actual'],
+            datasets: [
+                { label: 'Acción Requerida', data: [@Model.ActionRequired], backgroundColor: '#B1A596' },
+                { label: 'En curso', data: [@Model.InProgress], backgroundColor: '#620900' },
+                { label: 'Finalizadas', data: [@Model.Done], backgroundColor: '#28a745' },
+                { label: 'Canceladas', data: [@Model.Cancelled], backgroundColor: '#6c757d' }
+            ]
+        },
+        options: {
+            ...commonOptions,
+            scales: {
+                x: { stacked: true, grid: { display: false } },
+                y: { stacked: true, beginAtZero: true, grid: { color: 'rgba(0,0,0,0.05)' } }
             }
         }
     });

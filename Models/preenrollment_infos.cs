@@ -12,10 +12,10 @@ namespace SchoolManager.Models
         public int id_data { get; set; }
 
         [ForeignKey("id_data")]
-        public preenrollment_general preenrollment_general { get; set; }
+        public preenrollment_general preenrollment_general { get; set; } = null!;
 
         [Required]
-        public string beca { get; set; }
+        public string beca { get; set; } = null!;
 
         [Required]
         public bool comu_indi { get; set; }
@@ -30,6 +30,6 @@ namespace SchoolManager.Models
         public bool disease { get; set; }
 
         [Required]
-        public string comment { get; set; }
+        public string comment { get; set; } = null!;
     }
 }

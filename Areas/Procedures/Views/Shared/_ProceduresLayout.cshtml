@@ -27,19 +27,47 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <script>
+      $(document).ready(function () {
+            const savedState = localStorage.getItem("sidebar-collapsed");
+            if (savedState === "true") {
+                $(".sidebar").addClass("collapsed");
+            }
+            syncMainMargin();
+            $("#sidebarToggle").on("click", function () {
+                $(".sidebar").toggleClass("collapsed");
+                const isCollapsed = $(".sidebar").hasClass("collapsed");
+                localStorage.setItem("sidebar-collapsed", isCollapsed);
+                syncMainMargin();
+            });
+            function syncMainMargin() {
+                if ($(window).width() >= 768) {
+                    const isCollapsed = $(".sidebar").hasClass("collapsed");
+                    $(".main-content").css(
+                        "margin-left",
+                        isCollapsed ? "75px" : "260px"
+                    );
+                } else {
+                    $(".main-content").css("margin-left", "0");
+                }
+            }
+        });
+    </script>
 
     @await RenderSectionAsync("Scripts", required: false)
 
-    <div class="container-fluid">
-        <div class="row">
-
-            <nav class="col-md-3 col-lg-2 d-md-block sidebar shadow-lg position-fixed">
-                <div class="d-flex flex-column h-100">
-
-                    <div class="sidebar-scroll-container flex-grow-1">
-                    <div class="text-center mb-4">
-                        <i class="bi bi-person-badge fs-1 text-white opacity-50"></i>
-                        <div class="text-white fw-bold mt-2">Sistema Integral Escolar</div>
+    <div class="container-fluid p-0">
+        <div class="d-flex">
+            <nav class="sidebar shadow-lg">
+                <div class="sidebar-header d-flex align-items-center px-3 py-3">
+                    <button id="sidebarToggle" class="btn p-0 text-white">
+                        <i class="bi bi-list fs-3"></i>
+                    </button>
+                </div>
+                <div class="sidebar-scroll-container">
+                    <div class="text-center mb-4 px-2 logo-container">
+                        <i class="bi bi-person-badge fs-2 text-white opacity-50"></i>
+                        <div class="text-white fw-bold mt-2 sidebar-text">Sistema Escolar</div>
                     </div>
 
                     <h5 class="mb-3 text-center">Gestión de Trámites</h5>
@@ -112,54 +140,48 @@
                                 <a class="nav-link @(currentController == "ProcedureAreas" ? "active-item" : "")"
                                    asp-area="Procedures" asp-controller="ProcedureAreas" asp-action="Index">
                                     <i class="bi bi-diagram-3"></i>
-                                    <span>Áreas Responsables</span>
+                                    <span>Áreas</span>
                                 </a>
                             </li>
                             <li class="nav-item">
                                 <a class="nav-link @(currentController == "DocumentsCatalog" ? "active-item" : "")"
                                    asp-area="Procedures" asp-controller="DocumentsCatalog" asp-action="Index">
                                     <i class="bi bi-file-earmark-medical"></i>
-                                    <span>Catálogo de Documentos</span>
+                                    <span>Documentos</span>
                                 </a>
                             </li>
                             <li class="nav-item">
                                 <a class="nav-link @(currentController == "ProcedureStatus" ? "active-item" : "")"
                                    asp-area="Procedures" asp-controller="ProcedureStatus" asp-action="Index">
                                     <i class="bi bi-check-circle"></i>
-                                    <span>Estatus de Flujo</span>
+                                    <span>Estatus</span>
                                 </a>
                             </li>
                             <li class="nav-item">
                                 <a class="nav-link @(currentController == "ProcedureConfiguration" ? "active-item" : "")"
                                    asp-area="Procedures" asp-controller="ProcedureConfiguration" asp-action="Index">
                                     <i class="bi bi-gear"></i>
-                                    <span>Catálogo de Trámites</span>
+                                    <span>Trámites</span>
                                 </a>
                             </li>
                         </ul>
                     </div>
+                </div>
 
-                    </div>
-
-                    <div class="user-profile">
-                        <div class="d-flex align-items-center">
-                            <div class="flex-shrink-0">
-                                <i class="bi bi-person-circle fs-3 text-white-50"></i>
-                            </div>
-                            <div class="flex-grow-1 ms-3 overflow-hidden">
-                                <p class="user-name text-truncate mb-0">Nicolle Guerrero</p>
-                                <div class="d-flex align-items-center" style="margin-top: -5px;">
-                                    <i class="bi bi-dot text-success fs-3 lh-1" style="margin-left: -8px;"></i>
-                                    <small class="last-connection text-truncate opacity-75" style="margin-left: -6px;">
-                                        @DateTime.Now.ToString("dd/MM/yy hh:mm tt")
-                                    </small>
-                                </div>
-                            </div>
+                <div class="user-profile">
+                    <div class="d-flex align-items-center">
+                        <i class="bi bi-person-circle fs-3 text-white-50"></i>
+                        <div class="ms-2 user-info-text overflow-hidden">
+                            <p class="user-name text-truncate mb-0 text-white">Nicolle Guerrero</p>
+                            <small class="text-white last-connection">
+                                @* <i class="bi bi-circle-fill me-1" style="font-size: 0.6rem;"></i>*@ Administrador
+                            </small>
                         </div>
-                        <a href="#" class="btn btn-sm btn-link text-white-50 p-0 mt-2 text-decoration-none border-0">
-                            <i class="bi bi-box-arrow-right me-1"></i> Cerrar sesión
-                        </a>
                     </div>
+                    <a asp-action="Logout" asp-controller="Account" class="btn btn-sm text-white-50 p-0  align-items-center border-0">
+                        <i class="bi bi-box-arrow-right me-2"></i>
+                        <span class="sidebar-text" style="font-size: 0.75rem;">Salir</span>
+                    </a>
                 </div>
             </nav>
 

@@ -34,16 +34,16 @@ public class ProceedingController : Controller
                 Username = p.User.Username,
 
                 CareerName = p.User.Preenrollments.Any()
-                             ? p.User.Preenrollments.FirstOrDefault().Career.name_career
-                             : "Sin asignar",
+                      ? p.User.Preenrollments.FirstOrDefault()!.Career.name_career
+                      : "Sin asignar",
 
                 Matricula = p.User.Preenrollments.Any()
-                            ? p.User.Preenrollments.FirstOrDefault().Matricula
-                            : "0",
+                      ? p.User.Preenrollments.FirstOrDefault()!.Matricula
+                      : "0",
 
                 Folio = p.User.Preenrollments.Any()
-                        ? p.User.Preenrollments.FirstOrDefault().Folio
-                        : "S/F"
+                      ? p.User.Preenrollments.FirstOrDefault()!.Folio
+                      : "S/F"
             })
             .OrderByDescending(p => p.CreatedDate)
             .ToListAsync();
@@ -70,7 +70,7 @@ public class ProceedingController : Controller
                 LastNamePaternal = LastNamePaternal,
                 LastNameMaternal = LastNameMaternal,
                 Curp = Curp,
-                Gender = "F",
+                Gender = "M",
                 Email = Email,
                 Phone = "8990000000",
                 CreatedDate = DateTime.Now,
@@ -320,13 +320,13 @@ public class ProceedingController : Controller
         try
         {
             var preEnrollment = await _context.PreenrollmentGenerals
-                .Include(p => p.User).ThenInclude(u => u.Person)
+                .Include(p => p.User).ThenInclude(u => u!.Person)
                 .Include(p => p.Addresses)
                 .Include(p => p.Infos)
                 .Include(p => p.Schools)
                 .FirstOrDefaultAsync(p => p.Matricula == model.Matricula);
 
-            if (preEnrollment == null) return NotFound();
+            if (preEnrollment?.User?.Person == null) return NotFound();
 
             //await AuditRegistration(preEnrollment.UserId ?? 0, "UPDATE_EXPEDIENTE", "Multiple_Tables");
 
@@ -348,7 +348,8 @@ public class ProceedingController : Controller
             person.LastNameMaternal = model.LastNameMaternal;
             person.Curp = model.Curp;
             person.Email = model.Email;
-            person.Gender = model.Gender == "Masculino" ? "M" : "F";
+            string genderInput = model.Gender?.Trim() ?? "";
+            person.Gender = (genderInput == "Masculino" || genderInput == "M") ? "M" : "F";
 
             preEnrollment.BloodType = model.BloodType;
             preEnrollment.MaritalStatus = model.MaritalStatus;
@@ -357,7 +358,7 @@ public class ProceedingController : Controller
             {
                 address.street = model.Street;
                 address.exterior_number = model.ExtNum;
-                address.interior_number = model.IntNum;
+                address.interior_number = model.IntNum ?? "N/A";
                 address.neighborhood = model.Colony;
                 address.postal_code = model.ZipCode;
             }
@@ -368,7 +369,7 @@ public class ProceedingController : Controller
                 info.comu_indi = model.IsIndigena;
                 info.incapa = model.HasIncapacidad;
                 info.disease = model.HasDisease;
-                info.comment = model.HealthComments;
+                info.comment = model.HealthComments ?? "N/A";
             }
 
             if (school != null)

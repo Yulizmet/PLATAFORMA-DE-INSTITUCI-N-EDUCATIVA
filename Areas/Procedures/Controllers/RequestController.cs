@@ -27,7 +27,6 @@ namespace SchoolManager.Areas.Procedures.Controllers
                 .Include(r => r.ProcedureType)
                 .Include(r => r.ProcedureFlow).ThenInclude(f => f.ProcedureStatus)
                 .Include(r => r.Preenrollments)
-                .OrderByDescending(r => r.DateUpdated)
                 .ToListAsync();
 
             return View(requests);
@@ -79,7 +78,6 @@ namespace SchoolManager.Areas.Procedures.Controllers
             int currentUserId = 1;
 
             request.DateCreated = DateTime.Now;
-            request.DateUpdated = DateTime.Now;
             request.IdProcedureFlow = initialFlow.Id;
             request.IdUser = currentUserId;
 
@@ -113,7 +111,6 @@ namespace SchoolManager.Areas.Procedures.Controllers
                             IdProcedure = request.Id,
                             Name = file.FileName,
                             FilePath = fileUrl,
-                            DateUpdated = DateTime.Now
                         });
                     }
                 }
@@ -136,7 +133,7 @@ namespace SchoolManager.Areas.Procedures.Controllers
                 .Include(r => r.ProcedureFlow)
                     .ThenInclude(f => f.ProcedureStatus)
                 .Include(r => r.ProcedureDocuments)
-                .OrderByDescending(r => r.DateUpdated)
+                .OrderByDescending(r => r.DateCreated)
                 .ToListAsync();
 
             foreach (var req in requests)
@@ -243,7 +240,6 @@ namespace SchoolManager.Areas.Procedures.Controllers
                 IdTypeProcedure = procedureTypeId,
                 IdProcedureFlow = flow.Id,
                 IdUser = student.UserId ?? 1,
-                DateUpdated = DateTime.Now,
                 DateCreated = DateTime.Now,
                 Subject = "Validación de pago institucional",
                 Message = $"Validación de pago institucional para folio/matrícula: {identifier}",
@@ -271,7 +267,6 @@ namespace SchoolManager.Areas.Procedures.Controllers
                             IdProcedure = request.Id,
                             Name = $"Voucher_{identifier}",
                             FilePath = fileUrl,
-                            DateUpdated = DateTime.Now
                         });
                     }
                 }
