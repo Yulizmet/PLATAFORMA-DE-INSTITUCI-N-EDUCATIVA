@@ -150,7 +150,9 @@ namespace SchoolManager.Data
                 entity.HasOne(d => d.ProcedureType).WithMany(p => p.ProcedureRequests).HasForeignKey(d => d.IdTypeProcedure).OnDelete(DeleteBehavior.Restrict);
                 entity.HasOne(d => d.ProcedureFlow).WithMany().HasForeignKey(d => d.IdProcedureFlow).OnDelete(DeleteBehavior.Restrict);
                 entity.HasOne(d => d.User).WithMany(u => u.ProcedureRequests).HasForeignKey(d => d.IdUser).OnDelete(DeleteBehavior.Restrict);
-                entity.Property(p => p.DateCreated).HasDefaultValueSql("GETDATE()").ValueGeneratedOnAdd();
+                entity.HasOne(d => d.User).WithMany(u => u.ProcedureRequests).HasForeignKey(d => d.IdUser).OnDelete(DeleteBehavior.Restrict);
+                entity.HasOne(d => d.ProcedureType).WithMany(p => p.ProcedureRequests).HasForeignKey(d => d.IdTypeProcedure).OnDelete(DeleteBehavior.Restrict);
+            entity.Property(p => p.DateCreated).HasDefaultValueSql("GETDATE()").ValueGeneratedOnAdd();
                 entity.Property(p => p.DateUpdated).HasDefaultValueSql("GETDATE()");
             });
 
@@ -200,9 +202,9 @@ namespace SchoolManager.Data
             modelBuilder.Entity<preenrollment_docs>().ToTable("preenrollment_docs");
 
             // Índices únicos
-            modelBuilder.Entity<preenrollment_general>()
-                .HasIndex(p => p.Curp)
-                .IsUnique();
+            //modelBuilder.Entity<preenrollment_general>()
+            //    .HasIndex(p => p.Curp)
+            //    .IsUnique();
 
             //modelBuilder.Entity<preenrollment_general>()
             //    .HasIndex(p => p.Email)

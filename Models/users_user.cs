@@ -18,10 +18,6 @@ namespace SchoolManager.Models
 
         public bool IsActive { get; set; }
         public DateTime CreatedDate { get; set; }
-        public users_person Person { get; set; }
-        public ICollection<users_userrole> UserRoles { get; set; }
-        public ICollection<users_session> Sessions { get; set; }
-        public ICollection<users_auditlog> AuditLogs { get; set; }
         public ICollection<preenrollment_general> PreEnrollments { get; set; }
 
         public ICollection<ForoPublicacion> ForoPublicaciones { get; set; }
