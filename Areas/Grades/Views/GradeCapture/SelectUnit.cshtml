@@ -1,0 +1,63 @@
+﻿@model SchoolManager.Areas.Grades.ViewModels.GradeCapture.UnitSelectionViewModel
+
+@{
+    ViewData["Title"] = "Seleccionar Unidad";
+    Layout = "~/Areas/MainScreen/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container-fluid py-4">
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-action="MyClasses">Mis Clases</a></li>
+            <li class="breadcrumb-item active">@Model.SubjectName - @Model.GroupName</li>
+        </ol>
+    </nav>
+
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <div class="sistema-card">
+                <div class="sistema-icon icon-calificaciones mb-4">
+                    <i class="bi bi-puzzle"></i>
+                </div>
+
+                <h4 class="fw-bold mb-2" style="color: #1f2937;">@Model.SubjectName</h4>
+                <p class="text-muted mb-4">
+                    <i class="bi bi-people me-2"></i>Grupo @Model.GroupName
+                </p>
+
+                <h5 class="fw-semibold mb-3" style="color: #1f2937;">Selecciona una unidad</h5>
+
+                <div class="list-group">
+                    @foreach (var unit in Model.Units)
+                    {
+                        <a asp-action="Capture"
+                           asp-route-teacherSubjectGroupId="@Model.TeacherSubjectGroupId"
+                           asp-route-unitId="@unit.UnitId"
+                           class="list-group-item list-group-item-action d-flex justify-content-between align-items-center p-3 @(unit.IsOpen ? "" : "opacity-50")"
+                           style="border: 1px solid #e0e0e0; border-radius: 10px; margin-bottom: 10px; @(unit.IsOpen ? "cursor: pointer;" : "pointer-events: none;")">
+                            <div>
+                                <h6 class="mb-1 fw-semibold">Unidad @unit.UnitNumber</h6>
+                                <span class="badge @(unit.IsOpen ? "bg-success" : "bg-secondary")">
+                                    @(unit.IsOpen ? "Abierta" : "Cerrada")
+                                </span>
+                                @if (unit.HasGrades)
+                                {
+                                    <span class="badge bg-info ms-2">
+                                        <i class="bi bi-check-circle me-1"></i>Con calificaciones
+                                    </span>
+                                }
+                            </div>
+                            <i class="bi bi-chevron-right fs-5" style="color: #8C1B1B;"></i>
+                        </a>
+                    }
+                </div>
+
+                <div class="mt-4">
+                    <a asp-action="MyClasses" class="btn btn-secondary" style="border-radius: 10px; background-color: #6c757d; color: white; padding: 10px 25px;">
+                        <i class="bi bi-arrow-left me-2"></i>Volver a Mis Clases
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

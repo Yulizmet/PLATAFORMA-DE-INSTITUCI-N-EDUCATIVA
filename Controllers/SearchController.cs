@@ -9,8 +9,7 @@ public class SearchController : ControllerBase
 {
     private readonly ISearchService _searchService;
 
-    private readonly string[] _allowedTypes = {"persons", "students", "teachers" };
-    
+    private readonly string[] _allowedTypes = { "persons", "persons_no_account", "students", "teachers" };    
     public SearchController(ISearchService searchService)
     {
         _searchService = searchService;

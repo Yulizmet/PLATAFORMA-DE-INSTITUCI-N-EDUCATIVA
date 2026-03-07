@@ -22,5 +22,12 @@ namespace SchoolManager.Models
         public grades_subjects Subject { get; set; } = null!;
         public grades_group Group { get; set; } = null!;
         public grades_extraordinary_grades? ExtraordinaryGrade { get; set; }
+
+        [Precision(3, 2)]
+        public decimal MinPassingGradeUsed { get; set; } // Que calificación minima se usa
+
+        public string? CalculationMethod { get; set; } // Promedio, Ponderado etc
+
+        public bool ConsideredRecoveries { get; set; } // Se consideraron recuperaciones si/no
     }
 }

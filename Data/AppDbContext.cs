@@ -10,8 +10,7 @@ namespace SchoolManager.Data
 {
     public class AppDbContext : DbContext
     {
-        public AppDbContext(DbContextOptions<AppDbContext> options)
-            : base(options) { }
+        public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
 
         #region DbSets
         // Preenrollment (Inscripciones)
@@ -71,7 +70,17 @@ namespace SchoolManager.Data
         public DbSet<tutorship_monitoring> TutorshipMonitorings { get; set; }
         public DbSet<tutorship_interview> TutorshipInterviews { get; set; }
         public DbSet<tutorship_interview_answer> TutorshipInterviewAnswers { get; set; }
+
+        // Social Service (Servicio Social)
+        public DbSet<social_service_assignment> SocialServiceAssignments { get; set; } = default!;
+        public DbSet<social_service_attendance> SocialServiceAttendances { get; set; } = default!;
+        public DbSet<social_service_log> SocialServiceLogs { get; set; } = default!;
+
+        // Foro (Noticias y Publicaciones)
+        public DbSet<ForoPublicacion> ForoPublicaciones { get; set; }
+        public DbSet<ForoImagen> ForoImagenes { get; set; }
         #endregion
+
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -191,9 +200,9 @@ namespace SchoolManager.Data
             modelBuilder.Entity<preenrollment_docs>().ToTable("preenrollment_docs");
 
             // Índices únicos
-            //modelBuilder.Entity<preenrollment_general>()
-            //    .HasIndex(p => p.Curp)
-            //    .IsUnique();
+            modelBuilder.Entity<preenrollment_general>()
+                .HasIndex(p => p.Curp)
+                .IsUnique();
 
             //modelBuilder.Entity<preenrollment_general>()
             //    .HasIndex(p => p.Email)
@@ -359,6 +368,11 @@ namespace SchoolManager.Data
                 .WithOne(f => f.ExtraordinaryGrade)
                 .HasForeignKey<grades_extraordinary_grades>(e => e.FinalGradeId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<grades_final_grades>()
+                .HasOne(f => f.ExtraordinaryGrade)
+                .WithOne(e => e.FinalGrade)
+                .HasForeignKey<grades_extraordinary_grades>(e => e.FinalGradeId);
 
             // grades_final_grades -> grades_subjects
             modelBuilder.Entity<grades_final_grades>()
@@ -539,6 +553,59 @@ namespace SchoolManager.Data
             modelBuilder.Entity<tutorship>().HasOne(t => t.Student).WithMany().HasForeignKey(t => t.StudentId).OnDelete(DeleteBehavior.Restrict);
             modelBuilder.Entity<tutorship>().HasOne(t => t.Teacher).WithMany().HasForeignKey(t => t.TeacherId).OnDelete(DeleteBehavior.Restrict);
             #endregion
+
+            #region 6. Foro Configuration
+
+            modelBuilder.Entity<ForoPublicacion>().ToTable("foro_publicacion");
+            modelBuilder.Entity<ForoImagen>().ToTable("foro_imagen");
+
+            modelBuilder.Entity<ForoPublicacion>()
+                .HasOne(f => f.Usuario)
+                .WithMany(u => u.ForoPublicaciones)
+                .HasForeignKey(f => f.UsuarioId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<ForoImagen>()
+                .HasOne(i => i.Publicacion)
+                .WithMany(p => p.Imagenes)
+                .HasForeignKey(i => i.PublicacionId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            #endregion
+
+            #region 7. Social Service Configuration
+
+            modelBuilder.Entity<social_service_assignment>().ToTable("social_service_assignment");
+            modelBuilder.Entity<social_service_attendance>().ToTable("social_service_attendance");
+            modelBuilder.Entity<social_service_log>().ToTable("social_service_log");
+
+            // Configuraciones específicas
+            modelBuilder.Entity<social_service_assignment>()
+                .HasIndex(a => new { a.TeacherId, a.StudentId })
+                .IsUnique();
+
+            modelBuilder.Entity<social_service_assignment>()
+                .Property(a => a.AssignedDate)
+                .HasDefaultValueSql("GETDATE()");
+
+            modelBuilder.Entity<social_service_attendance>()
+                .Property(a => a.Tipo)
+                .HasDefaultValue("Servicio Social");
+
+            modelBuilder.Entity<social_service_log>()
+                .Property(l => l.CreatedAt)
+                .HasDefaultValueSql("GETDATE()");
+
+            // Índices para mejorar búsquedas frecuentes
+            modelBuilder.Entity<social_service_attendance>()
+                .HasIndex(a => new { a.StudentId, a.Date });
+
+            modelBuilder.Entity<social_service_log>()
+                .HasIndex(l => new { l.StudentId, l.Week })
+                .IsUnique();
+
+            #endregion
+
         }
     }
 }

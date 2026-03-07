@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Microsoft.EntityFrameworkCore;
+using System.ComponentModel.DataAnnotations;
 
 namespace SchoolManager.Models
 {
@@ -12,7 +13,9 @@ namespace SchoolManager.Models
         public DateOnly StartDate { get; set; }
         public DateOnly EndDate { get; set; }
         public bool IsOpen { get; set; }
-
+        [Precision(3, 2)]
+        public decimal MinPassingGrade { get; set; } = 6.0m; 
+        // Relaciones
         // Relaciones
         public ICollection<grades_group> Groups { get; set; } = new List<grades_group>();
         public ICollection<grades_subjects> Subjects { get; set; } = new List<grades_subjects>();

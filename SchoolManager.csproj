@@ -8,11 +8,8 @@
 
   <ItemGroup>
     <Compile Remove="Areas\Preenrollment\**" />
-    <Compile Remove="Migrations\**" />
     <Content Remove="Areas\Preenrollment\**" />
-    <Content Remove="Migrations\**" />
     <EmbeddedResource Remove="Areas\Preenrollment\**" />
-    <EmbeddedResource Remove="Migrations\**" />
     <None Remove="Areas\Preenrollment\**" />
   </ItemGroup>
 
@@ -24,8 +21,10 @@
     <None Remove="Migrations\**" />
   </ItemGroup>
 
+
   <ItemGroup>
     <PackageReference Include="Azure.Storage.Blobs" Version="12.27.0" />
+    <PackageReference Include="BCrypt.Net-Next" Version="4.1.0" />
     <PackageReference Include="ClosedXML" Version="0.105.0" />
     <PackageReference Include="DinkToPdf" Version="1.0.8" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.ViewFeatures" Version="2.3.9" />
@@ -39,6 +38,7 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="8.0.23" />
+    <PackageReference Include="MiniExcel" Version="1.42.0" />
   </ItemGroup>
 
   <ItemGroup>
@@ -49,6 +49,12 @@
     <Folder Include="Areas\Grades\Views\" />
     <Folder Include="Areas\Grades\Views\" />
     <None Include="wwwroot\templates\Notification.html" />
+    <Folder Include="Areas\Procedures\Controllers\" />
+    <Folder Include="Areas\Procedures\Views\" />
+    <Folder Include="Areas\Procedures\Templates\" />
+    <Folder Include="Migrations\" />
+    <Folder Include="Areas\Tutorship\Controllers\" />
+    <Folder Include="Areas\Tutorship\Views\" />
 
 	  <None Update="libwkhtmltox.dll">
 		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
