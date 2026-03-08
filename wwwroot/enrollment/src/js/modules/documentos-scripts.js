@@ -1,281 +1,215 @@
+ // documentos-scripts.js
 (() => {
-  "use strict";
+    "use strict";
 
-  const MAX_MB = 3;
-  const MAX_BYTES = MAX_MB * 1024 * 1024;
-  const API_BASE = "/api/documentos";
-  const USE_MOCK = true;
+    const LS_GENERAL_KEY = "preenrollment_general";
+    const LS_DOCS_KEY = "preenrollment_docs";
 
-  const DOCS_REQUERIDOS = [
-    { id: "fotos", nombre: "6 FOTOS T/INFANTIL PAPEL MATE" },
-    { id: "pago_examen", nombre: "PAGO DE EXAMEN DE ADMISIÓN" },
-    { id: "acta", nombre: "ACTA DE NACIMIENTO (ACTUALIZADO)" },
-    { id: "curp", nombre: "CURP (ACTUALIZADO)" },
-    { id: "cert_sec", nombre: "CERTIFICADO DE SECUNDARIA" },
-    { id: "comp_dom", nombre: "COMPROBANTE DE DOMICILIO (3 MESES)" },
-    { id: "conducta", nombre: "CARTA DE BUENA CONDUCTA" },
-  ];
+    const tbodyEntregados = document.getElementById("tbodyEntregados");
+    const tbodyPorEntregar = document.getElementById("tbodyPorEntregar");
+    const btnContinuar = document.getElementById("btnContinuar");
 
-  const $ = (id) => document.getElementById(id);
+    const DOCS = [
+        { key: "Fotos", label: "Fotos" },
+        { key: "PagoExamen", label: "Pago de examen" },
+        { key: "ActaNacimiento", label: "Acta de nacimiento" },
+        { key: "Curp", label: "CURP" },
+        { key: "Certificados", label: "Certificados" },
+        { key: "ComprobanteDomicilio", label: "Comprobante de domicilio" },
+        { key: "CartaBuenaConducta", label: "Carta de buena conducta" }
+    ];
 
-  function getUsuarioActual() {
-    return "ASPIRANTE";
-  }
-
-  function getFolioActual() {
-    return localStorage.getItem("preinscripcion_folio") || "SIN_FOLIO";
-  }
-
-  function hoyDMY() {
-    const d = new Date();
-    return `${String(d.getDate()).padStart(2, "0")}/${String(d.getMonth() + 1).padStart(2, "0")}/${d.getFullYear()}`;
-  }
-
-  const api = {
-    async getEstado({ folio }) {
-      if (USE_MOCK) return mock.getEstado({ folio });
-      const r = await fetch(`${API_BASE}?folio=${encodeURIComponent(folio)}`);
-      if (!r.ok) throw new Error("GET estado falló");
-      return r.json();
-    },
-
-    async upload({ folio, docId, file }) {
-      if (USE_MOCK) return mock.upload({ folio, docId, file });
-
-      const fd = new FormData();
-      fd.append("folio", folio);
-      fd.append("docId", docId);
-      fd.append("file", file);
-
-      const r = await fetch(`${API_BASE}/upload`, { method: "POST", body: fd });
-      if (!r.ok) throw new Error("Upload falló");
-      return r.json();
-    },
-
-    async download({ folio, docId }) {
-      if (USE_MOCK) return mock.download({ folio, docId });
-      const url = `${API_BASE}/${docId}/download?folio=${folio}`;
-      window.open(url, "_blank");
-    },
-
-    async deleteDoc({ folio, docId }) {
-      if (USE_MOCK) return mock.deleteDoc({ folio, docId });
-
-      const r = await fetch(`${API_BASE}/${docId}?folio=${folio}`, {
-        method: "DELETE"
-      });
-      if (!r.ok) throw new Error("Delete falló");
+    function safeParse(json, fallback) {
+        try { return JSON.parse(json); } catch { return fallback; }
     }
-  };
 
-  const mock = {
-    META_KEY: "docs_meta_v2",
-    DB_NAME: "preins_docs_db",
-    STORE: "files",
+    function getGeneral() {
+        return safeParse(localStorage.getItem(LS_GENERAL_KEY), null);
+    }
 
-    loadMeta() {
-      return JSON.parse(localStorage.getItem(this.META_KEY) || "{}");
-    },
-
-    saveMeta(meta) {
-      localStorage.setItem(this.META_KEY, JSON.stringify(meta));
-    },
-
-    async openDB() {
-      return new Promise((resolve, reject) => {
-        const req = indexedDB.open(this.DB_NAME, 1);
-        req.onupgradeneeded = () => {
-          const db = req.result;
-          if (!db.objectStoreNames.contains(this.STORE)) {
-            db.createObjectStore(this.STORE);
-          }
-        };
-        req.onsuccess = () => resolve(req.result);
-        req.onerror = () => reject(req.error);
-      });
-    },
-
-    async putFile(key, blob) {
-      const db = await this.openDB();
-      return new Promise((resolve, reject) => {
-        const tx = db.transaction(this.STORE, "readwrite");
-        tx.objectStore(this.STORE).put(blob, key);
-        tx.oncomplete = () => resolve();
-        tx.onerror = () => reject();
-      });
-    },
-
-    async getFile(key) {
-      const db = await this.openDB();
-      return new Promise((resolve, reject) => {
-        const tx = db.transaction(this.STORE, "readonly");
-        const req = tx.objectStore(this.STORE).get(key);
-        req.onsuccess = () => resolve(req.result || null);
-        req.onerror = () => reject();
-      });
-    },
-
-    async deleteFile(key) {
-      const db = await this.openDB();
-      return new Promise((resolve, reject) => {
-        const tx = db.transaction(this.STORE, "readwrite");
-        tx.objectStore(this.STORE).delete(key);
-        tx.oncomplete = () => resolve();
-        tx.onerror = () => reject();
-      });
-    },
-
-    async getEstado({ folio }) {
-      const meta = this.loadMeta();
-      return DOCS_REQUERIDOS.map(d => {
-        const k = `${folio}:${d.id}`;
-        const m = meta[k];
-        if (!m) return { docId: d.id, status: "pendiente" };
+    // ✅ Incluye Files para guardar nombre del archivo
+    function emptyDocs() {
         return {
-          docId: d.id,
-          status: "entregado",
-          uploadedBy: m.uploadedBy,
-          deliveredAt: m.deliveredAt,
-          fileName: m.fileName
+            IdData: 0,
+            Fotos: false,
+            PagoExamen: false,
+            ActaNacimiento: false,
+            Curp: false,
+            Certificados: false,
+            ComprobanteDomicilio: false,
+            CartaBuenaConducta: false,
+            Files: {}
         };
-      });
-    },
-
-    async upload({ folio, docId, file }) {
-      const meta = this.loadMeta();
-      const key = `${folio}:${docId}`;
-
-      await this.putFile(key, file);
-
-      meta[key] = {
-        uploadedBy: getUsuarioActual(),
-        deliveredAt: hoyDMY(),
-        fileName: file.name
-      };
-
-      this.saveMeta(meta);
-    },
-
-    async download({ folio, docId }) {
-      const key = `${folio}:${docId}`;
-      const blob = await this.getFile(key);
-      if (!blob) return;
-
-      const url = URL.createObjectURL(blob);
-      window.open(url, "_blank");
-      setTimeout(() => URL.revokeObjectURL(url), 60000);
-    },
-
-    async deleteDoc({ folio, docId }) {
-      const meta = this.loadMeta();
-      const key = `${folio}:${docId}`;
-      delete meta[key];
-      this.saveMeta(meta);
-      await this.deleteFile(key);
     }
-  };
 
-  function escapeHtml(str) {
-    return String(str || "")
-      .replaceAll("&", "&amp;")
-      .replaceAll("<", "&lt;")
-      .replaceAll(">", "&gt;");
-  }
+    function getDocs() {
+        const raw = localStorage.getItem(LS_DOCS_KEY);
+        if (!raw) return emptyDocs();
 
-  function renderFromEstado(estado) {
-    const tbodyEnt = $("tbodyEntregados");
-    const tbodyPen = $("tbodyPorEntregar");
-    tbodyEnt.innerHTML = "";
-    tbodyPen.innerHTML = "";
+        const parsed = safeParse(raw, emptyDocs());
+        const base = emptyDocs();
 
-    const byId = new Map(estado.map(x => [x.docId, x]));
-    const folio = getFolioActual();
+        const merged = { ...base, ...parsed };
+        if (!merged.Files || typeof merged.Files !== "object") merged.Files = {};
+        return merged;
+    }
 
-    for (const doc of DOCS_REQUERIDOS) {
-      const item = byId.get(doc.id);
-      if (!item || item.status !== "entregado") {
-        const tr = document.createElement("tr");
-        tr.innerHTML = `
-            <td>${doc.nombre}</td>
-            <td>
-            <input type="file"
-                    class="form-control form-control-sm"
-                    accept="application/pdf"
-                    data-doc-id="${doc.id}">
-            <div class="small text-muted mt-1">
-                PDF (Máx 3MB)
-            </div>
-            </td>
-        `;
-        tbodyPen.appendChild(tr);
-      } else {
-        const tr = document.createElement("tr");
-        tr.innerHTML = `
-          <td>${doc.nombre}</td>
-          <td>${item.uploadedBy}</td>
-          <td>${item.deliveredAt}</td>
-          <td></td>
-          <td>
-            <a href="#" data-open-doc="${doc.id}">
-              ${item.fileName}
-            </a>
-          </td>
+    function saveDocs(docs) {
+        localStorage.setItem(LS_DOCS_KEY, JSON.stringify(docs));
+    }
+
+    function todayStr() {
+        const d = new Date();
+        const pad = (n) => String(n).padStart(2, "0");
+        return `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()}`;
+    }
+
+    function getUserNameFromGeneral(general) {
+        if (!general) return "Aspirante";
+        return general.NombreCompleto || general.Nombre || "Aspirante";
+    }
+
+    function escapeHtml(str) {
+        return String(str || "")
+            .replaceAll("&", "&amp;")
+            .replaceAll("<", "&lt;")
+            .replaceAll(">", "&gt;");
+    }
+
+    // ✅ Por Entregar: input normal
+    function buildFileInput(docKey) {
+        return `
+      <input type="file" class="form-control form-control-sm"
+             data-doc="${docKey}" accept=".pdf,.jpg,.jpeg,.png" />
+      <small class="text-muted d-block mt-1">PDF</small>
+    `;
+    }
+
+    // ✅ Entregados: solo nombre (link)
+    function buildFileName(docKey, docs) {
+        const name = docs.Files?.[docKey];
+        if (!name) return `<span class="text-muted">Sin archivo</span>`;
+        return `<a href="#" class="text-primary text-decoration-none" data-open-name="${docKey}">${escapeHtml(name)}</a>`;
+    }
+
+    function render() {
+        const general = getGeneral();
+        const docs = getDocs();
+
+        tbodyEntregados.innerHTML = "";
+        tbodyPorEntregar.innerHTML = "";
+
+        const usuario = getUserNameFromGeneral(general);
+        const fecha = todayStr();
+
+        DOCS.forEach((d) => {
+            const isDone = !!docs[d.key];
+
+            if (isDone) {
+                const tr = document.createElement("tr");
+                tr.innerHTML = `
+          <td>${d.label}</td>
+          <td>${usuario}</td>
+          <td>${fecha}</td>
+          <td>—</td>
+
+          <!-- ✅ SOLO nombre -->
+          <td>${buildFileName(d.key, docs)}</td>
+
           <td class="text-center">
-            <button class="btn btn-sm btn-outline-danger"
-                    data-delete-doc="${doc.id}">
+            <button type="button" class="btn btn-sm btn-outline-danger"
+                    data-action="undo" data-doc="${d.key}" title="Eliminar / marcar como no entregado">
               <i class="fa-solid fa-trash"></i>
             </button>
           </td>
         `;
-        tbodyEnt.appendChild(tr);
-      }
+                tbodyEntregados.appendChild(tr);
+            } else {
+                const tr = document.createElement("tr");
+                tr.innerHTML = `
+          <td>${d.label}</td>
+          <td>${buildFileInput(d.key)}</td>
+        `;
+                tbodyPorEntregar.appendChild(tr);
+            }
+        });
+
+        bindEvents();
     }
 
-    // Upload
-    tbodyPen.querySelectorAll("[data-doc-id]").forEach(inp => {
-      inp.addEventListener("change", async e => {
-        const file = e.target.files[0];
-        const docId = e.target.dataset.docId;
-        if (!file) return;
+    function bindEvents() {
+        // ✅ Subir: marcar true y guardar nombre
+        document.querySelectorAll('input[type="file"][data-doc]').forEach((inp) => {
+            inp.addEventListener("change", (e) => {
+                const key = e.target.getAttribute("data-doc");
+                const file = e.target.files?.[0];
+                if (!key || !file) return;
 
-        if (!file.name.toLowerCase().endsWith(".pdf")) {
-          alert("Solo PDF.");
-          return;
+                const docs = getDocs();
+                docs[key] = true;
+                docs.Files[key] = file.name;
+                saveDocs(docs);
+                render();
+            });
+        });
+
+        // ✅ Click en nombre: solo aviso (porque no guardas archivo real)
+        document.querySelectorAll("[data-open-name]").forEach((a) => {
+            a.addEventListener("click", (e) => {
+                e.preventDefault();
+                const key = a.getAttribute("data-open-name");
+                const docs = getDocs();
+                const name = docs.Files?.[key];
+                alert(name ? `Archivo: ${name}\n\n(No se descarga porque no se guarda el archivo real.)` : "Sin archivo");
+            });
+        });
+
+        // ✅ Eliminar: regresar a Por Entregar
+        document.querySelectorAll('button[data-action="undo"][data-doc]').forEach((btn) => {
+            btn.addEventListener("click", () => {
+                const key = btn.getAttribute("data-doc");
+                if (!key) return;
+
+                const docs = getDocs();
+                docs[key] = false;
+                if (docs.Files) delete docs.Files[key];
+                saveDocs(docs);
+                render();
+            });
+        });
+    }
+
+    function init() {
+        const general = getGeneral();
+        if (!general) {
+            window.location.href = window.PRE_URLS?.preinscripcion || "/";
+            return;
         }
-        if (file.size > MAX_BYTES) {
-          alert("Máx 3MB.");
-          return;
+
+        const docs = getDocs();
+        if (!docs.IdData && general.IdData) {
+            docs.IdData = general.IdData;
+            saveDocs(docs);
         }
 
-        await api.upload({ folio, docId, file });
-        const nuevoEstado = await api.getEstado({ folio });
-        renderFromEstado(nuevoEstado);
-      });
-    });
+        render();
 
-    // Download
-    tbodyEnt.querySelectorAll("[data-open-doc]").forEach(a => {
-      a.addEventListener("click", e => {
-        e.preventDefault();
-        api.download({ folio, docId: a.dataset.openDoc });
-      });
-    });
+        btnContinuar?.addEventListener("click", () => {
+            const docs = getDocs();
 
-    // Delete
-    tbodyEnt.querySelectorAll("[data-delete-doc]").forEach(btn => {
-      btn.addEventListener("click", async () => {
-        if (!confirm("¿Eliminar documento?")) return;
-        await api.deleteDoc({ folio, docId: btn.dataset.deleteDoc });
-        const nuevoEstado = await api.getEstado({ folio });
-        renderFromEstado(nuevoEstado);
-      });
-    });
-  }
+            // ✅ faltante si está false O si no tiene nombre de archivo guardado
+            const faltantes = DOCS
+                .filter(d => docs[d.key] !== true || !docs.Files?.[d.key])
+                .map(d => d.label);
 
-  document.addEventListener("DOMContentLoaded", async () => {
-    const folio = getFolioActual();
-    const estado = await api.getEstado({ folio });
-    renderFromEstado(estado);
-  });
+            if (faltantes.length > 0) {
+                alert("Te faltan documentos por subir:\n\n- " + faltantes.join("\n- "));
+                return;
+            }
 
+            window.location.href = window.PRE_URLS?.confirmar || "/";
+        });
+    }
+
+    init();
 })();

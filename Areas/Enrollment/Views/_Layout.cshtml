@@ -115,6 +115,10 @@
             pointer-events: none;
         }
     </style>
+
+    <!-- 👇 IMPORTANTE: Renderiza estilos por vista -->
+    @RenderSection("Styles", required: false)
+
 </head>
 
 <body>
@@ -126,7 +130,7 @@
 
                 <!-- LOGO -->
                 <a class="sidebar-brand"
-                   href="@Url.Action("Index", "PreEnrollment", new { area = "Enrollment" })">
+                   href="@Url.Action("Create", "PreEnrollment", new { area = "Enrollment" })">
                     <div style="position: relative; height: 110px; overflow: hidden;">
                         <img src="~/enrollment/static/img/icons/ITACE.png"
                              alt="Escuela logo"
@@ -136,47 +140,51 @@
 
                 <ul class="sidebar-nav">
                     <li class="sidebar-item">
-                        <div class="steps-vertical" id="wizardSteps">
+                        <div class="steps-vertical">
 
+                            <!-- PREINSCRIPCIÓN -->
                             <a class="step-vertical"
-                               href="@Url.Action("Index", "PreEnrollment", new { area = "Enrollment" })">
+                               href="@Url.Action("Create", "PreEnrollment", new { area = "Enrollment" })">
                                 <div class="step-vertical-icon">
                                     <i class="fa-solid fa-user-plus"></i>
                                 </div>
-                                <div class="step-vertical-content">
+                                <div>
                                     <div class="step-vertical-title">Preinscripción</div>
                                     <div class="step-vertical-desc">Datos iniciales</div>
                                 </div>
                             </a>
 
+                            <!-- DOCUMENTOS -->
                             <a class="step-vertical"
-                               href="@Url.Action("Documentos", "PreEnrollment", new { area = "Enrollment" })">
+                               href="@Url.Action("SubirDocumentos", "PreEnrollment", new { area = "Enrollment" })">
                                 <div class="step-vertical-icon">
                                     <i class="fa-solid fa-file-lines"></i>
                                 </div>
-                                <div class="step-vertical-content">
+                                <div>
                                     <div class="step-vertical-title">Documentos</div>
                                     <div class="step-vertical-desc">Carga de archivos</div>
                                 </div>
                             </a>
 
+                            <!-- CONFIRMAR -->
                             <a class="step-vertical"
-                               href="@Url.Action("Alumno", "PreEnrollment", new { area = "Enrollment" })">
+                               href="@Url.Action("ConfirmarPreinscripcion", "PreEnrollment", new { area = "Enrollment" })">
                                 <div class="step-vertical-icon">
                                     <i class="fa-solid fa-user-check"></i>
                                 </div>
-                                <div class="step-vertical-content">
+                                <div>
                                     <div class="step-vertical-title">Confirmar datos</div>
                                     <div class="step-vertical-desc">Verifica tu información</div>
                                 </div>
                             </a>
 
-                            <a class="step-vertical"
-                               href="@Url.Action("Finalizar", "PreEnrollment", new { area = "Enrollment" })">
+                            <!-- FINALIZAR (BLOQUEADO) -->
+                            <a class="step-vertical locked"
+                               href="javascript:void(0)">
                                 <div class="step-vertical-icon">
                                     <i class="fa-solid fa-flag-checkered"></i>
                                 </div>
-                                <div class="step-vertical-content">
+                                <div>
                                     <div class="step-vertical-title">Finalizar</div>
                                     <div class="step-vertical-desc">Enviar solicitud</div>
                                 </div>
@@ -213,24 +221,26 @@
         </div>
     </div>
 
-    <!-- jQuery (NECESARIO para validación y plugins) -->
+    <!-- jQuery -->
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 
-    <!-- Bootstrap Bundle JS -->
+    <!-- Bootstrap -->
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
 
-    <!-- jQuery Validate -->
+    <!-- Validación -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.5/jquery.validate.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validation-unobtrusive/4.0.0/jquery.validate.unobtrusive.min.js"></script>
 
-    <!-- AdminKit JS -->
+    <!-- AdminKit -->
     <script src="~/enrollment/static/js/app.js"></script>
 
-    <!-- Scripts personalizados -->
+    <!-- Scripts globales -->
     <script src="~/enrollment/src/js/modules/storage.js"></script>
     <script src="~/enrollment/src/js/modules/preinscripcion.js"></script>
     <script src="~/enrollment/src/js/modules/index-scripts.js"></script>
 
+    <!-- 👇 IMPORTANTE: Renderiza scripts por vista -->
     @RenderSection("Scripts", required: false)
+
 </body>
 </html>

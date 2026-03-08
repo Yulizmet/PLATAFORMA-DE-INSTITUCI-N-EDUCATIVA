@@ -1,7 +1,22 @@
 ﻿@model SchoolManager.Areas.Enrollment.ViewModels.PreEnrollmentViewModel
 
-<div class="card mb-4">
-    <div class="card-header fw-bold text-uppercase">Datos del tutor o responsable legal</div>
+@{
+    var modoConfirmacion = (ViewData["ModoConfirmacion"] as bool?) ?? false;
+}
+
+<div class="card mb-4" data-section="Tutor">
+    <div class="card-header fw-bold text-uppercase d-flex justify-content-between align-items-center">
+        Datos del tutor o responsable legal
+
+        @if (modoConfirmacion)
+        {
+            <button type="button"
+                    class="btn btn-outline-secondary btn-sm btn-editar"
+                    data-target="Tutor">
+                Editar
+            </button>
+        }
+    </div>
 
     <div class="card-body row g-3">
 

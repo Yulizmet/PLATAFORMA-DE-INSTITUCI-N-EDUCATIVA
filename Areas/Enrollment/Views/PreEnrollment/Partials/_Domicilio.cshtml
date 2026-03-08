@@ -1,7 +1,22 @@
 ﻿@model SchoolManager.Areas.Enrollment.ViewModels.PreEnrollmentViewModel
 
-<div class="card mb-4">
-    <div class="card-header fw-bold text-uppercase">Domicilio</div>
+@{
+    var modoConfirmacion = (ViewData["ModoConfirmacion"] as bool?) ?? false;
+}
+
+<div class="card mb-4" data-section="Domicilio">
+    <div class="card-header fw-bold text-uppercase d-flex justify-content-between align-items-center">
+        Domicilio
+
+        @if (modoConfirmacion)
+        {
+            <button type="button"
+                    class="btn btn-outline-secondary btn-sm btn-editar"
+                    data-target="Domicilio">
+                Editar
+            </button>
+        }
+    </div>
 
     <div class="card-body row g-3">
 
@@ -13,19 +28,23 @@
 
         <div class="col-md-3">
             <label asp-for="Domicilio.exterior_number" class="form-label">Número exterior</label>
-            <input asp-for="Domicilio.exterior_number" id="domExterior" class="form-control" type="number" min="0" oninput="this.value=this.value.replace(/[^0-9]/g,'');" required />
+            <input asp-for="Domicilio.exterior_number" id="domExterior" class="form-control" type="number" min="0"
+                   oninput="this.value=this.value.replace(/[^0-9]/g,'');" required />
             <div class="invalid-feedback">Campo obligatorio.</div>
         </div>
 
         <div class="col-md-3">
             <label asp-for="Domicilio.interior_number" class="form-label">Número interior</label>
-            <input asp-for="Domicilio.interior_number" id="domInterior" class="form-control" type="number" min="0" oninput="this.value=this.value.replace(/[^0-9]/g,'');" required />
+            <input asp-for="Domicilio.interior_number" id="domInterior" class="form-control" type="number" min="0"
+                   oninput="this.value=this.value.replace(/[^0-9]/g,'');" required />
             <div class="invalid-feedback">Campo obligatorio.</div>
         </div>
 
         <div class="col-md-4">
             <label asp-for="Domicilio.postal_code" class="form-label">Código Postal</label>
-            <input asp-for="Domicilio.postal_code" id="domCP" class="form-control" type="number" min="0" max="99999" maxlength="5" placeholder="5 dígitos" oninput="this.value=this.value.replace(/[^0-9]/g,'');" required />
+            <input asp-for="Domicilio.postal_code" id="domCP" class="form-control" type="number" min="0" max="99999"
+                   maxlength="5" placeholder="5 dígitos"
+                   oninput="this.value=this.value.replace(/[^0-9]/g,'');" required />
             <div class="invalid-feedback">Campo obligatorio (5 dígitos).</div>
         </div>
 
@@ -56,10 +75,11 @@
 
         <div class="col-md-6">
             <label asp-for="Domicilio.phone" class="form-label">Teléfono</label>
-            <input asp-for="Domicilio.phone" id="domTelefono" class="form-control" type="tel" pattern="[0-9]{10}" maxlength="10" oninput="this.value=this.value.replace(/[^0-9]/g,'');" required />
+            <input asp-for="Domicilio.phone" id="domTelefono" class="form-control"
+                   type="tel" pattern="[0-9]{10}" maxlength="10"
+                   oninput="this.value=this.value.replace(/[^0-9]/g,'');" required />
             <div class="invalid-feedback">Ingresa un número de 10 dígitos.</div>
         </div>
 
     </div>
 </div>
-

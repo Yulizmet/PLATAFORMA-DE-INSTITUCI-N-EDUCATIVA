@@ -10,16 +10,26 @@ namespace SchoolManager.Models
 
         [Required]
         public int IdCareer { get; set; }
+
         [ForeignKey("IdCareer")]
         public preenrollment_careers Career { get; set; } = null!;
 
         [Required]
         public int IdGeneration { get; set; }
 
+        // Relación con users_person
+        public int? PersonId { get; set; }
+
+        [ForeignKey("PersonId")]
+        public users_person? Person { get; set; }
+
+        // Relación con usuario del sistema (cuando se cree la cuenta)
         public int? UserId { get; set; }
-        public users_user User { get; set; }
+
+        public users_user? User { get; set; }
 
         public int? ProcedureRequestId { get; set; }
+
         [ForeignKey("ProcedureRequestId")]
         public virtual procedure_request? ProcedureRequest { get; set; }
 
@@ -51,8 +61,9 @@ namespace SchoolManager.Models
         [MaxLength(20)]
         public string? WorkPhone { get; set; }
 
-        [Required, MaxLength(10)]
-        public string Matricula { get; set; } = null!;
+        // Matrícula se genera después en otro proceso
+        [MaxLength(10)]
+        public string? Matricula { get; set; }
 
         public ICollection<preenrollment_schools> Schools { get; set; } = new List<preenrollment_schools>();
         public ICollection<preenrollment_addresses> Addresses { get; set; } = new List<preenrollment_addresses>();
