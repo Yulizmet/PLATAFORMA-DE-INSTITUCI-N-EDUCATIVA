@@ -1,6 +1,11 @@
 @model List<SchoolManager.Models.social_service_log>
 
-<h3 class="mb-4">Revisión de Bitácoras - @ViewBag.StudentName</h3>
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h3 class="mb-0">Revisión de Bitácoras - @ViewBag.StudentName</h3>
+    <a href="/SocialService/Teacher/Alumnos" class="btn btn-secondary">
+        <i class="bi bi-arrow-left me-1"></i> Volver
+    </a>
+</div>
 
 @if (TempData["Success"] != null)
 {
@@ -18,21 +23,14 @@
     </div>
 }
 
-<div class="mb-3">
-    <a href="/SocialService/Teacher/Alumnos" class="btn btn-secondary">
-        <i class="bi bi-arrow-left"></i> Regresar a Alumnos
-    </a>
-</div>
-
-<div class="bitacora-container">
-
-    @if (Model != null && Model.Count > 0)
-    {
-        foreach (var bitacora in Model)
+@if (Model != null && Model.Count > 0)
+{
+    <div class="teacher-bitacora-grid">
+        @foreach (var bitacora in Model)
         {
-            <div class="card mb-4 @(bitacora.IsApproved ? "border-success" : "")">
-                <div class="card-header @(bitacora.IsApproved ? "bg-success text-white" : "")">
-                    <h6 class="mb-0">
+            <div class="teacher-bitacora-card @(bitacora.IsApproved ? "approved" : "pending")">
+                <div class="teacher-card-header @(bitacora.IsApproved ? "approved" : "")">
+                    <h6>
                         Semana @bitacora.Week
                         @if (bitacora.IsApproved)
                         {
@@ -48,125 +46,181 @@
                         }
                     </h6>
                 </div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-12 mb-3">
-                            <p><strong>Actividades realizadas:</strong></p>
-                            <p class="text-muted">@bitacora.Activities</p>
-                        </div>
-                    </div>
 
-                    <div class="row">
-                        <div class="col-md-6">
-                            <p><strong>Horas Prácticas registradas:</strong> <span class="badge bg-primary">@bitacora.HoursPracticas h</span></p>
+                <div class="teacher-card-body">
+                    <p><strong>Actividades realizadas:</strong></p>
+                    <p class="activity-text">@bitacora.Activities</p>
+
+                    <div class="teacher-hours-display">
+                        <div class="teacher-hour-item">
+                            <div class="hour-label">Horas Prácticas</div>
+                            <div class="hour-value">@bitacora.HoursPracticas</div>
                         </div>
-                        <div class="col-md-6">
-                            <p><strong>Horas Servicio Social registradas:</strong> <span class="badge bg-info">@bitacora.HoursServicioSocial h</span></p>
+                        <div class="teacher-hour-item">
+                            <div class="hour-label">Servicio Social</div>
+                            <div class="hour-value">@bitacora.HoursServicioSocial</div>
                         </div>
                     </div>
 
                     @if (!string.IsNullOrEmpty(bitacora.Observations))
                     {
-                        <div class="row mt-3">
-                            <div class="col-md-12">
-                                <p><strong>Observaciones del alumno:</strong></p>
-                                <p class="text-muted">@bitacora.Observations</p>
-                            </div>
-                        </div>
+                        <p><strong>Observaciones:</strong></p>
+                        <p class="text-muted activity-text">@bitacora.Observations</p>
                     }
 
-                    @if (bitacora.IsApproved)
-                    {
-                        <hr />
-                        <div class="row mt-3">
-                            <div class="col-md-12">
-                                <div class="alert alert-success">
-                                    <h6><i class="bi bi-check-circle-fill"></i> Aprobada</h6>
-                                    <p><strong>Horas Prácticas aprobadas:</strong> @bitacora.ApprovedHoursPracticas h</p>
-                                    <p><strong>Horas Servicio Social aprobadas:</strong> @bitacora.ApprovedHoursServicioSocial h</p>
-                                    @if (!string.IsNullOrEmpty(bitacora.TeacherComments))
-                                    {
-                                        <p><strong>Comentarios del maestro:</strong> @bitacora.TeacherComments</p>
-                                    }
-                                    <p class="text-muted mb-0">Aprobada el: @bitacora.ApprovedAt?.ToString("dd/MM/yyyy HH:mm")</p>
-                                </div>
-                            </div>
-                        </div>
-                    }
-                    else
-                    {
-                        <hr />
-                        <form method="post" action="/SocialService/Teacher/AprobarBitacora">
-                            <input type="hidden" name="logId" value="@bitacora.LogId" />
-
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <label class="form-label">Horas prácticas a aprobar:</label>
-                                    <input type="number" 
-                                           name="approvedHoursPracticas" 
-                                           class="form-control" 
-                                           min="0" 
-                                           max="@bitacora.HoursPracticas" 
-                                           value="@bitacora.HoursPracticas" 
-                                           required />
-                                </div>
-
-                                <div class="col-md-6">
-                                    <label class="form-label">Horas servicio social a aprobar:</label>
-                                    <input type="number" 
-                                           name="approvedHoursServicioSocial" 
-                                           class="form-control" 
-                                           min="0" 
-                                           max="@bitacora.HoursServicioSocial" 
-                                           value="@bitacora.HoursServicioSocial" 
-                                           required />
-                                </div>
-                            </div>
-
-                            <div class="row mt-3">
-                                <div class="col-md-12">
-                                    <label class="form-label">Comentarios del maestro (opcional):</label>
-                                    <textarea name="teacherComments" 
-                                              class="form-control" 
-                                              rows="3" 
-                                              placeholder="Agrega comentarios o retroalimentación..."></textarea>
-                                </div>
-                            </div>
-
-                            <div class="mt-3 text-end">
-                                <button type="submit" class="btn btn-success btn-lg">
-                                    <i class="bi bi-check-circle"></i> Aprobar y Sumar Horas
-                                </button>
-                            </div>
-                        </form>
-                    }
+                    <div class="mt-3">
+                        <button type="button" class="btn btn-primary btn-sm w-100" data-bs-toggle="modal" data-bs-target="#bitacoraDetailModal@(bitacora.LogId)">
+                            <i class="bi bi-eye me-1"></i> Ver Detalles Completos
+                        </button>
+                    </div>
 
                     <p class="text-muted mt-3 mb-0">
-                        <small>Creada el: @bitacora.CreatedAt.ToString("dd/MM/yyyy HH:mm")</small>
+                        <small><i class="bi bi-calendar3"></i> Creada el: @bitacora.CreatedAt.ToString("dd/MM/yyyy HH:mm")</small>
                     </p>
                 </div>
             </div>
+
+            <!-- Modal para ver detalles completos y aprobar -->
+            <div class="modal fade bitacora-modal" id="bitacoraDetailModal@(bitacora.LogId)" tabindex="-1" aria-labelledby="bitacoraDetailModalLabel@(bitacora.LogId)" aria-hidden="true">
+                <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+                    <div class="modal-content">
+                        <div class="modal-header @(bitacora.IsApproved ? "bg-success" : "")">
+                            <h5 class="modal-title" id="bitacoraDetailModalLabel@(bitacora.LogId)">
+                                <i class="bi bi-journal-text me-2"></i>Bitácora - Semana @bitacora.Week
+                                @if (bitacora.IsApproved)
+                                {
+                                    <span class="badge bg-light text-success ms-2">
+                                        <i class="bi bi-check-circle-fill"></i> Aprobada
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-warning ms-2">
+                                        <i class="bi bi-clock"></i> Pendiente
+                                    </span>
+                                }
+                            </h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="detail-section">
+                                <h6><i class="bi bi-list-task me-2"></i>Actividades Realizadas</h6>
+                                <p>@bitacora.Activities</p>
+                            </div>
+
+                            <div class="hours-grid">
+                                <div class="hour-badge">
+                                    <strong>Horas Prácticas Registradas</strong>
+                                    <h4 class="text-primary mt-2">@bitacora.HoursPracticas</h4>
+                                </div>
+                                <div class="hour-badge">
+                                    <strong>Horas Servicio Social Registradas</strong>
+                                    <h4 class="text-success mt-2">@bitacora.HoursServicioSocial</h4>
+                                </div>
+                            </div>
+
+                            @if (!string.IsNullOrEmpty(bitacora.Observations))
+                            {
+                                <div class="detail-section">
+                                    <h6><i class="bi bi-chat-left-text me-2"></i>Observaciones del Alumno</h6>
+                                    <p>@bitacora.Observations</p>
+                                </div>
+                            }
+
+                            <div class="creation-date">
+                                <p>
+                                    <i class="bi bi-calendar-check me-2"></i>
+                                    <strong>Fecha de creación:</strong> @bitacora.CreatedAt.ToString("dd/MM/yyyy HH:mm")
+                                </p>
+                            </div>
+
+                            @if (bitacora.IsApproved)
+                            {
+                                <div class="approval-section mt-4">
+                                    <h6><i class="bi bi-check-circle-fill me-2"></i>Información de Aprobación</h6>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <p class="mb-2"><strong>Horas Prácticas Aprobadas:</strong></p>
+                                            <h5 class="text-primary">@bitacora.ApprovedHoursPracticas horas</h5>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <p class="mb-2"><strong>Horas Servicio Social Aprobadas:</strong></p>
+                                            <h5 class="text-success">@bitacora.ApprovedHoursServicioSocial horas</h5>
+                                        </div>
+                                    </div>
+                                    @if (!string.IsNullOrEmpty(bitacora.TeacherComments))
+                                    {
+                                        <p class="mt-3 mb-2"><strong>Comentarios del Maestro:</strong></p>
+                                        <p class="text-muted">@bitacora.TeacherComments</p>
+                                    }
+                                    <p class="text-muted mb-0 mt-2">
+                                        <i class="bi bi-calendar-check me-1"></i>
+                                        <strong>Aprobada el:</strong> @bitacora.ApprovedAt?.ToString("dd/MM/yyyy HH:mm")
+                                    </p>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="approval-form mt-4">
+                                    <h6 class="mb-3"><i class="bi bi-pencil-square me-2"></i>Aprobar Bitácora</h6>
+                                    <form method="post" action="/SocialService/Teacher/AprobarBitacora" id="approvalForm@(bitacora.LogId)">
+                                        <input type="hidden" name="logId" value="@bitacora.LogId" />
+
+                                        <div class="row mb-3">
+                                            <div class="col-md-6">
+                                                <label class="form-label">Horas prácticas a aprobar:</label>
+                                                <input type="number" 
+                                                       name="approvedHoursPracticas" 
+                                                       class="form-control" 
+                                                       min="0" 
+                                                       max="@bitacora.HoursPracticas" 
+                                                       value="@bitacora.HoursPracticas" 
+                                                       required />
+                                            </div>
+
+                                            <div class="col-md-6">
+                                                <label class="form-label">Horas servicio social a aprobar:</label>
+                                                <input type="number" 
+                                                       name="approvedHoursServicioSocial" 
+                                                       class="form-control" 
+                                                       min="0" 
+                                                       max="@bitacora.HoursServicioSocial" 
+                                                       value="@bitacora.HoursServicioSocial" 
+                                                       required />
+                                            </div>
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <label class="form-label">Comentarios del maestro (opcional):</label>
+                                            <textarea name="teacherComments" 
+                                                      class="form-control" 
+                                                      rows="3" 
+                                                      placeholder="Agrega comentarios o retroalimentación..."></textarea>
+                                        </div>
+
+                                        <div class="text-end">
+                                            <button type="submit" class="btn btn-success btn-lg">
+                                                <i class="bi bi-check-circle me-1"></i> Aprobar y Sumar Horas
+                                            </button>
+                                        </div>
+                                    </form>
+                                </div>
+                            }
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                <i class="bi bi-x-circle me-1"></i> Cerrar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
         }
-    }
-    else
-    {
-        <div class="alert alert-info">
-            <i class="bi bi-info-circle"></i> Este alumno no ha registrado bitácoras aún.
-        </div>
-    }
-
-</div>
-
-<style>
-    .bitacora-item {
-        background: #f9f9f9;
-        padding: 20px;
-        border-radius: 8px;
-        margin-bottom: 20px;
-        border-left: 4px solid var(--color-principal);
-    }
-
-    .card.border-success {
-        border-width: 2px;
-    }
-</style>
+    </div>
+}
+else
+{
+    <div class="alert alert-info">
+        <i class="bi bi-info-circle"></i> Este alumno no ha registrado bitácoras aún.
+    </div>
+}
