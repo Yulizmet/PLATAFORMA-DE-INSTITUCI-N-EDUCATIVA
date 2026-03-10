@@ -142,7 +142,7 @@ namespace SchoolManager.Areas.UserMng.Controllers
 
             if (principal.IsInRole("Student"))
             {
-                return RedirectToAction("Bitacoras", "Student", new { area = "SocialService" });
+                return RedirectToAction("SistemaEscolar", "MainScreen", new { area = "MainScreen" });
             }
 
             return RedirectToAction("Login", "Account", new { area = "UserMng" });

@@ -49,29 +49,28 @@
                     {
                         var fullName = $"{assignment.Student.Person.FirstName} {assignment.Student.Person.LastNamePaternal} {assignment.Student.Person.LastNameMaternal}";
 
-                        // Obtener el grado del estudiante desde grades_final_grades
-                        var studentGradeLevel = ViewContext.HttpContext.RequestServices
-                            .GetService<SchoolManager.Data.AppDbContext>()
-                            ?.grades_FinalGrades
-                            .Include(fg => fg.Subject)
-                                .ThenInclude(s => s.GradeLevel)
-                            .Where(fg => fg.StudentId == assignment.StudentId)
-                            .Select(fg => fg.Subject.GradeLevel.Name)
-                            .FirstOrDefault();
-
                         <tr>
                             <td>@fullName</td>
                             <td class="text-center">
-                                @if (!string.IsNullOrEmpty(studentGradeLevel))
+                                @if (!string.IsNullOrEmpty(assignment.SemesterName))
                                 {
-                                    <span class="badge bg-primary">@studentGradeLevel</span>
+                                    <span class="badge bg-primary">@assignment.SemesterName</span>
                                 }
                                 else
                                 {
                                     <span class="text-muted">N/A</span>
                                 }
                             </td>
-                            <td class="text-center">@(assignment.GroupName ?? "N/A")</td>
+                            <td class="text-center">
+                                @if (!string.IsNullOrEmpty(assignment.GroupName))
+                                {
+                                    <span class="badge bg-info">@assignment.GroupName</span>
+                                }
+                                else
+                                {
+                                    <span class="text-muted">N/A</span>
+                                }
+                            </td>
                             <td class="text-center">@assignment.AssignedDate.ToString("dd/MM/yyyy")</td>
                             <td class="text-center">
                                 <a class="btn btn-sm btn-info" href="/SocialService/Teacher/RevisarBitacorasAlumno/@assignment.StudentId">

@@ -1,6 +1,4 @@
-@model IEnumerable<SchoolManager.Models.users_user>
-@using Microsoft.EntityFrameworkCore
-@using Microsoft.Extensions.DependencyInjection
+@model IEnumerable<SchoolManager.Areas.SocialService.ViewModels.AvailableStudentViewModel>
 
 <h3>Agregar Alumnos</h3>
 
@@ -37,8 +35,9 @@
                 <table class="table table-hover">
                     <thead>
                         <tr>
-                            <th style="width:40%">Nombre</th>
+                            <th style="width:35%">Nombre</th>
                             <th class="text-center">Semestre</th>
+                            <th class="text-center">Grupo</th>
                             <th>Email</th>
                             <th class="text-center">Acción</th>
                         </tr>
@@ -46,24 +45,22 @@
                     <tbody>
                         @foreach (var student in Model)
                         {
-                            var fullName = $"{student.Person.FirstName} {student.Person.LastNamePaternal} {student.Person.LastNameMaternal}";
-
-                            // Obtener el grado del estudiante desde grades_final_grades
-                            var studentGradeLevel = ViewContext.HttpContext.RequestServices
-                                .GetService<SchoolManager.Data.AppDbContext>()
-                                ?.grades_FinalGrades
-                                .Include(fg => fg.Subject)
-                                    .ThenInclude(s => s.GradeLevel)
-                                .Where(fg => fg.StudentId == student.UserId)
-                                .Select(fg => fg.Subject.GradeLevel.Name)
-                                .FirstOrDefault();
-
                             <tr>
-                                <td>@fullName</td>
+                                <td>@student.FullName</td>
                                 <td class="text-center">
-                                    @if (!string.IsNullOrEmpty(studentGradeLevel))
+                                    @if (!string.IsNullOrEmpty(student.SemesterName))
                                     {
-                                        <span class="badge bg-primary">@studentGradeLevel</span>
+                                        <span class="badge bg-primary">@student.SemesterName</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">N/A</span>
+                                    }
+                                </td>
+                                <td class="text-center">
+                                    @if (!string.IsNullOrEmpty(student.GroupName))
+                                    {
+                                        <span class="badge bg-info">@student.GroupName</span>
                                     }
                                     else
                                     {

@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 using SchoolManager.Data;
 using SchoolManager.Models;
 using SchoolManager.Areas.SocialService.ViewModels;
@@ -16,7 +17,6 @@ namespace SchoolManager.Areas.SocialService.Controllers
             _context = context;
         }
 
-        // Al acceder a /SocialService/Teacher redirige al dashboard del profesor
         public IActionResult Index()
         {
             return RedirectToAction("Dashboard");
@@ -25,14 +25,19 @@ namespace SchoolManager.Areas.SocialService.Controllers
         public async Task<IActionResult> Dashboard()
         {
             int currentTeacherId = GetCurrentTeacherId();
+
+            if (currentTeacherId == 0)
+            {
+                TempData["Error"] = "No se pudo identificar al usuario.";
+                return RedirectToAction("Login", "Account", new { area = "UserMng" });
+            }
+
             DateTime today = DateTime.Today;
 
-            // 1. Obtener cantidad de alumnos asignados
             var alumnosAsignados = await _context.SocialServiceAssignments
                 .Where(a => a.TeacherId == currentTeacherId && a.IsActive)
                 .CountAsync();
 
-            // 2. Obtener cantidad de bitácoras pendientes de aprobar
             var studentIds = await _context.SocialServiceAssignments
                 .Where(a => a.TeacherId == currentTeacherId && a.IsActive)
                 .Select(a => a.StudentId)
@@ -42,14 +47,12 @@ namespace SchoolManager.Areas.SocialService.Controllers
                 .Where(log => studentIds.Contains(log.StudentId) && !log.IsApproved)
                 .CountAsync();
 
-            // 3. Obtener cantidad de asistencias registradas hoy
             var asistenciasHoy = await _context.SocialServiceAttendances
                 .Where(att => studentIds.Contains(att.StudentId)
                     && att.Date.Date == today
                     && att.IsPresent)
                 .CountAsync();
 
-            // Pasar las estadísticas a la vista
             ViewBag.AlumnosAsignados = alumnosAsignados;
             ViewBag.BitacorasPendientes = bitacorasPendientes;
             ViewBag.AsistenciasHoy = asistenciasHoy;
@@ -59,9 +62,13 @@ namespace SchoolManager.Areas.SocialService.Controllers
 
         public async Task<IActionResult> Alumnos()
         {
-            // TODO: Obtener el ID del maestro actual desde la sesión/autenticación
-            // Por ahora usaremos un valor temporal
             int currentTeacherId = GetCurrentTeacherId();
+
+            if (currentTeacherId == 0)
+            {
+                TempData["Error"] = "No se pudo identificar al usuario.";
+                return RedirectToAction("Login", "Account", new { area = "UserMng" });
+            }
 
             var assignedStudents = await _context.SocialServiceAssignments
                 .Include(a => a.Student)
@@ -71,17 +78,32 @@ namespace SchoolManager.Areas.SocialService.Controllers
                 .Where(a => a.TeacherId == currentTeacherId && a.IsActive)
                 .ToListAsync();
 
+            // Enriquecer con información de semestre y grupo
+            foreach (var assignment in assignedStudents)
+            {
+                var enrollment = await _context.grades_Enrollments
+                    .Include(e => e.Group)
+                        .ThenInclude(g => g.GradeLevel)
+                    .Where(e => e.StudentId == assignment.StudentId)
+                    .FirstOrDefaultAsync();
+
+                if (enrollment != null)
+                {
+                    assignment.SemesterName = enrollment.Group?.GradeLevel?.Name;
+                    assignment.GroupName = enrollment.Group?.Name;
+                }
+            }
+
             return View(assignedStudents);
         }
 
-        // Vista para agregar alumnos
         public async Task<IActionResult> AgregarAlumnos()
         {
             int currentTeacherId = GetCurrentTeacherId();
 
-            // Obtener todos los estudiantes que NO están asignados ACTIVAMENTE a este maestro
+            // Excluir alumnos asignados activamente a cualquier maestro
             var assignedStudentIds = await _context.SocialServiceAssignments
-                .Where(a => a.TeacherId == currentTeacherId && a.IsActive)
+                .Where(a => a.IsActive)
                 .Select(a => a.StudentId)
                 .ToListAsync();
 
@@ -92,25 +114,60 @@ namespace SchoolManager.Areas.SocialService.Controllers
                 .Where(u => u.UserRoles.Any(ur => ur.Role.Name == "Student" && ur.IsActive)
                     && !assignedStudentIds.Contains(u.UserId)
                     && u.IsActive)
+                .OrderBy(u => u.Person.FirstName)
+                    .ThenBy(u => u.Person.LastNamePaternal)
                 .ToListAsync();
 
-            return View(availableStudents);
+            var viewModel = new List<AvailableStudentViewModel>();
+
+            foreach (var student in availableStudents)
+            {
+                var enrollment = await _context.grades_Enrollments
+                    .Include(e => e.Group)
+                        .ThenInclude(g => g.GradeLevel)
+                    .Where(e => e.StudentId == student.UserId)
+                    .FirstOrDefaultAsync();
+
+                viewModel.Add(new AvailableStudentViewModel
+                {
+                    UserId = student.UserId,
+                    FullName = $"{student.Person.FirstName} {student.Person.LastNamePaternal} {student.Person.LastNameMaternal}",
+                    Email = student.Email,
+                    SemesterName = enrollment?.Group?.GradeLevel?.Name,
+                    GroupName = enrollment?.Group?.Name
+                });
+            }
+
+            return View(viewModel);
         }
 
-        // Asignar alumno al maestro
         [HttpPost]
         public async Task<IActionResult> AsignarAlumno(int studentId)
         {
             int currentTeacherId = GetCurrentTeacherId();
 
-            // Buscar si existe alguna asignación (activa o inactiva) para esta combinación
+            // Verificar si el alumno ya está asignado a otro maestro
+            var assignedToOtherTeacher = await _context.SocialServiceAssignments
+                .Include(a => a.Teacher)
+                    .ThenInclude(t => t.Person)
+                .FirstOrDefaultAsync(a => a.StudentId == studentId 
+                    && a.IsActive 
+                    && a.TeacherId != currentTeacherId);
+
+            if (assignedToOtherTeacher != null)
+            {
+                var otherTeacherName = $"{assignedToOtherTeacher.Teacher.Person.FirstName} {assignedToOtherTeacher.Teacher.Person.LastNamePaternal}";
+                TempData["Error"] = $"Este alumno ya está asignado al profesor {otherTeacherName}.";
+                return RedirectToAction("AgregarAlumnos");
+            }
+
+            // Buscar si existe asignación previa (activa o inactiva) con el maestro actual
             var existingAssignment = await _context.SocialServiceAssignments
                 .FirstOrDefaultAsync(a => a.TeacherId == currentTeacherId
                     && a.StudentId == studentId);
 
             if (existingAssignment != null)
             {
-                // Si existe pero está inactiva, reactivarla
                 if (!existingAssignment.IsActive)
                 {
                     existingAssignment.IsActive = true;
@@ -120,13 +177,11 @@ namespace SchoolManager.Areas.SocialService.Controllers
                 }
                 else
                 {
-                    // Ya está activa
-                    TempData["Error"] = "Este alumno ya está asignado.";
+                    TempData["Error"] = "Este alumno ya está asignado a ti.";
                 }
             }
             else
             {
-                // No existe, crear nueva asignación
                 var assignment = new social_service_assignment
                 {
                     TeacherId = currentTeacherId,
@@ -143,7 +198,6 @@ namespace SchoolManager.Areas.SocialService.Controllers
             return RedirectToAction("AgregarAlumnos");
         }
 
-        // Desasignar alumno
         [HttpPost]
         public async Task<IActionResult> DesasignarAlumno(int studentId)
         {
@@ -164,12 +218,11 @@ namespace SchoolManager.Areas.SocialService.Controllers
             return RedirectToAction("Alumnos");
         }
 
-        // Ver bitácoras de un alumno específico
         public async Task<IActionResult> RevisarBitacorasAlumno(int id)
         {
             int currentTeacherId = GetCurrentTeacherId();
 
-            // Verificar que el alumno esté asignado a este maestro
+            // Verificar que el alumno esté asignado a este maestro (validación de seguridad)
             var isAssigned = await _context.SocialServiceAssignments
                 .AnyAsync(a => a.TeacherId == currentTeacherId
                     && a.StudentId == id
@@ -181,7 +234,6 @@ namespace SchoolManager.Areas.SocialService.Controllers
                 return RedirectToAction("Alumnos");
             }
 
-            // Obtener bitácoras del alumno
             var bitacoras = await _context.SocialServiceLogs
                 .Include(b => b.Student)
                     .ThenInclude(s => s.Person)
@@ -190,7 +242,6 @@ namespace SchoolManager.Areas.SocialService.Controllers
                 .ThenByDescending(b => b.CreatedAt)
                 .ToListAsync();
 
-            // Obtener información del estudiante
             var student = await _context.Users
                 .Include(u => u.Person)
                 .FirstOrDefaultAsync(u => u.UserId == id);
@@ -204,7 +255,6 @@ namespace SchoolManager.Areas.SocialService.Controllers
             return View(bitacoras);
         }
 
-        // Aprobar bitácora y sumar horas
         [HttpPost]
         public async Task<IActionResult> AprobarBitacora(int logId, int approvedHoursPracticas, int approvedHoursServicioSocial, string teacherComments)
         {
@@ -219,7 +269,7 @@ namespace SchoolManager.Areas.SocialService.Controllers
                 return RedirectToAction("Alumnos");
             }
 
-            // Verificar que el alumno esté asignado a este maestro
+            // Verificar que el alumno esté asignado a este maestro (validación de seguridad)
             var isAssigned = await _context.SocialServiceAssignments
                 .AnyAsync(a => a.TeacherId == currentTeacherId
                     && a.StudentId == bitacora.StudentId
@@ -231,14 +281,12 @@ namespace SchoolManager.Areas.SocialService.Controllers
                 return RedirectToAction("Alumnos");
             }
 
-            // Validar que las horas aprobadas no excedan las registradas
             if (approvedHoursPracticas > bitacora.HoursPracticas || approvedHoursServicioSocial > bitacora.HoursServicioSocial)
             {
                 TempData["Error"] = "Las horas aprobadas no pueden exceder las horas registradas.";
                 return RedirectToAction("RevisarBitacorasAlumno", new { id = bitacora.StudentId });
             }
 
-            // Actualizar la bitácora
             bitacora.IsApproved = true;
             bitacora.ApprovedHoursPracticas = approvedHoursPracticas;
             bitacora.ApprovedHoursServicioSocial = approvedHoursServicioSocial;
@@ -252,12 +300,10 @@ namespace SchoolManager.Areas.SocialService.Controllers
             return RedirectToAction("RevisarBitacorasAlumno", new { id = bitacora.StudentId });
         }
 
-        // Vista de asignar horas - Resumen de bitácoras pendientes
         public async Task<IActionResult> AsignarHoras()
         {
             int currentTeacherId = GetCurrentTeacherId();
 
-            // Obtener alumnos asignados al maestro
             var assignments = await _context.SocialServiceAssignments
                 .Include(a => a.Student)
                     .ThenInclude(s => s.Person)
@@ -269,7 +315,6 @@ namespace SchoolManager.Areas.SocialService.Controllers
 
             foreach (var assignment in assignments)
             {
-                // Obtener bitácoras pendientes de aprobar
                 var bitacorasPendientes = await _context.SocialServiceLogs
                     .Where(log => log.StudentId == assignment.StudentId && !log.IsApproved)
                     .OrderBy(log => log.Week)
@@ -308,7 +353,6 @@ namespace SchoolManager.Areas.SocialService.Controllers
             int currentTeacherId = GetCurrentTeacherId();
             DateTime today = DateTime.Today;
 
-            // Obtener alumnos asignados al maestro
             var assignments = await _context.SocialServiceAssignments
                 .Include(a => a.Student)
                     .ThenInclude(s => s.Person)
@@ -323,13 +367,11 @@ namespace SchoolManager.Areas.SocialService.Controllers
 
             foreach (var assignment in assignments)
             {
-                // Verificar si ya tiene asistencia registrada hoy
                 var todayAttendance = await _context.SocialServiceAttendances
                     .FirstOrDefaultAsync(att => att.StudentId == assignment.StudentId
                         && att.Date.Date == today);
 
-                // Obtener las últimas 5 asistencias (incluyendo hoy si existe)
-                // Esto asegura que siempre veamos el historial completo
+                // Obtener las últimas 5 asistencias incluyendo hoy (para mostrar historial)
                 var recentAttendances = await _context.SocialServiceAttendances
                     .Where(att => att.StudentId == assignment.StudentId)
                     .OrderByDescending(att => att.Date)
@@ -348,21 +390,19 @@ namespace SchoolManager.Areas.SocialService.Controllers
             return View(viewModel);
         }
 
-        // Guardar asistencia del día
         [HttpPost]
         public async Task<IActionResult> GuardarAsistencia(List<int> presentStudents)
         {
             int currentTeacherId = GetCurrentTeacherId();
             DateTime today = DateTime.Today;
 
-            // Obtener todos los alumnos asignados
             var assignments = await _context.SocialServiceAssignments
                 .Where(a => a.TeacherId == currentTeacherId && a.IsActive)
                 .ToListAsync();
 
             foreach (var assignment in assignments)
             {
-                // Verificar si ya existe asistencia para hoy
+                // Verificar si ya existe asistencia para hoy (actualizar o crear)
                 var existingAttendance = await _context.SocialServiceAttendances
                     .FirstOrDefaultAsync(att => att.StudentId == assignment.StudentId
                         && att.Date.Date == today);
@@ -371,12 +411,10 @@ namespace SchoolManager.Areas.SocialService.Controllers
 
                 if (existingAttendance != null)
                 {
-                    // Actualizar asistencia existente
                     existingAttendance.IsPresent = isPresent;
                 }
                 else
                 {
-                    // Crear nueva asistencia
                     var attendance = new social_service_attendance
                     {
                         StudentId = assignment.StudentId,
@@ -393,14 +431,16 @@ namespace SchoolManager.Areas.SocialService.Controllers
             return RedirectToAction("Asistencia");
         }
 
-        // Método auxiliar para obtener el ID del maestro actual
-        // TODO: Implementar la lógica real de autenticación
         private int GetCurrentTeacherId()
         {
-            // Por ahora retorna un valor fijo para testing
-            // En producción, esto debe obtener el UserId del usuario autenticado
-            // Ejemplo: return int.Parse(User.FindFirst("UserId")?.Value ?? "0");
-            return 4; // ID de Angel Gael Villedaaa - Valor temporal para pruebas
+            var userIdClaim = User.FindFirst("UserId")?.Value;
+
+            if (string.IsNullOrEmpty(userIdClaim))
+            {
+                return 0;
+            }
+
+            return int.Parse(userIdClaim);
         }
     }
 }

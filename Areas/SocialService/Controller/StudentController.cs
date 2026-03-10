@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.StaticFiles;
 using System.IO;
+using System.Security.Claims;
 using SchoolManager.Data;
 using SchoolManager.Areas.SocialService.ViewModels;
 using SchoolManager.Models;
@@ -11,23 +12,26 @@ namespace SchoolManager.Areas.SocialService.Controllers
     public class StudentController : Controller
     {
         private readonly AppDbContext _context;
-        // Esto permite guardar y leer información desde SQL Server
+
         public StudentController(AppDbContext context)
         {
             _context = context;
         }
 
-        // Al acceder a /SocialService/Student redirige al dashboard del estudiante
         public IActionResult Index()
         {
             return RedirectToAction("Dashboard");
         }
         public IActionResult Dashboard()
         {
-            // TODO: Obtener el ID del estudiante actual desde la sesión/autenticación
-            int currentStudentId = 40; // ID de Roberto Carlos Pérez Cadena
+            int currentStudentId = int.Parse(User.FindFirst("UserId")?.Value ?? "0");
 
-            // Calcular horas totales aprobadas
+            if (currentStudentId == 0)
+            {
+                TempData["Error"] = "No se pudo identificar al usuario.";
+                return RedirectToAction("Login", "Account", new { area = "UserMng" });
+            }
+
             var approvedLogs = _context.SocialServiceLogs
                 .Where(log => log.StudentId == currentStudentId && log.IsApproved)
                 .ToList();
@@ -35,7 +39,6 @@ namespace SchoolManager.Areas.SocialService.Controllers
             int totalHoursPracticas = approvedLogs.Sum(log => log.ApprovedHoursPracticas);
             int totalHoursServicioSocial = approvedLogs.Sum(log => log.ApprovedHoursServicioSocial);
 
-            // Horas requeridas
             int requiredHoursPracticas = 240;
             int requiredHoursServicioSocial = 480;
 
@@ -65,7 +68,6 @@ namespace SchoolManager.Areas.SocialService.Controllers
             return View();
         }
 
-        // Descargar un archivo relacionado con Servicio Social
         [HttpGet]
         public IActionResult Download(string filename)
         {
@@ -105,52 +107,57 @@ namespace SchoolManager.Areas.SocialService.Controllers
 
         public IActionResult Bitacoras()
         {
-            // Obtener las bitácoras del estudiante (por ahora StudentId = 40)
+            int currentStudentId = int.Parse(User.FindFirst("UserId")?.Value ?? "0");
+
+            if (currentStudentId == 0)
+            {
+                TempData["Error"] = "No se pudo identificar al usuario.";
+                return RedirectToAction("Login", "Account", new { area = "UserMng" });
+            }
+
             var bitacoras = _context.SocialServiceLogs
-                .Where(x => x.StudentId == 40)
+                .Where(x => x.StudentId == currentStudentId)
                 .OrderByDescending(x => x.Week)
                 .ToList();
 
             return View(bitacoras);
         }
 
-        // Crear nueva bitácora (GET)
         public IActionResult CrearBitacora()
         {
             return View();
         }
 
-        // Crear nueva bitácora (POST)
         [HttpPost]
         public IActionResult CrearBitacora(BitacoraViewModel vm)
         {
             if (ModelState.IsValid)
             {
-                int currentStudentId = 40; // ID de Roberto Carlos Pérez Cadena
+                int currentStudentId = int.Parse(User.FindFirst("UserId")?.Value ?? "0");
+
+                if (currentStudentId == 0)
+                {
+                    TempData["Error"] = "No se pudo identificar al usuario.";
+                    return RedirectToAction("Login", "Account", new { area = "UserMng" });
+                }
 
                 var existingLog = _context.SocialServiceLogs
                     .FirstOrDefault(log => log.StudentId == currentStudentId && log.Week == vm.Week);
 
                 if (existingLog != null)
                 {
-                    // Si ya existe una bitácora para esta semana, mostrar error
                     TempData["Error"] = $"Ya tienes una bitácora registrada para la {vm.Week}. No puedes crear más de una bitácora por semana.";
                     return View(vm);
                 }
 
                 var log = new social_service_log
                 {
-                    // ID del estudiante (temporal, luego se conectará con el usuario logueado)
                     StudentId = currentStudentId,
-
-                    // Datos provenientes del formulario
                     Week = vm.Week,
                     Activities = vm.Activities,
                     HoursPracticas = vm.HoursPracticas,
                     HoursServicioSocial = vm.HoursServicioSocial,
                     Observations = vm.Observations,
-
-                    // Fecha y hora actual
                     CreatedAt = DateTime.Now
                 };
                 _context.SocialServiceLogs.Add(log);
@@ -164,7 +171,14 @@ namespace SchoolManager.Areas.SocialService.Controllers
         // Ver horas de prácticas y servicio social
         public IActionResult Horas()
         {
-            int currentStudentId = 40; // ID de Roberto Carlos Pérez Cadena
+            // Obtener el ID del estudiante autenticado
+            int currentStudentId = int.Parse(User.FindFirst("UserId")?.Value ?? "0");
+
+            if (currentStudentId == 0)
+            {
+                TempData["Error"] = "No se pudo identificar al usuario.";
+                return RedirectToAction("Login", "Account", new { area = "UserMng" });
+            }
 
             var approvedLogs = _context.SocialServiceLogs
                 .Where(log => log.StudentId == currentStudentId && log.IsApproved)
@@ -173,11 +187,10 @@ namespace SchoolManager.Areas.SocialService.Controllers
             int totalHoursPracticas = approvedLogs.Sum(log => log.ApprovedHoursPracticas);
             int totalHoursServicioSocial = approvedLogs.Sum(log => log.ApprovedHoursServicioSocial);
 
-            // Horas requeridas (podrían venir de configuración)
+            // TODO: Las horas requeridas deberían venir de configuración
             int requiredHoursPracticas = 240;
             int requiredHoursServicioSocial = 480;
 
-            // Calcular porcentajes
             ViewBag.TotalHoursPracticas = totalHoursPracticas;
             ViewBag.RequiredHoursPracticas = requiredHoursPracticas;
             ViewBag.RemainingHoursPracticas = Math.Max(0, requiredHoursPracticas - totalHoursPracticas);

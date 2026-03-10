@@ -19,70 +19,160 @@
     <div class="row justify-content-center">
         <div class="col-lg-10">
             <div class="ss-selection-header text-center mb-5">
-                <h2 class="ss-section-title">Selecciona tu rol</h2>
-                <p class="ss-section-description">Elige la opción correspondiente a tu perfil para acceder al sistema</p>
+                <h2 class="ss-section-title">
+                    @if (User.IsInRole("Student"))
+                    {
+                        <text>Bienvenido Alumno</text>
+                    }
+                    else if (User.IsInRole("Teacher"))
+                    {
+                        <text>Bienvenido Docente</text>
+                    }
+                    else
+                    {
+                        <text>Selecciona tu rol</text>
+                    }
+                </h2>
+                <p class="ss-section-description">
+                    @if (User.IsInRole("Student") || User.IsInRole("Teacher"))
+                    {
+                        <text>Accede a tu panel de control</text>
+                    }
+                    else
+                    {
+                        <text>Elige la opción correspondiente a tu perfil para acceder al sistema</text>
+                    }
+                </p>
             </div>
 
-            <div class="row g-4">
+            <div class="row g-4 justify-content-center">
                 <!-- Student Card -->
-                <div class="col-md-6">
-                    <a asp-area="SocialService" asp-controller="Student" asp-action="Dashboard" class="ss-role-card">
-                        <div class="ss-role-card-inner">
-                            <div class="ss-role-icon student-icon">
-                                <i class="bi bi-mortarboard-fill"></i>
-                            </div>
-                            <h3 class="ss-role-title">Alumno</h3>
-                            <p class="ss-role-description">Registra tus bitácoras semanales y consulta tus horas acumuladas</p>
-                            <div class="ss-role-features">
-                                <div class="ss-feature-item">
-                                    <i class="bi bi-journal-text"></i>
-                                    <span>Crear bitácoras</span>
+                @if (User.IsInRole("Student"))
+                {
+                    <div class="col-md-8">
+                        <a asp-area="SocialService" asp-controller="Student" asp-action="Dashboard" class="ss-role-card">
+                            <div class="ss-role-card-inner">
+                                <div class="ss-role-icon student-icon">
+                                    <i class="bi bi-mortarboard-fill"></i>
                                 </div>
-                                <div class="ss-feature-item">
-                                    <i class="bi bi-clock-history"></i>
-                                    <span>Consultar horas</span>
+                                <h3 class="ss-role-title">Alumno</h3>
+                                <p class="ss-role-description">Registra tus bitácoras semanales y consulta tus horas acumuladas</p>
+                                <div class="ss-role-features">
+                                    <div class="ss-feature-item">
+                                        <i class="bi bi-journal-text"></i>
+                                        <span>Crear bitácoras</span>
+                                    </div>
+                                    <div class="ss-feature-item">
+                                        <i class="bi bi-clock-history"></i>
+                                        <span>Consultar horas</span>
+                                    </div>
+                                    <div class="ss-feature-item">
+                                        <i class="bi bi-graph-up"></i>
+                                        <span>Ver progreso</span>
+                                    </div>
                                 </div>
-                                <div class="ss-feature-item">
-                                    <i class="bi bi-graph-up"></i>
-                                    <span>Ver progreso</span>
+                                <div class="ss-role-arrow">
+                                    <i class="bi bi-arrow-right-circle-fill"></i>
                                 </div>
                             </div>
-                            <div class="ss-role-arrow">
-                                <i class="bi bi-arrow-right-circle-fill"></i>
-                            </div>
-                        </div>
-                    </a>
-                </div>
+                        </a>
+                    </div>
+                }
 
                 <!-- Teacher Card -->
-                <div class="col-md-6">
-                    <a asp-area="SocialService" asp-controller="Teacher" asp-action="Dashboard" class="ss-role-card">
-                        <div class="ss-role-card-inner">
-                            <div class="ss-role-icon teacher-icon">
-                                <i class="bi bi-person-workspace"></i>
-                            </div>
-                            <h3 class="ss-role-title">Docente</h3>
-                            <p class="ss-role-description">Gestiona alumnos, revisa bitácoras y aprueba horas de servicio social</p>
-                            <div class="ss-role-features">
-                                <div class="ss-feature-item">
-                                    <i class="bi bi-people"></i>
-                                    <span>Gestionar alumnos</span>
+                @if (User.IsInRole("Teacher"))
+                {
+                    <div class="col-md-8">
+                        <a asp-area="SocialService" asp-controller="Teacher" asp-action="Dashboard" class="ss-role-card">
+                            <div class="ss-role-card-inner">
+                                <div class="ss-role-icon teacher-icon">
+                                    <i class="bi bi-person-workspace"></i>
                                 </div>
-                                <div class="ss-feature-item">
-                                    <i class="bi bi-check-circle"></i>
-                                    <span>Aprobar bitácoras</span>
+                                <h3 class="ss-role-title">Docente</h3>
+                                <p class="ss-role-description">Gestiona alumnos, revisa bitácoras y aprueba horas de servicio social</p>
+                                <div class="ss-role-features">
+                                    <div class="ss-feature-item">
+                                        <i class="bi bi-people"></i>
+                                        <span>Gestionar alumnos</span>
+                                    </div>
+                                    <div class="ss-feature-item">
+                                        <i class="bi bi-check-circle"></i>
+                                        <span>Aprobar bitácoras</span>
+                                    </div>
+                                    <div class="ss-feature-item">
+                                        <i class="bi bi-clipboard-check"></i>
+                                        <span>Tomar asistencia</span>
+                                    </div>
                                 </div>
-                                <div class="ss-feature-item">
-                                    <i class="bi bi-clipboard-check"></i>
-                                    <span>Tomar asistencia</span>
+                                <div class="ss-role-arrow">
+                                    <i class="bi bi-arrow-right-circle-fill"></i>
                                 </div>
                             </div>
-                            <div class="ss-role-arrow">
-                                <i class="bi bi-arrow-right-circle-fill"></i>
+                        </a>
+                    </div>
+                }
+
+                <!-- Show both cards if user is not authenticated or has no specific role -->
+                @if (!User.IsInRole("Student") && !User.IsInRole("Teacher"))
+                {
+                    <div class="col-md-6">
+                        <a asp-area="SocialService" asp-controller="Student" asp-action="Dashboard" class="ss-role-card">
+                            <div class="ss-role-card-inner">
+                                <div class="ss-role-icon student-icon">
+                                    <i class="bi bi-mortarboard-fill"></i>
+                                </div>
+                                <h3 class="ss-role-title">Alumno</h3>
+                                <p class="ss-role-description">Registra tus bitácoras semanales y consulta tus horas acumuladas</p>
+                                <div class="ss-role-features">
+                                    <div class="ss-feature-item">
+                                        <i class="bi bi-journal-text"></i>
+                                        <span>Crear bitácoras</span>
+                                    </div>
+                                    <div class="ss-feature-item">
+                                        <i class="bi bi-clock-history"></i>
+                                        <span>Consultar horas</span>
+                                    </div>
+                                    <div class="ss-feature-item">
+                                        <i class="bi bi-graph-up"></i>
+                                        <span>Ver progreso</span>
+                                    </div>
+                                </div>
+                                <div class="ss-role-arrow">
+                                    <i class="bi bi-arrow-right-circle-fill"></i>
+                                </div>
                             </div>
-                        </div>
-                    </a>
-                </div>
+                        </a>
+                    </div>
+
+                    <div class="col-md-6">
+                        <a asp-area="SocialService" asp-controller="Teacher" asp-action="Dashboard" class="ss-role-card">
+                            <div class="ss-role-card-inner">
+                                <div class="ss-role-icon teacher-icon">
+                                    <i class="bi bi-person-workspace"></i>
+                                </div>
+                                <h3 class="ss-role-title">Docente</h3>
+                                <p class="ss-role-description">Gestiona alumnos, revisa bitácoras y aprueba horas de servicio social</p>
+                                <div class="ss-role-features">
+                                    <div class="ss-feature-item">
+                                        <i class="bi bi-people"></i>
+                                        <span>Gestionar alumnos</span>
+                                    </div>
+                                    <div class="ss-feature-item">
+                                        <i class="bi bi-check-circle"></i>
+                                        <span>Aprobar bitácoras</span>
+                                    </div>
+                                    <div class="ss-feature-item">
+                                        <i class="bi bi-clipboard-check"></i>
+                                        <span>Tomar asistencia</span>
+                                    </div>
+                                </div>
+                                <div class="ss-role-arrow">
+                                    <i class="bi bi-arrow-right-circle-fill"></i>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                }
             </div>
         </div>
     </div>
