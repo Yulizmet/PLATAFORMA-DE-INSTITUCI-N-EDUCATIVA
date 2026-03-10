@@ -1,14 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.StaticFiles;
 using System.IO;
-
-// permite acceder a la base de datos mediante Entity Framework
 using SchoolManager.Data;
-
-// permite usar el ViewModel que contiene los datos del formulario
 using SchoolManager.Areas.SocialService.ViewModels;
-
-// permite usar el modelo de la tabla social_service_log
 using SchoolManager.Models;
 
 namespace SchoolManager.Areas.SocialService.Controllers
@@ -16,10 +10,7 @@ namespace SchoolManager.Areas.SocialService.Controllers
     [Area("SocialService")]
     public class StudentController : Controller
     {
-        // variable privada para acceder a la base de datos
         private readonly AppDbContext _context;
-
-        // constructor que recibe el contexto de la base de datos
         // Esto permite guardar y leer información desde SQL Server
         public StudentController(AppDbContext context)
         {
@@ -31,12 +22,10 @@ namespace SchoolManager.Areas.SocialService.Controllers
         {
             return RedirectToAction("Dashboard");
         }
-
-        // Dashboard del estudiante
         public IActionResult Dashboard()
         {
             // TODO: Obtener el ID del estudiante actual desde la sesión/autenticación
-            int currentStudentId = 40; // ID de Roberto Carlos Pérez Cadena - Valor temporal para pruebas
+            int currentStudentId = 40; // ID de Roberto Carlos Pérez Cadena
 
             // Calcular horas totales aprobadas
             var approvedLogs = _context.SocialServiceLogs
@@ -67,7 +56,6 @@ namespace SchoolManager.Areas.SocialService.Controllers
                 teacherName = $"{assignment.TeacherFirstName} {assignment.TeacherLastNamePaternal} {assignment.TeacherLastNameMaternal}";
             }
 
-            // Pasar datos a la vista
             ViewBag.TotalHoursPracticas = totalHoursPracticas;
             ViewBag.RemainingHoursPracticas = Math.Max(0, requiredHoursPracticas - totalHoursPracticas);
             ViewBag.TotalHoursServicioSocial = totalHoursServicioSocial;
@@ -77,22 +65,18 @@ namespace SchoolManager.Areas.SocialService.Controllers
             return View();
         }
 
-        // Descargar un archivo relacionado con Servicio Social (ej: plantilla)
-        // Ejemplo de uso: /SocialService/Student/Download?filename=plantilla_bitacora.pdf
+        // Descargar un archivo relacionado con Servicio Social
         [HttpGet]
         public IActionResult Download(string filename)
         {
             if (string.IsNullOrEmpty(filename))
                 return BadRequest();
 
-            // Evitar path traversal
             filename = Path.GetFileName(filename);
 
-            // Priorizar carpeta dentro del área: Areas/SocialService/uploads
             var areaUploads = Path.Combine(Directory.GetCurrentDirectory(), "Areas", "SocialService", "uploads");
             var areaPath = Path.Combine(areaUploads, filename);
 
-            // Fallback a wwwroot/uploads/servicio-social
             var wwwrootUploads = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "servicio-social");
             var wwwrootPath = Path.Combine(wwwrootUploads, filename);
 
@@ -119,7 +103,6 @@ namespace SchoolManager.Areas.SocialService.Controllers
             return File(stream, contentType, fileDownloadName: filename);
         }
 
-        // Ver bitácoras anteriores
         public IActionResult Bitacoras()
         {
             // Obtener las bitácoras del estudiante (por ahora StudentId = 40)
@@ -132,24 +115,19 @@ namespace SchoolManager.Areas.SocialService.Controllers
         }
 
         // Crear nueva bitácora (GET)
-        // Este método solo muestra el formulario vacío
         public IActionResult CrearBitacora()
         {
             return View();
         }
 
         // Crear nueva bitácora (POST)
-        // Este método se ejecuta cuando el estudiante presiona el botón "Guardar Bitácora"
         [HttpPost]
         public IActionResult CrearBitacora(BitacoraViewModel vm)
         {
-            // Verifica que los datos del formulario sean válidos
             if (ModelState.IsValid)
             {
-                // TODO: Obtener el ID del estudiante actual desde la sesión/autenticación
-                int currentStudentId = 40; // ID de Roberto Carlos Pérez Cadena - Valor temporal para pruebas
+                int currentStudentId = 40; // ID de Roberto Carlos Pérez Cadena
 
-                // Verificar si ya existe una bitácora para esta semana
                 var existingLog = _context.SocialServiceLogs
                     .FirstOrDefault(log => log.StudentId == currentStudentId && log.Week == vm.Week);
 
@@ -160,7 +138,6 @@ namespace SchoolManager.Areas.SocialService.Controllers
                     return View(vm);
                 }
 
-                // Crear un nuevo objeto del modelo que representa la tabla social_service_log
                 var log = new social_service_log
                 {
                     // ID del estudiante (temporal, luego se conectará con el usuario logueado)
@@ -176,31 +153,19 @@ namespace SchoolManager.Areas.SocialService.Controllers
                     // Fecha y hora actual
                     CreatedAt = DateTime.Now
                 };
-
-                // Agrega el registro al contexto
                 _context.SocialServiceLogs.Add(log);
-
-                // Guarda los cambios en la base de datos
                 _context.SaveChanges();
-
-                // Mensaje de éxito
                 TempData["Success"] = "Bitácora registrada exitosamente.";
-
-                // Redirige a la vista de bitácoras después de guardar
                 return RedirectToAction("Bitacoras");
             }
-
-            // Si hay error, vuelve a mostrar el formulario con los datos
             return View(vm);
         }
 
         // Ver horas de prácticas y servicio social
         public IActionResult Horas()
         {
-            // TODO: Obtener el ID del estudiante actual desde la sesión/autenticación
-            int currentStudentId = 40; // ID de Roberto Carlos Pérez Cadena - Valor temporal para pruebas
+            int currentStudentId = 40; // ID de Roberto Carlos Pérez Cadena
 
-            // Calcular horas totales aprobadas
             var approvedLogs = _context.SocialServiceLogs
                 .Where(log => log.StudentId == currentStudentId && log.IsApproved)
                 .ToList();
