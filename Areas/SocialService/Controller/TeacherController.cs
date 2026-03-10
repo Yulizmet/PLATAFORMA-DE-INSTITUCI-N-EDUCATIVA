@@ -400,7 +400,7 @@ namespace SchoolManager.Areas.SocialService.Controllers
             // Por ahora retorna un valor fijo para testing
             // En producción, esto debe obtener el UserId del usuario autenticado
             // Ejemplo: return int.Parse(User.FindFirst("UserId")?.Value ?? "0");
-            return 1; // Valor temporal
+            return 4; // ID de Angel Gael Villedaaa - Valor temporal para pruebas
         }
     }
 }

@@ -36,7 +36,7 @@ namespace SchoolManager.Areas.SocialService.Controllers
         public IActionResult Dashboard()
         {
             // TODO: Obtener el ID del estudiante actual desde la sesión/autenticación
-            int currentStudentId = 1; // Valor temporal
+            int currentStudentId = 40; // ID de Roberto Carlos Pérez Cadena - Valor temporal para pruebas
 
             // Calcular horas totales aprobadas
             var approvedLogs = _context.SocialServiceLogs
@@ -122,9 +122,9 @@ namespace SchoolManager.Areas.SocialService.Controllers
         // Ver bitácoras anteriores
         public IActionResult Bitacoras()
         {
-            // Obtener las bitácoras del estudiante (por ahora StudentId = 1)
+            // Obtener las bitácoras del estudiante (por ahora StudentId = 40)
             var bitacoras = _context.SocialServiceLogs
-                .Where(x => x.StudentId == 1)
+                .Where(x => x.StudentId == 40)
                 .OrderByDescending(x => x.Week)
                 .ToList();
 
@@ -147,7 +147,7 @@ namespace SchoolManager.Areas.SocialService.Controllers
             if (ModelState.IsValid)
             {
                 // TODO: Obtener el ID del estudiante actual desde la sesión/autenticación
-                int currentStudentId = 1; // Valor temporal
+                int currentStudentId = 40; // ID de Roberto Carlos Pérez Cadena - Valor temporal para pruebas
 
                 // Verificar si ya existe una bitácora para esta semana
                 var existingLog = _context.SocialServiceLogs
@@ -198,7 +198,7 @@ namespace SchoolManager.Areas.SocialService.Controllers
         public IActionResult Horas()
         {
             // TODO: Obtener el ID del estudiante actual desde la sesión/autenticación
-            int currentStudentId = 1; // Valor temporal
+            int currentStudentId = 40; // ID de Roberto Carlos Pérez Cadena - Valor temporal para pruebas
 
             // Calcular horas totales aprobadas
             var approvedLogs = _context.SocialServiceLogs
