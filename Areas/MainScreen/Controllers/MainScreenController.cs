@@ -41,6 +41,29 @@ namespace SchoolManager.Areas.MainScreen.Controllers
         [Route("/SistemaEscolar")]
         public IActionResult SistemaEscolar()
         {
+            // Verificar si el usuario es estudiante y si está asignado a un maestro de servicio social
+            if (User.IsInRole("Student"))
+            {
+                var userIdClaim = User.FindFirst("UserId")?.Value;
+                if (!string.IsNullOrEmpty(userIdClaim))
+                {
+                    int userId = int.Parse(userIdClaim);
+                    bool isAssigned = _context.SocialServiceAssignments
+                        .Any(a => a.StudentId == userId && a.IsActive);
+
+                    ViewBag.IsStudentAssignedToSocialService = isAssigned;
+                }
+                else
+                {
+                    ViewBag.IsStudentAssignedToSocialService = false;
+                }
+            }
+            else
+            {
+                // Maestros y administradores siempre tienen acceso
+                ViewBag.IsStudentAssignedToSocialService = true;
+            }
+
             return View();
         }
 

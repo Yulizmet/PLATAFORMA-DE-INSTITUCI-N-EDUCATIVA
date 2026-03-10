@@ -32,6 +32,13 @@ namespace SchoolManager.Areas.SocialService.Controllers
                 return RedirectToAction("Login", "Account", new { area = "UserMng" });
             }
 
+            // Verificar que el estudiante esté asignado a un maestro
+            if (!IsStudentAssigned(currentStudentId))
+            {
+                TempData["Error"] = "No tienes acceso a Servicio Social. Debes estar asignado a un maestro asesor.";
+                return RedirectToAction("SistemaEscolar", "MainScreen", new { area = "MainScreen" });
+            }
+
             var approvedLogs = _context.SocialServiceLogs
                 .Where(log => log.StudentId == currentStudentId && log.IsApproved)
                 .ToList();
@@ -115,6 +122,12 @@ namespace SchoolManager.Areas.SocialService.Controllers
                 return RedirectToAction("Login", "Account", new { area = "UserMng" });
             }
 
+            if (!IsStudentAssigned(currentStudentId))
+            {
+                TempData["Error"] = "No tienes acceso a Servicio Social. Debes estar asignado a un maestro asesor.";
+                return RedirectToAction("SistemaEscolar", "MainScreen", new { area = "MainScreen" });
+            }
+
             var bitacoras = _context.SocialServiceLogs
                 .Where(x => x.StudentId == currentStudentId)
                 .OrderByDescending(x => x.Week)
@@ -125,6 +138,20 @@ namespace SchoolManager.Areas.SocialService.Controllers
 
         public IActionResult CrearBitacora()
         {
+            int currentStudentId = int.Parse(User.FindFirst("UserId")?.Value ?? "0");
+
+            if (currentStudentId == 0)
+            {
+                TempData["Error"] = "No se pudo identificar al usuario.";
+                return RedirectToAction("Login", "Account", new { area = "UserMng" });
+            }
+
+            if (!IsStudentAssigned(currentStudentId))
+            {
+                TempData["Error"] = "No tienes acceso a Servicio Social. Debes estar asignado a un maestro asesor.";
+                return RedirectToAction("SistemaEscolar", "MainScreen", new { area = "MainScreen" });
+            }
+
             return View();
         }
 
@@ -139,6 +166,12 @@ namespace SchoolManager.Areas.SocialService.Controllers
                 {
                     TempData["Error"] = "No se pudo identificar al usuario.";
                     return RedirectToAction("Login", "Account", new { area = "UserMng" });
+                }
+
+                if (!IsStudentAssigned(currentStudentId))
+                {
+                    TempData["Error"] = "No tienes acceso a Servicio Social. Debes estar asignado a un maestro asesor.";
+                    return RedirectToAction("SistemaEscolar", "MainScreen", new { area = "MainScreen" });
                 }
 
                 var existingLog = _context.SocialServiceLogs
@@ -168,16 +201,20 @@ namespace SchoolManager.Areas.SocialService.Controllers
             return View(vm);
         }
 
-        // Ver horas de prácticas y servicio social
         public IActionResult Horas()
         {
-            // Obtener el ID del estudiante autenticado
             int currentStudentId = int.Parse(User.FindFirst("UserId")?.Value ?? "0");
 
             if (currentStudentId == 0)
             {
                 TempData["Error"] = "No se pudo identificar al usuario.";
                 return RedirectToAction("Login", "Account", new { area = "UserMng" });
+            }
+
+            if (!IsStudentAssigned(currentStudentId))
+            {
+                TempData["Error"] = "No tienes acceso a Servicio Social. Debes estar asignado a un maestro asesor.";
+                return RedirectToAction("SistemaEscolar", "MainScreen", new { area = "MainScreen" });
             }
 
             var approvedLogs = _context.SocialServiceLogs
@@ -206,6 +243,12 @@ namespace SchoolManager.Areas.SocialService.Controllers
                 : 0;
 
             return View();
+        }
+
+        private bool IsStudentAssigned(int studentId)
+        {
+            return _context.SocialServiceAssignments
+                .Any(a => a.StudentId == studentId && a.IsActive);
         }
     }
 }

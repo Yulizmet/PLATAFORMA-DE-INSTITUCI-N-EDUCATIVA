@@ -1,8 +1,5 @@
 namespace SchoolManager.Areas.SocialService.ViewModels
 {
-    /// <summary>
-    /// ViewModel para mostrar estudiantes disponibles para asignar
-    /// </summary>
     public class AvailableStudentViewModel
     {
         public int UserId { get; set; }
