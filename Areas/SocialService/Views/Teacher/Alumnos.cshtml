@@ -49,29 +49,28 @@
                     {
                         var fullName = $"{assignment.Student.Person.FirstName} {assignment.Student.Person.LastNamePaternal} {assignment.Student.Person.LastNameMaternal}";
 
-                        // Obtener el grado del estudiante desde grades_final_grades
-                        var studentGradeLevel = ViewContext.HttpContext.RequestServices
-                            .GetService<SchoolManager.Data.AppDbContext>()
-                            ?.grades_FinalGrades
-                            .Include(fg => fg.Subject)
-                                .ThenInclude(s => s.GradeLevel)
-                            .Where(fg => fg.StudentId == assignment.StudentId)
-                            .Select(fg => fg.Subject.GradeLevel.Name)
-                            .FirstOrDefault();
-
                         <tr>
                             <td>@fullName</td>
                             <td class="text-center">
-                                @if (!string.IsNullOrEmpty(studentGradeLevel))
+                                @if (!string.IsNullOrEmpty(assignment.SemesterName))
                                 {
-                                    <span class="badge bg-primary">@studentGradeLevel</span>
+                                    <span class="badge bg-primary">@assignment.SemesterName</span>
                                 }
                                 else
                                 {
                                     <span class="text-muted">N/A</span>
                                 }
                             </td>
-                            <td class="text-center">@(assignment.GroupName ?? "N/A")</td>
+                            <td class="text-center">
+                                @if (!string.IsNullOrEmpty(assignment.GroupName))
+                                {
+                                    <span class="badge bg-info">@assignment.GroupName</span>
+                                }
+                                else
+                                {
+                                    <span class="text-muted">N/A</span>
+                                }
+                            </td>
                             <td class="text-center">@assignment.AssignedDate.ToString("dd/MM/yyyy")</td>
                             <td class="text-center">
                                 <a class="btn btn-sm btn-info" href="/SocialService/Teacher/RevisarBitacorasAlumno/@assignment.StudentId">
@@ -79,10 +78,12 @@
                                 </a>
                             </td>
                             <td class="text-center">
-                                <form method="post" action="/SocialService/Teacher/DesasignarAlumno" style="display:inline;">
+                                <form method="post" action="/SocialService/Teacher/DesasignarAlumno" class="desasignar-form" style="display:inline;">
                                     <input type="hidden" name="studentId" value="@assignment.StudentId" />
-                                    <button type="submit" class="btn btn-danger btn-sm" 
-                                            onclick="return confirm('¿Está seguro de desasignar a este alumno?');">
+                                    <input type="hidden" name="studentName" value="@fullName" />
+                                    <button type="button" class="btn btn-danger btn-sm btn-desasignar" 
+                                            data-student-id="@assignment.StudentId"
+                                            data-student-name="@fullName">
                                         <i class="bi bi-trash"></i> Desasignar
                                     </button>
                                 </form>
@@ -101,3 +102,35 @@
         }
     </div>
 </div>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const desasignarButtons = document.querySelectorAll('.btn-desasignar');
+
+        desasignarButtons.forEach(button => {
+            button.addEventListener('click', function(e) {
+                e.preventDefault();
+                const studentName = this.getAttribute('data-student-name');
+                const form = this.closest('form');
+
+                Swal.fire({
+                    title: '¿Desasignar alumno?',
+                    html: `¿Estás seguro que deseas desasignar a <strong>${studentName}</strong>?<br><br>
+                           <small class="text-muted">Esta acción desactivará la asignación pero conservará todo el historial de bitácoras y asistencias del alumno.</small>`,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#6c757d',
+                    confirmButtonText: '<i class="bi bi-check-circle"></i> Sí, desasignar',
+                    cancelButtonText: '<i class="bi bi-x-circle"></i> Cancelar',
+                    reverseButtons: true
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        form.submit();
+                    }
+                });
+            });
+        });
+    });
+</script>
