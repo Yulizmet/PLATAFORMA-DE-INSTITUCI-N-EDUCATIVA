@@ -29,16 +29,42 @@
         <h5 class="mb-0">Estudiantes Disponibles</h5>
     </div>
     <div class="card-body">
+        <form method="get" class="mb-4" id="searchForm">
+            <div class="row align-items-end">
+                <div class="col-md-8">
+                    <label for="searchName" class="form-label">
+                        Buscar por nombre
+                        <span id="searchingIndicator" class="text-muted small ms-2" style="display:none;">
+                            <i class="bi bi-hourglass-split"></i> Buscando...
+                        </span>
+                    </label>
+                    <input type="text" 
+                           class="form-control" 
+                           id="searchName" 
+                           name="searchName" 
+                           placeholder="Escribe para buscar..." 
+                           value="@ViewBag.SearchName"
+                           autocomplete="off">
+                </div>
+                <div class="col-md-4">
+                    @if (!string.IsNullOrWhiteSpace(ViewBag.SearchName as string))
+                    {
+                        <a href="@Url.Action("AgregarAlumnos")" class="btn btn-secondary">
+                            <i class="bi bi-x-circle"></i> Limpiar
+                        </a>
+                    }
+                </div>
+            </div>
+        </form>
         @if (Model.Any())
         {
             <div class="table-responsive">
                 <table class="table table-hover">
                     <thead>
                         <tr>
-                            <th style="width:35%">Nombre</th>
+                            <th style="width:40%">Nombre</th>
                             <th class="text-center">Semestre</th>
                             <th class="text-center">Grupo</th>
-                            <th>Email</th>
                             <th class="text-center">Acción</th>
                         </tr>
                     </thead>
@@ -67,7 +93,6 @@
                                         <span class="text-muted">N/A</span>
                                     }
                                 </td>
-                                <td>@student.Email</td>
                                 <td class="text-center">
                                     <form method="post" action="/SocialService/Teacher/AsignarAlumno" style="display:inline;">
                                         <input type="hidden" name="studentId" value="@student.UserId" />
@@ -85,8 +110,15 @@
         else
         {
             <div class="alert alert-info">
-                <i class="bi bi-info-circle"></i> No hay estudiantes disponibles para asignar. 
-                Todos los estudiantes ya están asignados a tu lista.
+                <i class="bi bi-info-circle"></i> 
+                @if (!string.IsNullOrWhiteSpace(ViewBag.SearchName as string))
+                {
+                    <text>No se encontraron estudiantes con el nombre "@ViewBag.SearchName".</text>
+                }
+                else
+                {
+                    <text>No hay estudiantes disponibles para asignar. Todos los estudiantes ya están asignados.</text>
+                }
             </div>
         }
     </div>
@@ -98,3 +130,7 @@
         cursor: pointer;
     }
 </style>
+
+@section Scripts {
+    <script src="~/js/SocialServiceAutoSearch.js"></script>
+}

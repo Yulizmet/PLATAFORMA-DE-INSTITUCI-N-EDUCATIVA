@@ -130,7 +130,8 @@ namespace SchoolManager.Areas.SocialService.Controllers
 
             var bitacoras = _context.SocialServiceLogs
                 .Where(x => x.StudentId == currentStudentId)
-                .OrderByDescending(x => x.Week)
+                .ToList()
+                .OrderByDescending(x => ExtractWeekNumber(x.Week))
                 .ToList();
 
             return View(bitacoras);
@@ -150,6 +151,22 @@ namespace SchoolManager.Areas.SocialService.Controllers
             {
                 TempData["Error"] = "No tienes acceso a Servicio Social. Debes estar asignado a un maestro asesor.";
                 return RedirectToAction("SistemaEscolar", "MainScreen", new { area = "MainScreen" });
+            }
+
+            var approvedLogs = _context.SocialServiceLogs
+                .Where(log => log.StudentId == currentStudentId && log.IsApproved)
+                .ToList();
+
+            int totalHoursPracticas = approvedLogs.Sum(log => log.ApprovedHoursPracticas);
+            int totalHoursServicioSocial = approvedLogs.Sum(log => log.ApprovedHoursServicioSocial);
+
+            const int requiredHoursPracticas = 240;
+            const int requiredHoursServicioSocial = 480;
+
+            if (totalHoursPracticas >= requiredHoursPracticas && totalHoursServicioSocial >= requiredHoursServicioSocial)
+            {
+                TempData["Success"] = "¡Felicidades! Ya cumpliste con tu servicio social. No puedes crear más bitácoras.";
+                return RedirectToAction("Bitacoras");
             }
 
             return View();
@@ -172,6 +189,36 @@ namespace SchoolManager.Areas.SocialService.Controllers
                 {
                     TempData["Error"] = "No tienes acceso a Servicio Social. Debes estar asignado a un maestro asesor.";
                     return RedirectToAction("SistemaEscolar", "MainScreen", new { area = "MainScreen" });
+                }
+
+                // Verificar si ya completó todas las horas requeridas
+                var approvedLogs = _context.SocialServiceLogs
+                    .Where(log => log.StudentId == currentStudentId && log.IsApproved)
+                    .ToList();
+
+                int totalHoursPracticas = approvedLogs.Sum(log => log.ApprovedHoursPracticas);
+                int totalHoursServicioSocial = approvedLogs.Sum(log => log.ApprovedHoursServicioSocial);
+
+                const int requiredHoursPracticas = 240;
+                const int requiredHoursServicioSocial = 480;
+
+                if (totalHoursPracticas >= requiredHoursPracticas && totalHoursServicioSocial >= requiredHoursServicioSocial)
+                {
+                    TempData["Error"] = "Ya cumpliste con tu servicio social. No puedes crear más bitácoras.";
+                    return RedirectToAction("Bitacoras");
+                }
+
+                int remainingHoursPracticas = requiredHoursPracticas - totalHoursPracticas;
+                int remainingHoursServicioSocial = requiredHoursServicioSocial - totalHoursServicioSocial;
+
+                if (vm.HoursPracticas > remainingHoursPracticas)
+                {
+                    TempData["Warning"] = $"Solo te faltan {remainingHoursPracticas} horas de Prácticas Profesionales. Has registrado {vm.HoursPracticas} horas, pero solo se contabilizarán {remainingHoursPracticas} horas.";
+                }
+
+                if (vm.HoursServicioSocial > remainingHoursServicioSocial)
+                {
+                    TempData["Warning"] = $"Solo te faltan {remainingHoursServicioSocial} horas de Servicio Social. Has registrado {vm.HoursServicioSocial} horas, pero solo se contabilizarán {remainingHoursServicioSocial} horas.";
                 }
 
                 var existingLog = _context.SocialServiceLogs
@@ -198,6 +245,101 @@ namespace SchoolManager.Areas.SocialService.Controllers
                 TempData["Success"] = "Bitácora registrada exitosamente.";
                 return RedirectToAction("Bitacoras");
             }
+            return View(vm);
+        }
+
+        [HttpGet]
+        public IActionResult EditarBitacora(int id)
+        {
+            int currentStudentId = int.Parse(User.FindFirst("UserId")?.Value ?? "0");
+
+            if (currentStudentId == 0)
+            {
+                TempData["Error"] = "No se pudo identificar al usuario.";
+                return RedirectToAction("Login", "Account", new { area = "UserMng" });
+            }
+
+            var bitacora = _context.SocialServiceLogs
+                .FirstOrDefault(log => log.LogId == id && log.StudentId == currentStudentId);
+
+            if (bitacora == null)
+            {
+                TempData["Error"] = "Bitácora no encontrada.";
+                return RedirectToAction("Bitacoras");
+            }
+
+            if (bitacora.IsApproved)
+            {
+                TempData["Error"] = "No puedes editar una bitácora que ya ha sido aprobada.";
+                return RedirectToAction("Bitacoras");
+            }
+
+            var viewModel = new BitacoraViewModel
+            {
+                Week = bitacora.Week,
+                Activities = bitacora.Activities,
+                HoursPracticas = bitacora.HoursPracticas,
+                HoursServicioSocial = bitacora.HoursServicioSocial,
+                Observations = bitacora.Observations
+            };
+
+            ViewBag.LogId = bitacora.LogId;
+            return View(viewModel);
+        }
+
+        [HttpPost]
+        public IActionResult EditarBitacora(int id, BitacoraViewModel vm)
+        {
+            if (ModelState.IsValid)
+            {
+                int currentStudentId = int.Parse(User.FindFirst("UserId")?.Value ?? "0");
+
+                if (currentStudentId == 0)
+                {
+                    TempData["Error"] = "No se pudo identificar al usuario.";
+                    return RedirectToAction("Login", "Account", new { area = "UserMng" });
+                }
+
+                var bitacora = _context.SocialServiceLogs
+                    .FirstOrDefault(log => log.LogId == id && log.StudentId == currentStudentId);
+
+                if (bitacora == null)
+                {
+                    TempData["Error"] = "Bitácora no encontrada.";
+                    return RedirectToAction("Bitacoras");
+                }
+
+                if (bitacora.IsApproved)
+                {
+                    TempData["Error"] = "No puedes editar una bitácora que ya ha sido aprobada.";
+                    return RedirectToAction("Bitacoras");
+                }
+
+                if (bitacora.Week != vm.Week)
+                {
+                    var existingWeek = _context.SocialServiceLogs
+                        .Any(log => log.StudentId == currentStudentId && log.Week == vm.Week && log.LogId != id);
+
+                    if (existingWeek)
+                    {
+                        TempData["Error"] = $"Ya existe otra bitácora para {vm.Week}.";
+                        ViewBag.LogId = bitacora.LogId;
+                        return View(vm);
+                    }
+                }
+
+                bitacora.Week = vm.Week;
+                bitacora.Activities = vm.Activities;
+                bitacora.HoursPracticas = vm.HoursPracticas;
+                bitacora.HoursServicioSocial = vm.HoursServicioSocial;
+                bitacora.Observations = vm.Observations;
+
+                _context.SaveChanges();
+                TempData["Success"] = "Bitácora actualizada exitosamente.";
+                return RedirectToAction("Bitacoras");
+            }
+
+            ViewBag.LogId = id;
             return View(vm);
         }
 
@@ -249,6 +391,20 @@ namespace SchoolManager.Areas.SocialService.Controllers
         {
             return _context.SocialServiceAssignments
                 .Any(a => a.StudentId == studentId && a.IsActive);
+        }
+
+        private int ExtractWeekNumber(string weekString)
+        {
+            if (string.IsNullOrWhiteSpace(weekString))
+                return 0;
+
+            var parts = weekString.Split(' ');
+            if (parts.Length >= 2 && int.TryParse(parts[1], out int weekNumber))
+            {
+                return weekNumber;
+            }
+
+            return 0;
         }
     }
 }

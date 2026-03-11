@@ -78,7 +78,6 @@ namespace SchoolManager.Areas.SocialService.Controllers
                 .Where(a => a.TeacherId == currentTeacherId && a.IsActive)
                 .ToListAsync();
 
-            // Enriquecer con información de semestre y grupo
             foreach (var assignment in assignedStudents)
             {
                 var enrollment = await _context.grades_Enrollments
@@ -97,26 +96,41 @@ namespace SchoolManager.Areas.SocialService.Controllers
             return View(assignedStudents);
         }
 
-        public async Task<IActionResult> AgregarAlumnos()
+        public async Task<IActionResult> AgregarAlumnos(string searchName)
         {
             int currentTeacherId = GetCurrentTeacherId();
 
-            // Excluir alumnos asignados activamente a cualquier maestro
             var assignedStudentIds = await _context.SocialServiceAssignments
                 .Where(a => a.IsActive)
                 .Select(a => a.StudentId)
                 .ToListAsync();
 
-            var availableStudents = await _context.Users
+            var availableStudentsQuery = _context.Users
                 .Include(u => u.Person)
                 .Include(u => u.UserRoles)
                     .ThenInclude(ur => ur.Role)
                 .Where(u => u.UserRoles.Any(ur => ur.Role.Name == "Student" && ur.IsActive)
                     && !assignedStudentIds.Contains(u.UserId)
-                    && u.IsActive)
+                    && u.IsActive);
+
+            var availableStudents = await availableStudentsQuery
                 .OrderBy(u => u.Person.FirstName)
                     .ThenBy(u => u.Person.LastNamePaternal)
                 .ToListAsync();
+
+            if (!string.IsNullOrWhiteSpace(searchName))
+            {
+                string searchNormalized = RemoveAccents(searchName.ToLower());
+                availableStudents = availableStudents
+                    .Where(u => 
+                    {
+                        string fullName = $"{u.Person.FirstName} {u.Person.LastNamePaternal} {u.Person.LastNameMaternal}";
+                        string fullNameNormalized = RemoveAccents(fullName.ToLower());
+                        return fullNameNormalized.Contains(searchNormalized);
+                    })
+                    .ToList();
+                ViewBag.SearchName = searchName;
+            }
 
             var viewModel = new List<AvailableStudentViewModel>();
 
@@ -146,7 +160,6 @@ namespace SchoolManager.Areas.SocialService.Controllers
         {
             int currentTeacherId = GetCurrentTeacherId();
 
-            // Verificar si el alumno ya está asignado a otro maestro
             var assignedToOtherTeacher = await _context.SocialServiceAssignments
                 .Include(a => a.Teacher)
                     .ThenInclude(t => t.Person)
@@ -161,7 +174,6 @@ namespace SchoolManager.Areas.SocialService.Controllers
                 return RedirectToAction("AgregarAlumnos");
             }
 
-            // Buscar si existe asignación previa (activa o inactiva) con el maestro actual
             var existingAssignment = await _context.SocialServiceAssignments
                 .FirstOrDefaultAsync(a => a.TeacherId == currentTeacherId
                     && a.StudentId == studentId);
@@ -238,9 +250,12 @@ namespace SchoolManager.Areas.SocialService.Controllers
                 .Include(b => b.Student)
                     .ThenInclude(s => s.Person)
                 .Where(b => b.StudentId == id)
-                .OrderByDescending(b => b.Week)
-                .ThenByDescending(b => b.CreatedAt)
                 .ToListAsync();
+
+            bitacoras = bitacoras
+                .OrderByDescending(b => ExtractWeekNumber(b.Week))
+                .ThenByDescending(b => b.CreatedAt)
+                .ToList();
 
             var student = await _context.Users
                 .Include(u => u.Person)
@@ -287,16 +302,69 @@ namespace SchoolManager.Areas.SocialService.Controllers
                 return RedirectToAction("RevisarBitacorasAlumno", new { id = bitacora.StudentId });
             }
 
+            // Lógica de límite: calcular horas acumuladas para no exceder 240/480
+            var approvedLogs = await _context.SocialServiceLogs
+                .Where(log => log.StudentId == bitacora.StudentId && log.IsApproved && log.LogId != logId)
+                .ToListAsync();
+
+            int currentTotalPracticas = approvedLogs.Sum(log => log.ApprovedHoursPracticas);
+            int currentTotalServicioSocial = approvedLogs.Sum(log => log.ApprovedHoursServicioSocial);
+
+            const int requiredHoursPracticas = 240;
+            const int requiredHoursServicioSocial = 480;
+
+            int remainingHoursPracticas = Math.Max(0, requiredHoursPracticas - currentTotalPracticas);
+            int remainingHoursServicioSocial = Math.Max(0, requiredHoursServicioSocial - currentTotalServicioSocial);
+
+            int finalApprovedPracticas = Math.Min(approvedHoursPracticas, remainingHoursPracticas);
+            int finalApprovedServicioSocial = Math.Min(approvedHoursServicioSocial, remainingHoursServicioSocial);
+
+            List<string> adjustmentMessages = new List<string>();
+
+            if (finalApprovedPracticas < approvedHoursPracticas)
+            {
+                if (remainingHoursPracticas == 0)
+                {
+                    adjustmentMessages.Add($"El alumno ya completó las 240 horas de Prácticas Profesionales. No se sumaron las {approvedHoursPracticas} horas de esta categoría.");
+                }
+                else
+                {
+                    adjustmentMessages.Add($"Prácticas Profesionales: Solo se aprobaron {finalApprovedPracticas} de {approvedHoursPracticas} horas porque el alumno solo necesitaba {remainingHoursPracticas} horas para completar.");
+                }
+            }
+
+            if (finalApprovedServicioSocial < approvedHoursServicioSocial)
+            {
+                if (remainingHoursServicioSocial == 0)
+                {
+                    adjustmentMessages.Add($"El alumno ya completó las 480 horas de Servicio Social. No se sumaron las {approvedHoursServicioSocial} horas de esta categoría.");
+                }
+                else
+                {
+                    adjustmentMessages.Add($"Servicio Social: Solo se aprobaron {finalApprovedServicioSocial} de {approvedHoursServicioSocial} horas porque el alumno solo necesitaba {remainingHoursServicioSocial} horas para completar.");
+                }
+            }
+
             bitacora.IsApproved = true;
-            bitacora.ApprovedHoursPracticas = approvedHoursPracticas;
-            bitacora.ApprovedHoursServicioSocial = approvedHoursServicioSocial;
+            bitacora.ApprovedHoursPracticas = finalApprovedPracticas;
+            bitacora.ApprovedHoursServicioSocial = finalApprovedServicioSocial;
             bitacora.ApprovedBy = currentTeacherId;
             bitacora.ApprovedAt = DateTime.Now;
             bitacora.TeacherComments = teacherComments;
 
             await _context.SaveChangesAsync();
 
-            TempData["Success"] = "Bitácora aprobada exitosamente. Las horas se han sumado al alumno.";
+            // Mensaje de éxito con información de ajustes si los hubo
+            if (adjustmentMessages.Any())
+            {
+                string adjustmentInfo = string.Join(" ", adjustmentMessages);
+                TempData["Success"] = $"Bitácora aprobada. {adjustmentInfo}";
+            }
+            else
+            {
+                TempData["Success"] = "Bitácora aprobada exitosamente. Las horas se han sumado al alumno.";
+            }
+
             return RedirectToAction("RevisarBitacorasAlumno", new { id = bitacora.StudentId });
         }
 
@@ -359,6 +427,21 @@ namespace SchoolManager.Areas.SocialService.Controllers
                 .Where(a => a.TeacherId == currentTeacherId && a.IsActive)
                 .OrderBy(a => a.Student.Person.FirstName)
                 .ToListAsync();
+
+            foreach (var assignment in assignments)
+            {
+                var enrollment = await _context.grades_Enrollments
+                    .Include(e => e.Group)
+                        .ThenInclude(g => g.GradeLevel)
+                    .Where(e => e.StudentId == assignment.StudentId)
+                    .FirstOrDefaultAsync();
+
+                if (enrollment != null)
+                {
+                    assignment.SemesterName = enrollment.Group?.GradeLevel?.Name;
+                    assignment.GroupName = enrollment.Group?.Name;
+                }
+            }
 
             var viewModel = new AttendanceListViewModel
             {
@@ -441,6 +524,40 @@ namespace SchoolManager.Areas.SocialService.Controllers
             }
 
             return int.Parse(userIdClaim);
+        }
+
+        private string RemoveAccents(string text)
+        {
+            if (string.IsNullOrWhiteSpace(text))
+                return text;
+
+            var normalizedString = text.Normalize(System.Text.NormalizationForm.FormD);
+            var stringBuilder = new System.Text.StringBuilder();
+
+            foreach (var c in normalizedString)
+            {
+                var unicodeCategory = System.Globalization.CharUnicodeInfo.GetUnicodeCategory(c);
+                if (unicodeCategory != System.Globalization.UnicodeCategory.NonSpacingMark)
+                {
+                    stringBuilder.Append(c);
+                }
+            }
+
+            return stringBuilder.ToString().Normalize(System.Text.NormalizationForm.FormC);
+        }
+
+        private int ExtractWeekNumber(string weekString)
+        {
+            if (string.IsNullOrWhiteSpace(weekString))
+                return 0;
+
+            var parts = weekString.Split(' ');
+            if (parts.Length >= 2 && int.TryParse(parts[1], out int weekNumber))
+            {
+                return weekNumber;
+            }
+
+            return 0;
         }
     }
 }

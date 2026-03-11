@@ -18,10 +18,13 @@
     </div>
 }
 
-<div class="mb-3">
+<div class="mb-3 d-flex justify-content-between align-items-center">
     <a href="/SocialService/Teacher/Dashboard" class="btn btn-secondary">
         <i class="bi bi-arrow-left"></i> Regresar al Dashboard
     </a>
+    <button type="button" class="btn btn-info" data-bs-toggle="modal" data-bs-target="#historialModal">
+        <i class="bi bi-clock-history"></i> Ver Historial Completo
+    </button>
 </div>
 
 <div class="card">
@@ -42,7 +45,6 @@
                                 <th style="width:40%">Alumno</th>
                                 <th class="text-center">Grupo</th>
                                 @{
-                                    // Obtener todas las fechas únicas de asistencias (excluyendo hoy)
                                     var allDates = Model.Students
                                         .SelectMany(s => s.RecentAttendances.Select(a => a.Date.Date))
                                         .Where(d => d < Model.Today)
@@ -68,7 +70,16 @@
                                 var fullName = $"{student.Assignment.Student.Person.FirstName} {student.Assignment.Student.Person.LastNamePaternal} {student.Assignment.Student.Person.LastNameMaternal}";
                                 <tr>
                                     <td>@fullName</td>
-                                    <td class="text-center">@(student.Assignment.GroupName ?? "N/A")</td>
+                                    <td class="text-center">
+                                        @if (!string.IsNullOrEmpty(student.Assignment.GroupName))
+                                        {
+                                            <span class="badge bg-info">@student.Assignment.GroupName</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">N/A</span>
+                                        }
+                                    </td>
 
                                     @foreach (var date in allDates)
                                     {
@@ -168,3 +179,103 @@
         border-color: #28a745;
     }
 </style>
+
+<!-- Modal Historial Completo -->
+<div class="modal fade" id="historialModal" tabindex="-1" aria-labelledby="historialModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="historialModalLabel">
+                    <i class="bi bi-clock-history"></i> Historial Completo de Asistencias
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                @if (Model.Students.Any())
+                {
+                    <div class="table-responsive">
+                        <table class="table table-hover table-striped">
+                            <thead class="table-light">
+                                <tr>
+                                    <th style="width:40%">Alumno</th>
+                                    <th class="text-center">Grupo</th>
+                                    @{
+                                        var allHistoricalDates = Model.Students
+                                            .SelectMany(s => s.RecentAttendances.Select(a => a.Date.Date))
+                                            .Distinct()
+                                            .OrderByDescending(d => d)
+                                            .ToList();
+
+                                        foreach (var date in allHistoricalDates)
+                                        {
+                                            <th class="text-center">@date.ToString("dd/MM/yyyy")</th>
+                                        }
+                                    }
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var student in Model.Students)
+                                {
+                                    var fullName = $"{student.Assignment.Student.Person.FirstName} {student.Assignment.Student.Person.LastNamePaternal} {student.Assignment.Student.Person.LastNameMaternal}";
+                                    <tr>
+                                        <td>@fullName</td>
+                                        <td class="text-center">
+                                            @if (!string.IsNullOrEmpty(student.Assignment.GroupName))
+                                            {
+                                                <span class="badge bg-info">@student.Assignment.GroupName</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="text-muted">N/A</span>
+                                            }
+                                        </td>
+
+                                        @foreach (var date in allHistoricalDates)
+                                        {
+                                            var attendance = student.RecentAttendances.FirstOrDefault(a => a.Date.Date == date);
+                                            <td class="text-center">
+                                                @if (attendance != null)
+                                                {
+                                                    @if (attendance.IsPresent)
+                                                    {
+                                                        <span class="badge-present">P</span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="badge-absent">A</span>
+                                                    }
+                                                }
+                                                else
+                                                {
+                                                    <span class="text-muted">-</span>
+                                                }
+                                            </td>
+                                        }
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+
+                    @if (!allHistoricalDates.Any())
+                    {
+                        <div class="alert alert-info">
+                            <i class="bi bi-info-circle"></i> No hay registros de asistencia previos.
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle"></i> No tienes alumnos asignados.
+                    </div>
+                }
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="bi bi-x-circle"></i> Cerrar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

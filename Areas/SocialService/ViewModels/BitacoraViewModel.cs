@@ -13,16 +13,16 @@ namespace SchoolManager.Areas.SocialService.ViewModels
         public string Activities { get; set; }
 
         [Required(ErrorMessage = "Las horas de prácticas son obligatorias")]
-        [Range(0, 100, ErrorMessage = "Las horas deben estar entre 0 y 100")]
+        [Range(0, 40, ErrorMessage = "Las horas deben estar entre 0 y 40")]
         [Display(Name = "Horas Prácticas")]
         public int HoursPracticas { get; set; }
 
         [Required(ErrorMessage = "Las horas de servicio social son obligatorias")]
-        [Range(0, 100, ErrorMessage = "Las horas deben estar entre 0 y 100")]
+        [Range(0, 40, ErrorMessage = "Las horas deben estar entre 0 y 40")]
         [Display(Name = "Horas Servicio Social")]
         public int HoursServicioSocial { get; set; }
 
         [Display(Name = "Observaciones")]
-        public string? Observations { get; set; } // Opcional - nullable
+        public string? Observations { get; set; }
     }
 }
