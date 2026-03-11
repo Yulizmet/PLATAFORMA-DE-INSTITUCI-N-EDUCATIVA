@@ -4,9 +4,6 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace SchoolManager.Models
 {
-    /// <summary>
-    /// Representa la asignación de un alumno a un maestro en servicio social
-    /// </summary>
     [Table("social_service_assignment")]
     public class social_service_assignment
     {
@@ -25,6 +22,10 @@ namespace SchoolManager.Models
         [MaxLength(100)]
         [Column("GroupName")]
         public string? GroupName { get; set; }
+
+        [MaxLength(100)]
+        [NotMapped]
+        public string? SemesterName { get; set; }
 
         [Required]
         [Column("AssignedDate")]

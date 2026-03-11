@@ -62,10 +62,14 @@
                         </div>
                     </div>
 
-                    @if (!string.IsNullOrEmpty(bitacora.Observations))
+                    <p><strong>Observaciones:</strong></p>
+                    @if (!string.IsNullOrWhiteSpace(bitacora.Observations))
                     {
-                        <p><strong>Observaciones:</strong></p>
-                        <p class="text-muted activity-text">@bitacora.Observations</p>
+                        <p class="text-muted activity-text" style="text-align: left !important;">@bitacora.Observations</p>
+                    }
+                    else
+                    {
+                        <p class="text-muted activity-text" style="text-align: left !important; margin: 0;"><span style="display: block; text-align: left !important;">N/A</span></p>
                     }
 
                     <div class="mt-3">
@@ -119,13 +123,17 @@
                                 </div>
                             </div>
 
-                            @if (!string.IsNullOrEmpty(bitacora.Observations))
-                            {
-                                <div class="detail-section">
-                                    <h6><i class="bi bi-chat-left-text me-2"></i>Observaciones del Alumno</h6>
-                                    <p>@bitacora.Observations</p>
-                                </div>
-                            }
+                            <div class="detail-section">
+                                <h6><i class="bi bi-chat-left-text me-2"></i>Observaciones del Alumno</h6>
+                                @if (!string.IsNullOrWhiteSpace(bitacora.Observations))
+                                {
+                                    <p class="text-start" style="text-align: left !important;">@bitacora.Observations</p>
+                                }
+                                else
+                                {
+                                    <p style="text-align: left !important; margin: 0;"><span class="text-muted" style="display: block; text-align: left !important;">N/A</span></p>
+                                }
+                            </div>
 
                             <div class="creation-date">
                                 <p>
