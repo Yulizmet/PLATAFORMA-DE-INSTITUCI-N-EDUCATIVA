@@ -1,0 +1,309 @@
+﻿@model IEnumerable<SchoolManager.Areas.Procedures.ViewModels.StaffViewModel>
+
+@{
+    ViewData["Title"] = "Gestión de Personal";
+    Layout = "_ProceduresLayout";
+}
+
+@section Scripts {
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+    <partial name="_DataTableConfig" />
+
+    <script>
+        function editStaff(id) {
+            window.location.href = '/Procedures/AdministrativeStaff/EditAdministrativeStaff/' + id;
+        }
+
+        function loadEditStaffModal(id) {
+            $.get('/Procedures/AdministrativeStaff/Edit/' + id, function (data) {
+                $('#modalContainer').html(data);
+                const modalElement = document.getElementById('editStaffModal');
+                const myModal = new bootstrap.Modal(modalElement);
+                myModal.show();
+
+                $('#formEditStaff').on('submit', function(e) {
+                    e.preventDefault();
+                    const form = $(this);
+                    $.post(form.attr('action'), form.serialize(), function(response) {
+                        if(response.success) {
+                            myModal.hide();
+                            Swal.fire({
+                                icon: 'success',
+                                title: '¡Actualizado!',
+                                text: response.message,
+                                confirmButtonColor: '#620900'
+                            }).then(() => { location.reload(); });
+                        } else {
+                            Swal.fire({ icon: 'error', title: 'Error', text: response.message });
+                        }
+                    });
+                });
+            });
+        }
+
+        function loadDeactivateModal(id) {
+            $.get('/Procedures/AdministrativeStaff/Deactivate/' + id, function (data) {
+                $('#modalContainer').html(data);
+                const modalElement = document.getElementById('deactivateModal');
+                const myModal = new bootstrap.Modal(modalElement);
+                myModal.show();
+            });
+        }
+
+        function loadActivateModal(id) {
+            $.get('/Procedures/AdministrativeStaff/Activate/' + id, function (data) {
+                $('#modalContainer').html(data);
+                const modalElement = document.getElementById('activateModal');
+                const myModal = new bootstrap.Modal(modalElement);
+                myModal.show();
+            });
+        }
+
+        function loadCreateStaffModal() {
+            $.get('/Procedures/AdministrativeStaff/Create', function (data) {
+                $('#modalContainer').html(data);
+                const modalElement = document.getElementById('createStaffModal');
+                const myModal = new bootstrap.Modal(modalElement);
+                myModal.show();
+                $(modalElement).on('shown.bs.modal', function () {
+                    $('#UserSearch').select2({
+                        dropdownParent: $(modalElement),
+                        theme: 'bootstrap-5',
+                        ajax: {
+                            url: '/Procedures/AdministrativeStaff/SearchUsers',
+                            dataType: 'json',
+                            delay: 250,
+                            data: function (params) { return { term: params.term }; },
+                            processResults: function (data) { return { results: data }; }
+                        },
+                        minimumInputLength: 3
+                    });
+                });
+                $('#formCreateStaff').on('submit', function (e) {
+                    e.preventDefault();
+                    const form = $(this);
+                    $.post(form.attr('action'), form.serialize(), function (response) {
+                        if (response.success) {
+                            myModal.hide();
+                            Swal.fire({
+                                icon: 'success',
+                                title: '¡Éxito!',
+                                text: response.message,
+                                confirmButtonColor: '#620900'
+                            }).then(() => location.reload());
+                        } else {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error',
+                                text: response.message
+                            });
+                        }
+                    });
+                });
+            });
+        }
+
+        function loadQuickUserModal() {
+            $.get('/Procedures/AdministrativeStaff/QuickAddUser', function (data) {
+                $('#modalContainer').html(data);
+                const modalElement = document.getElementById('quickUserModal');
+                const myModal = new bootstrap.Modal(modalElement);
+                myModal.show();
+            });
+        }
+
+        function confirmDeactivateLogic() {
+            const form = $('#formDeactivateStaff');
+            $.post('/Procedures/AdministrativeStaff/DeactivateStaff', form.serialize(), function (response) {
+                if (response.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: '¡Éxito!',
+                        text: response.message
+                    }).then(() => location.reload());
+                } else {
+                    Swal.fire('Error', response.message, 'error');
+                }
+            });
+        }
+
+        function confirmActivateLogic() {
+            const form = $('#formActivateStaff');
+            $.post('/Procedures/AdministrativeStaff/ActivateStaff', form.serialize(), function (response) {
+                if (response.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: '¡Éxito!',
+                        text: 'Personal reactivado'
+                    }).then(() => location.reload());
+                } else {
+                    Swal.fire('Error', response.message, 'error');
+                }
+            });
+        }
+
+        $(document).ready(function () {
+        });
+
+        function fillTestData() {
+            const random = Math.floor(Math.random() * 1000);
+            $('input[name="FirstName"]').val("Usuario");
+            $('input[name="LastNamePaternal"]').val("Prueba");
+            $('input[name="LastNameMaternal"]').val("Staff");
+            $('input[name="Curp"]').val("CURP" + random + random + "XXXXXX00");
+            $('input[name="Email"]').val("test" + random + "@@email.com");
+            $('input[name="Username"]').val("user.test" + random);
+        }
+    </script>
+}
+
+<div id="modalContainer"></div>
+
+<div class="container-fluid px-4 py-4 pt-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold text-dark mb-0">
+                <i class="bi bi-people"></i> Gestión de Personal
+            </h2>
+            <p class="text-muted mb-0">Administra a los responsables de cada área y sus permisos.</p>
+        </div>
+        <div class="d-flex gap-2">
+            <button class="btn btn-burgundy shadow-sm" onclick="loadQuickUserModal()">
+                <i class="bi bi-plus-circle me-1"></i> Añadir Personal
+            </button>
+            <button class="btn btn-burgundy shadow-sm" onclick="loadCreateStaffModal()">
+                <i class="bi bi-person-plus-fill me-2"></i> Asignar Personal
+            </button>
+        </div>
+    </div>
+
+    <partial name="_TableTools" />
+
+    <div class="border-0 overflow-hidden">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table id="mainTable" class="table table-hover align-middle mb-0">
+                    <thead class="bg-burgundy text-white">
+                        <tr>
+                            <th class="no-sort text-center"> <input type="checkbox" id="checkAll"> </th>
+                            <th class="ps-4">Personal</th>
+                            <th>Área Responsable</th>
+                            <th>Puesto</th>
+                            <th>Roles</th>
+                            <th class="text-center">Estatus</th>
+                            <th class="text-end pe-4">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody class="table-white">
+                        @foreach (var item in Model)
+                        {
+                            <tr class="@(item.IsActive ? "" : "opacity-50 bg-light")">
+                                <td class="text-center">
+                                    <input type="checkbox" class="form-check-input row-checkbox" value="@item.Id" />
+                                </td>
+                                <td class="ps-4">
+                                    <div class="d-flex align-items-center">
+                                        <div class="avatar-circle bg-burgundy text-white me-3">
+                                            @item.Initials
+                                        </div>
+                                        <div>
+                                            <div class="fw-bold text-dark">@item.FullName</div>
+                                            <div class="small text-muted">@item.Username</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="badge bg-info-subtle text-info border border-info-subtle rounded-pill px-3">
+                                        @item.AreaName
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="text-dark fw-medium">
+                                        @item.JobPositionName
+                                    </span>
+                                </td>
+                                <td>
+                                    @foreach (var role in item.Roles)
+                                    {
+                                        <small class="d-block text-muted text-uppercase" style="font-size: 0.7rem;">
+                                            <i class="bi bi-shield-check me-1"></i>@role
+                                        </small>
+                                    }
+                                </td>
+                                <td class="text-center">
+                                    @if (item.IsSuperAdmin)
+                                    {
+                                        <span class="status-badge bg-superadmin text-warning border border-warning">
+                                            <i class="bi bi-star-fill me-1"></i>SuperAdmin
+                                        </span>
+                                    }
+                                    else if (item.IsActive)
+                                    {
+                                        <span class="status-badge bg-active text-primary border border-primary">
+                                            Activo
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="status-badge bg-inactive text-danger border border-danger">
+                                            Baja
+                                        </span>
+                                    }
+                                </td>
+                                <td class="text-center">
+                                    <div class="btn-group">
+                                        @if (item.IsActive)
+                                        {
+                                            <a asp-controller="AdministrativeStaff"
+                                                asp-action="DetailsStaff"
+                                                asp-route-id="@item.Id"
+                                                class="btn btn-sm btn-light border shadow-sm me-2"
+                                                title="Ver Detalles">
+                                                <i class="bi bi-eye"></i>
+                                            </a>
+                                            <a asp-controller="AdministrativeStaff"
+                                               asp-action="EditAdministrativeStaff"
+                                               asp-route-id="@item.Id"
+                                               class="btn btn-sm btn-light border shadow-sm me-2"
+                                               title="Editar Persona">
+                                                <i class="bi bi-pencil-square text-warning"></i>
+                                            </a>
+                                            <button class="btn btn-sm btn-light border shadow-sm me-2"
+                                                    onclick="loadEditStaffModal(@item.Id)"
+                                                    title="Asignar Área">
+                                                <i class="bi bi-plus-circle text-success"></i>
+                                            </button>
+                                            <button class="btn btn-sm btn-light border shadow-sm"
+                                                    title="Dar de Baja"
+                                                    onclick="loadDeactivateModal(@item.Id)">
+                                                <i class="bi bi-person-x-fill text-danger"></i>
+                                            </button>
+                                        }
+                                        else
+                                        {
+                                            <button class="btn btn-sm btn-light border shadow-sm me-2 opacity-50" disabled>
+                                                <i class="bi bi-eye-slash text-muted"></i>
+                                            </button>
+                                            <button class="btn btn-sm btn-light border shadow-sm me-2 opacity-50" disabled>
+                                                <i class="bi bi-pencil text-muted"></i>
+                                            </button>
+                                            <button class="btn btn-sm btn-light border shadow-sm me-2 opacity-50" disabled>
+                                                <i class="bi bi-plus-square text-muted"></i>
+                                            </button>
+                                            <button class="btn btn-sm btn-light border shadow-sm"
+                                                    title="Reactivar"
+                                                    onclick="loadActivateModal(@item.Id)">
+                                                <i class="bi bi-person-check-fill text-success"></i>
+                                            </button>
+                                        }
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

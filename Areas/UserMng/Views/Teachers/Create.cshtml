@@ -1,0 +1,67 @@
+@model SchoolManager.Areas.UserMng.ViewModels.CreateTeacherVM
+@{
+    Layout = "_UserLayout";
+}
+
+<h2>Crear Maestro</h2>
+
+<form asp-action="Create" method="post">
+    <div>
+        <label asp-for="FirstName"></label>
+        <input asp-for="FirstName" />
+        <span asp-validation-for="FirstName"></span>
+    </div>
+
+    <div>
+        <label asp-for="LastNamePaternal"></label>
+        <input asp-for="LastNamePaternal" />
+        <span asp-validation-for="LastNamePaternal"></span>
+    </div>
+
+    <div>
+        <label asp-for="LastNameMaternal"></label>
+        <input asp-for="LastNameMaternal" />
+        <span asp-validation-for="LastNameMaternal"></span>
+    </div>
+
+    <div>
+        <label asp-for="BirthDate"></label>
+        <input asp-for="BirthDate" type="date" />
+    </div>
+
+    <div>
+        <label asp-for="Gender"></label>
+        <input asp-for="Gender" />
+    </div>
+
+    <div>
+        <label asp-for="Curp"></label>
+        <input asp-for="Curp" />
+    </div>
+
+    <div>
+        <label asp-for="Email"></label>
+        <input asp-for="Email" />
+    </div>
+
+    <div>
+        <label asp-for="Phone"></label>
+        <input asp-for="Phone" />
+    </div>
+
+    <div>
+        <label asp-for="Username"></label>
+        <input asp-for="Username" />
+    </div>
+
+    <div>
+        <label asp-for="Password"></label>
+        <input asp-for="Password" type="password" />
+    </div>
+
+    <button type="submit">Guardar</button>
+</form>
+
+@section Scripts {
+    @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+}

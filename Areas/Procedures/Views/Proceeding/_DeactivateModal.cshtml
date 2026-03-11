@@ -1,0 +1,31 @@
+﻿@model SchoolManager.Models.users_person
+
+<div class="modal fade" id="deactivateModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title fw-bold"><i class="bi bi-person-x me-2"></i>Confirmar Baja de Expediente</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body text-center py-4">
+                <i class="bi bi-exclamation-octagon text-danger" style="font-size: 4rem;"></i>
+                <h4 class="fw-bold mt-3">¿Dar de baja a este alumno?</h4>
+                <p class="mb-1">Se desactivará el acceso y el expediente de:</p>
+                <p class="fs-5 fw-bold text-burgundy">@Model.FirstName @Model.LastNamePaternal @Model.LastNameMaternal</p>
+
+                <div class="alert alert-warning small mx-3 mt-3">
+                    <i class="bi bi-info-circle me-1"></i>
+                    El usuario ya no podrá iniciar sesión y no aparecerá en las listas de trámites activos.
+                </div>
+            </div>
+            <div class="modal-footer bg-light">
+                <form id="formDeleteStudent">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="id" value="@Model.PersonId" />
+                    <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" onclick="confirmDeactivateLogic()" class="btn btn-danger px-4">Confirmar Baja</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,496 @@
+﻿@model SchoolManager.Areas.UserMng.ViewModels.LoginVM
+
+@{
+    ViewData["Title"] = "Iniciar Sesión";
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"]</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Outfit:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        :root {
+            --vino: #6B1A2A;
+            --vino-dark: #4A1020;
+            --vino-deep: #380C1A;
+            --vino-light: #8C2D3F;
+            --vino-dim: rgba(107, 26, 42, 0.12);
+            --white: #FFFFFF;
+            --off-white: #F7F3F0;
+            --cream: #EDE8E3;
+            --muted: #9C8B85;
+            --text-dark: #2C1A1E;
+        }
+
+        html, body {
+            height: 100%;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: var(--off-white);
+            display: flex;
+            align-items: stretch;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        .panel-left {
+            width: 420px;
+            flex-shrink: 0;
+            background: var(--vino-deep);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 56px 52px;
+            overflow: hidden;
+        }
+
+            .panel-left::before {
+                content: '';
+                position: absolute;
+                top: -80px;
+                right: -80px;
+                width: 320px;
+                height: 320px;
+                border-radius: 50%;
+                border: 60px solid rgba(255,255,255,0.04);
+            }
+
+            .panel-left::after {
+                content: '';
+                position: absolute;
+                bottom: -60px;
+                left: -60px;
+                width: 240px;
+                height: 240px;
+                border-radius: 50%;
+                border: 40px solid rgba(255,255,255,0.03);
+            }
+
+        .diamond-grid {
+            position: absolute;
+            inset: 0;
+            background-image: linear-gradient(45deg, rgba(255,255,255,0.015) 25%, transparent 25%), linear-gradient(-45deg, rgba(255,255,255,0.015) 25%, transparent 25%), linear-gradient(45deg, transparent 75%, rgba(255,255,255,0.015) 75%), linear-gradient(-45deg, transparent 75%, rgba(255,255,255,0.015) 75%);
+            background-size: 32px 32px;
+            background-position: 0 0, 0 16px, 16px -16px, -16px 0px;
+        }
+
+        .brand {
+            position: relative;
+            z-index: 1;
+            animation: slideIn 0.8s cubic-bezier(0.22,1,0.36,1) both;
+        }
+
+        /* School crest / logo mark */
+        .crest {
+            width: 72px;
+            height: 72px;
+            background: rgba(255,255,255,0.08);
+            border: 1.5px solid rgba(255,255,255,0.2);
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 36px;
+        }
+
+            .crest svg {
+                width: 36px;
+                height: 36px;
+            }
+
+        .school-label {
+            font-size: 0.68rem;
+            font-weight: 500;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: rgba(255,255,255,0.45);
+            margin-bottom: 12px;
+        }
+
+        .school-name {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 2.6rem;
+            font-weight: 600;
+            line-height: 1.15;
+            color: var(--white);
+            margin-bottom: 20px;
+        }
+
+            .school-name em {
+                font-style: italic;
+                color: rgba(255,255,255,0.65);
+                font-weight: 400;
+            }
+
+        .divider-line {
+            width: 40px;
+            height: 2px;
+            background: rgba(255,255,255,0.25);
+            margin-bottom: 20px;
+        }
+
+        .school-tagline {
+            font-size: 0.85rem;
+            font-weight: 300;
+            color: rgba(255,255,255,0.5);
+            line-height: 1.7;
+            max-width: 260px;
+        }
+
+        .panel-footer {
+            position: relative;
+            z-index: 1;
+            font-size: 0.72rem;
+            color: rgba(255,255,255,0.25);
+            letter-spacing: 0.05em;
+        }
+
+        .panel-right {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 32px;
+            background: var(--off-white);
+            position: relative;
+        }
+
+            .panel-right::before {
+                content: '';
+                position: absolute;
+                inset: 0;
+                background: radial-gradient(ellipse 70% 60% at 60% 40%, rgba(107,26,42,0.04) 0%, transparent 70%);
+                pointer-events: none;
+            }
+
+        .form-card {
+            width: 100%;
+            max-width: 400px;
+            position: relative;
+            z-index: 1;
+            animation: fadeUp 0.7s 0.15s cubic-bezier(0.22,1,0.36,1) both;
+        }
+
+        .form-header {
+            margin-bottom: 40px;
+        }
+
+        .form-eyebrow {
+            font-size: 0.72rem;
+            font-weight: 500;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+            color: var(--vino);
+            margin-bottom: 8px;
+        }
+
+        .form-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 2.2rem;
+            font-weight: 600;
+            color: var(--text-dark);
+            line-height: 1.2;
+        }
+
+        .form-subtitle {
+            font-size: 0.83rem;
+            color: var(--muted);
+            margin-top: 6px;
+        }
+
+        .validation-box {
+            background: rgba(107,26,42,0.07);
+            border-left: 3px solid var(--vino);
+            border-radius: 6px;
+            padding: 12px 16px;
+            margin-bottom: 24px;
+            font-size: 0.82rem;
+            color: var(--vino-dark);
+        }
+
+            .validation-box ul {
+                list-style: none;
+            }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            font-size: 0.72rem;
+            font-weight: 500;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--muted);
+            margin-bottom: 8px;
+        }
+
+        .input-wrap {
+            position: relative;
+        }
+
+        .input-icon {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--muted);
+            width: 16px;
+            height: 16px;
+            opacity: 0.6;
+        }
+
+        input[type="email"],
+        input[type="password"],
+        input[type="text"] {
+            width: 100%;
+            padding: 12px 16px 12px 42px;
+            background: var(--white);
+            border: 1.5px solid var(--cream);
+            border-radius: 10px;
+            color: var(--text-dark);
+            font-family: 'Outfit', sans-serif;
+            font-size: 0.9rem;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            outline: none;
+        }
+
+        input:focus {
+            border-color: var(--vino-light);
+            box-shadow: 0 0 0 3px var(--vino-dim);
+        }
+
+        input::placeholder {
+            color: #C5B8B3;
+        }
+
+        .field-error {
+            font-size: 0.75rem;
+            color: var(--vino);
+            margin-top: 5px;
+        }
+
+        .row-options {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 4px 0 28px;
+        }
+
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.82rem;
+            color: var(--muted);
+            cursor: pointer;
+        }
+
+            .checkbox-label input[type="checkbox"] {
+                width: 15px;
+                height: 15px;
+                accent-color: var(--vino);
+                cursor: pointer;
+            }
+
+        .forgot-link {
+            font-size: 0.8rem;
+            color: var(--vino);
+            text-decoration: none;
+            opacity: 0.8;
+            transition: opacity 0.2s;
+        }
+
+            .forgot-link:hover {
+                opacity: 1;
+            }
+        .btn-login {
+            width: 100%;
+            padding: 14px;
+            background: var(--vino);
+            color: var(--white);
+            font-family: 'Outfit', sans-serif;
+            font-size: 0.88rem;
+            font-weight: 500;
+            letter-spacing: 0.06em;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
+            box-shadow: 0 4px 16px rgba(107,26,42,0.25);
+        }
+
+            .btn-login:hover {
+                background: var(--vino-light);
+                transform: translateY(-1px);
+                box-shadow: 0 6px 20px rgba(107,26,42,0.35);
+            }
+
+            .btn-login:active {
+                transform: translateY(0);
+            }
+
+        .register-row {
+            text-align: center;
+            margin-top: 24px;
+            font-size: 0.82rem;
+            color: var(--muted);
+        }
+
+            .register-row a {
+                color: var(--vino);
+                text-decoration: none;
+                font-weight: 500;
+            }
+
+                .register-row a:hover {
+                    text-decoration: underline;
+                }
+
+        @@keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @@keyframes fadeUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @@media (max-width: 700px) {
+            .panel-left {
+                display: none;
+            }
+
+            body {
+                background: var(--white);
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="panel-left">
+        <div class="diamond-grid"></div>
+
+        <div class="brand">
+            <div class="crest">
+                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 3L2 8L12 13L22 8L12 3Z" stroke="white" stroke-width="1.5" stroke-linejoin="round" />
+                    <path d="M6 10.5V16C6 16 8.5 18 12 18C15.5 18 18 16 18 16V10.5" stroke="white" stroke-width="1.5" stroke-linecap="round" />
+                    <path d="M22 8V14" stroke="white" stroke-width="1.5" stroke-linecap="round" />
+                </svg>
+            </div>
+
+            <p class="school-label">Sistema Escolar</p>
+            <h1 class="school-name">
+                School<br><em>Manager</em>
+            </h1>
+            <div class="divider-line"></div>
+            <p class="school-tagline">
+                Plataforma de gestión académica para docentes y administradores.
+            </p>
+        </div>
+
+        <p class="panel-footer">&copy; @DateTime.Now.Year </p>
+    </div>
+
+    <div class="panel-right">
+        <div class="form-card">
+
+            <div class="form-header">
+                <p class="form-eyebrow">Bienvenido</p>
+                <h2 class="form-title">Iniciar sesión</h2>
+                <p class="form-subtitle">Ingresa tus credenciales para acceder al sistema</p>
+            </div>
+
+            @if (!ViewData.ModelState.IsValid)
+            {
+                <div class="validation-box">
+                    @Html.ValidationSummary(false, "")
+                </div>
+            }
+
+            @using (Html.BeginForm("Login", "Account", FormMethod.Post))
+            {
+                @Html.AntiForgeryToken()
+
+                <div class="form-group">
+                    @Html.LabelFor(m => m.Email, "Correo electrónico")
+                    <div class="input-wrap">
+                        <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="2" y="4" width="20" height="16" rx="2" />
+                            <path d="m2 7 10 7 10-7" />
+                        </svg>
+                        @Html.TextBoxFor(m => m.Email, new {
+                        placeholder = "correo@uttn.mx",
+                                        type = "email",
+                                        autocomplete = "email"
+                                        })
+                </div>
+                @Html.ValidationMessageFor(m => m.Email, "", new { @class = "field-error" })
+            </div>
+
+            <div class="form-group">
+                @Html.LabelFor(m => m.Password, "Contraseña")
+                <div class="input-wrap">
+                    <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="11" width="18" height="11" rx="2" />
+                        <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                    </svg>
+                    @Html.PasswordFor(m => m.Password, new {
+                                        placeholder = "••••••••",
+                                        autocomplete = "current-password"
+                                        })
+                </div>
+                @Html.ValidationMessageFor(m => m.Password, "", new { @class = "field-error" })
+            </div>
+
+            <div class="row-options">
+                <label class="checkbox-label">
+                    @Html.CheckBoxFor(m => m.RememberMe)
+                    Recordarme
+                </label>
+                @Html.ActionLink("¿Olvidaste tu contraseña?", "ForgotPassword", "Account", null, new { @class = "forgot-link" })
+            </div>
+
+            <button type="submit" class="btn-login">Ingresar al sistema</button>
+                        }
+
+            <div class="register-row">
+                ¿Necesitas acceso? <a href="mailto:soporte@escuela.edu.mx">Contacta al administrador</a>
+            </div>
+
+        </div>
+    </div>
+
+</body>
+</html>

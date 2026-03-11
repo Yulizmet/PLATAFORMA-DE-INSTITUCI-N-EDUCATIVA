@@ -1,0 +1,451 @@
+@model IEnumerable<SchoolManager.Models.users_user>
+
+@{
+    Layout = "_UserLayout";
+    ViewData["Title"] = "Gestión de Alumnos";
+}
+
+<div class="modal fade" id="createStudentModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <form id="createStudentForm" method="post"
+                  action="@Url.Action("Create", "Students", new { area = "UserMng" })">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="PersonId" id="create-PersonId" />
+
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title">
+                        <i class="bi bi-person-plus-fill me-2"></i>Crear cuenta de Alumno
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white"
+                            data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body">
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">
+                            <i class="bi bi-search me-1"></i>Buscar persona
+                        </label>
+                        <input type="text" id="searchPerson" class="form-control"
+                               placeholder="Escribe nombre, CURP o correo..." />
+                    </div>
+
+                    <div id="personInfo" class="d-none">
+                        <div class="alert alert-info py-2 mb-3">
+                            <i class="bi bi-info-circle me-1"></i>
+                            Datos de la persona seleccionada (solo lectura)
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <label class="form-label text-muted">Nombre(s)</label>
+                                <input id="info-FirstName" class="form-control" disabled />
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label text-muted">Apellido Paterno</label>
+                                <input id="info-LastNamePaternal" class="form-control" disabled />
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label text-muted">Apellido Materno</label>
+                                <input id="info-LastNameMaternal" class="form-control" disabled />
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <label class="form-label text-muted">CURP</label>
+                                <input id="info-Curp" class="form-control" disabled />
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label text-muted">Género</label>
+                                <input id="info-Gender" class="form-control" disabled />
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label text-muted">Teléfono</label>
+                                <input id="info-Phone" class="form-control" disabled />
+                            </div>
+                        </div>
+
+                        <hr />
+
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold">Correo Electrónico</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">
+                                        <i class="bi bi-envelope"></i>
+                                    </span>
+                                    <input name="Email" id="create-Email" type="email"
+                                           class="form-control" required />
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold">Usuario</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">
+                                        <i class="bi bi-person"></i>
+                                    </span>
+                                    <input name="Username" id="create-Username"
+                                           class="form-control" required />
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold">Contraseña</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">
+                                        <i class="bi bi-lock"></i>
+                                    </span>
+                                    <input name="Password" type="password"
+                                           class="form-control" required />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-footer bg-light border-top-0">
+                    <button type="button" class="btn btn-outline-secondary px-4"
+                            data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" id="btnCreateStudent"
+                            class="btn btn-success px-4 shadow-sm" disabled>
+                        <i class="bi bi-check-lg me-1"></i>Crear cuenta
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="editStudentModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form id="editStudentForm" method="post"
+                  action="@Url.Action("Edit", "Students", new { area = "UserMng" })">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="UserId" id="edit-UserId" />
+
+                <div class="modal-header bg-warning text-dark">
+                    <h5 class="modal-title">
+                        <i class="bi bi-pencil-square me-2"></i>Editar cuenta
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Correo Electrónico</label>
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="bi bi-envelope"></i>
+                            </span>
+                            <input name="Email" id="edit-Email" type="email"
+                                   class="form-control" required />
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Usuario</label>
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="bi bi-person"></i>
+                            </span>
+                            <input name="Username" id="edit-Username"
+                                   class="form-control" required />
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Nueva Contraseña</label>
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="bi bi-lock"></i>
+                            </span>
+                            <input name="Password" id="edit-Password" type="password"
+                                   class="form-control"
+                                   placeholder="Dejar vacío para no cambiar" />
+                        </div>
+                        <small class="text-muted">Solo llenar si deseas cambiarla.</small>
+                    </div>
+                </div>
+
+                <div class="modal-footer bg-light border-top-0">
+                    <button type="button" class="btn btn-outline-secondary px-4"
+                            data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-warning px-4 shadow-sm">
+                        <i class="bi bi-check-lg me-1"></i>Actualizar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="d-flex justify-content-between align-items-center mb-4 p-3 bg-white shadow-sm rounded">
+    <div>
+        <h2 class="mb-0 text-dark">
+            <i class="bi bi-mortarboard-fill me-2"></i>Alumnos
+        </h2>
+        <p class="text-muted small mb-0">Administra las cuentas de los alumnos.</p>
+    </div>
+    <button class="btn btn-success" data-bs-toggle="modal"
+            data-bs-target="#createStudentModal">
+        <i class="bi bi-plus-circle me-2"></i> Crear cuenta
+    </button>
+</div>
+
+<table class="table table-hover mt-3 shadow-sm">
+    <thead class="burgundy-header text-white">
+        <tr>
+            <th>Matrícula</th>
+            <th>Nombre</th>
+            <th>CURP</th>
+            <th>Email</th>
+            <th>Usuario</th>
+            <th class="text-center">Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            var pre = item.PreEnrollments?.FirstOrDefault();
+            <tr>
+                <td>
+                    <span class="badge bg-primary">
+                        @(pre?.Matricula ?? "Sin matrícula")
+                    </span>
+                </td>
+                <td>
+                    @item.Person.FirstName @item.Person.LastNamePaternal
+                    @item.Person.LastNameMaternal
+                </td>
+                <td>@item.Person.Curp</td>
+                <td>@item.Email</td>
+                <td>@item.Username</td>
+                <td class="text-center">
+                    <button class="btn btn-sm btn-warning"
+                            onclick="openEditModal(@item.UserId)">
+                        <i class="bi bi-pencil-square"></i>
+                    </button>
+                    <button class="btn btn-sm btn-danger"
+                            onclick="openDeleteModal(@item.UserId,
+                            '@item.Person.FirstName @item.Person.LastNamePaternal')">
+                        <i class="bi bi-trash-fill"></i>
+                    </button>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@section Scripts
+{
+<script src="~/js/autocomplete.js"></script>
+<script>
+
+initAutocomplete('#searchPerson', 'persons_no_account', function(item) {
+    
+    document.getElementById('create-PersonId').value = item.personId;
+    document.getElementById('info-FirstName').value = item.firstName || '';
+    document.getElementById('info-LastNamePaternal').value = item.lastNamePaternal || '';
+    document.getElementById('info-LastNameMaternal').value = item.lastNameMaternal || '';
+    document.getElementById('info-Curp').value = item.curp || '';
+    document.getElementById('info-Gender').value = item.gender || '';
+    document.getElementById('info-Phone').value = item.phone || '';
+
+    document.getElementById('create-Email').value = item.email || '';
+
+    document.getElementById('personInfo').classList.remove('d-none');
+    document.getElementById('btnCreateStudent').disabled = false;
+
+}, 'Escribe nombre, CURP o correo...');
+
+document.getElementById('createStudentModal').addEventListener('hidden.bs.modal', function () {
+    document.getElementById('createStudentForm').reset();
+    document.getElementById('create-PersonId').value = '';
+    document.getElementById('personInfo').classList.add('d-none');
+    document.getElementById('btnCreateStudent').disabled = true;
+    document.getElementById('searchPerson').value = '';
+});
+
+document.getElementById("createStudentForm").addEventListener("submit", async function (e) {
+    e.preventDefault();
+
+    if (!document.getElementById('create-PersonId').value) {
+        Swal.fire({ icon: 'warning', title: 'Selecciona una persona primero' });
+        return;
+    }
+
+    const form = e.target;
+    const submitBtn = form.querySelector('button[type="submit"]');
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Creando...';
+
+    try {
+        const response = await fetch(form.action, {
+            method: form.method,
+            body: new FormData(form)
+        });
+        const result = await response.json();
+
+        if (result.success) {
+            bootstrap.Modal.getInstance(
+                document.getElementById("createStudentModal")).hide();
+            await Swal.fire({
+                icon: 'success',
+                title: '¡Cuenta creada!',
+                showConfirmButton: false,
+                timer: 800,
+                timerProgressBar: true
+            });
+            location.reload();
+        } else {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                html: result.errors.map(e =>
+                    `<li class="text-start">${e}</li>`).join(''),
+                confirmButtonColor: '#dc3545'
+            });
+        }
+    } catch (error) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Error de conexión',
+            confirmButtonColor: '#dc3545'
+        });
+    } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<i class="bi bi-check-lg me-1"></i>Crear cuenta';
+    }
+});
+
+async function openEditModal(userId) {
+    Swal.fire({
+        title: 'Cargando...',
+        allowOutsideClick: false,
+        didOpen: () => Swal.showLoading()
+    });
+
+    try {
+        const url = `@Url.Action("GetStudent", "Students",
+                        new { area = "UserMng" })?id=${userId}`;
+        const response = await fetch(url);
+        const result = await response.json();
+        Swal.close();
+
+        if (!result.success) {
+            Swal.fire({ icon: 'error', title: 'Error',
+                html: result.errors.join('<br>') });
+            return;
+        }
+
+        const d = result.data;
+        document.getElementById("edit-UserId").value = d.userId;
+        document.getElementById("edit-Email").value = d.email || "";
+        document.getElementById("edit-Username").value = d.username || "";
+        document.getElementById("edit-Password").value = "";
+
+        new bootstrap.Modal(
+            document.getElementById("editStudentModal")).show();
+    } catch (error) {
+        Swal.fire({ icon: 'error', title: 'Error de conexión' });
+    }
+}
+
+document.getElementById("editStudentForm").addEventListener("submit", async function (e) {
+    e.preventDefault();
+    const form = e.target;
+    const submitBtn = form.querySelector('button[type="submit"]');
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Actualizando...';
+
+    try {
+        const response = await fetch(form.action, {
+            method: form.method,
+            body: new FormData(form)
+        });
+        const result = await response.json();
+
+        if (result.success) {
+            bootstrap.Modal.getInstance(
+                document.getElementById("editStudentModal")).hide();
+            await Swal.fire({
+                icon: 'success',
+                title: '¡Actualizado!',
+                showConfirmButton: false,
+                timer: 800,
+                timerProgressBar: true
+            });
+            location.reload();
+        } else {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                html: result.errors.map(e =>
+                    `<li class="text-start">${e}</li>`).join(''),
+                confirmButtonColor: '#dc3545'
+            });
+        }
+    } catch (error) {
+        Swal.fire({ icon: 'error', title: 'Error de conexión' });
+    } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<i class="bi bi-check-lg me-1"></i>Actualizar';
+    }
+});
+
+async function openDeleteModal(userId, fullName) {
+    const result = await Swal.fire({
+        title: '¿Eliminar cuenta?',
+        html: `<p>Se eliminará la cuenta de:</p>
+               <p class="fw-bold text-danger">${fullName}</p>
+               <small class="text-muted">Solo se elimina la cuenta,
+               no los datos personales.</small>`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#dc3545',
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: '<i class="bi bi-trash me-1"></i>Sí, eliminar',
+        cancelButtonText: 'Cancelar',
+        reverseButtons: true
+    });
+
+    if (!result.isConfirmed) return;
+
+    try {
+        const token = document.querySelector(
+            '#createStudentForm input[name="__RequestVerificationToken"]').value;
+        const formData = new FormData();
+        formData.append('id', userId);
+        formData.append('__RequestVerificationToken', token);
+
+        const response = await fetch(
+            '@Url.Action("Delete", "Students", new { area = "UserMng" })', {
+            method: 'POST',
+            body: formData
+        });
+        const data = await response.json();
+
+        if (data.success) {
+            await Swal.fire({
+                icon: 'success',
+                title: '¡Eliminado!',
+                showConfirmButton: false,
+                timer: 1000,
+                timerProgressBar: true
+            });
+            location.reload();
+        } else {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                html: data.errors.join('<br>'),
+                confirmButtonColor: '#dc3545'
+            });
+        }
+    } catch (error) {
+        Swal.fire({ icon: 'error', title: 'Error de conexión' });
+    }
+}
+
+</script>
+}

@@ -1,0 +1,73 @@
+﻿@model SchoolManager.Models.users_person
+
+<div class="modal fade" id="quickStudentModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header bg-burgundy text-white">
+                <h5 class="modal-title fw-bold"><i class="bi bi-rocket-takeoff me-2"></i>Generador de Expediente de Prueba</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="formQuickStudent" asp-area="Procedures" asp-controller="Proceeding" asp-action="QuickCreateStudent" method="post">
+                @Html.AntiForgeryToken()
+                <div class="modal-body px-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <span class="badge bg-info-subtle text-info border border-info-subtle">
+                            <i class="bi bi-info-circle me-1"></i> Se insertará en 6 tablas automáticamente
+                        </span>
+                        <button type="button" class="btn btn-sm btn-outline-primary" onclick="fillStudentData()">
+                            <i class="bi bi-lightning-charge-fill"></i> Autocompletar datos
+                        </button>
+                    </div>
+
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold small">Nombre(s)</label>
+                            <input type="text" name="FirstName" class="form-control form-control-sm" required />
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold small">A. Paternal</label>
+                            <input type="text" name="LastNamePaternal" class="form-control form-control-sm" required />
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold small">A. Maternal</label>
+                            <input type="text" name="LastNameMaternal" class="form-control form-control-sm" value="Prueba" required />
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small">CURP (18 carac.)</label>
+                            <input type="text" name="Curp" class="form-control form-control-sm" maxlength="18" required />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small">Matrícula</label>
+                            <input type="text" name="Matricula" class="form-control form-control-sm" required />
+                        </div>
+
+                        <div class="col-md-7">
+                            <label class="form-label fw-bold small">Correo Electrónico</label>
+                            <input type="email" name="Email" class="form-control form-control-sm" required />
+                        </div>
+                        <div class="col-md-5">
+                            <label class="form-label fw-bold small">Username</label>
+                            <input type="text" name="Username" class="form-control form-control-sm" required />
+                        </div>
+                    </div>
+
+                    <div class="mt-4 p-3 bg-light rounded-3 border">
+                        <h6 class="fw-bold mb-2 small"><i class="bi bi-database-add me-1"></i> Configuración Automática:</h6>
+                        <ul class="mb-0 small text-muted">
+                            <li><strong>Carrera:</strong> Se asignará la ID 5 (la que definiste en el controlador).</li>
+                            <li><strong>Tablas Extra:</strong> Se crearán registros en <em>Addresses, Infos y Schools</em> con datos genéricos.</li>
+                            <li><strong>Rol:</strong> Se asignará automáticamente el <strong>Rol 1 (Alumno)</strong>.</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light border-0">
+                    <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn bg-burgundy text-white">
+                        <i class="bi bi-save me-1"></i> Crear Expediente
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

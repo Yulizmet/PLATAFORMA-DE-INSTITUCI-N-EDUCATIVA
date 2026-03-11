@@ -1,0 +1,1010 @@
+﻿/*============================================================================
+    IMPORTACIÓN DE FUENTES (Esto arregla que no cargue la tipografía)
+==============================================================================*/
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800;900&display=swap');
+
+/*============================================================================
+    VARIABLES Y CONFIGURACIÓN GLOBAL
+==============================================================================*/
+:root {
+    --burgundy: #620900;
+    --burgundy-light: #8C1B1B;
+    --transition: all 0.3s ease;
+}
+
+.merriweather-font {
+    font-family: 'Merriweather', serif;
+}
+
+.area-tramites {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+    background-color: #f3f3f3;
+    min-height: 100vh;
+}
+
+    .area-tramites h1 {
+        font-weight: 900;
+        color: var(--burgundy);
+    }
+
+    .area-tramites h2 {
+        font-weight: 700;
+    }
+
+    .area-tramites p {
+        font-weight: 300;
+    }
+
+.btn:focus, .btn:active:focus, .btn-link.nav-link:focus,
+.form-control:focus, .form-select:focus, .form-check-input:focus {
+    box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem rgba(98, 9, 0, 0.25);
+    border-color: var(--burgundy-light) !important;
+}
+
+.table-white {
+    background-color: #fff;
+}
+
+
+body {
+    background-color: #f3f3f3 !important;
+}
+
+@media (max-width: 767.98px) {
+    .sidebar {
+        position: absolute;
+        left: -100%;
+    }
+
+        .sidebar.show {
+            left: 0;
+        }
+
+    .main-content {
+        margin-left: 0 !important;
+        width: 100% !important;
+    }
+}
+
+/*============================================================================
+    DASHBOARD
+==============================================================================*/
+
+.card {
+    border-radius: 15px;
+    transition: 0.3s;
+    position: relative;
+    overflow: hidden;
+}
+
+    .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
+    }
+
+.card-icon {
+    position: absolute;
+    right: 15px;
+    top: 15px;
+    opacity: 0.15;
+    font-size: 2.2rem;
+}
+
+.chart-container {
+    position: relative;
+    height: 300px;
+    width: 100%;
+}
+
+.accent-total {
+    border-left: 6px solid #8C1B1B !important;
+}
+
+.accent-action {
+    border-left: 6px solid #B1A596 !important;
+}
+
+.accent-course {
+    border-left: 6px solid #620900 !important;
+}
+
+.accent-done {
+    border-left: 6px solid #28a745 !important;
+}
+
+.accent-cancel {
+    border-left: 6px solid #6c757d !important;
+}
+
+.metric-big {
+    font-size: 3rem;
+    font-weight: 800;
+    color: #620900;
+}
+
+/*============================================================================
+    LAYOUT: SIDEBAR (Procedures)
+==============================================================================*/
+.sidebar {
+    background-color: var(--burgundy) !important;
+    height: 100vh;
+    color: white;
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    top: 0;
+    left: 0;
+    overflow: hidden;
+}
+
+    .sidebar .position-sticky {
+        display: flex;
+        flex-direction: column;
+        height: calc(100vh - 2rem);
+        width: 100%;
+    }
+
+    .sidebar h5 {
+        color: rgba(255, 255, 255, 0.6) !important;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        /*padding-left: 1.5rem;*/
+    }
+
+    .sidebar .nav.flex-column {
+        flex-grow: 1;
+        overflow-y: auto;
+    }
+
+    .sidebar .nav-link {
+        color: rgba(255, 255, 255, 0.8) !important;
+        border-left: 4px solid transparent;
+        transition: var(--transition);
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 0.5rem 1.5rem;
+    }
+
+        .sidebar .nav-link:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: white !important;
+        }
+
+        .sidebar .nav-link.active-item {
+            background-color: rgba(255, 255, 255, 0.15) !important;
+            border-left: 4px solid #ffffff !important;
+            font-weight: bold;
+            color: white !important;
+        }
+
+
+.sidebar-scroll-container {
+    height: calc(100vh - 120px);
+    overflow-y: auto;
+    padding-bottom: 20px;
+}
+
+    .sidebar-scroll-container::-webkit-scrollbar {
+        width: 4px;
+    }
+
+    .sidebar-scroll-container::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 10px;
+    }
+
+.sidebar-heading {
+    font-size: 0.75rem !important;
+    letter-spacing: 0.5px;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.6);
+    margin-bottom: 0.5rem;
+}
+
+.user-profile {
+    margin: auto 1rem 1.5rem 1rem;
+    padding: 1rem;
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    transition: var(--transition);
+}
+
+
+/*============================================================================
+    VISTAS DE FORMULARIOS (Requests & PaymentRegistration)
+==============================================================================*/
+.form-container {
+    min-height: 90vh;
+    padding: 2rem 0;
+}
+
+.card-request {
+    border: none;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+}
+
+.form-label {
+    color: var(--burgundy);
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.form-control, .form-select {
+    border-radius: 10px;
+    padding: 0.75rem;
+    border: 1px solid #dee2e6;
+    transition: var(--transition);
+}
+
+.requirement-box {
+    background-color: #fff;
+    border-radius: 15px;
+    padding: 1.5rem;
+    border: 1px dashed #ced4da;
+}
+
+.section-title {
+    color: var(--burgundy);
+    border-bottom: 2px solid #f1f1f1;
+    padding-bottom: 0.5rem;
+    margin-bottom: 1.5rem;
+    font-weight: 700;
+}
+
+.step-order-input {
+    padding: 0.25rem;
+}
+
+/* Drop Zone & File Preview */
+.drop-zone {
+    border: 2px dashed #ced4da;
+    border-radius: 20px;
+    padding: 40px;
+    text-align: center;
+    background: #fff;
+    transition: var(--transition);
+    cursor: pointer;
+}
+
+    .drop-zone:hover {
+        border-color: var(--burgundy);
+        background: rgba(98, 9, 0, 0.02);
+    }
+
+#file-preview {
+    display: none;
+    margin-top: 15px;
+    padding: 15px;
+    border-radius: 15px;
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    align-items: center;
+    gap: 15px;
+}
+
+.file-icon {
+    font-size: 2.5rem;
+    color: var(--burgundy);
+}
+
+/*============================================================================
+    VISTA TRACKING & DETAILS
+==============================================================================*/
+.tracking-container {
+    padding-top: 3rem;
+    min-height: 90vh;
+}
+
+.table-custom {
+    background: white;
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+}
+
+    .table-custom thead th {
+        background-color: var(--burgundy) !important;
+        color: white !important;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+        border: none !important;
+        padding: 1.2rem 1rem;
+    }
+
+.btn-action {
+    width: 35px;
+    height: 35px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    transition: all 0.2s;
+}
+
+    .btn-action:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+
+.status-badge {
+    padding: 0.5em 1.2em;
+    border-radius: 50px;
+    font-weight: 600;
+    font-size: 0.75rem;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.03);
+}
+
+/* Timeline scrollbar */
+.timeline-detail::-webkit-scrollbar {
+    width: 5px;
+}
+
+.timeline-detail::-webkit-scrollbar-thumb {
+    background: #ced4da;
+    border-radius: 10px;
+}
+
+/*============================================================================
+    COMPONENTES: CARDS HORIZONTALES (Centro de Trámites)
+==============================================================================*/
+.area-tramites .card-horizontal {
+    border: none;
+    border-radius: 20px;
+    overflow: hidden;
+    background: white;
+    transition: all 0.4s ease;
+    display: flex;
+    flex-direction: row;
+    height: 220px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+}
+
+    .area-tramites .card-horizontal:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 20px 40px rgba(77, 2, 23, 0.15);
+    }
+
+.area-tramites .img-side {
+    width: 35%;
+    position: relative;
+    overflow: hidden;
+}
+
+    .area-tramites .img-side img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+.area-tramites .img-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(to right, rgba(77, 2, 23, 0.1), rgba(77, 2, 23, 0.6));
+}
+
+.area-tramites .content-side {
+    width: 65%;
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    position: relative;
+}
+
+.area-tramites .icon-float {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    color: var(--burgundy);
+    opacity: 0.15;
+    font-size: 1.8rem;
+}
+
+/*============================================================================
+    UTILERÍAS Y COLORES INSTITUCIONALES
+==============================================================================*/
+.bg-burgundy, .burgundy-header, .card-header-burgundy {
+    background-color: var(--burgundy) !important;
+    color: #fff !important;
+}
+
+.border-burgundy {
+    border-left: 4px solid #620900 !important;
+}
+
+.nav-pills-burgundy .nav-link.active {
+    background-color: #620900 !important;
+    color: white !important;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+
+#secondaryGestorTabs .nav-link {
+    color: #000000 !important;
+    border: none !important;
+    border-bottom: 3px solid transparent !important;
+    background: transparent !important;
+}
+
+    #secondaryGestorTabs .nav-link.active {
+        color: #620900 !important;
+        border-bottom: 3px solid #620900 !important;
+    }
+
+.custom-check:checked {
+    background-color: #620900 !important;
+    border-color: #620900 !important;
+}
+
+.form-switch .form-check-input:checked {
+    background-color: #620900 !important;
+    border-color: #620900 !important;
+}
+
+.text-burgundy {
+    color: #620900;
+}
+
+
+.nav-pills-burgundy .nav-link:hover:not(.active) {
+    color: #620900;
+    background-color: rgba(98, 9, 0, 0.05);
+}
+
+.nav-pills-burgundy .nav-link {
+    color: #555;
+    transition: all 0.3s ease;
+}
+
+.card-header-burgundy {
+    padding: 1rem 1.2rem;
+}
+
+.burgundy-color {
+    color: var(--burgundy) !important;
+}
+
+.form-check-input-burgundy:checked {
+    background-color: var(--burgundy) !important;
+    border-color: var(--burgundy) !important;
+}
+
+.form-check-input-burgundy:focus {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3E%3Ccircle r='3' fill='rgba(98, 9, 0, 0.25)'/%3E%3C/svg%3E") !important;
+}
+
+.burgundy-border {
+    border: 2px solid var(--burgundy) !important;
+}
+
+.hover-bg-light:hover {
+    background-color: #f8f9fa !important;
+    transform: translateX(5px);
+}
+
+.transition-all {
+    transition: var(--transition);
+}
+
+.btn-burgundy, .btn-send {
+    background-color: var(--burgundy);
+    color: white !important;
+    border-radius: 50px;
+    padding: 0.5rem 2.5rem;
+    font-weight: 600;
+    transition: var(--transition);
+    border: none;
+    width: fit-content;
+    text-decoration: none;
+}
+
+    .btn-burgundy:hover, .btn-send:hover {
+        background-color: var(--burgundy-light);
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(98, 9, 0, 0.3);
+    }
+
+/* Avatar de expedientes */
+
+.bg-burgundy-light {
+    background-color: #8C1B1B !important;
+}
+
+.avatar-circle {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 0.85rem;
+}
+
+.text-info {
+    color: #00838f !important;
+}
+
+.status-badge {
+    display: inline-block;
+    padding: 0.35em 0.8em;
+    font-size: 0.75em;
+    font-weight: 700;
+    line-height: 1;
+    text-align: center;
+    white-space: nowrap;
+    vertical-align: baseline;
+    border-radius: 50rem;
+}
+
+.bg-active {
+    background-color: rgba(13, 110, 253, 0.1) !important; /* Azul Bootstrap al 10% */
+}
+
+.bg-inactive {
+    background-color: rgba(220, 53, 69, 0.1) !important; /* Rojo Bootstrap al 10% */
+}
+
+.bg-superadmin {
+    background-color: rgba(33, 37, 41, 0.05) !important;
+}
+
+/* TABLE TOOLS AND DATA TABLE */
+
+.btn-export {
+    background-color: #ffffff;
+    color: #620900;
+    border: 1px solid #dee2e6;
+    font-size: 0.85rem;
+    font-weight: 600;
+    padding: 0.5rem 1rem;
+    transition: all 0.2s ease;
+}
+
+    .btn-export:hover {
+        background-color: #620900;
+        color: #ffffff;
+        border-color: #620900;
+    }
+
+.btn-export-dark {
+    background-color: #343a40;
+    color: #ffffff;
+    border: 1px solid #343a40;
+    font-size: 0.85rem;
+    font-weight: 600;
+    padding: 0.5rem 1rem;
+}
+
+    .btn-export-dark:hover {
+        background-color: #212529;
+        color: #ffffff;
+    }
+
+.btn-group > .btn:not(:last-child) {
+    border-right: none;
+}
+
+.expediente-label {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    color: #40484f;
+    font-weight: 800;
+}
+
+.expediente-value {
+    border-bottom: 1px solid #dee2e6;
+    padding-bottom: 2px;
+    font-weight: 500;
+    min-height: 25px;
+    color: #212529;
+}
+
+.section-header {
+    background-color: #e6e6e6;
+    border-left: 4px solid #620900;
+    padding: 8px 15px;
+    font-weight: bold;
+    margin-top: 25px;
+    margin-bottom: 15px;
+}
+
+/* ========================================================================
+   ESTILOS MAESTROS DATA TABLES
+   ======================================================================== */
+
+/* --- 1. HEADER (ICONOS DE ORDENADO) --- */
+table.dataTable thead .sorting:before, table.dataTable thead .sorting_asc:before,
+table.dataTable thead .sorting_desc:before, table.dataTable thead .sorting:after,
+table.dataTable thead .sorting_asc:after, table.dataTable thead .sorting_desc:after {
+    display: none !important;
+}
+
+table.dataTable thead th:not(.no-sort) {
+    position: relative !important;
+    padding-right: 30px !important;
+    vertical-align: middle !important;
+    cursor: pointer;
+}
+
+    table.dataTable thead th:not(.no-sort):after {
+        position: absolute !important;
+        right: 10px !important;
+        top: 50% !important;
+        transform: translateY(-50%) !important;
+        font-family: "bootstrap-icons" !important;
+        content: "\F145" !important;
+        font-size: 0.75rem !important;
+        opacity: 0.4 !important;
+    }
+
+table.dataTable thead .sorting_asc:after {
+    content: "\F124" !important;
+    opacity: 1 !important;
+    color: #fff !important;
+}
+
+table.dataTable thead .sorting_desc:after {
+    content: "\F128" !important;
+    opacity: 1 !important;
+    color: #fff !important;
+}
+
+/* --- 2. SELECTOR DE REGISTROS (LENGTH MENU) --- */
+.dataTables_length label {
+    display: flex !important;
+    align-items: center !important;
+    gap: 10px !important;
+    font-size: 0.85rem !important;
+    font-weight: 600 !important;
+    color: #495057 !important;
+    margin: 0 !important;
+}
+
+.dataTables_length select {
+    width: 70px !important; /* Más ancho para que respire */
+    height: 38px !important;
+    border-radius: 10px !important;
+    border: 1.5px solid #e9ecef !important;
+    background-color: #ffffff !important;
+    padding: 4px 8px !important;
+    cursor: pointer;
+    outline: none !important;
+}
+
+/* --- 3. BUSCADOR MODERNO --- */
+#tableSearch {
+    width: 240px !important;
+    height: 38px !important;
+    border-radius: 12px !important;
+    border: 1.5px solid #e9ecef !important;
+    background-color: #f8f9fa !important;
+    transition: all 0.3s ease;
+}
+
+    #tableSearch:focus {
+        background-color: #fff !important;
+        border-color: #620900 !important;
+        box-shadow: 0 4px 12px rgba(98, 9, 0, 0.08) !important;
+    }
+
+/* --- 4. FOOTER TRANSPARENTE Y CONTADOR --- */
+.dt-custom-footer {
+    background-color: transparent !important;
+    padding-top: 10px !important;
+    padding-bottom: 0 !important;
+}
+
+#staffCounter .badge, .dataTables_info {
+    font-size: 0.75rem !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.5px !important;
+    text-transform: uppercase;
+    background-color: #f8f9fa !important;
+    color: #6c757d !important;
+    padding: 8px 16px !important;
+    border-radius: 50px !important;
+    border: 1px solid #dee2e6 !important;
+    display: inline-block !important;
+}
+
+/* --- 5. PAGINACIÓN BURGUNDY --- */
+.dataTables_paginate .page-link {
+    padding: 6px 12px !important;
+    font-size: 0.85rem !important;
+    color: #620900 !important;
+    background-color: transparent !important;
+    border: none !important;
+    transition: all 0.2s ease;
+}
+
+.dataTables_paginate .page-item.active .page-link {
+    background-color: #620900 !important;
+    color: #fff !important;
+    border-radius: 8px !important;
+    font-weight: bold;
+}
+
+.dataTables_paginate .page-item:not(.active):hover .page-link {
+    background-color: rgba(98, 9, 0, 0.1) !important;
+    border-radius: 8px;
+}
+
+/* --- 6. LIMPIEZA DE CABECERA Y CHECKBOXES --- */
+#mainTable thead th.no-sort {
+    text-align: center !important;
+}
+
+    #mainTable thead th.no-sort input {
+        margin: 0 !important;
+        vertical-align: middle !important;
+        width: 1.1rem;
+        height: 1.1rem;
+    }
+
+.dataTables_wrapper {
+    padding: 0.5rem 0rem !important;
+    background: transparent !important;
+}
+
+/* --- 1. RESET Y FONDOS (PARA QUE SE VEA GRISÉCITO) --- */
+.dataTables_wrapper, .dt-header-container, .dt-footer-container {
+    background-color: #f3f3f3 !important;
+    box-shadow: none !important;
+    border: none !important;
+}
+
+/* --- 2. SELECTOR DE REGISTROS (MÁS ANCHO) --- */
+.dataTables_length label {
+    font-size: 0.85rem !important;
+    font-weight: 600;
+    color: #495057;
+    margin: 0 !important;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.dataTables_length select {
+    width: 100px !important; /* Más ancho para que no se vea mocho */
+    height: 40px !important;
+    border-radius: 10px !important;
+    border: 1px solid #dee2e6 !important;
+    background-color: #ffffff !important;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+/* --- 3. FLECHAS DE ORDENADO (CORREGIDAS) --- */
+table.dataTable thead th:not(.no-sort) {
+    position: relative !important;
+    padding-right: 35px !important;
+    cursor: pointer;
+}
+
+    /* Flecha Neutral (Aparece siempre) */
+    table.dataTable thead th:not(.no-sort):after {
+        position: absolute !important;
+        right: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        font-family: "bootstrap-icons" !important;
+        content: "\F145";
+        font-size: 0.7rem;
+        opacity: 0.2;
+        transition: all 0.2s;
+    }
+
+/* Flecha Arriba (Activa) */
+table.dataTable thead .sorting_asc:after {
+    content: "\F124" !important;
+    opacity: 1 !important;
+    color: #ffffff !important;
+}
+
+/* Flecha Abajo (Activa) */
+table.dataTable thead .sorting_desc:after {
+    content: "\F128" !important;
+    opacity: 1 !important;
+    color: #ffffff !important;
+}
+
+/* --- 4. BUSCADOR ESTILIZADO --- */
+#tableSearch {
+    width: 250px !important;
+    height: 40px !important;
+    border-radius: 12px !important;
+    border: 1px solid #dee2e6 !important;
+    padding-left: 2.8rem !important;
+    background-color: #ffffff !important;
+}
+
+.search-box .bi-search {
+    left: 15px !important;
+    z-index: 5;
+}
+
+/* --- 5. FOOTER Y PAGINACIÓN --- */
+.dt-footer-container {
+    padding: 0 !important;
+}
+
+/* El contador abajo a la izquierda */
+#staffCounter .badge {
+    background-color: #ffffff !important;
+    color: #6c757d !important;
+    border: 1px solid #dee2e6 !important;
+    font-size: 0.75rem !important;
+    padding: 10px 18px !important;
+    border-radius: 50px !important;
+}
+
+/* Paginación limpia */
+.dataTables_paginate .page-link {
+    background-color: #ffffff !important;
+    border: 1px solid #dee2e6 !important;
+    color: #620900 !important;
+    margin: 0 2px;
+    border-radius: 8px !important;
+}
+
+.dataTables_paginate .page-item.active .page-link {
+    background-color: #620900 !important;
+    color: #ffffff !important;
+    border-color: #620900 !important;
+}
+
+/*============================================================================
+    LAYOUT: SIDEBAR & MAIN CONTENT (Ajuste Final Consolidado)
+==============================================================================*/
+:root {
+    --sidebar-width: 260px;
+    --sidebar-collapsed-width: 80px;
+}
+
+.sidebar {
+    width: var(--sidebar-width);
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    top: 0;
+    left: 0;
+}
+
+    .sidebar.collapsed {
+        width: var(--sidebar-collapsed-width);
+    }
+
+.sidebar-scroll-container {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+#sidebarToggle, #sidebarToggle:focus, #sidebarToggle:active {
+    outline: none !important;
+    box-shadow: none !important;
+    border: none !important;
+    background: transparent !important;
+    color: white !important;
+    transition: transform 0.3s ease;
+}
+
+/*.sidebar.collapsed #sidebarToggle {
+    transform: rotate(180deg);
+}*/
+
+.user-profile {
+    flex-shrink: 0;
+    margin-top: 0.5rem;
+    background: rgba(0,0,0,0.2);
+    border-top: 1px solid rgba(255,255,255,.1);
+}
+
+.user-info-text {
+    line-height: 1.1 !important;
+    display: flex;
+    flex-direction: column;
+}
+
+.user-name {
+    font-size: 1rem;
+    font-weight: 700;
+    margin-bottom: 4px !important;
+    white-space: nowrap;
+}
+
+.last-connection {
+    font-size: 0.75rem !important;
+    font-weight: 700;
+    opacity: 0.6;
+}
+
+/* Ocultar textos al colapsar */
+.sidebar.collapsed .user-info-text,
+.sidebar.collapsed .sidebar-text,
+.sidebar.collapsed .logout-text,
+.sidebar.collapsed h5,
+.sidebar.collapsed span,
+.sidebar.collapsed .sidebar-heading {
+    display: none !important;
+}
+
+.sidebar.collapsed .user-profile {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.main-content {
+    margin-left: var(--sidebar-width);
+    width: calc(100% - var(--sidebar-width));
+    min-height: 100vh;
+    padding: 2rem;
+    background-color: #f3f3f3;
+    transition: all 0.3s ease;
+}
+
+/* Sincronización de margen cuando el sidebar se cierra */
+.sidebar.collapsed + .main-content {
+    margin-left: var(--sidebar-collapsed-width);
+    width: calc(100% - var(--sidebar-collapsed-width));
+}
+
+/*============================================================================
+    RESPONSIVE & PRINT
+==============================================================================*/
+.main-content {
+    margin-left: 250px;
+}
+
+@media (max-width: 992px) {
+    .area-tramites .card-horizontal {
+        flex-direction: column;
+        height: auto;
+    }
+
+    .area-tramites .img-side, .area-tramites .content-side {
+        width: 100%;
+    }
+
+    .area-tramites .img-side {
+        height: 120px;
+    }
+}
+
+@media (max-width: 767.98px) {
+    .sidebar {
+        position: relative;
+        min-height: auto;
+        width: 100%;
+    }
+
+    .main-content {
+        margin-left: 0;
+    }
+}
+
+@media print {
+    .table-tools, nav, .sidebar, .btn, .toast-container, header, footer {
+        display: none !important;
+    }
+
+    .actions, th:last-child, td:last-child {
+        display: none !important;
+    }
+
+    tr {
+        page-break-inside: avoid;
+    }
+}

@@ -61,8 +61,6 @@ namespace SchoolManager.Areas.Enrollment.Controllers
             return _context.PreenrollmentGenerals.Any(e => e.IdData == id);
         }
 
-
-
         // =====================================================================
         // FLUJO 1: REGISTRO INICIAL + GENERACIÓN DE FOLIO
         // El usuario (sin cuenta) llena sus datos y genera un folio de pago.
@@ -120,7 +118,7 @@ namespace SchoolManager.Areas.Enrollment.Controllers
                 id_data = general.IdData,
                 street = vm.Street,
                 exterior_number = vm.ExteriorNumber,
-                interior_number = vm.InteriorNumber,
+                interior_number = vm.InteriorNumber ?? "N/A",
                 postal_code = vm.PostalCode,
                 neighborhood = vm.Neighborhood,
                 state = vm.State,
@@ -153,8 +151,8 @@ namespace SchoolManager.Areas.Enrollment.Controllers
                 paternal_last_name = vm.TutorPaternalLastName,
                 maternal_last_name = vm.TutorMaternalLastName,
                 name = vm.TutorName,
-                home_phone = vm.TutorHomePhone,
-                work_phone = vm.TutorWorkPhone
+                home_phone = vm.TutorHomePhone ?? "N/A",
+                work_phone = vm.TutorWorkPhone ?? "N/A"
             };
             _context.PreenrollmentTutors.Add(tutor);
 
@@ -162,12 +160,12 @@ namespace SchoolManager.Areas.Enrollment.Controllers
             var info = new preenrollment_infos
             {
                 id_data = general.IdData,
-                beca = vm.Beca,
+                beca = vm.Beca ?? "N/A",
                 comu_indi = vm.ComuIndi,
                 lengu_indi = vm.LenguIndi,
                 incapa = vm.Incapa,
                 disease = vm.Disease,
-                comment = vm.Comment
+                comment = vm.Comment ?? "N/A"
             };
             _context.PreenrollmentInfos.Add(info);
 
@@ -230,7 +228,7 @@ namespace SchoolManager.Areas.Enrollment.Controllers
 
             var pre = await _context.PreenrollmentGenerals
                 .Include(p => p.ProcedureRequest)
-                    .ThenInclude(pr => pr.ProcedureFlow)
+                    .ThenInclude(pr => pr!.ProcedureFlow)
                         .ThenInclude(pf => pf.ProcedureStatus)
                 .FirstOrDefaultAsync(p => p.Folio == folio);
 
@@ -270,7 +268,7 @@ namespace SchoolManager.Areas.Enrollment.Controllers
         {
             var pre = await _context.PreenrollmentGenerals
                 .Include(p => p.ProcedureRequest)
-                    .ThenInclude(pr => pr.ProcedureFlow)
+                    .ThenInclude(pr => pr!.ProcedureFlow)
                         .ThenInclude(pf => pf.ProcedureStatus)
                 .FirstOrDefaultAsync(p => p.IdData == id);
 
@@ -307,7 +305,7 @@ namespace SchoolManager.Areas.Enrollment.Controllers
 
             var pre = await _context.PreenrollmentGenerals
                 .Include(p => p.ProcedureRequest)
-                    .ThenInclude(pr => pr.ProcedureFlow)
+                    .ThenInclude(pr => pr!.ProcedureFlow)
                         .ThenInclude(pf => pf.ProcedureStatus)
                 .FirstOrDefaultAsync(p => p.IdData == vm.IdData);
 

@@ -1,12 +1,16 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using DocumentFormat.OpenXml.Vml.Office;
+using Humanizer.Configuration;
+using Microsoft.EntityFrameworkCore;
+using SchoolManager.Areas.Procedures.Models;
 using SchoolManager.Models;
+using System.Configuration;
+using System.Numerics;
 
 namespace SchoolManager.Data
 {
     public class AppDbContext : DbContext
     {
-        public AppDbContext(DbContextOptions<AppDbContext> options)
-            : base(options) { }
+        public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
 
         #region DbSets
         // Preenrollment (Inscripciones)
@@ -21,12 +25,16 @@ namespace SchoolManager.Data
 
 
 
-        // Procedures (Trámites - El área que actualizamos hoy)
+        // Procedures (Trámites)
         public DbSet<procedure_areas> ProcedureAreas { get; set; }
         public DbSet<procedure_documents> ProcedureDocuments { get; set; }
         public DbSet<procedure_flow> ProcedureFlow { get; set; }
         public DbSet<procedure_monitoring> ProcedureMonitoring { get; set; }
+        public DbSet<procedure_job_position> ProcedureJobPosition { get; set; }
+        public DbSet<procedure_module_catalog> ProcedureModuleCatalog { get; set; }
+        public DbSet<procedure_permission> ProcedurePermissions { get; set; }
         public DbSet<procedure_request> ProcedureRequest { get; set; }
+        public DbSet<procedure_staff> ProcedureStaff { get; set; }
         public DbSet<procedure_status> ProcedureStatus { get; set; }
         public DbSet<procedure_type_documents> ProcedureTypeDocuments { get; set; }
         public DbSet<procedure_type_requirements> ProcedureTypeRequirements { get; set; }
@@ -78,15 +86,19 @@ namespace SchoolManager.Data
         {
             base.OnModelCreating(modelBuilder);
 
-
-
-            //Procedures
             #region 1. Procedures Configuration
             modelBuilder.Entity<procedure_status>().ToTable("procedure_status");
             modelBuilder.Entity<procedure_areas>().ToTable("procedure_areas");
             modelBuilder.Entity<procedure_documents>().ToTable("procedure_documents");
             modelBuilder.Entity<procedure_type_documents>().ToTable("procedure_type_documents");
             modelBuilder.Entity<procedure_type_requirements>().ToTable("procedure_type_requirements");
+            modelBuilder.Entity<procedure_permission>().ToTable("procedure_permission");
+            modelBuilder.Entity<procedure_types>().ToTable("procedure_types");
+            modelBuilder.Entity<procedure_flow>().ToTable("procedure_flow");
+            modelBuilder.Entity<procedure_request>().ToTable("procedure_request");
+            modelBuilder.Entity<procedure_monitoring>().ToTable("procedure_monitoring");
+            modelBuilder.Entity<procedure_job_position>().ToTable("procedure_job_position");
+            modelBuilder.Entity<procedure_module_catalog>().ToTable("procedure_module_catalog");
 
             modelBuilder.Entity<procedure_status>(entity =>
             {
@@ -101,8 +113,29 @@ namespace SchoolManager.Data
             });
 
             modelBuilder.Entity<procedure_types>(entity => {
-                entity.ToTable("procedure_types");
                 entity.HasOne(d => d.ProcedureArea).WithMany(p => p.ProcedureTypes).HasForeignKey(d => d.IdArea);
+            });
+
+            modelBuilder.Entity<procedure_job_position>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Name).IsRequired().HasMaxLength(150);
+            });
+
+            modelBuilder.Entity<procedure_module_catalog>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.ModuleName).IsRequired().HasMaxLength(100);
+                entity.Property(e => e.ButtonName).HasMaxLength(100);
+                entity.Property(e => e.Route).HasMaxLength(255);
+            });
+
+            modelBuilder.Entity<procedure_permission>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.HasOne(d => d.Area).WithMany().HasForeignKey(d => d.IdArea).OnDelete(DeleteBehavior.Cascade).HasConstraintName("FK_Permission_Area");
+                entity.HasOne(d => d.JobPosition).WithMany().HasForeignKey(d => d.IdJobPosition).OnDelete(DeleteBehavior.Cascade).HasConstraintName("FK_Permission_Job");
+                entity.HasOne(d => d.ModuleCatalog).WithMany().HasForeignKey(d => d.IdModuleCatalog).OnDelete(DeleteBehavior.Cascade).HasConstraintName("FK_Permission_Catalog");
             });
 
             modelBuilder.Entity<procedure_flow>(entity => {
@@ -114,19 +147,29 @@ namespace SchoolManager.Data
 
             modelBuilder.Entity<procedure_request>(entity => {
                 entity.ToTable("procedure_request");
-                entity.HasOne(d => d.User).WithMany().HasForeignKey(d => d.IdUser).OnDelete(DeleteBehavior.Restrict);
                 entity.HasOne(d => d.ProcedureType).WithMany(p => p.ProcedureRequests).HasForeignKey(d => d.IdTypeProcedure).OnDelete(DeleteBehavior.Restrict);
                 entity.HasOne(d => d.ProcedureFlow).WithMany().HasForeignKey(d => d.IdProcedureFlow).OnDelete(DeleteBehavior.Restrict);
-                entity.Property(p => p.DateCreated).HasDefaultValueSql("GETDATE()").ValueGeneratedOnAdd();
+                entity.HasOne(d => d.User).WithMany(u => u.ProcedureRequests).HasForeignKey(d => d.IdUser).OnDelete(DeleteBehavior.Restrict);
+                entity.HasOne(d => d.User).WithMany(u => u.ProcedureRequests).HasForeignKey(d => d.IdUser).OnDelete(DeleteBehavior.Restrict);
+                entity.HasOne(d => d.ProcedureType).WithMany(p => p.ProcedureRequests).HasForeignKey(d => d.IdTypeProcedure).OnDelete(DeleteBehavior.Restrict);
+            entity.Property(p => p.DateCreated).HasDefaultValueSql("GETDATE()").ValueGeneratedOnAdd();
                 entity.Property(p => p.DateUpdated).HasDefaultValueSql("GETDATE()");
+            });
+
+            modelBuilder.Entity<procedure_staff>(entity => {
+                entity.HasIndex(s => s.IdUser).IsUnique();
+                entity.HasOne(s => s.User).WithMany().HasForeignKey(s => s.IdUser).OnDelete(DeleteBehavior.Restrict);
+                entity.HasOne(s => s.ProcedureArea).WithMany().HasForeignKey(s => s.IdArea).OnDelete(DeleteBehavior.Restrict);
             });
 
             modelBuilder.Entity<procedure_monitoring>(entity => {
                 entity.ToTable("procedure_monitoring");
                 entity.HasOne(pm => pm.ProcedureRequest).WithMany(pr => pr.ProcedureMonitorings).HasForeignKey(pm => pm.IdProcedure).OnDelete(DeleteBehavior.Cascade);
-                entity.HasOne(pm => pm.ProcedureFlow).WithMany().HasForeignKey(pm => pm.IdProcedureFlow).OnDelete(DeleteBehavior.Restrict); // Asegúrate de que use IdProcedureFlow
+                entity.HasOne(pm => pm.ProcedureFlow).WithMany().HasForeignKey(pm => pm.IdProcedureFlow).OnDelete(DeleteBehavior.Restrict);
                 entity.HasOne(pm => pm.User).WithMany().HasForeignKey(pm => pm.IdUser).OnDelete(DeleteBehavior.Restrict);
             });
+
+
             #endregion
 
             #region 2. Users Configuration
@@ -159,17 +202,17 @@ namespace SchoolManager.Data
             modelBuilder.Entity<preenrollment_docs>().ToTable("preenrollment_docs");
 
             // Índices únicos
-            modelBuilder.Entity<preenrollment_general>()
-                .HasIndex(p => p.Curp)
-                .IsUnique();
+            //modelBuilder.Entity<preenrollment_general>()
+            //    .HasIndex(p => p.Curp)
+            //    .IsUnique();
 
-            modelBuilder.Entity<preenrollment_general>()
-                .HasIndex(p => p.Email)
-                .IsUnique();
+            //modelBuilder.Entity<preenrollment_general>()
+            //    .HasIndex(p => p.Email)
+            //    .IsUnique();
 
-            modelBuilder.Entity<preenrollment_docs>()
-                .HasIndex(d => d.Curp)
-                .IsUnique();
+            //modelBuilder.Entity<preenrollment_docs>()
+            //    .HasIndex(d => d.Curp)
+            //    .IsUnique();
 
             // Relación: preenrollment_general -> preenrollment_careers
             modelBuilder.Entity<preenrollment_general>()
@@ -188,16 +231,16 @@ namespace SchoolManager.Data
             // Relación: preenrollment_general -> users_user (UserId)
             modelBuilder.Entity<preenrollment_general>()
                 .HasOne(p => p.User)
-                .WithMany()
+                .WithMany(u => u.Preenrollments)
                 .HasForeignKey(p => p.UserId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // Relación: preenrollment_general -> procedure_request (ProcedureRequestId)
+            //Relación: preenrollment_general -> procedure_request (1:1)
             modelBuilder.Entity<preenrollment_general>()
                 .HasOne(p => p.ProcedureRequest)
-                .WithMany()
+                .WithMany(r => r.Preenrollments)
                 .HasForeignKey(p => p.ProcedureRequestId)
-                .OnDelete(DeleteBehavior.Restrict);
+                .OnDelete(DeleteBehavior.SetNull);
 
             // Relación: preenrollment_addresses -> preenrollment_general
             modelBuilder.Entity<preenrollment_addresses>()
@@ -212,6 +255,10 @@ namespace SchoolManager.Data
                 .WithMany(g => g.Schools)
                 .HasForeignKey(s => s.id_data)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<preenrollment_schools>()
+                .Property(p => p.average)
+                .HasPrecision(5, 2);
 
             // Relación: preenrollment_infos -> preenrollment_general
             modelBuilder.Entity<preenrollment_infos>()
@@ -492,7 +539,6 @@ namespace SchoolManager.Data
                 .HasDefaultValueSql("GETDATE()");
 
             #endregion
-
 
             #region 5. Tutorship Configuration
             modelBuilder.Entity<tutorship>().ToTable("tutorship_sessions");
