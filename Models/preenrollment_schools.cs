@@ -12,19 +12,19 @@ namespace SchoolManager.Models
         public int id_data { get; set; }
 
         [ForeignKey("id_data")]
-        public preenrollment_general preenrollment_general { get; set; }
+        public preenrollment_general preenrollment_general { get; set; } = null!;
 
         [Required]
-        public string school { get; set; }
+        public string school { get; set; } = null!;
 
         [Required]
-        public string degree { get; set; }
+        public string degree { get; set; } = null!;
 
         [Required]
-        public string state { get; set; }
+        public string state { get; set; } = null!;
 
         [Required]
-        public string city { get; set; }
+        public string city { get; set; } = null!;
 
         [Required]
         public decimal average { get; set; }
@@ -34,9 +34,9 @@ namespace SchoolManager.Models
         public DateTime? end_date { get; set; }    // Nullable como en BD
 
         [Required]
-        public string study_system { get; set; }
+        public string study_system { get; set; } = null!;
 
         [Required]
-        public string high_school_type { get; set; }
+        public string high_school_type { get; set; } = null!;
     }
 }

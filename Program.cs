@@ -10,6 +10,8 @@ var builder = WebApplication.CreateBuilder(args);
 // --- SERVICES ---
 builder.Services.AddScoped<ISearchService, SearchService > ();
 builder.Services.AddScoped<IStorageService, AzureStorageService>();
+builder.Services.AddTransient<IEmailSender, OutlookEmailSender>();
+builder.Services.AddScoped<EmailService>();
 builder.Services.AddRazorPages();
 builder.Services.AddControllersWithViews();
 builder.Services.AddDbContext<AppDbContext>(options =>

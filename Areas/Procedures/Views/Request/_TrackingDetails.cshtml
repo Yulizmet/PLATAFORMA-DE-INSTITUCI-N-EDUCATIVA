@@ -1,5 +1,7 @@
 ﻿@model SchoolManager.Models.procedure_request
 
+<link rel="stylesheet" href="~/css/tramites.css" asp-append-version="true" />
+
 @* Encabezado institucional Burgundy *@
 <div class="modal-header burgundy-header text-white border-0 py-3">
     <div class="d-flex align-items-center">
@@ -23,7 +25,7 @@
         </div>
         <div class="col-md-5 text-md-end">
             <label class="text-muted small d-block text-uppercase fw-bold">Fecha de Registro</label>
-            <span class="text-secondary">@Model.DateUpdated.ToString("dd MMMM yyyy, hh:mm tt")</span>
+            <span class="text-secondary">@Model.DateUpdated?.ToString("dd MMMM yyyy, hh:mm tt")</span>
         </div>
     </div>
 

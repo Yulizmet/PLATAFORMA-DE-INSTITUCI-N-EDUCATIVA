@@ -12,14 +12,14 @@ public class preenrollment_general
     public int? ProcedureRequestId { get; set; }
     public string? BloodType { get; set; }
     public DateTime? CreateStat { get; set; }
-    public string Folio { get; set; }
-    public string MaritalStatus { get; set; }
-    public string Nationality { get; set; }
+    public string Folio { get; set; } = null!;
+    public string MaritalStatus { get; set; } = null!;
+    public string Nationality { get; set; } = null!;
     public string? Occupation { get; set; }
     public bool Work { get; set; }
     public string? WorkAddress { get; set; }
     public string? WorkPhone { get; set; }
-    public string Matricula { get; set; }
+    public string Matricula { get; set; } = null!;
 
     public preenrollment_careers? Career { get; set; }
     public preenrollment_generations? Generation { get; set; }

@@ -69,7 +69,7 @@ namespace SchoolManager.Services
                 .Include(u => u.UserRoles)
                     .ThenInclude(ur => ur.Role)
                 .Where(u => u.IsActive &&
-                    u.UserRoles.Any(ur => ur.Role.Name == roleName && ur.IsActive) &&
+                    u.UserRoles.Any(ur => ur!.Role!.Name == roleName && ur.IsActive) &&
                     (u.Person.FirstName.Contains(term) ||
                      u.Person.LastNamePaternal.Contains(term) ||
                      u.Person.LastNameMaternal.Contains(term) ||

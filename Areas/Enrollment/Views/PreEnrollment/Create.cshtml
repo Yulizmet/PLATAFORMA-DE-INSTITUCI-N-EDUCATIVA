@@ -12,8 +12,8 @@
 
     <div class="container my-5">
 
-        <form id="preinscripcionForm">
-            <!-- agregamos id para JS -->
+        <form asp-action="Create" method="post">
+
             <!-- Carrera -->
             <div class="card mb-4">
                 <div class="card-body">
@@ -25,14 +25,14 @@
                             asp-items="ViewBag.IdCareer"
                             class="form-select"
                             required>
-                        <option value="MANT_IND">Mantenimiento Industrial</option>
-
+                        <option value="">Sin selección</option>
                     </select>
 
                     <span asp-validation-for="DatosGenerales.IdCareer" class="text-danger"></span>
                 </div>
             </div>
 
+            <!-- 🔥 IMPORTANTE: pasar el Model COMPLETO -->
             <partial name="Partials/_DatosGenerales" model="Model" />
             <partial name="Partials/_DatosEscolares" model="Model" />
             <partial name="Partials/_Domicilio" model="Model" />
@@ -50,45 +50,8 @@
     </div>
 </main>
 
-
-
 @section Scripts {
-    @await Html.PartialAsync("_ValidationScriptsPartial")
-
-    <script>
-        const LS_KEY = "preinscripcion_activa";
-
-        function guardarPreinscripcionLS(payload) {
-            localStorage.setItem(LS_KEY, JSON.stringify(payload));
-        }
-
-        function generarHash(curp, fechaNacimiento) {
-            const base = `${(curp || "").toUpperCase()}|${fechaNacimiento || ""}`;
-            return btoa(unescape(encodeURIComponent(base)));
-        }
-
-        document.addEventListener("DOMContentLoaded", function() {
-            const form = document.getElementById("preinscripcionForm");
-            if (!form) return;
-
-            form.addEventListener("submit", function(e) {
-                e.preventDefault(); // Evita enviar al servidor
-
-                const formData = new FormData(form);
-                const data = {};
-                formData.forEach((value, key) => data[key] = value);
-
-                // Si tienes CURP y fecha de nacimiento, genera hash
-                if (data["Persona.CURP"] && data["Persona.BirthDate"]) {
-                    data.hash = generarHash(data["Persona.CURP"], data["Persona.BirthDate"]);
-                }
-
-                // Guardar en LocalStorage
-                guardarPreinscripcionLS(data);
-
-                // Redirigir a la vista de subir documentos
-                window.location.href = '@Url.Action("SubirDocumentos", "PreEnrollment", new { area = "Enrollment" })';
-            });
-        });
-    </script>
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
 }
