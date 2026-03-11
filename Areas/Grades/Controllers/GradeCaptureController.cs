@@ -33,7 +33,8 @@ namespace SchoolManager.Areas.Grades.Controllers
                     .ThenInclude(ts => ts.Subject)
                         .ThenInclude(s => s.GradeLevel)
                 .Include(tsg => tsg.Group)
-                .Where(tsg => tsg.TeacherSubject.TeacherId == teacherId)
+                .Where(tsg => tsg.TeacherSubject.TeacherId == teacherId
+                    && tsg.TeacherSubject.Subject.GradeLevel.IsOpen)
                 .Select(tsg => new TeacherClassViewModel
                 {
                     TeacherSubjectGroupId = tsg.TeacherSubjectGroupId,
