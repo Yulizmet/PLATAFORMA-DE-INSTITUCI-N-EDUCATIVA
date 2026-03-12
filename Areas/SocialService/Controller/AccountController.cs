@@ -12,7 +12,7 @@ namespace SchoolManager.Areas.SocialService.Controllers
             return View();
         }
 
-        // 🔴 CERRAR SESIÓN (SOLO REDIRIGE)
+        // CERRAR SESIÓN (SOLO REDIRIGE)
         [HttpGet]
         public IActionResult Logout()
         {

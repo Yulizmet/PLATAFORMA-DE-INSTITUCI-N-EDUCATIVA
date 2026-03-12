@@ -1,0 +1,491 @@
+@model IEnumerable<SchoolManager.Models.users_user>
+
+@{
+Layout = "_UserLayout";
+ViewData["Title"] = "Gestión de Maestros";
+}
+
+<div class="modal fade" id="createTeacherModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <form id="createTeacherForm" method="post"
+                  action="@Url.Action("Create", "Teachers", new { area = "UserMng" })">
+                @Html.AntiForgeryToken()
+
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title">
+                        <i class="bi bi-person-plus-fill me-2"></i>Nuevo Maestro
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body">
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <label class="form-label">Nombre(s)</label>
+                            <input name="FirstName" class="form-control" required />
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Apellido Paterno</label>
+                            <input name="LastNamePaternal" class="form-control" required />
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Apellido Materno</label>
+                            <input name="LastNameMaternal" class="form-control" />
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <label class="form-label">Fecha de Nacimiento</label>
+                            <input name="BirthDate" type="date" class="form-control" />
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Género</label>
+                            <select name="Gender" class="form-select">
+                                <option value="">-- Seleccionar --</option>
+                                <option value="M">Masculino</option>
+                                <option value="F">Femenino</option>
+                                <option value="O">Otro</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">CURP</label>
+                            <input name="Curp" class="form-control" maxlength="18" />
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Correo Electrónico</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-envelope"></i></span>
+                                <input name="Email" type="email" class="form-control" />
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Teléfono</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-telephone"></i></span>
+                                <input name="Phone" class="form-control" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr />
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Usuario</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-person"></i></span>
+                                <input name="Username" class="form-control" required />
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Contraseña</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-lock"></i></span>
+                                <input name="Password" type="password" class="form-control" required />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-footer bg-light border-top-0">
+                    <button type="button" class="btn btn-outline-secondary px-4" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-success px-4 shadow-sm">
+                        <i class="bi bi-check-lg me-1"></i>Guardar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="editTeacherModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <form id="editTeacherForm" method="post"
+                  action="@Url.Action("Edit", "Teachers", new { area = "UserMng" })">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="UserId" id="edit-UserId" />
+
+                <div class="modal-header bg-warning text-dark">
+                    <h5 class="modal-title">
+                        <i class="bi bi-pencil-square me-2"></i>Editar Maestro
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body">
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <label class="form-label">Nombre(s)</label>
+                            <input name="FirstName" id="edit-FirstName" class="form-control" required />
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Apellido Paterno</label>
+                            <input name="LastNamePaternal" id="edit-LastNamePaternal" class="form-control" required />
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Apellido Materno</label>
+                            <input name="LastNameMaternal" id="edit-LastNameMaternal" class="form-control" />
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <label class="form-label">Fecha de Nacimiento</label>
+                            <input name="BirthDate" id="edit-BirthDate" type="date" class="form-control" />
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Género</label>
+                            <select name="Gender" id="edit-Gender" class="form-select">
+                                <option value="">-- Seleccionar --</option>
+                                <option value="M">Masculino</option>
+                                <option value="F">Femenino</option>
+                                <option value="O">Otro</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">CURP</label>
+                            <input name="Curp" id="edit-Curp" class="form-control" maxlength="18" />
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Correo Electrónico</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-envelope"></i></span>
+                                <input name="Email" id="edit-Email" type="email" class="form-control" />
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Teléfono</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-telephone"></i></span>
+                                <input name="Phone" id="edit-Phone" type="number" onkeydown="return event.keyCode !== 69" class="form-control" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr />
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Usuario</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-person"></i></span>
+                                <input name="Username" id="edit-Username" class="form-control" required />
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Nueva Contraseña</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-lock"></i></span>
+                                <input name="Password" id="edit-Password" type="password" class="form-control"
+                                       placeholder="Dejar vacío para no cambiar" />
+                            </div>
+                            <small class="text-muted">Solo llenar si deseas cambiarla.</small>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-footer bg-light border-top-0">
+                    <button type="button" class="btn btn-outline-secondary px-4" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-warning px-4 shadow-sm">
+                        <i class="bi bi-check-lg me-1"></i>Actualizar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="d-flex justify-content-between align-items-center mb-4 p-3 bg-white shadow-sm rounded">
+    <div>
+        <h2 class="mb-0 text-dark"><i class="bi bi-person-workspace me-2"></i>Maestros</h2>
+        <p class="text-muted small mb-0">Administra el registro de maestros del sistema.</p>
+    </div>
+    <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#createTeacherModal">
+        <i class="bi bi-plus-circle me-2"></i> Agregar maestro
+    </button>
+</div>
+
+<table class="table table-hover mt-3 shadow-sm">
+    <thead class="burgundy-header text-white">
+    <tr>
+        <th>Nombre</th>
+        <th>CURP</th>
+        <th>Email</th>
+        <th>Teléfono</th>
+        <th>Usuario</th>
+        <th class="text-center">Acciones</th>
+    </tr>
+    </thead>
+    <tbody>
+    @foreach (var item in Model)
+    {
+    <tr>
+        <td>@item.Person.FirstName @item.Person.LastNamePaternal @item.Person.LastNameMaternal</td>
+        <td>@item.Person.Curp</td>
+        <td>@item.Email</td>
+        <td>@item.Person.Phone</td>
+        <td>@item.Username</td>
+        <td class="text-center">
+            <button class="btn btn-sm btn-warning" onclick="openEditModal(@item.UserId)">
+                <i class="bi bi-pencil-square"></i>
+            </button>
+            <button class="btn btn-sm btn-danger"
+                    onclick="openDeleteModal(@item.UserId, '@item.Person.FirstName @item.Person.LastNamePaternal')">
+                <i class="bi bi-trash-fill"></i>
+            </button>
+        </td>
+    </tr>
+    }
+    </tbody>
+</table>
+
+@section Scripts
+{
+    <script>
+
+    const Toast = Swal.mixin({
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 3000,
+        timerProgressBar: true,
+        didOpen: (toast) => {
+            toast.onmouseenter = Swal.stopTimer;
+            toast.onmouseleave = Swal.resumeTimer;
+        }
+    });
+
+    document.getElementById("createTeacherForm").addEventListener("submit", async function (e) {
+        e.preventDefault();
+        const form = e.target;
+        const submitBtn = form.querySelector('button[type="submit"]');
+
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Guardando...';
+
+        try {
+            const response = await fetch(form.action, {
+                method: form.method,
+                body: new FormData(form)
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                bootstrap.Modal.getInstance(document.getElementById("createTeacherModal")).hide();
+
+                await Swal.fire({
+                    icon: 'success',
+                    title: '¡Maestro creado!',
+                    text: 'El registro se guardó correctamente.',
+                    showConfirmButton: false,
+                    timer: 800,
+                    timerProgressBar: true
+                });
+
+                location.reload();
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error de validación',
+                    html: result.errors.map(e => `<li class="text-start">${e}</li>`).join(''),
+                    confirmButtonColor: '#dc3545'
+                });
+            }
+        } catch (error) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error de conexión',
+                text: 'No se pudo conectar con el servidor.',
+                confirmButtonColor: '#dc3545'
+            });
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '<i class="bi bi-check-lg me-1"></i>Guardar';
+        }
+    });
+
+    async function openEditModal(userId) {
+        Swal.fire({
+            title: 'Cargando datos...',
+            allowOutsideClick: false,
+            didOpen: () => Swal.showLoading()
+        });
+
+        try {
+            const url = `@Url.Action("GetTeacher", "Teachers", new { area = "UserMng" })?id=${userId}`;
+            const response = await fetch(url);
+            const result = await response.json();
+
+            Swal.close();
+
+            if (!result.success) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    html: result.errors.map(e => `<li class="text-start">${e}</li>`).join(''),
+                    confirmButtonColor: '#dc3545'
+                });
+                return;
+            }
+
+            const d = result.data;
+
+            document.getElementById("edit-UserId").value = d.userId;
+            document.getElementById("edit-FirstName").value = d.firstName || "";
+            document.getElementById("edit-LastNamePaternal").value = d.lastNamePaternal || "";
+            document.getElementById("edit-LastNameMaternal").value = d.lastNameMaternal || "";
+            document.getElementById("edit-BirthDate").value = d.birthDate || "";
+            document.getElementById("edit-Gender").value = d.gender || "";
+            document.getElementById("edit-Curp").value = d.curp || "";
+            document.getElementById("edit-Email").value = d.email || "";
+            document.getElementById("edit-Phone").value = d.phone || "";
+            document.getElementById("edit-Username").value = d.username || "";
+            document.getElementById("edit-Password").value = "";
+
+            new bootstrap.Modal(document.getElementById("editTeacherModal")).show();
+
+        } catch (error) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error de conexión',
+                text: 'No se pudo cargar la información del maestro.',
+                confirmButtonColor: '#dc3545'
+            });
+        }
+    }
+
+document.getElementById("editTeacherForm").addEventListener("submit", async function (e) {
+        e.preventDefault();
+        const form = e.target;
+        const submitBtn = form.querySelector('button[type="submit"]');
+
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Actualizando...';
+
+        try {
+            const response = await fetch(form.action, {
+                method: form.method,
+                body: new FormData(form)
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                bootstrap.Modal.getInstance(document.getElementById("editTeacherModal")).hide();
+
+                await Swal.fire({
+                    icon: 'success',
+                    title: '¡Actualizado!',
+                    text: 'Los datos del maestro se actualizaron correctamente.',
+                    showConfirmButton: false,
+                    timer: 800,
+                    timerProgressBar: true
+                });
+
+                location.reload();
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error de validación',
+                    html: result.errors.map(e => `<li class="text-start">${e}</li>`).join(''),
+                    confirmButtonColor: '#dc3545'
+                });
+            }
+        } catch (error) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error de conexión',
+                text: 'No se pudo conectar con el servidor.',
+                confirmButtonColor: '#dc3545'
+            });
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '<i class="bi bi-check-lg me-1"></i>Actualizar';
+        }
+    });
+
+async function openDeleteModal(userId, fullName) {
+
+        const result = await Swal.fire({
+            title: '¿Eliminar maestro?',
+            html: `
+                <div class="text-center">
+                    <p class="mt-3 mb-1">Se eliminará a:</p>
+                    <p class="fw-bold fs-5 text-danger">${fullName}</p>
+                    <p class="text-muted small">Esta acción no se puede deshacer.</p>
+                </div>
+            `,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#dc3545',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: '<i class="bi bi-trash me-1"></i>Sí, eliminar',
+            cancelButtonText: 'Cancelar',
+            reverseButtons: true,
+            focusCancel: true
+        });
+
+        if (!result.isConfirmed) return;
+
+        Swal.fire({
+            title: 'Eliminando...',
+            text: 'Por favor espera.',
+            allowOutsideClick: false,
+            didOpen: () => Swal.showLoading()
+        });
+
+        try {
+            const token = document.querySelector('#createTeacherForm input[name="__RequestVerificationToken"]').value;
+
+            const formData = new FormData();
+            formData.append('id', userId);
+            formData.append('__RequestVerificationToken', token);
+
+            const response = await fetch('@Url.Action("Delete", "Teachers", new { area = "UserMng" })', {
+                method: 'POST',
+                body: formData
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                await Swal.fire({
+                    icon: 'success',
+                    title: '¡Eliminado!',
+                    text: `${fullName} ha sido eliminado correctamente.`,
+                    showConfirmButton: false,
+                    timer: 1000,
+                    timerProgressBar: true
+                });
+
+                location.reload();
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error al eliminar',
+                    html: data.errors.map(e => `<li class="text-start">${e}</li>`).join(''),
+                    confirmButtonColor: '#dc3545'
+                });
+            }
+        } catch (error) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error de conexión',
+                text: 'No se pudo conectar con el servidor.',
+                confirmButtonColor: '#dc3545'
+            });
+        }
+    }
+
+</script>
+}

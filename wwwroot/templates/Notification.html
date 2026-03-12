@@ -1,0 +1,98 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .header {
+            background-color: #620900;
+            color: #ffffff;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .content {
+            padding: 30px;
+            line-height: 1.6;
+        }
+
+        .footer {
+            background-color: #f4f4f4;
+            color: #777;
+            padding: 20px;
+            text-align: center;
+            font-size: 12px;
+        }
+
+        .button {
+            background-color: #8C1B1B;
+            color: #ffffff;
+            padding: 12px 25px;
+            text-decoration: none;
+            border-radius: 5px;
+            display: inline-block;
+            font-weight: bold;
+        }
+
+        .status-badge {
+            background-color: {
+                StatusColor
+            }
+
+            ;
+
+            color: {
+                StatusTextColor
+            }
+
+            ;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1 style="margin:0;">School Manager</h1>
+            <p style="margin:5px 0 0 0; opacity: 0.8;">Notificación de Trámite Institucional</p>
+        </div>
+        <div class="content">
+            <h2>Hola, {UserName}</h2>
+            <p>Te informamos que tu solicitud de <strong>{ProcedureName}</strong> ha tenido una actualización:</p>
+
+            <div style="background-color: #f9f9f9; border-left: 4px solid #620900; padding: 15px; margin: 20px 0;">
+                <p style="margin: 0;"><strong>Folio:</strong> {Folio}</p>
+                <p style="margin: 5px 0;"><strong>Estado Actual:</strong> <span class="status-badge">{StatusName}</span></p>
+                <p style="margin: 5px 0;"><strong>Mensaje:</strong> {AdminMessage}</p>
+            </div>
+
+            <p>{CallToActionMessage}</p>
+
+            <div style="text-align: center; margin-top: 30px;">
+                <a href="{LoginUrl}" class="button">Ver seguimiento en el portal</a>
+            </div>
+        </div>
+        <div class="footer">
+            <p>Este es un correo automático, por favor no respondas a este mensaje.</p>
+            <p>&copy; 2026 Universidad Politécnica - Departamento de Servicios Escolares</p>
+        </div>
+    </div>
+</body>
+</html>

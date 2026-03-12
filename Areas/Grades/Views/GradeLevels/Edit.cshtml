@@ -3,7 +3,7 @@
 
 @{
     ViewData["Title"] = "Editar Nivel Escolar";
-    Layout = "~/Pages/Shared/_Layout.cshtml";
+    Layout = "~/Areas/MainScreen/Views/Shared/_Layout.cshtml";
 
 }
 
@@ -48,6 +48,12 @@
                                     Nivel Abierto
                                 </label>
                             </div>
+                        </div>
+                        <div class="mb-4">
+                            <label asp-for="MinPassingGrade" class="form-label fw-semibold">Calificación mínima aprobatoria</label>
+                            <input asp-for="MinPassingGrade" class="form-control" type="number" step="0.5" min="0" max="10" value="6.0" />
+                            <span asp-validation-for="MinPassingGrade" class="text-danger"></span>
+                            <small class="form-text text-muted">Calificación mínima para aprobar en este nivel (ej: 6.0, 7.0, 8.0)</small>
                         </div>
 
                         <div class="d-flex gap-2 justify-content-end">

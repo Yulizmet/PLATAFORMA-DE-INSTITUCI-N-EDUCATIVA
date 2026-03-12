@@ -1,0 +1,135 @@
+﻿@model SchoolManager.Areas.MainScreen.ViewModels.PanelAdministrativoViewModel
+@{
+    ViewData["Title"] = "Panel Administrativo";
+    Layout = "~/Areas/MainScreen/Views/Shared/_Layout.cshtml";
+}
+
+<section class="sistema-section">
+    <div class="container text-center">
+
+        <h2 class="sistema-title mb-3">
+            Panel de Control Administrativo
+        </h2>
+
+        <p class="sistema-subtitle mb-5">
+            Gestiona la configuración académica, asignaciones e inscripciones
+        </p>
+
+        <div class="row justify-content-center g-5">
+
+            <!-- CONFIGURACIÓN ACADÉMICA -->
+            <div class="col-lg-5 col-md-6">
+                <div class="sistema-card border-calificaciones text-start">
+                    <div class="sistema-icon icon-calificaciones">
+                        <i class="bi bi-gear"></i>
+                    </div>
+                    <h4>Configuración Académica</h4>
+                    <p class="text-muted mt-3">
+                        Crea y administra niveles escolares, materias y grupos para el ciclo actual.
+                    </p>
+                    <div class="d-flex gap-2 mt-4">
+                        <a href="/Grades/GradeLevels" class="btn btn-calificaciones flex-fill">
+                            Niveles
+                        </a>
+                        <a href="/Grades/Subjects" class="btn btn-calificaciones flex-fill">
+                            Materias
+                        </a>
+                        <a href="/Grades/Groups" class="btn btn-calificaciones flex-fill">
+                            Grupos
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ASIGNACIONES -->
+            <div class="col-lg-5 col-md-6">
+                <div class="sistema-card border-servicio text-start">
+                    <div class="sistema-icon icon-servicio">
+                        <i class="bi bi-person-badge"></i>
+                    </div>
+                    <h4>Asignaciones</h4>
+                    <p class="text-muted mt-3">
+                        Asigna profesores a materias y gestiona los grupos de cada asignación.
+                    </p>
+
+                    <!-- Acciones rápidas -->
+                    <div class="mt-4">
+                        <a href="/Grades/TeacherSubject/Create" class="btn btn-servicio w-100 mb-2">
+                            <i class="bi bi-plus-circle"></i> Nueva Asignación
+                        </a>
+
+                        <a href="/Grades/TeacherSubject" class="btn btn-outline-secondary w-100">
+                            <i class="bi bi-list"></i> Gestionar Asignaciones
+                        </a>
+                    </div>
+
+                    <hr />
+
+                    <!-- Asignaciones recientes (últimas 3) -->
+@*                     <h6 class="fw-semibold">Recientes:</h6>
+                    @foreach (var item in Model.Asignaciones.Take(3))
+                    {
+                        <div class="d-flex justify-content-between align-items-center small mt-2">
+                            <span>@item.TeacherName - @item.SubjectName (@item.GradeLevelName)</span>
+                            <a href="/TeacherSubject/AssignGroups?id=@item.TeacherSubjectId"
+                               class="text-decoration-none">
+                                Grupos →
+                            </a>
+                        </div>
+                    } *@
+                </div>
+            </div>
+            <!-- INSCRIPCIONES -->
+            <div class="col-lg-5 col-md-6">
+                <div class="sistema-card border-calificaciones text-start">
+                    <div class="sistema-icon icon-calificaciones">
+                        <i class="bi bi-person-plus"></i>
+                    </div>
+
+                    <h4>Inscripciones</h4>
+                    <p class="text-muted mt-3">
+                        Administra los estudiantes en los grupos escolares.
+                    </p>
+
+                    <!-- Acciones rápidas - llevan al selector -->
+                    <div class="mt-4">
+                        <a href="/Grades/Enrollment/SelectGroupForAssignment" class="btn btn-calificaciones w-100 mb-2">
+                            <i class="bi bi-person-plus"></i> Inscribir Estudiante
+                        </a>
+
+                        <a href="/Grades/Enrollment/SelectGroupForViewing" class="btn btn-outline-secondary w-100 mb-2">
+                            <i class="bi bi-people"></i> Ver Estudiantes por Grupo
+                        </a>
+
+                        <a href="/Grades/Groups" class="btn btn-outline-secondary w-100">
+                            <i class="bi bi-gear"></i> Gestionar Grupos
+                        </a>
+                    </div>
+
+                    <p class="text-muted small mt-3 mb-0">
+                        <i class="bi bi-info-circle"></i> Selecciona el grupo en la siguiente pantalla.
+                    </p>
+                </div>
+            </div>
+
+            <!-- REPORTES -->
+            <div class="col-lg-5 col-md-6">
+                <div class="sistema-card border-calificaciones text-start">
+                    <div class="sistema-icon icon-calificaciones">
+                        <i class="bi bi-bar-chart"></i>
+                    </div>
+                    <h4>Reportes</h4>
+                    <p class="text-muted mt-3">
+                        Visualiza estadísticas de aprovechamiento y rendimiento académico.
+                    </p>
+                    <a href="/Estadisticas" class="btn btn-calificaciones mt-4">
+                        Ver Reportes →
+                    </a>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</section>
+
+

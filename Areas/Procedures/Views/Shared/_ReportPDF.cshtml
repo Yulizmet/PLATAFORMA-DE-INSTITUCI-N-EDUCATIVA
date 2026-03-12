@@ -190,7 +190,7 @@
             <div class="report-meta">
                 <strong>Fecha:</strong> @DateTime.Now.ToString("dd/MM/yyyy")<br>
                 <strong>Hora:</strong> @DateTime.Now.ToString("hh:mm:ss tt")<br>
-                <strong>Módulo:</strong> @(ViewData["Entity"]?.ToString().ToUpper())
+                <strong>Módulo:</strong> @(ViewData["Entity"]?.ToString()!.ToUpper())
             </div>
         </header>
 

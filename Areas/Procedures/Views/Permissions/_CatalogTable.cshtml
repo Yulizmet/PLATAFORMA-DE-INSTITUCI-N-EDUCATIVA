@@ -1,0 +1,88 @@
+﻿@model List<SchoolManager.Areas.Procedures.Models.procedure_module_catalog>
+
+<div class="accordion accordion-flush" id="catalogAccordion">
+    @{
+        var moduleGroups = Model.GroupBy(m => m.ModuleName).ToList();
+
+        for (int i = 0; i < moduleGroups.Count; i++)
+        {
+            var group = moduleGroups[i];
+            var mainModule = group.FirstOrDefault(x => x.ButtonName == null);
+            var buttons = group.Where(x => x.ButtonName != null).ToList();
+            string collapseId = $"catalogCollapse_{i}";
+
+            <div class="accordion-item border-bottom">
+                <div class="accordion-header d-flex align-items-center bg-white pe-3">
+                    <button class="accordion-button collapsed fw-bold text-dark bg-transparent shadow-none py-3"
+                            type="button" data-bs-toggle="collapse" data-bs-target="#@collapseId">
+                        <i class="bi bi-folder2-open me-2 text-burgundy"></i> @group.Key
+                        <span class="badge bg-light text-muted border ms-2 fw-normal" style="font-size: 0.7rem;">
+                            @buttons.Count @(buttons.Count == 1 ? "botón" : "botones")
+                        </span>
+                    </button>
+
+                    <div class="ms-auto d-flex gap-2">
+                        <button class="btn btn-sm btn-light border" onclick="loadModuleModal(0, '@group.Key')" title="Añadir Botón">
+                            <i class="bi bi-plus-circle text-success"></i>
+                        </button>
+
+                        @if (mainModule != null)
+                        {
+                            <button class="btn btn-sm btn-light border" onclick="loadModuleModal(@mainModule.Id)" title="Editar Módulo">
+                                <i class="bi bi-pencil-square text-warning"></i>
+                            </button>
+
+                            <button class="btn btn-sm btn-light border" onclick="openDeleteModal(@mainModule.Id, 'Module')" title="Eliminar Todo el Módulo">
+                                <i class="bi bi-trash3 text-danger"></i>
+                            </button>
+                        }
+                        else
+                        {
+                            <button class="btn btn-sm btn-light border" onclick="openDeleteModal(0, 'Module', '@group.Key')" title="Eliminar Grupo">
+                                <i class="bi bi-trash3 text-danger"></i>
+                            </button>
+                        }
+                    </div>
+                </div>
+
+                <div id="@collapseId" class="accordion-collapse collapse" data-bs-parent="#catalogAccordion">
+                    <div class="accordion-body bg-light-subtle p-0">
+                        <ul class="list-group list-group-flush">
+                            @foreach (var btn in buttons)
+                            {
+                                <li class="list-group-item d-flex align-items-center ps-5 py-2 border-0 border-bottom small">
+                                    <div class="flex-grow-1 text-dark">
+                                        <i class="bi bi-arrow-return-right text-muted me-2"></i>
+                                        <span class="font-monospace text-secondary">@btn.ButtonName</span>
+                                    </div>
+                                    <div class="btn-group">
+                                        <button class="btn btn-link btn-sm text-warning p-0 me-3" onclick="loadModuleModal(@btn.Id)">
+                                            <i class="bi bi-pencil"></i> Editar
+                                        </button>
+                                            <button class="btn btn-link btn-sm text-danger p-0 me-3" onclick="openDeleteModal(@btn.Id, 'Button')">
+                                                <i class="bi bi-trash3"></i> Eliminar
+                                        </button>
+                                    </div>
+                                </li>
+                            }
+                            @if (!buttons.Any())
+                            {
+                                <li class="list-group-item ps-5 py-2 text-muted small italic border-0">
+                                    Este módulo no tiene botones registrados.
+                                </li>
+                            }
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        }
+    }
+</div>
+
+@if (!Model.Any())
+{
+    <div class="text-center py-5">
+        <i class="bi bi-inbox display-4 text-muted opacity-25"></i>
+        <p class="mt-2 text-muted">El catálogo está vacío.</p>
+    </div>
+};

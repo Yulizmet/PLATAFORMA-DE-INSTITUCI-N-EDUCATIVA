@@ -1,0 +1,119 @@
+﻿@* @model PIBitacoras.Models.Psicologia
+
+@{
+    ViewData["Title"] = "Editar registro psicológico";
+}
+
+<div class="container mt-4">
+
+    <div class="card shadow-lg border-0">
+
+        <!-- HEADER -->
+        <div class="card-header bg-warning text-dark">
+            <h3 class="mb-0">
+                EDITAR REGISTRO PSICOLÓGICO
+            </h3>
+        </div>
+
+        <!-- BODY -->
+        <div class="card-body p-4">
+
+            <form asp-action="Edit" method="post">
+
+                <input type="hidden" asp-for="Id" />
+                <input type="hidden" asp-for="PreenrollmentId" />
+
+                <div class="row g-4">
+
+                    <!-- IZQUIERDA -->
+                    <div class="col-md-6">
+
+                        <div class="info-box">
+                            <label>Folio</label>
+                            <input asp-for="Fol" class="form-control" readonly />
+                        </div>
+
+                        <div class="info-box">
+                            <label>Fecha de cita</label>
+                            <input class="form-control"
+                                   value="@Model.AppointmentDatetime.ToString("dd/MM/yyyy hh:mm tt")"
+                                   readonly />
+                        </div>
+
+                    </div>
+
+                    <!-- DERECHA -->
+                    <div class="col-md-6">
+
+                        <div class="info-box">
+                            <label asp-for="AttendanceStatus">Asistencia</label>
+                            <select asp-for="AttendanceStatus" class="form-control">
+
+                                <option value="">Seleccionar</option>
+                                <option value="Asistió">Asistió</option>
+                                <option value="No asistió">No asistió</option>
+                                <option value="Justificado">Justificado</option>
+
+                            </select>
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <hr class="mt-4" />
+
+                <!-- OBSERVACIONES -->
+                <div class="mb-4">
+                    <label asp-for="PsychologyObservations" class="fw-bold">
+                        Observaciones psicológicas
+                    </label>
+
+                    <textarea asp-for="PsychologyObservations"
+                              class="form-control"
+                              rows="5"></textarea>
+                </div>
+
+                <hr />
+
+                <!-- BOTONES -->
+                <div class="d-flex justify-content-between">
+
+                    <a asp-action="Index" class="btn btn-secondary px-4">
+                        Regresar
+                    </a>
+
+                    <button type="submit" class="btn btn-warning text-white px-4">
+                        Guardar cambios
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+    </div>
+
+</div>
+
+<style>
+
+    .info-box {
+        margin-bottom: 18px;
+    }
+
+        .info-box label {
+            font-weight: 700;
+            color: #6c757d;
+            display: block;
+            font-size: 14px;
+            margin-bottom: 3px;
+        }
+
+    .form-control {
+        background: #f8f9fa;
+        border-radius: 8px;
+        font-weight: 600;
+    }
+
+</style> *@

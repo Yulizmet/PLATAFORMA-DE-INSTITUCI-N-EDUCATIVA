@@ -1,8 +1,10 @@
-﻿@model SchoolManager.Areas.Grades.ViewModels.GradeCapture.GradeCaptureViewModel
+﻿@using static SchoolManager.Areas.Grades.Controllers.GradeCaptureController
+@model SchoolManager.Areas.Grades.ViewModels.GradeCapture.GradeCaptureViewModel
 
 @{
     ViewData["Title"] = $"Capturar Calificaciones - {Model.SubjectName}";
-    Layout = "~/Pages/Shared/_Layout.cshtml";
+    Layout = "~/Areas/MainScreen/Views/Shared/_Layout.cshtml";
+
 }
 
 <div class="container-fluid py-4">
@@ -15,6 +17,7 @@
     </nav>
 
     <div class="sistema-card">
+        <!-- Botón de importación -->
         <div class="d-flex justify-content-between align-items-start mb-4">
             <div>
                 <h4 class="fw-bold mb-2" style="color: #1f2937;">@Model.SubjectName - Unidad @Model.UnitNumber</h4>
@@ -22,10 +25,38 @@
                     <i class="bi bi-people me-2"></i>Grupo @Model.GroupName
                 </p>
             </div>
-            <span class="badge bg-success" style="font-size: 1rem; padding: 8px 15px;">
-                <i class="bi bi-pencil me-2"></i>Capturando
-            </span>
+            <div class="d-flex align-items-center">
+                <span class="badge bg-success me-3" style="font-size: 1rem; padding: 8px 15px;">
+                    <i class="bi bi-pencil me-2"></i>Capturando
+                </span>
+                <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#importModal">
+                    <i class="bi bi-file-earmark-excel me-2"></i>Cargar Excel
+                </button>
+            </div>
         </div>
+
+        <!-- Mensajes de importación -->
+        @if (TempData["ImportSuccess"] != null)
+        {
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <i class="bi bi-check-circle-fill me-2"></i>@TempData["ImportSuccess"]
+                @if (TempData["ImportErrors"] != null)
+                {
+                    var errores = System.Text.Json.JsonSerializer.Deserialize<List<string>>((string)TempData["ImportErrors"]);
+                    if (errores.Any())
+                    {
+                        <ul class="mb-0 mt-2">
+                            @foreach (var error in errores)
+                            {
+                                <li>@error</li>
+                            }
+                        </ul>
+                    }
+                }
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        }
+
 
         @if (TempData["Success"] != null)
         {
@@ -46,7 +77,7 @@
         <form asp-action="SaveGrades" method="post" id="gradeForm">
             <input type="hidden" name="TeacherSubjectGroupId" value="@Model.TeacherSubjectGroupId" />
             <input type="hidden" name="UnitId" value="@Model.UnitId" />
-
+            <input type="hidden" name="GroupId" value="@Model.GroupId" />
             <div class="table-responsive">
                 <table class="table table-hover align-middle">
                     <thead class="table-light">
@@ -155,6 +186,7 @@
         </div>
     </div>
 </div>
+
 <!-- Modal para eliminar recuperación -->
 <div class="modal fade" id="deleteRecoveryModal" tabindex="-1">
     <div class="modal-dialog">
@@ -187,8 +219,70 @@
         </div>
     </div>
 </div>
+
+<!-- Modal Importación Excel — paso único con 2 estados -->
+<div class="modal fade" id="importModal" tabindex="-1" data-bs-backdrop="static">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content" style="border-radius: 20px; border: none;">
+            <div class="modal-header" style="background-color: #8C1B1B; color: white; border-radius: 20px 20px 0 0;">
+                <h5 class="modal-title">
+                    <i class="bi bi-file-earmark-excel me-2"></i>
+                    <span id="importModalTitle">Cargar Calificaciones desde Excel</span>
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4">
+
+                <!-- PASO 1: Subir archivo -->
+                <div id="stepUpload">
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Selecciona tu archivo Excel</label>
+                        <input type="file" id="excelFileInput" class="form-control" accept=".xlsx,.xls,.csv" />
+                        <small class="text-muted">Formatos: .xlsx, .xls, .csv</small>
+                    </div>
+                    <div id="uploadError" class="alert alert-danger d-none"></div>
+                    <button type="button" id="btnUpload" class="btn btn-primary">
+                        <i class="bi bi-upload me-2"></i>Subir y analizar
+                    </button>
+                </div>
+
+                <!-- PASO 2: Mapeo (oculto hasta subir) -->
+                <div id="stepMapping" class="d-none">
+                    <p class="mb-3">Archivo: <strong id="uploadedFileName"></strong></p>
+                    <div id="mappingError" class="alert alert-danger d-none"></div>
+                    <div class="table-responsive">
+                        <table class="table table-bordered">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Columna</th>
+                                    <th>Vista Previa</th>
+                                    <th>Cargar columna como</th>
+                                    <th>Unidad</th>
+                                </tr>
+                            </thead>
+                            <tbody id="mappingTableBody"></tbody>
+                        </table>
+                    </div>
+                    <div class="d-flex justify-content-between mt-3">
+                        <button type="button" id="btnBackToUpload" class="btn btn-secondary">
+                            <i class="bi bi-arrow-left me-2"></i>Volver
+                        </button>
+                        <button type="button" id="btnApplyMapping" class="btn btn-primary">
+                            Aplicar Mapeo
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
 @section Scripts {
     <script>
+        // ── Recuperaciones ──────────────────────────────────────────────
         let currentRecoveryId = null;
 
         function openRecoveryModal(gradeId, studentName) {
@@ -203,34 +297,198 @@
             new bootstrap.Modal(document.getElementById('deleteRecoveryModal')).show();
         }
 
-        // Event delegation - escucha clicks en todo el documento
-        document.addEventListener('click', function(e) {
-            if (e.target && e.target.id === 'confirmDeleteRecovery') {
-                if (currentRecoveryId) {
-                    bootstrap.Modal.getInstance(document.getElementById('deleteRecoveryModal')).hide();
-
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Eliminado',
-                        text: 'Recuperación eliminada correctamente',
-                        timer: 1500,
-                        showConfirmButton: false
-                    }).then(() => {
-                        location.reload();
-                    });
-                }
+        document.addEventListener('click', function (e) {
+            if (e.target && e.target.id === 'confirmDeleteRecovery' && currentRecoveryId) {
+                bootstrap.Modal.getInstance(document.getElementById('deleteRecoveryModal')).hide();
+                Swal.fire({ icon: 'success', title: 'Eliminado', text: 'Recuperación eliminada correctamente', timer: 1500, showConfirmButton: false })
+                    .then(() => location.reload());
             }
         });
 
-        // Validación de calificaciones (0-10)
+        // ── Validación inputs calificación ──────────────────────────────
         document.querySelectorAll('.grade-input').forEach(input => {
-            input.addEventListener('change', function() {
+            input.addEventListener('change', function () {
                 let value = parseFloat(this.value);
-                if (value < 0) this.value = 0;
-                if (value > 10) this.value = 10;
-                if (isNaN(value)) this.value = '';
+                if (isNaN(value)) { this.value = ''; return; }
+                this.value = Math.min(10, Math.max(0, value));
             });
         });
-        
+
+        // ── Importación Excel (AJAX) ─────────────────────────────────────
+        const teacherSubjectGroupId = @Model.TeacherSubjectGroupId;
+        const unitId                = @Model.UnitId;
+        const groupId               = @Model.GroupId;
+        const subjectId             = @Model.SubjectId;
+
+        // Mapa: studentId → índice de fila en la tabla
+        const studentIndexMap = {
+            @for (int i = 0; i < Model.Students.Count; i++)
+            {
+                    <text>@Model.Students[i].StudentId: @i,</text>
+            }
+        };
+
+        // PASO 1 — Subir archivo
+        document.getElementById('btnUpload').addEventListener('click', async function () {
+            const file = document.getElementById('excelFileInput').files[0];
+            const errorDiv = document.getElementById('uploadError');
+            errorDiv.classList.add('d-none');
+
+            if (!file) { errorDiv.textContent = 'Selecciona un archivo'; errorDiv.classList.remove('d-none'); return; }
+
+            const formData = new FormData();
+            formData.append('excelFile', file);
+            formData.append('teacherSubjectGroupId', teacherSubjectGroupId);
+            formData.append('unitId', unitId);
+
+            this.disabled = true;
+            this.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Analizando...';
+
+            try {
+                const response = await fetch('/Grades/GradeCapture/UploadExcel', { method: 'POST', body: formData });
+                const data = await response.json();
+
+                if (!response.ok) { errorDiv.textContent = data.error; errorDiv.classList.remove('d-none'); return; }
+
+                // Construir tabla de mapeo
+                buildMappingTable(data.headers, data.preview);
+                document.getElementById('uploadedFileName').textContent = data.fileName;
+                document.getElementById('stepUpload').classList.add('d-none');
+                document.getElementById('stepMapping').classList.remove('d-none');
+                document.getElementById('importModalTitle').textContent = 'Mapear Columnas del Excel';
+            } catch (err) {
+                errorDiv.textContent = 'Error al conectar con el servidor';
+                errorDiv.classList.remove('d-none');
+            } finally {
+                this.disabled = false;
+                this.innerHTML = '<i class="bi bi-upload me-2"></i>Subir y analizar';
+            }
+        });
+
+        function buildMappingTable(headers, preview) {
+            const tbody = document.getElementById('mappingTableBody');
+            tbody.innerHTML = '';
+            headers.forEach((header, i) => {
+                const previewHtml = preview.map(row => `<div>${row[header] ?? ''}</div>`).join('');
+                const unitOptions = Array.from({length: 10}, (_, u) =>
+                    `<option value="${u+1}">Unidad ${u+1}</option>`).join('');
+
+                tbody.innerHTML += `
+                    <tr>
+                        <td><strong>${header}</strong></td>
+                        <td>${previewHtml}</td>
+                        <td>
+                            <select name="ColumnMappings[${i}].Type" class="form-select column-type" data-index="${i}">
+                                <option value="">-- Ignorar --</option>
+                                <option value="nombre">Nombre del Estudiante</option>
+                                <option value="calificacion">Calificación</option>
+                            </select>
+                        </td>
+                        <td>
+                            <select name="ColumnMappings[${i}].UnitNumber" class="form-select unit-select" disabled>
+                                <option value="">-- Unidad --</option>
+                                ${unitOptions}
+                            </select>
+                        </td>
+                    </tr>`;
+            });
+
+            // Habilitar/deshabilitar select de unidad
+            tbody.querySelectorAll('.column-type').forEach(select => {
+                select.addEventListener('change', function () {
+                    const unitSelect = this.closest('tr').querySelector('.unit-select');
+                    const isCalif = this.value === 'calificacion';
+                    unitSelect.disabled = !isCalif;
+                    unitSelect.required = isCalif;
+                    if (!isCalif) unitSelect.value = '';
+                });
+            });
+        }
+
+        // Volver al paso 1
+        document.getElementById('btnBackToUpload').addEventListener('click', function () {
+            document.getElementById('stepMapping').classList.add('d-none');
+            document.getElementById('stepUpload').classList.remove('d-none');
+            document.getElementById('importModalTitle').textContent = 'Cargar Calificaciones desde Excel';
+        });
+
+        // PASO 2 — Aplicar mapeo
+        document.getElementById('btnApplyMapping').addEventListener('click', async function () {
+            const errorDiv = document.getElementById('mappingError');
+            errorDiv.classList.add('d-none');
+
+            // Leer selects del mapeo
+            const columnMappings = [];
+            document.querySelectorAll('#mappingTableBody tr').forEach((tr, i) => {
+                const type = tr.querySelector('.column-type').value;
+                const unitNumber = parseInt(tr.querySelector('.unit-select').value) || null;
+                columnMappings.push({ columnIndex: i, type, unitNumber });
+            });
+
+            const payload = {
+                teacherSubjectGroupId, unitId, groupId, subjectId,
+                nombreColumnIndex: -1,
+                unitColumns: {},
+                columnMappings
+            };
+
+            this.disabled = true;
+            this.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Procesando...';
+
+            try {
+                const response = await fetch('/Grades/GradeCapture/ApplyExcelMapping', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const data = await response.json();
+
+                if (!response.ok) { errorDiv.textContent = data.error; errorDiv.classList.remove('d-none'); return; }
+
+                // Cerrar modal
+                bootstrap.Modal.getInstance(document.getElementById('importModal')).hide();
+
+                // Rellenar inputs de calificación
+                let actualizados = 0;
+                data.grades.forEach(item => {
+                    const rowIndex = studentIndexMap[item.studentId];
+                    if (rowIndex !== undefined) {
+                        const input = document.querySelector(`input[name='Grades[${rowIndex}].GradeValue']`);
+                        if (input) {
+                            input.value = item.grade.toFixed(2);
+                            input.style.backgroundColor = '#d4edda';
+                            actualizados++;
+                        }
+                    }
+                });
+
+                // Mostrar resultado
+                const alertHtml = `
+                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                        <i class="bi bi-check-circle-fill me-2"></i>
+                        Se importaron <strong>${actualizados}</strong> calificaciones.
+                        ${data.errores.length ? `<ul class="mt-2 mb-0">${data.errores.map(e => `<li>${e}</li>`).join('')}</ul>` : ''}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>`;
+                document.getElementById('gradeForm').insertAdjacentHTML('beforebegin', alertHtml);
+
+            } catch (err) {
+                errorDiv.textContent = 'Error al conectar con el servidor';
+                errorDiv.classList.remove('d-none');
+            } finally {
+                this.disabled = false;
+                this.innerHTML = 'Aplicar Mapeo';
+            }
+        });
+
+        // Resetear modal al cerrarse
+        document.getElementById('importModal').addEventListener('hidden.bs.modal', function () {
+            document.getElementById('stepUpload').classList.remove('d-none');
+            document.getElementById('stepMapping').classList.add('d-none');
+            document.getElementById('uploadError').classList.add('d-none');
+            document.getElementById('mappingError').classList.add('d-none');
+            document.getElementById('excelFileInput').value = '';
+            document.getElementById('importModalTitle').textContent = 'Cargar Calificaciones desde Excel';
+        });
     </script>
 }

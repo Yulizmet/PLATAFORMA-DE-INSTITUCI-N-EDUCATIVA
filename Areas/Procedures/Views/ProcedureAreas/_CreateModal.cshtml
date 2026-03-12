@@ -4,9 +4,9 @@
         <div class="modal-content">
             <form method="post" action="/Procedures/ProcedureAreas/Create">
                 @Html.AntiForgeryToken()
-                <div class="modal-header bg-success text-white">
-                    <h5 class="modal-title"><i class="bi bi-file-earmark-arrow-up me-2"></i>Nueva área</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                <div class="modal-header bg-burgundy text-white">
+                    <h5 class="modal-title fw-bold"><i class="bi bi-file-earmark-arrow-up me-2"></i>Nueva área</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
                     <div class="mb-3">
@@ -19,8 +19,8 @@
                     </div>
                 </div>
                 <div class="modal-footer bg-light border-top-0">
-                    <button type="button" class="btn btn-outline-secondary px-4" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="submit" class="btn btn-success px-4 shadow-sm">Guardar</button>
+                    <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn bg-burgundy text-white px-4 shadow-sm">Guardar</button>
                 </div>
             </form>
         </div>

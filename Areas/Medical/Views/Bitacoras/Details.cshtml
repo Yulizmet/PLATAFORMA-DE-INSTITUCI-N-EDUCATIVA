@@ -1,0 +1,162 @@
+﻿@* @model PIBitacoras.Models.Bitacora
+
+@{
+    ViewData["Title"] = "Detalle de Bitácora";
+}
+
+<div class="container mt-4">
+
+    <div class="card shadow-lg border-0">
+
+        <!-- HEADER -->
+        <div class="card-header bg-dark text-white">
+            <h3 class="mb-0">
+                DETALLE DE ATENCIÓN CLÍNICA
+            </h3>
+        </div>
+
+        <!-- BODY -->
+        <div class="card-body p-4">
+
+            <div class="row g-4">
+
+                <!-- COLUMNA IZQUIERDA -->
+                <div class="col-md-6">
+
+                    <div class="info-box">
+                        <label>Matrícula</label>
+                        <div class="info-value">
+                            @Model.MatriculaTemp
+                        </div>
+                    </div>
+
+                    <div class="info-box">
+                        <label>Folio</label>
+                        <div class="info-value text-primary fw-bold">
+                            @Model.Folio
+                        </div>
+                    </div>
+
+                    <div class="info-box">
+                        <label>Nombre del Alumno</label>
+                        <div class="info-value">
+                            @Model.NombreCompletoTemp
+                        </div>
+                    </div>
+
+                    <div class="info-box">
+                        <label>Fecha y Hora de Atención</label>
+                        <div class="info-value">
+                            @Model.FechaHora.ToString("dd/MM/yyyy hh:mm tt")
+                        </div>
+                    </div>
+
+                    <div class="info-box">
+                        <label>Estado del Paciente</label>
+                        <div class="info-value">
+                            @if (Model.Estado == "Estable")
+                            {
+                                <span class="badge bg-success">Estable</span>
+                            }
+                            else if (Model.Estado == "Urgente")
+                            {
+                                <span class="badge bg-danger">Urgente</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-secondary">@Model.Estado</span>
+                            }
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- COLUMNA DERECHA -->
+                <div class="col-md-6">
+
+                    <div class="info-box">
+                        <label>Motivo de Consulta</label>
+                        <div class="info-value">@Model.MotivoConsulta</div>
+                    </div>
+
+                    <div class="info-box">
+                        <label>Signos Vitales</label>
+                        <div class="info-value">@Model.SignosVitales</div>
+                    </div>
+
+                </div>
+
+            </div>
+
+            <hr class="mt-4" />
+
+            <!-- OBSERVACIONES -->
+            <div class="mb-4">
+                <label class="fw-bold">Observaciones Clínicas</label>
+                <div class="info-area">
+                    @Model.Observaciones
+                </div>
+            </div>
+
+            <!-- TRATAMIENTO -->
+            <div class="mb-4">
+                <label class="fw-bold">Tratamiento / Acción realizada</label>
+                <div class="info-area">
+                    @Model.Tratamiento
+                </div>
+            </div>
+
+            <hr />
+
+            <!-- BOTONES -->
+            <div class="d-flex justify-content-between">
+
+                <a asp-action="Index" class="btn btn-secondary px-4">
+                    Regresar
+                </a>
+
+                <a asp-action="Edit" asp-route-id="@Model.Id"
+                   class="btn btn-warning text-white px-4">
+                    Editar bitácora
+                </a>
+
+            </div>
+
+        </div>
+    </div>
+
+</div>
+
+<style>
+
+    .info-box {
+        margin-bottom: 18px;
+    }
+
+        .info-box label {
+            font-weight: 700;
+            color: #6c757d;
+            display: block;
+            font-size: 14px;
+            margin-bottom: 3px;
+        }
+
+    .info-value {
+        font-size: 18px;
+        font-weight: 600;
+        color: #212529;
+        background: #f8f9fa;
+        padding: 10px 14px;
+        border-radius: 8px;
+    }
+
+    .info-area {
+        background: #f8f9fa;
+        padding: 15px;
+        border-radius: 8px;
+        font-size: 16px;
+        min-height: 60px;
+    }
+
+</style>
+ *@

@@ -1,4 +1,6 @@
 ﻿// Areas/Grades/ViewModels/GradeCapture/GradeCaptureViewModel.cs
+using SchoolManager.Areas.Grades.ViewModels.BulkGrade;
+
 namespace SchoolManager.Areas.Grades.ViewModels.GradeCapture
 {
     public class TeacherClassSelectionViewModel
@@ -46,6 +48,24 @@ namespace SchoolManager.Areas.Grades.ViewModels.GradeCapture
         public List<StudentGradeViewModel> Students { get; set; } = new();
     }
 
+    public class ExcelMappingViewModel
+    {
+        public int TeacherSubjectGroupId { get; set; }
+        public int UnitId { get; set; }
+        public int GroupId { get; set; }
+        public int SubjectId { get; set; }
+        public int NombreColumnIndex { get; set; } = -1;
+        public Dictionary<int, int> UnitColumns { get; set; } = new(); // UnitNumber -> ColumnIndex
+        public List<ColumnMappingInput> ColumnMappings { get; set; } = new();
+    }
+
+    // NUEVO: Para datos temporales de importación
+    public class ImportedGradeRow
+    {
+        public string Nombre { get; set; } = null!;
+        public decimal? Calificacion { get; set; }
+    }
+
     public class StudentGradeViewModel
     {
         public int StudentId { get; set; }
@@ -62,6 +82,8 @@ namespace SchoolManager.Areas.Grades.ViewModels.GradeCapture
     {
         public int TeacherSubjectGroupId { get; set; }
         public int UnitId { get; set; }
+        public int GroupId { get; set; } 
+
         public List<StudentGradeInputViewModel> Grades { get; set; } = new();
     }
 
