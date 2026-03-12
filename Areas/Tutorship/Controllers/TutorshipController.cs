@@ -61,7 +61,7 @@ namespace SchoolManager.Areas.Tutorship.Controllers
             return View("~/Areas/Tutorship/Views/Controlador.cshtml");
         }
 
-        // MÓDULOS DEL ALUMNO (Rol 1)
+        // MÓDULOS DEL ALUMNO (Rol 1) sdgxdfsd
         public async Task<IActionResult> EntrevistaInicial()
         {
             if (_simulatedRoleId != 1) return RedirectToAction(nameof(AccesoDenegado));
