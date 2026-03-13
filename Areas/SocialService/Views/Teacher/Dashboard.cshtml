@@ -1,0 +1,88 @@
+@{
+    ViewData["Title"] = "Dashboard Profesor";
+}
+
+<!-- Hero Section -->
+<div class="ss-hero fade-in">
+    <div class="container">
+        <h2 class="mb-2">
+            <i class="bi bi-person-badge-fill me-2"></i>
+            Dashboard Profesor
+        </h2>
+        <p>Gestiona tus alumnos, bitácoras y asistencias de servicio social</p>
+    </div>
+</div>
+
+<div class="dashboard-cards">
+    <div class="card dashboard-card slide-in-left">
+        <div class="card-body">
+            <div class="icon-box icon-estudiantes mb-3">
+                <i class="bi bi-people-fill"></i>
+            </div>
+            <h5><i class="bi bi-mortarboard-fill me-2"></i>Alumnos</h5>
+            <p>Consulta y gestiona alumnos asignados a tu cargo</p>
+            <div class="d-flex flex-wrap gap-2">
+                <a href="/SocialService/Teacher/Alumnos" class="btn btn-primary">
+                    <i class="bi bi-eye-fill me-1"></i> Ver alumnos
+                </a>
+                <a href="/SocialService/Teacher/AgregarAlumnos" class="btn btn-success">
+                    <i class="bi bi-plus-circle-fill me-1"></i> Agregar
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="card dashboard-card slide-in-left" style="animation-delay: 0.1s;">
+        <div class="card-body">
+            <div class="icon-box icon-docentes mb-3">
+                <i class="bi bi-calendar-check-fill"></i>
+            </div>
+            <h5><i class="bi bi-clipboard-check me-2"></i>Asistencia</h5>
+            <p>Toma lista y registra la asistencia por grupo</p>
+            <a href="/SocialService/Teacher/Asistencia" class="btn btn-primary">
+                <i class="bi bi-check-circle-fill me-1"></i> Tomar lista
+            </a>
+        </div>
+    </div>
+
+    <div class="card dashboard-card slide-in-left" style="animation-delay: 0.2s;">
+        <div class="card-body">
+            <div class="icon-box icon-estudiantes mb-3">
+                <i class="bi bi-clock-history"></i>
+            </div>
+            <h5><i class="bi bi-hourglass-split me-2"></i>Asignar Horas</h5>
+            <p>Configura y asigna horas de servicio social</p>
+            <a href="/SocialService/Teacher/AsignarHoras" class="btn btn-primary">
+                <i class="bi bi-pencil-fill me-1"></i> Configurar
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Estadísticas rápidas -->
+<div class="row mt-5">
+    <div class="col-md-12">
+        <h4 class="text-primary-custom mb-4">
+            <i class="bi bi-bar-chart-fill me-2"></i>
+            Resumen Rápido
+        </h4>
+    </div>
+    <div class="col-md-4">
+        <div class="stat-card">
+            <h2>@ViewBag.AlumnosAsignados</h2>
+            <p>Alumnos Asignados</p>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="stat-card">
+            <h2>@ViewBag.BitacorasPendientes</h2>
+            <p>Bitácoras Pendientes</p>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="stat-card">
+            <h2>@ViewBag.AsistenciasHoy</h2>
+            <p>Asistencias Hoy</p>
+        </div>
+    </div>
+</div>

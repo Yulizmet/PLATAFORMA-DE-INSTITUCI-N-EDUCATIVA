@@ -14,7 +14,7 @@ namespace SchoolManager.Models
         public bool IsActive { get; set; }
 
         public DateTime CreatedTime { get; set; }
-        public users_role Role { get; set; }
-        public users_permission Permission { get; set; }
+        public users_role Role { get; set; } = null!;
+        public users_permission Permission { get; set; } = null!;
     }
 }

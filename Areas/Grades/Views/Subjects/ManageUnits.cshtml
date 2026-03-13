@@ -1,0 +1,128 @@
+﻿@model SchoolManager.Areas.Grades.ViewModels.Subjects.ManageUnitsViewModel
+
+@{
+    ViewData["Title"] = $"Unidades - {Model.SubjectName}";
+    Layout = "~/Areas/MainScreen/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container-fluid py-4">
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-action="Index" style="color: #8C1B1B;">Materias</a></li>
+            <li class="breadcrumb-item"><a asp-action="Details" asp-route-id="@Model.SubjectId" style="color: #8C1B1B;">@Model.SubjectName</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Unidades</li>
+        </ol>
+    </nav>
+
+    <div class="row">
+        <div class="col-md-4 mb-4">
+            <div class="sistema-card">
+                <div class="sistema-icon icon-calificaciones mb-4">
+                    <i class="bi bi-plus-circle"></i>
+                </div>
+
+                <h4 class="fw-bold mb-4" style="color: #1f2937;">Agregar Unidad</h4>
+
+                <form asp-action="AddUnit" method="post">
+                    <input type="hidden" name="subjectId" value="@Model.SubjectId" />
+                    <div class="mb-4">
+                        <label class="form-label fw-semibold" style="color: #1f2937;">Número de Unidad</label>
+                        <input type="number" name="unitNumber" class="form-control"
+                               min="1" max="20" required
+                               placeholder="Ej: 1, 2, 3..."
+                               style="border-radius: 10px; border: 1px solid #e0e0e0; padding: 12px;" />
+                        <small class="form-text text-muted">
+                            Las unidades se ordenarán automáticamente
+                        </small>
+                    </div>
+                    <button type="submit" class="btn w-100" style="background-color: #28a745; color: white; border-radius: 10px; padding: 12px;">
+                        <i class="bi bi-plus-circle me-2"></i>Agregar Unidad
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <div class="col-md-8">
+            <div class="sistema-card">
+                @if (TempData["Success"] != null)
+                {
+                    <div class="alert alert-success alert-dismissible fade show" role="alert" style="background-color: #d4edda; color: #155724; border-left: 5px solid #28a745;">
+                        <i class="bi bi-check-circle-fill me-2"></i>@TempData["Success"]
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                }
+
+                @if (TempData["Error"] != null)
+                {
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert" style="background-color: #f8d7da; color: #721c24; border-left: 5px solid #D42D2D;">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i>@TempData["Error"]
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                }
+
+                <h4 class="fw-bold mb-4" style="color: #1f2937;">
+                    <i class="bi bi-puzzle me-2" style="color: #8C1B1B;"></i>
+                    Unidades de @Model.SubjectName
+                </h4>
+
+                @if (Model.Units.Any())
+                {
+                    <div class="list-group">
+                        @foreach (var unit in Model.Units)
+                        {
+                            <div class="list-group-item d-flex justify-content-between align-items-center"
+                                 style="border: none; border-bottom: 1px solid #e0e0e0; padding: 20px;">
+                                <div class="d-flex align-items-center">
+                                    <span class="badge me-3" style="background-color: #8C1B1B; color: white; width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; border-radius: 10px; font-size: 1.2rem;">
+                                        @unit.UnitNumber
+                                    </span>
+                                    <div>
+                                        <h6 class="mb-1 fw-semibold">Unidad @unit.UnitNumber</h6>
+                                        <span class="badge" style="background-color: @(unit.IsOpen ? "#28a745" : "#6c757d"); color: white; padding: 5px 10px; border-radius: 20px;">
+                                            <i class="bi @(unit.IsOpen ? "bi-lock-open" : "bi-lock") me-1"></i>
+                                            @(unit.IsOpen ? "Abierta" : "Cerrada")
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="btn-group" role="group">
+                                    @if (!unit.HasGrades)
+                                    {
+                                        <form asp-action="ToggleUnit" method="post" class="d-inline">
+                                            <input type="hidden" name="unitId" value="@unit.UnitId" />
+                                            <button type="submit"
+                                                    class="btn btn-sm" style="background-color: @(unit.IsOpen ? "#ffc107" : "#28a745"); color: @(unit.IsOpen ? "#000" : "#fff"); border-radius: 8px; margin-right: 5px; padding: 8px 15px;">
+                                                <i class="bi @(unit.IsOpen ? "bi-lock" : "bi-lock-open") me-1"></i>
+                                                @(unit.IsOpen ? "Cerrar" : "Abrir")
+                                            </button>
+                                        </form>
+                                        <form asp-action="DeleteUnit" method="post" class="d-inline"
+                                              onsubmit="return confirm('¿Estás seguro de eliminar la unidad @(unit.UnitNumber)?')">
+                                            <input type="hidden" name="unitId" value="@unit.UnitId" />
+                                            <button type="submit" class="btn btn-sm" style="background-color: #D42D2D; color: white; border-radius: 8px; padding: 8px 15px;">
+                                                <i class="bi bi-trash me-1"></i>Eliminar
+                                            </button>
+                                        </form>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted" style="padding: 8px 15px;" title="No se puede modificar porque tiene calificaciones">
+                                            <i class="bi bi-lock-fill me-1"></i>Bloqueado
+                                        </span>
+                                    }
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <div class="text-center py-5">
+                        <i class="bi bi-puzzle" style="font-size: 3rem; color: #B1A596;"></i>
+                        <p class="text-muted mt-3">No hay unidades registradas</p>
+                        <p class="text-muted">Agrega la primera unidad usando el formulario</p>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>

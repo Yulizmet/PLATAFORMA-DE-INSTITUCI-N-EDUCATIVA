@@ -8,9 +8,9 @@ namespace SchoolManager.Models
         [Key]
         public int IdCareer { get; set; }
 
-        public string name_career { get; set; }
+        [Required]
+        public string name_career { get; set; } = null!;
 
-        public ICollection<preenrollment_general> preenrollment_general { get; set; }
+        public ICollection<preenrollment_general> preenrollment_general { get; set; } = null!;
     }
-
 }

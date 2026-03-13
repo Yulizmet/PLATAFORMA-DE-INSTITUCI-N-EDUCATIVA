@@ -1,12 +1,25 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 
-namespace SchoolManager.Models
+namespace SchoolManager.Models;
 {
-    public class preenrollment_general
-    {
-        [Key]
-        public int IdData { get; set; }
+public class preenrollment_general
+{
+    [Key]
+    public int IdData { get; set; }
+    public int IdCareer { get; set; }
+    public int IdGeneration { get; set; }
+    public int? UserId { get; set; }
+    public int? ProcedureRequestId { get; set; }
+    public string? BloodType { get; set; }
+    public DateTime? CreateStat { get; set; }
+    public string Folio { get; set; } = null!;
+    public string MaritalStatus { get; set; } = null!;
+    public string Nationality { get; set; } = null!;
+    public string? Occupation { get; set; }
+    public bool Work { get; set; }
+    public string? WorkAddress { get; set; }
+    public string? WorkPhone { get; set; }
+    public string Matricula { get; set; } = null!;
 
         [Required]
         public int IdCareer { get; set; }

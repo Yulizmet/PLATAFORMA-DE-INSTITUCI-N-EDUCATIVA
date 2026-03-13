@@ -1,0 +1,29 @@
+﻿@model SchoolManager.Areas.Procedures.Models.procedure_job_position
+
+<div class="modal fade" id="modalJob" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+        <div class="modal-content border-0 shadow-lg rounded-4">
+            <div class="modal-header bg-burgundy text-white">
+                <h5 class="modal-title fw-bold text-white">
+                    <i class="bi bi-person-vcard me-2 text-white"></i>
+                    @(Model.Id > 0 ? "Editar Puesto" : "Nuevo Puesto")
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form asp-action="SaveJobPosition" method="post" id="formJobPosition">
+                <div class="modal-body p-4">
+                    <input type="hidden" asp-for="Id" />
+                    <label class="form-label fw-bold small text-muted">Nombre del puesto</label>
+                    <input type="text" asp-for="Name" class="form-control border-2 me-1" required placeholder="Ej: Asistente de.." />
+
+                    <label class="form-label fw-bold small text-muted">Descripción del puesto</label>
+                    <input type="text" asp-for="Description" class="form-control border-2" required placeholder="Ej: Funciones..." />
+                </div>
+                <div class="modal-footer border-0 bg-light">
+                    <button type="button" class="btn btn-secondary shadow-sm">Cancelar</button>
+                    <button type="submit" class="btn bg-burgundy shadow-sm">Guardar Puesto</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

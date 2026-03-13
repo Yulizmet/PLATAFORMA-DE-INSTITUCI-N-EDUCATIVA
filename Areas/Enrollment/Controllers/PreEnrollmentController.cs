@@ -46,7 +46,7 @@ namespace SchoolManager.Areas.Enrollment.Controllers
 
         private string GenerarFolio(int idGeneration)
         {
-            var generation = _context.Generations
+            var generation = _context.PreenrollmentGenerations
                 .FirstOrDefault(g => g.IdGeneration == idGeneration);
 
             if (generation == null)
@@ -108,7 +108,7 @@ namespace SchoolManager.Areas.Enrollment.Controllers
             ViewData["IdCareer"] = new SelectList(
                 _context.PreenrollmentCareers, "IdCareer", "name_career");
             ViewData["IdGeneration"] = new SelectList(
-                _context.Generations, "IdGeneration", "Year");
+                _context.PreenrollmentGenerations, "IdGeneration", "Year");
             return View();
         }
 
@@ -124,7 +124,7 @@ namespace SchoolManager.Areas.Enrollment.Controllers
                 ViewData["IdCareer"] = new SelectList(
                     _context.PreenrollmentCareers, "IdCareer", "name_career", vm.IdCareer);
                 ViewData["IdGeneration"] = new SelectList(
-                    _context.Generations, "IdGeneration", "Year", vm.IdGeneration);
+                    _context.PreenrollmentGenerations, "IdGeneration", "Year", vm.IdGeneration);
                 return View(vm);
             }
 
@@ -154,7 +154,7 @@ namespace SchoolManager.Areas.Enrollment.Controllers
                 id_data = general.IdData,
                 street = vm.Street,
                 exterior_number = vm.ExteriorNumber,
-                interior_number = vm.InteriorNumber,
+                interior_number = vm.InteriorNumber ?? "N/A",
                 postal_code = vm.PostalCode,
                 neighborhood = vm.Neighborhood,
                 state = vm.State,
@@ -187,8 +187,8 @@ namespace SchoolManager.Areas.Enrollment.Controllers
                 paternal_last_name = vm.TutorPaternalLastName,
                 maternal_last_name = vm.TutorMaternalLastName,
                 name = vm.TutorName,
-                home_phone = vm.TutorHomePhone,
-                work_phone = vm.TutorWorkPhone
+                home_phone = vm.TutorHomePhone ?? "N/A",
+                work_phone = vm.TutorWorkPhone ?? "N/A"
             };
             _context.PreenrollmentTutors.Add(tutor);
 
@@ -196,12 +196,12 @@ namespace SchoolManager.Areas.Enrollment.Controllers
             var info = new preenrollment_infos
             {
                 id_data = general.IdData,
-                beca = vm.Beca,
+                beca = vm.Beca ?? "N/A",
                 comu_indi = vm.ComuIndi,
                 lengu_indi = vm.LenguIndi,
                 incapa = vm.Incapa,
                 disease = vm.Disease,
-                comment = vm.Comment
+                comment = vm.Comment ?? "N/A"
             };
             _context.PreenrollmentInfos.Add(info);
 
@@ -264,7 +264,7 @@ namespace SchoolManager.Areas.Enrollment.Controllers
 
             var pre = await _context.PreenrollmentGenerals
                 .Include(p => p.ProcedureRequest)
-                    .ThenInclude(pr => pr.ProcedureFlow)
+                    .ThenInclude(pr => pr!.ProcedureFlow)
                         .ThenInclude(pf => pf.ProcedureStatus)
                 .FirstOrDefaultAsync(p => p.Folio == folio);
 
@@ -304,7 +304,7 @@ namespace SchoolManager.Areas.Enrollment.Controllers
         {
             var pre = await _context.PreenrollmentGenerals
                 .Include(p => p.ProcedureRequest)
-                    .ThenInclude(pr => pr.ProcedureFlow)
+                    .ThenInclude(pr => pr!.ProcedureFlow)
                         .ThenInclude(pf => pf.ProcedureStatus)
                 .FirstOrDefaultAsync(p => p.IdData == id);
 
@@ -341,7 +341,7 @@ namespace SchoolManager.Areas.Enrollment.Controllers
 
             var pre = await _context.PreenrollmentGenerals
                 .Include(p => p.ProcedureRequest)
-                    .ThenInclude(pr => pr.ProcedureFlow)
+                    .ThenInclude(pr => pr!.ProcedureFlow)
                         .ThenInclude(pf => pf.ProcedureStatus)
                 .FirstOrDefaultAsync(p => p.IdData == vm.IdData);
 
@@ -618,7 +618,7 @@ namespace SchoolManager.Areas.Enrollment.Controllers
             ViewData["IdCareer"] = new SelectList(
                 _context.PreenrollmentCareers, "IdCareer", "name_career", general.IdCareer);
             ViewData["IdGeneration"] = new SelectList(
-                _context.Generations, "IdGeneration", "Year", general.IdGeneration);
+                _context.PreenrollmentGenerations, "IdGeneration", "Year", general.IdGeneration);
 
             return View(general);
         }
@@ -651,7 +651,7 @@ namespace SchoolManager.Areas.Enrollment.Controllers
             ViewData["IdCareer"] = new SelectList(
                 _context.PreenrollmentCareers, "IdCareer", "name_career", general.IdCareer);
             ViewData["IdGeneration"] = new SelectList(
-                _context.Generations, "IdGeneration", "Year", general.IdGeneration);
+                _context.PreenrollmentGenerations, "IdGeneration", "Year", general.IdGeneration);
 
             return View(general);
         }

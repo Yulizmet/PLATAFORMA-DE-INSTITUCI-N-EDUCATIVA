@@ -1,0 +1,23 @@
+﻿@{
+    ViewData["Title"] = "Sin Inscripción";
+    Layout = "~/Areas/MainScreen/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container-fluid py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 text-center">
+            <div class="sistema-card">
+                <div class="sistema-icon icon-calificaciones mb-4" style="width: 100px; height: 100px; margin: 0 auto;">
+                    <i class="bi bi-exclamation-triangle" style="font-size: 3rem;"></i>
+                </div>
+
+                <h2 class="users-title mb-3">Sin inscripción activa</h2>
+                <p class="text-muted mb-4">@ViewBag.Message</p>
+
+                <p class="text-muted small">
+                    Si crees que esto es un error, contacta a control escolar.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>

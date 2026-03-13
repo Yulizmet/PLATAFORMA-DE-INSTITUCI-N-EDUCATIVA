@@ -10,14 +10,24 @@ namespace SchoolManager.Models
         public int StudentId { get; set; } // UserId
         public int SubjectId { get; set; }
         public int GroupId { get; set; }
+
         [Precision(5, 2)]
         public decimal Value { get; set; }
         public bool Passed { get; set; }
         public DateTime CreatedAt { get; set; }
 
-        public grades_subjects Subject { get; set; } = null!;
-        public grades_group grades_group { get; set; } = null!;
+        // Navigation properties
+        public users_user Student { get; set; } = null!;
 
+        public grades_subjects Subject { get; set; } = null!;
+        public grades_group Group { get; set; } = null!;
         public grades_extraordinary_grades? ExtraordinaryGrade { get; set; }
+
+        [Precision(3, 2)]
+        public decimal MinPassingGradeUsed { get; set; } // Que calificación minima se usa
+
+        public string? CalculationMethod { get; set; } // Promedio, Ponderado etc
+
+        public bool ConsideredRecoveries { get; set; } // Se consideraron recuperaciones si/no
     }
 }
