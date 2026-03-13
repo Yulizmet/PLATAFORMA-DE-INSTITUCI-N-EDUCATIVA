@@ -78,13 +78,17 @@ namespace SchoolManager.Areas.SocialService.Controllers
                 .Where(a => a.TeacherId == currentTeacherId && a.IsActive)
                 .ToListAsync();
 
+            var studentIds = assignedStudents.Select(a => a.StudentId).ToList();
+
+            var enrollments = await _context.grades_Enrollments
+                .Include(e => e.Group)
+                    .ThenInclude(g => g.GradeLevel)
+                .Where(e => studentIds.Contains(e.StudentId))
+                .ToListAsync();
+
             foreach (var assignment in assignedStudents)
             {
-                var enrollment = await _context.grades_Enrollments
-                    .Include(e => e.Group)
-                        .ThenInclude(g => g.GradeLevel)
-                    .Where(e => e.StudentId == assignment.StudentId)
-                    .FirstOrDefaultAsync();
+                var enrollment = enrollments.FirstOrDefault(e => e.StudentId == assignment.StudentId);
 
                 if (enrollment != null)
                 {
@@ -134,13 +138,17 @@ namespace SchoolManager.Areas.SocialService.Controllers
 
             var viewModel = new List<AvailableStudentViewModel>();
 
+            var studentIds = availableStudents.Select(s => s.UserId).ToList();
+
+            var enrollments = await _context.grades_Enrollments
+                .Include(e => e.Group)
+                    .ThenInclude(g => g.GradeLevel)
+                .Where(e => studentIds.Contains(e.StudentId))
+                .ToListAsync();
+
             foreach (var student in availableStudents)
             {
-                var enrollment = await _context.grades_Enrollments
-                    .Include(e => e.Group)
-                        .ThenInclude(g => g.GradeLevel)
-                    .Where(e => e.StudentId == student.UserId)
-                    .FirstOrDefaultAsync();
+                var enrollment = enrollments.FirstOrDefault(e => e.StudentId == student.UserId);
 
                 viewModel.Add(new AvailableStudentViewModel
                 {
@@ -381,23 +389,32 @@ namespace SchoolManager.Areas.SocialService.Controllers
 
             var viewModel = new List<AsignarHorasViewModel>();
 
-            foreach (var assignment in assignments)
-            {
-                var bitacorasPendientes = await _context.SocialServiceLogs
-                    .Where(log => log.StudentId == assignment.StudentId && !log.IsApproved)
-                    .OrderBy(log => log.Week)
-                    .Select(log => new BitacoraPendiente
+            var studentIds = assignments.Select(a => a.StudentId).ToList();
+
+            var bitacorasPendientesQuery = await _context.SocialServiceLogs
+                .Where(log => studentIds.Contains(log.StudentId) && !log.IsApproved)
+                .OrderBy(log => log.Week)
+                .Select(log => new 
+                {
+                    log.StudentId,
+                    BitacoraPendiente = new BitacoraPendiente
                     {
                         LogId = log.LogId,
                         Week = log.Week,
                         HoursPracticas = log.HoursPracticas,
                         HoursServicioSocial = log.HoursServicioSocial,
                         CreatedAt = log.CreatedAt
-                    })
-                    .ToListAsync();
+                    }
+                })
+                .ToListAsync();
 
-                // Solo agregar alumnos que tengan bitácoras pendientes
-                if (bitacorasPendientes.Any())
+            var bitacorasByStudent = bitacorasPendientesQuery
+                .GroupBy(b => b.StudentId)
+                .ToDictionary(g => g.Key, g => g.Select(x => x.BitacoraPendiente).ToList());
+
+            foreach (var assignment in assignments)
+            {
+                if (bitacorasByStudent.TryGetValue(assignment.StudentId, out var bitacorasPendientes) && bitacorasPendientes.Any())
                 {
                     var fullName = $"{assignment.Student.Person.FirstName} {assignment.Student.Person.LastNamePaternal} {assignment.Student.Person.LastNameMaternal}";
 
@@ -428,13 +445,17 @@ namespace SchoolManager.Areas.SocialService.Controllers
                 .OrderBy(a => a.Student.Person.FirstName)
                 .ToListAsync();
 
+            var studentIds = assignments.Select(a => a.StudentId).ToList();
+
+            var enrollments = await _context.grades_Enrollments
+                .Include(e => e.Group)
+                    .ThenInclude(g => g.GradeLevel)
+                .Where(e => studentIds.Contains(e.StudentId))
+                .ToListAsync();
+
             foreach (var assignment in assignments)
             {
-                var enrollment = await _context.grades_Enrollments
-                    .Include(e => e.Group)
-                        .ThenInclude(g => g.GradeLevel)
-                    .Where(e => e.StudentId == assignment.StudentId)
-                    .FirstOrDefaultAsync();
+                var enrollment = enrollments.FirstOrDefault(e => e.StudentId == assignment.StudentId);
 
                 if (enrollment != null)
                 {
@@ -443,6 +464,19 @@ namespace SchoolManager.Areas.SocialService.Controllers
                 }
             }
 
+            var todayAttendances = await _context.SocialServiceAttendances
+                .Where(att => studentIds.Contains(att.StudentId) && att.Date.Date == today)
+                .ToListAsync();
+
+            var recentAttendancesQuery = await _context.SocialServiceAttendances
+                .Where(att => studentIds.Contains(att.StudentId))
+                .OrderByDescending(att => att.Date)
+                .ToListAsync();
+
+            var recentAttendancesByStudent = recentAttendancesQuery
+                .GroupBy(att => att.StudentId)
+                .ToDictionary(g => g.Key, g => g.Take(5).ToList());
+
             var viewModel = new AttendanceListViewModel
             {
                 Today = today
@@ -450,23 +484,15 @@ namespace SchoolManager.Areas.SocialService.Controllers
 
             foreach (var assignment in assignments)
             {
-                var todayAttendance = await _context.SocialServiceAttendances
-                    .FirstOrDefaultAsync(att => att.StudentId == assignment.StudentId
-                        && att.Date.Date == today);
-
-                // Obtener las últimas 5 asistencias incluyendo hoy (para mostrar historial)
-                var recentAttendances = await _context.SocialServiceAttendances
-                    .Where(att => att.StudentId == assignment.StudentId)
-                    .OrderByDescending(att => att.Date)
-                    .Take(5)
-                    .ToListAsync();
+                var todayAttendance = todayAttendances.FirstOrDefault(att => att.StudentId == assignment.StudentId);
+                recentAttendancesByStudent.TryGetValue(assignment.StudentId, out var recentAttendances);
 
                 viewModel.Students.Add(new AttendanceViewModel
                 {
                     Assignment = assignment,
                     HasAttendanceToday = todayAttendance != null,
                     IsPresentToday = todayAttendance?.IsPresent ?? false,
-                    RecentAttendances = recentAttendances
+                    RecentAttendances = recentAttendances ?? new List<social_service_attendance>()
                 });
             }
 
