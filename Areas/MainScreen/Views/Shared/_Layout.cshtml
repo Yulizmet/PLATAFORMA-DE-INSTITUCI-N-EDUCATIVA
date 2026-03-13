@@ -31,77 +31,82 @@
 
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto align-items-center flex-nowrap" style="gap: 0.25rem;">
+
                     <li class="nav-item">
                         <a class="nav-link px-2" style="font-size: 0.875rem; white-space: nowrap;"
-                           asp-area="MainScreen"
-                           asp-controller="MainScreen"
-                           asp-action="Index">
+                           asp-area="MainScreen" asp-controller="MainScreen" asp-action="Index">
                             <i class="bi bi-house-fill me-1"></i> Inicio
                         </a>
                     </li>
 
-                    <li class="nav-item">
-                        <a class="nav-link px-2" style="font-size: 0.875rem; white-space: nowrap;"
-                           asp-area="MainScreen"
-                           asp-controller="MainScreen"
-                           asp-action="SistemaEscolar">
-                            Sistema Escolar
-                        </a>
-                    </li>
+                    @* Solo Student *@
+                    @if (User.IsInRole("Student"))
+                    {
+                        <li class="nav-item">
+                            <a class="nav-link px-2" style="font-size: 0.875rem; white-space: nowrap;"
+                               asp-area="MainScreen" asp-controller="MainScreen" asp-action="SistemaEscolar">
+                                Sistema Escolar
+                            </a>
+                        </li>
+                    }
 
-                    <li class="nav-item">
-                        <a class="nav-link px-2" style="font-size: 0.875rem; white-space: nowrap;"
-                           asp-area="MainScreen"
-                           asp-controller="MainScreen"
-                           asp-action="PanelAdministrativo">
-                            Panel Administrativo
-                        </a>
-                    </li>
+                    @* Solo Administrator *@
+                    @if (User.IsInRole("Administrator"))
+                    {
+                        <li class="nav-item">
+                            <a class="nav-link px-2" style="font-size: 0.875rem; white-space: nowrap;"
+                               asp-area="MainScreen" asp-controller="MainScreen" asp-action="PanelAdministrativo">
+                                Panel Administrativo
+                            </a>
+                        </li>
+                    }
 
-                    <li class="nav-item">
-                        <a class="nav-link px-2" style="font-size: 0.875rem; white-space: nowrap;"
-                           asp-area="MainScreen"
-                           asp-controller="MainScreen"
-                           asp-action="CalificacionesDocente">
-                            Calificaciones
-                        </a>
-                    </li>
+                    @* Solo Teacher *@
+                    @if (User.IsInRole("Teacher"))
+                    {
+                        <li class="nav-item">
+                            <a class="nav-link px-2" style="font-size: 0.875rem; white-space: nowrap;"
+                               asp-area="MainScreen" asp-controller="MainScreen" asp-action="CalificacionesDocente">
+                                Calificaciones
+                            </a>
+                        </li>
+                    }
 
-                    <li class="nav-item">
-                        <a class="nav-link px-2" style="font-size: 0.875rem; white-space: nowrap;"
-                           asp-area="MainScreen"
-                           asp-controller="MainScreen"
-                           asp-action="CalificacionesEstudiante">
-                            Mis Calificaciones
-                        </a>
-                    </li>
+                    @* Solo Student *@
+                    @if (User.IsInRole("Student"))
+                    {
+                        <li class="nav-item">
+                            <a class="nav-link px-2" style="font-size: 0.875rem; white-space: nowrap;"
+                               asp-area="MainScreen" asp-controller="MainScreen" asp-action="CalificacionesEstudiante">
+                                Mis Calificaciones
+                            </a>
+                        </li>
+                    }
 
-                    <li class="nav-item">
-                        <a asp-area="MainScreen"
-                           asp-controller="MainScreen"
-                           asp-action="Extension"
-                           class="nav-link px-2" style="font-size: 0.875rem; white-space: nowrap;">
-                            Extensión
-                        </a>
-                    </li>
+                    @* Todos los autenticados *@
+                    @if (User.Identity?.IsAuthenticated == true)
+                    {
+                        <li class="nav-item">
+                            <a asp-area="MainScreen" asp-controller="MainScreen" asp-action="Extension"
+                               class="nav-link px-2" style="font-size: 0.875rem; white-space: nowrap;">
+                                Extensión
+                            </a>
+                        </li>
 
-                    <li class="nav-item">
-                        <a asp-area="MainScreen"
-                           asp-controller="MainScreen"
-                           asp-action="Tramites"
-                           class="nav-link px-2" style="font-size: 0.875rem; white-space: nowrap;">
-                            Trámites
-                        </a>
-                    </li>
+                        <li class="nav-item">
+                            <a asp-area="MainScreen" asp-controller="MainScreen" asp-action="Tramites"
+                               class="nav-link px-2" style="font-size: 0.875rem; white-space: nowrap;">
+                                Trámites
+                            </a>
+                        </li>
 
-                    <li class="nav-item">
-                        <a asp-area="MainScreen"
-                           asp-controller="MainScreen"
-                           asp-action="Foro"
-                           class="nav-link px-2" style="font-size: 0.875rem; white-space: nowrap;">
-                            Foro
-                        </a>
-                    </li>
+                        <li class="nav-item">
+                            <a asp-area="MainScreen" asp-controller="MainScreen" asp-action="Foro"
+                               class="nav-link px-2" style="font-size: 0.875rem; white-space: nowrap;">
+                                Foro
+                            </a>
+                        </li>
+                    }
 
                     <li class="nav-item">
                         <a class="nav-link px-2" href="#" style="font-size: 0.875rem; white-space: nowrap;">Sobre Nosotros</a>
@@ -118,6 +123,7 @@
                             </form>
                         </li>
                     }
+
                 </ul>
             </div>
         </div>

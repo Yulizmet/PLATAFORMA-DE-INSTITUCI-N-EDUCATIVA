@@ -23,9 +23,11 @@ namespace SchoolManager.Areas.Grades.ViewModels.Enrollment
     public class StudentSelectionViewModel
     {
         public int StudentId { get; set; }
-        public string FullName { get; set; } = null!;
+        public string FullName { get; set; } = null!; 
         public string Matricula { get; set; } = null!;
         public string Email { get; set; } = null!;
         public bool IsSelected { get; set; }
+        public string? CurrentGroupName { get; set; }
+        public string? CurrentGradeLevelName { get; set; }
     }
 }

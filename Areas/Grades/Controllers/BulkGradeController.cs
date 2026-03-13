@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using MiniExcelLibs;
 using SchoolManager.Areas.Grades.ViewModels.BulkGrade;
 using SchoolManager.Data;
+using SchoolManager.Helpers;
 using SchoolManager.Models;
 
 namespace SchoolManager.Areas.Grades.Controllers
@@ -133,8 +134,7 @@ namespace SchoolManager.Areas.Grades.Controllers
 
         private int GetCurrentTeacherId()
         {
-            // Temporal para pruebas
-            return 4;
+            return User.GetUserId();
         }
     }
 }
