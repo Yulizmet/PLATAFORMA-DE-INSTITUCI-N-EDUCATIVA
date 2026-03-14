@@ -572,3 +572,196 @@
         });
     });
 })();
+
+
+let filters = {};
+
+$(document).on("click", ".excel-header", function (e) {
+
+    e.stopPropagation();
+
+    $(".excel-filter-popup").remove();
+
+    const col = $(this).data("col");
+    const offset = $(this).offset();
+
+    const popup = $(`
+    <div class="excel-filter-popup">
+        <button class="sort-asc">A → Z</button>
+        <button class="sort-desc">Z → A</button>
+
+        <input type="text" class="search-filter" placeholder="Buscar...">
+
+        <div class="filter-values"></div>
+
+        <button class="apply-filter btn btn-primary btn-sm">OK</button>
+    </div>
+    `);
+
+    popup.css({
+        top: offset.top + $(this).height() + 5,
+        left: offset.left
+    });
+
+    const values = new Set();
+
+    $("#studentsTable tbody tr").each(function () {
+        values.add($(this).find("td").eq(col).text().trim());
+    });
+
+    const container = popup.find(".filter-values");
+
+    values.forEach(v => {
+        container.append(`
+        <label>
+            <input type="checkbox" value="${v}" checked> ${v}
+        </label>`);
+    });
+
+    $("body").append(popup);
+
+    popup.on("click", function (e) {
+        e.stopPropagation();
+    });
+
+    popup.find(".sort-asc").click(() => {
+        sortTable(col, true);
+        popup.remove();
+    });
+
+    popup.find(".sort-desc").click(() => {
+        sortTable(col, false);
+        popup.remove();
+    });
+
+    popup.find(".apply-filter").click(function () {
+
+        const selected = [];
+
+        popup.find("input:checked").each(function () {
+            selected.push($(this).val());
+        });
+
+        filters[col] = selected;
+
+        applyFilters();
+
+        popup.remove();
+    });
+
+    popup.find(".search-filter").on("input", function () {
+
+        const text = $(this).val().toLowerCase();
+
+        container.find("label").each(function () {
+
+            const v = $(this).text().toLowerCase();
+
+            $(this).toggle(v.includes(text));
+
+        });
+
+    });
+
+});
+
+function applyFilters() {
+
+    $("#studentsTable tbody tr").each(function () {
+
+        let show = true;
+
+        for (const col in filters) {
+
+            const val = $(this).find("td").eq(col).text();
+
+            if (!filters[col].includes(val)) {
+                show = false;
+                break;
+            }
+
+        }
+
+        $(this).toggle(show);
+
+    });
+
+}
+
+function sortTable(col, asc) {
+
+    const rows = $("#studentsTable tbody tr").get();
+
+    rows.sort(function (a, b) {
+
+        let A = $(a).find("td").eq(col).text();
+        let B = $(b).find("td").eq(col).text();
+
+        let numA = parseFloat(A);
+        let numB = parseFloat(B);
+
+        if (!isNaN(numA) && !isNaN(numB))
+            return asc ? numA - numB : numB - numA;
+
+        return asc ? A.localeCompare(B) : B.localeCompare(A);
+
+    });
+
+    $.each(rows, function (i, row) {
+        $("#studentsTable tbody").append(row);
+    });
+
+}
+
+// cerrar popup solo si se hace click fuera
+$(document).on("click", function (e) {
+
+    if (!$(e.target).closest(".excel-filter-popup").length &&
+        !$(e.target).closest(".excel-header").length) {
+
+        $(".excel-filter-popup").remove();
+    }
+
+});
+
+
+$("#resetFilters").click(function () {
+
+    // limpiar inputs del submenu
+    $("#filterName").val("");
+    $("#filterStatus").val("");
+    $("#filterGenero").val("");
+    $("#filterSemestre").val("");
+
+    // limpiar filtros de columnas tipo Excel
+    filters = {};
+
+    // cerrar popup de filtros si está abierto
+    $(".excel-filter-popup").remove();
+
+    // mostrar todas las filas
+    $("#studentsTable tbody tr").show();
+
+    // reiniciar paginación
+    currentPage = 1;
+    updatePagination();
+
+});
+// Cambiar botón activo
+document.querySelectorAll(".view-btn").forEach(btn => {
+
+    btn.addEventListener("click", function () {
+
+        document.querySelectorAll(".view-btn").forEach(b => {
+            b.classList.remove("active");
+            b.classList.remove("btn-primary");
+            b.classList.add("btn-outline-primary");
+        });
+
+        this.classList.add("active");
+        this.classList.remove("btn-outline-primary");
+        this.classList.add("btn-primary");
+
+    });
+
+});
