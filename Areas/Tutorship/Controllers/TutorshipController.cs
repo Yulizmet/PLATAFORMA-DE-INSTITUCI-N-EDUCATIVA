@@ -18,8 +18,8 @@ namespace SchoolManager.Areas.Tutorship.Controllers
         private readonly AppDbContext _context;
         private readonly IWebHostEnvironment _webHostEnvironment;
 
-        private readonly int _simulatedRoleId = 2;
-        private readonly int _simulatedUserId = 10;
+        private readonly int _simulatedRoleId = 1;
+        private readonly int _simulatedUserId = 11;
 
         public TutorshipController(AppDbContext context, IWebHostEnvironment webHostEnvironment)
         {
@@ -236,14 +236,10 @@ namespace SchoolManager.Areas.Tutorship.Controllers
                 .OrderBy(g => g)
                 .ToListAsync();
 
-
-
             var query = _context.Users
                 .Include(u => u.Person)
                 .Where(u => u.UserRoles.Any(ur => ur.RoleId == 1))
                 .AsQueryable();
-
-
 
             if (grado.HasValue && !string.IsNullOrEmpty(grupo))
             {
@@ -262,25 +258,37 @@ namespace SchoolManager.Areas.Tutorship.Controllers
                 }
             }
 
-
             var listaAlumnos = await query.ToListAsync();
 
             var userIds = listaAlumnos.Select(u => u.UserId).ToList();
 
-            ViewBag.FotosPerfil = await _context.TutorshipInterviews
-    .Where(e => userIds.Contains(e.StudentId) && e.FilePath != null && e.FilePath != "Sin archivo")
-    .ToDictionaryAsync(e => e.StudentId, e => e.FilePath);
+            
+            var fotos = await _context.TutorshipInterviews
+                .Where(e => userIds.Contains(e.StudentId) && e.FilePath != null && e.FilePath != "Sin archivo")
+                .ToListAsync();
 
+            ViewBag.FotosPerfil = fotos
+                .GroupBy(e => e.StudentId)
+                .ToDictionary(g => g.Key, g => g.First().FilePath);
 
-            ViewBag.Matriculas = await _context.PreenrollmentGenerals
+            var preenrollments = await _context.PreenrollmentGenerals
                 .Where(p => p.UserId != null && userIds.Contains(p.UserId.Value))
                 .Select(p => new { p.UserId, p.Matricula })
-                .ToDictionaryAsync(p => p.UserId.Value, p => p.Matricula);
+                .ToListAsync();
 
-            ViewBag.Grupos = await _context.grades_Enrollments
+            ViewBag.Matriculas = preenrollments
+                .GroupBy(p => p.UserId.Value)
+                .ToDictionary(g => g.Key, g => g.First().Matricula);
+
+            var enrollments = await _context.grades_Enrollments
                 .Include(e => e.Group)
                 .Where(e => userIds.Contains(e.StudentId))
-                .ToDictionaryAsync(e => e.StudentId, e => e.Group.GradeLevelId + e.Group.Name);
+                .ToListAsync();
+
+            ViewBag.Grupos = enrollments
+                .GroupBy(e => e.StudentId)
+                .ToDictionary(g => g.Key, g => g.First().Group.GradeLevelId + g.First().Group.Name);
+
 
             return View("~/Areas/Tutorship/Views/ListaDeAlumnos.cshtml", listaAlumnos);
         }
