@@ -207,15 +207,13 @@ namespace SchoolManager.Data
             // Índices únicos
             //modelBuilder.Entity<preenrollment_general>()
             //    .HasIndex(p => p.Curp)
-            //    .IsUnique();
+            //   .IsUnique();
 
             //modelBuilder.Entity<preenrollment_general>()
             //    .HasIndex(p => p.Email)
             //    .IsUnique();
 
-            //modelBuilder.Entity<preenrollment_docs>()
-            //    .HasIndex(d => d.Curp)
-            //    .IsUnique();
+      
 
             // Relación: preenrollment_general -> preenrollment_careers
             modelBuilder.Entity<preenrollment_general>()
