@@ -27,9 +27,6 @@ namespace SchoolManager.Areas.Grades.Controllers
                 .Include(g => g.Enrollments)
                     .ThenInclude(e => e.Student)
                         .ThenInclude(s => s.Person)
-                .Include(g => g.Enrollments)
-                    .ThenInclude(e => e.Student)
-                        .ThenInclude(s => s.Preenrollments) 
                 .FirstOrDefaultAsync(g => g.GroupId == groupId);
 
             if (group == null) return NotFound();
@@ -38,6 +35,17 @@ namespace SchoolManager.Areas.Grades.Controllers
             ViewBag.GroupName = group.Name;
             ViewBag.GradeLevelName = group.GradeLevel.Name;
 
+            var studentIds = group.Enrollments.Select(e => e.StudentId).ToList();
+            var matriculas = await _context.Set<preenrollment_general>()
+                .Where(p => p.UserId != null && studentIds.Contains(p.UserId.Value))
+                .GroupBy(p => p.UserId)
+                .Select(g => new
+                {
+                    UserId = g.Key,
+                    Matricula = g.OrderByDescending(p => p.CreateStat).Select(p => p.Matricula).FirstOrDefault()
+                })
+                .ToDictionaryAsync(x => x.UserId!.Value, x => x.Matricula ?? "S/N");
+
             var students = group.Enrollments
                 .Where(e => e.IsActive)
                 .Select(e => new EnrollmentViewModel
@@ -45,10 +53,7 @@ namespace SchoolManager.Areas.Grades.Controllers
                     EnrollmentId = e.EnrollmentId,
                     StudentId = e.StudentId,
                     StudentName = $"{e.Student.Person.FirstName} {e.Student.Person.LastNamePaternal} {e.Student.Person.LastNameMaternal}",
-                    Matricula = e.Student.Preenrollments
-                        .OrderByDescending(p => p.CreateStat)
-                        .Select(p => p.Matricula)
-                        .FirstOrDefault() ?? "S/N",
+                    Matricula = matriculas.GetValueOrDefault(e.StudentId, "S/N"),
                     GroupId = e.GroupId,
                     GroupName = group.Name,
                     GradeLevelName = group.GradeLevel.Name
