@@ -15,6 +15,10 @@
         {
             <h2 class="fw-bold m-0">Bienvenido profesor, @ViewBag.NombreUsuario</h2>
         }
+        else if (roleId == 3)
+        {
+            <h2 class="fw-bold m-0">Bienvenido administrador, @ViewBag.NombreUsuario</h2>
+        }
         else
         {
             <h2 class="fw-bold m-0">Bienvenido, @ViewBag.NombreUsuario</h2>
@@ -105,6 +109,25 @@
                         <hr class="my-3" style="border-color: var(--utt-beige);">
                         <span class="status-badge">
                             VER LISTA <i class="bi bi-arrow-right-short"></i>
+                        </span>
+                    </div>
+                </a>
+            </div>
+        }
+
+        @if (roleId == 3)
+        {
+            <div class="col-md-6 col-lg-4">
+                <a asp-area="Gestion" asp-controller="Tutorship" asp-action="AsignarTutores" class="text-decoration-none">
+                    <div class="card dashboard-card shadow-sm p-4 text-center h-100">
+                        <div class="card-icon-box" style="background-color: var(--utt-beige); color: var(--utt-dark-red);">
+                            <i class="bi bi-diagram-3-fill"></i>
+                        </div>
+                        <h5 class="fw-bold mt-3" style="color: var(--utt-red);">ASIGNAR TUTORES</h5>
+                        <p class="text-muted small">Vincular maestros con grupos</p>
+                        <hr class="my-3" style="border-color: var(--utt-beige);">
+                        <span class="status-badge">
+                            GESTIONAR <i class="bi bi-arrow-right-short"></i>
                         </span>
                     </div>
                 </a>
