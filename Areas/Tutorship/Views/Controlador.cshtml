@@ -134,6 +134,57 @@
             </div>
         }
 
+        <div class="col-md-6 col-lg-4">
+            <div class="card dashboard-card shadow-sm p-4 text-center h-100">
+                <div class="card-icon-box" style="background-color: var(--utt-beige); color: var(--utt-dark-red);">
+                    <i class="bi bi-arrow-clockwise"></i>
+                </div>
+                <h5 class="fw-bold mt-3" style="color: var(--utt-red);">NUEVO CICLO</h5>
+                <p class="text-muted small">Requerir actualización de datos a todos los alumnos</p>
+                <hr class="my-3" style="border-color: var(--utt-beige);">
+
+                <button type="button" class="btn btn-sm w-100 fw-bold shadow-sm"
+                        style="background-color: var(--utt-dark-red); color: white;"
+                        data-bs-toggle="modal" data-bs-target="#modalNuevoCiclo">
+                    <i class="bi bi-exclamation-circle"></i> SOLICITAR ACTUALIZACIÓN
+                </button>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<div class="modal fade" id="modalNuevoCiclo" tabindex="-1" aria-labelledby="modalNuevoCicloLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg">
+
+            <div class="modal-header" style="background-color: var(--utt-dark-red); color: white;">
+                <h5 class="modal-title fw-bold" id="modalNuevoCicloLabel">
+                    <i class="bi bi-exclamation-triangle-fill text-warning"></i> Confirmar Nuevo Ciclo
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+
+            <div class="modal-body p-4" style="background-color: var(--utt-white);">
+                <p class="text-dark fs-5 text-center mb-4">
+                    ¿Estás seguro de iniciar un nuevo ciclo escolar?
+                </p>
+                <div class="alert alert-warning border-warning shadow-sm small">
+                    <strong><i class="bi bi-info-circle-fill"></i> Atención:</strong> Esto cambiará el estatus de <em>todas</em> las entrevistas a "Requiere Actualización" y obligará a todos los alumnos a revisar y guardar su información nuevamente.
+                </div>
+            </div>
+
+            <div class="modal-footer" style="background-color: var(--utt-light);">
+                <button type="button" class="btn btn-secondary fw-bold" data-bs-dismiss="modal">Cancelar</button>
+
+                <form asp-area="Gestion" asp-controller="Tutorship" asp-action="ReiniciarEntrevistasCuatrimestre" method="post">
+                    <button type="submit" class="btn fw-bold text-white shadow-sm" style="background-color: var(--utt-red);">
+                        <i class="bi bi-check-circle-fill"></i> Sí, Iniciar Ciclo
+                    </button>
+                </form>
+            </div>
+
+        </div>
     </div>
 </div>
 

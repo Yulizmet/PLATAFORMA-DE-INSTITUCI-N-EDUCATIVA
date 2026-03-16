@@ -464,6 +464,34 @@ namespace SchoolManager.Areas.Tutorship.Controllers
         }
 
         [HttpPost]
+        public async Task<IActionResult> ReiniciarEntrevistasCuatrimestre()
+        {
+            // OJO: Usa LoggedRoleId o _simulatedRoleId según como lo hayas dejado
+            if (LoggedRoleId != 3) return RedirectToAction(nameof(AccesoDenegado));
+
+            // 1. Buscamos todas las entrevistas que ya estaban completadas
+            var entrevistas = await _context.TutorshipInterviews
+                .Where(e => e.Status == "Completada")
+                .ToListAsync();
+
+            if (entrevistas.Any())
+            {
+                // 2. Les cambiamos el estatus a todas
+                foreach (var entrevista in entrevistas)
+                {
+                    entrevista.Status = "Requiere Actualizacion";
+                }
+
+                _context.TutorshipInterviews.UpdateRange(entrevistas);
+                await _context.SaveChangesAsync();
+            }
+
+            TempData["Exito"] = $"Se ha solicitado a {entrevistas.Count} alumnos que actualicen su entrevista para el nuevo ciclo.";
+
+            return RedirectToAction("Controlador");
+        }
+
+        [HttpPost]
         public async Task<IActionResult> GuardarAsignacionTutor(int teacherId, int groupId)
         {
             if (LoggedRoleId != 3) return RedirectToAction(nameof(AccesoDenegado));
@@ -505,6 +533,8 @@ namespace SchoolManager.Areas.Tutorship.Controllers
                     });
                 }
             }
+
+
 
             await _context.SaveChangesAsync();
 
