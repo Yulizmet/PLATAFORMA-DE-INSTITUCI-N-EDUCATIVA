@@ -8,16 +8,16 @@
 
 <style>
     /* =====================================================================
-           TRUCO CSS: Convertir una Tabla en "Tarjetas" flotantes (Estilo Imagen 7)
+               TRUCO CSS: Convertir una Tabla en "Tarjetas" flotantes
            ===================================================================== */
     #tablaAlumnos {
         border-collapse: separate !important;
-        border-spacing: 0 1.2rem !important; /* Esto crea el espacio en blanco entre las "tarjetas" */
+        border-spacing: 0 1.2rem !important;
         border: none !important;
         width: 100%;
     }
 
-        /* Estilo de los encabezados (FOTO, INFORMACIÓN, ACCIONES) */
+        /* Estilo de los encabezados */
         #tablaAlumnos thead th {
             border: none !important;
             color: #888;
@@ -32,14 +32,14 @@
         /* Estilo de la "Tarjeta" (Fila) */
         #tablaAlumnos tbody tr {
             background-color: #ffffff;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.06); /* Sombra suave */
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
             border-radius: 10px;
             transition: transform 0.2s ease, box-shadow 0.2s ease;
         }
 
             #tablaAlumnos tbody tr:hover {
                 transform: translateY(-3px);
-                box-shadow: 0 6px 15px rgba(0,0,0,0.1); /* Efecto al pasar el mouse */
+                box-shadow: 0 6px 15px rgba(0,0,0,0.1);
             }
 
         /* Estilo de las celdas dentro de la tarjeta */
@@ -50,7 +50,7 @@
             padding: 1.2rem 1rem;
         }
 
-            /* Bordes redondeados para que la fila parezca una caja perfecta */
+            /* Bordes redondeados */
             #tablaAlumnos tbody td:first-child {
                 border-left: 1px solid #f4f4f4;
                 border-top-left-radius: 10px;
@@ -68,12 +68,6 @@
         box-shadow: none !important;
     }
 
-    /* Alineación de los controles superiores de DataTables (Buscar y Mostrar X) */
-    .dataTables_wrapper .row {
-        align-items: center;
-        margin-bottom: 0.5rem;
-    }
-
     /* Botones rojo oscuro (Vino) */
     .btn-vino {
         background-color: #620900;
@@ -82,12 +76,68 @@
     }
 
         .btn-vino:hover {
-            background-color: #620900;
+            background-color: #4a0700; /* Un poco más oscuro al pasar el mouse */
             color: white;
+        }
+
+    /* =====================================================================
+               ESTILOS PARA DOMAR DATATABLES (Buscador, Paginación, Textos)
+           ===================================================================== */
+    .dataTables_wrapper {
+        font-family: inherit !important;
+        font-size: 0.95rem;
+    }
+
+    /* Letras de "Buscar" y "Mostrar registros" */
+    .dataTables_length label,
+    .dataTables_filter label {
+        font-weight: bold;
+        color: #444;
+    }
+
+    /* Cajas de texto y selectores */
+    .dataTables_filter input,
+    .dataTables_length select {
+        border: 1px solid #ddd;
+        border-radius: 0.375rem;
+        padding: 0.25rem 0.5rem;
+        box-shadow: 0 .125rem .25rem rgba(0,0,0,.05);
+    }
+
+        .dataTables_filter input:focus,
+        .dataTables_length select:focus {
+            border-color: #620900;
+            outline: none;
+            box-shadow: 0 0 0 0.2rem rgba(98, 9, 0, 0.25);
+        }
+
+    /* Texto de abajo "Mostrando 1 a N registros" */
+    .dataTables_info {
+        font-weight: 500;
+        color: #666;
+        padding-top: 1rem !important;
+    }
+
+    /* Paginación UTTN (Color Vino) */
+    .page-item.active .page-link {
+        background-color: #620900 !important;
+        border-color: #620900 !important;
+        color: white !important;
+    }
+
+    .page-link {
+        color: #620900;
+        font-weight: 500;
+    }
+
+        .page-link:hover {
+            background-color: #A89B8C; /* Tu color dorado/beige */
+            color: white;
+            border-color: #A89B8C;
         }
 </style>
 
-<div class="container-fluid p-0">
+<div class="container-fluid p-0 mt-4">
     <h2 class="fw-bold mb-4" style="color:#620900;">Directorios de Alumnos</h2>
 
     <div class="card border-0 shadow-sm mb-5" style="border-left: 6px solid #620900 !important; border-radius: 10px;">
@@ -95,7 +145,7 @@
             <form class="row g-3 align-items-end" method="get" asp-action="ListaDeAlumnos">
                 <div class="col-md-4">
                     <label class="form-label fw-bold text-dark">Grado</label>
-                    <select class="form-select" name="grado" style="border-color: #ddd;">
+                    <select class="form-select shadow-sm" name="grado" style="border-color: #ddd;">
                         <option value="">Todos los grados...</option>
                         @if (ViewBag.GradosDisponibles != null)
                         {
@@ -109,7 +159,7 @@
 
                 <div class="col-md-5">
                     <label class="form-label fw-bold text-dark">Grupo</label>
-                    <select class="form-select" name="grupo" style="border-color: #ddd;">
+                    <select class="form-select shadow-sm" name="grupo" style="border-color: #ddd;">
                         <option value="">Todos los grupos...</option>
                         @if (ViewBag.GruposDisponibles != null)
                         {
@@ -122,7 +172,7 @@
                 </div>
 
                 <div class="col-md-3">
-                    <button type="submit" class="btn w-100 fw-bold" style="background-color: #A89B8C; color: white;">
+                    <button type="submit" class="btn w-100 fw-bold shadow-sm" style="background-color: #A89B8C; color: white;">
                         <i class="bi bi-funnel-fill"></i> Filtrar Lista
                     </button>
                 </div>
@@ -130,8 +180,8 @@
 
             @if (ViewBag.MensajeFiltro != null)
             {
-                <div class="alert alert-warning mt-3 mb-0 text-center">
-                    <i class="bi bi-exclamation-triangle"></i> @ViewBag.MensajeFiltro
+                <div class="alert alert-warning mt-4 mb-0 text-center fw-bold shadow-sm">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i> @ViewBag.MensajeFiltro
                 </div>
             }
         </div>
@@ -161,7 +211,7 @@
                     string rutaFoto = dictFotos.ContainsKey(alumno.UserId) ? dictFotos[alumno.UserId] : "";
                     bool tieneFoto = !string.IsNullOrEmpty(rutaFoto);
 
-                    string imgSrc = tieneFoto ? rutaFoto : $"https://ui-avatars.com/api/?name={alumno.Person.FirstName}&background=8C1B1B&color=fff";
+                    string imgSrc = tieneFoto ? rutaFoto : $"https://ui-avatars.com/api/?name={alumno.Person.FirstName}&background=620900&color=fff";
                     string nombreCompleto = $"{alumno.Person.FirstName} {alumno.Person.LastNamePaternal} {alumno.Person.LastNameMaternal}";
 
                     <tr>
@@ -172,17 +222,18 @@
                         <td data-sort="@nombreCompleto">
                             <div class="fw-bold fs-6 text-dark mb-1">@nombreCompleto</div>
                             <div class="text-muted small">
-                                Matrícula: @matriculaAlumno | Grado y Grupo: @grupoAlumno
+                                <span class="badge bg-light text-dark border me-2">Matrícula: @matriculaAlumno</span>
+                                <span class="badge" style="background-color: #A89B8C; color: white;">Grado y Grupo: @grupoAlumno</span>
                             </div>
                         </td>
 
                         <td class="text-end pe-3">
                             <div class="d-flex gap-2 justify-content-end">
-                                <a asp-area="Gestion" asp-controller="Tutorship" asp-action="VerEntrevistaAlumno" asp-route-id="@alumno.UserId" class="btn btn-vino shadow-sm">
-                                    <i class="bi bi-file-text"></i> Ver Entrevista
+                                <a asp-area="Gestion" asp-controller="Tutorship" asp-action="VerEntrevistaAlumno" asp-route-id="@alumno.UserId" class="btn btn-vino shadow-sm btn-sm px-3 py-2">
+                                    <i class="bi bi-file-text"></i> Entrevista
                                 </a>
-                                <a asp-area="Gestion" asp-controller="Tutorship" asp-action="Seguimiento" asp-route-matriculaBuscar="@matriculaAlumno" class="btn btn-vino shadow-sm">
-                                    <i class="bi bi-graph-up"></i> Ver Seguimiento
+                                <a asp-area="Gestion" asp-controller="Tutorship" asp-action="Seguimiento" asp-route-matriculaBuscar="@matriculaAlumno" class="btn btn-vino shadow-sm btn-sm px-3 py-2">
+                                    <i class="bi bi-graph-up"></i> Seguimiento
                                 </a>
                             </div>
                         </td>
@@ -204,12 +255,15 @@
                 language: {
                     url: 'https://cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json'
                 },
-                lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "Todos"]],
+                lengthMenu: [[10, 25, 50, -1], [10, 25, 50, "Todos"]],
                 pageLength: 10,
                 columnDefs: [
+                    // Quitamos la flecha de ordenamiento en Foto (0) y Acciones (2)
                     { orderable: false, targets: [0, 2] },
+                    // Evitamos que el buscador intente buscar dentro de los botones de acciones y la foto
                     { searchable: false, targets: [0, 2] }
                 ],
+                // Ordenar por defecto por la columna de Nombre (1) alfabéticamente
                 order: [[1, 'asc']]
             });
         });
