@@ -160,35 +160,26 @@
                 });
             }
 
-            function setCardEditable(card, editable) {
-                card.querySelectorAll("input, select, textarea").forEach(el => {
-                    const tag = el.tagName.toLowerCase();
-
-                    if (el.type === "radio" || el.type === "checkbox") {
-                        el.disabled = !editable;
-                        return;
-                    }
-
-                    if (tag === "select") {
-                        el.disabled = !editable;
-                    } else {
-                        el.readOnly = !editable;
-                    }
-                });
-            }
-
-            // 5) Antes del submit: habilitar todo para que se envíe completo
-            form.addEventListener("submit", function () {
-                form.querySelectorAll("input, select, textarea").forEach(el => {
-                    el.disabled = false;
-                    el.readOnly = false;
-                });
-
-                const fd = new FormData(form);
-                const updated = {};
-                fd.forEach((v, k) => updated[k] = v);
-                guardarPreinscripcionLS(updated);
+        function setCardEditable(card, editable) {
+            card.querySelectorAll("input, select, textarea").forEach(el => {
+                if (el.type === "radio" || el.type === "checkbox") {
+                    el.disabled = !editable;
+                    return;
+                }
+                // readOnly funciona en inputs y textarea, para select usamos pointer-events
+                el.readOnly = !editable;
+                el.style.pointerEvents = editable ? "" : "none";
+                el.style.backgroundColor = editable ? "" : "#e9ecef";
+                el.tabIndex = editable ? "" : -1;
             });
+        }
+                    // POR ESTO — solo quita el bloque de habilitar campos
+        form.addEventListener("submit", function () {
+            const fd = new FormData(form);
+            const updated = {};
+            fd.forEach((v, k) => updated[k] = v);
+            guardarPreinscripcionLS(updated);
+        });
 
             // 6) Borrar LS
             document.getElementById("btnBorrarLS")?.addEventListener("click", function () {

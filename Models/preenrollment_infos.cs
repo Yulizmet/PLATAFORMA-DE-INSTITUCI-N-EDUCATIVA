@@ -12,7 +12,7 @@ namespace SchoolManager.Models
         [Required]
         public int id_data { get; set; }
 
-        [ForeignKey("IdData")]
+        [ForeignKey("id_data")]
         [ValidateNever]
         public virtual preenrollment_general General { get; set; } = null!;
 

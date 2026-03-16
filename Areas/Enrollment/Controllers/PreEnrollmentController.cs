@@ -47,7 +47,7 @@ namespace SchoolManager.Areas.Enrollment.Controllers
 
         private string GenerarFolio(int idGeneration)
         {
-            var generation = _context.Generations
+            var generation = _context.PreenrollmentGenerations
                 .FirstOrDefault(g => g.IdGeneration == idGeneration);
 
             if (generation == null)
@@ -109,7 +109,7 @@ namespace SchoolManager.Areas.Enrollment.Controllers
             ViewData["IdCareer"] = new SelectList(
                 _context.PreenrollmentCareers, "IdCareer", "name_career");
             ViewData["IdGeneration"] = new SelectList(
-                _context.Generations, "IdGeneration", "Year");
+                _context.PreenrollmentGenerations, "IdGeneration", "Year");
             return View();
         }
 
@@ -125,7 +125,7 @@ namespace SchoolManager.Areas.Enrollment.Controllers
                 ViewData["IdCareer"] = new SelectList(
                     _context.PreenrollmentCareers, "IdCareer", "name_career", vm.IdCareer);
                 ViewData["IdGeneration"] = new SelectList(
-                    _context.Generations, "IdGeneration", "Year", vm.IdGeneration);
+                    _context.PreenrollmentGenerations, "IdGeneration", "Year", vm.IdGeneration);
                 return View(vm);
             }
 
@@ -160,7 +160,6 @@ namespace SchoolManager.Areas.Enrollment.Controllers
                 neighborhood = vm.Neighborhood,
                 state = vm.State,
                 city = vm.City,
-                phone = vm.Phone
             };
             _context.PreenrollmentAddresses.Add(address);
 
@@ -473,7 +472,7 @@ namespace SchoolManager.Areas.Enrollment.Controllers
                 return View(vm);
             }
 
-            var generation = await _context.Generations
+            var generation = await _context.PreenrollmentGenerations
                 .OrderByDescending(g => g.Year)
                 .FirstOrDefaultAsync();
 
@@ -504,7 +503,7 @@ namespace SchoolManager.Areas.Enrollment.Controllers
                     Gender = vm.Persona.Gender,
                     Curp = vm.Persona.Curp,
                     Email = vm.Persona.Email,
-                    Phone = vm.Domicilio.phone,
+                    Phone = vm.Persona.Phone,
                     IsActive = true,
                     CreatedDate = DateTime.Now
                 };
@@ -528,7 +527,7 @@ namespace SchoolManager.Areas.Enrollment.Controllers
                     WorkPhone = vm.DatosGenerales.WorkPhone,
                     CreateStat = DateTime.Now,
                     Folio = GenerarFolio(generation.IdGeneration),
-                    Matricula = null
+                    Matricula = GenerarMatriculaUnica()
                 };
 
                 _context.PreenrollmentGenerals.Add(general);
@@ -546,7 +545,6 @@ namespace SchoolManager.Areas.Enrollment.Controllers
                     neighborhood = vm.Domicilio.neighborhood,
                     state = vm.Domicilio.state,
                     city = vm.Domicilio.city,
-                    phone = vm.Domicilio.phone
                 };
                 _context.PreenrollmentAddresses.Add(address);
 
@@ -720,7 +718,7 @@ namespace SchoolManager.Areas.Enrollment.Controllers
             ViewData["IdCareer"] = new SelectList(
                 _context.PreenrollmentCareers, "IdCareer", "name_career", general.IdCareer);
             ViewData["IdGeneration"] = new SelectList(
-                _context.Generations, "IdGeneration", "Year", general.IdGeneration);
+                _context.PreenrollmentGenerations, "IdGeneration", "Year", general.IdGeneration);
 
             return View(general);
         }
@@ -753,7 +751,7 @@ namespace SchoolManager.Areas.Enrollment.Controllers
             ViewData["IdCareer"] = new SelectList(
                 _context.PreenrollmentCareers, "IdCareer", "name_career", general.IdCareer);
             ViewData["IdGeneration"] = new SelectList(
-                _context.Generations, "IdGeneration", "Year", general.IdGeneration);
+                _context.PreenrollmentGenerations, "IdGeneration", "Year", general.IdGeneration);
 
             return View(general);
         }
