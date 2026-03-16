@@ -123,7 +123,6 @@ public class ProceedingController : Controller
                 neighborhood = "Centro",
                 state = "Tamaulipas",
                 city = "Reynosa",
-                phone = "8991234567"
             });
 
             _context.PreenrollmentInfos.Add(new preenrollment_infos
@@ -288,7 +287,7 @@ public class ProceedingController : Controller
             PreviousDegree = school?.degree ?? "N/A",
 
             Email = data.Email,
-            Phone = data.Phone ?? addr?.phone ?? "N/A",
+            //Phone = data.Phone ?? addr?.phone ?? "N/A",
 
             Street = addr?.street ?? "N/A",
             ExtNum = addr?.exterior_number ?? "S/N",
