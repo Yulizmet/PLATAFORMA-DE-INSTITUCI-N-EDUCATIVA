@@ -1,0 +1,110 @@
+﻿@model SchoolManager.Areas.Enrollment.ViewModels.FinalizarViewModel
+@{
+    ViewData["Title"] = "Finalizar";
+    Layout = "~/Areas/Enrollment/Views/_Layout.cshtml";
+}
+
+<div class="wrapper">
+    <div class="main">
+        <main class="content">
+            <div class="container-fluid p-0">
+
+                <div class="text-center my-4">
+                    <h2 class="fw-bold" style="color:#198754;">Tu solicitud ha sido enviada con éxito</h2>
+                </div>
+
+                <div class="row justify-content-center">
+                    <div class="col-12 col-lg-8 col-xl-7">
+
+                        <div class="card shadow-sm border-0">
+                            <div class="card-body p-0">
+                                <div class="px-4 py-4">
+
+                                    <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+                                        <div class="fw-semibold text-muted">NÚMERO DE FOLIO:</div>
+                                        <div class="fw-bold" id="cpFolio">@Model.Folio</div>
+                                    </div>
+
+                                    <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+                                        <div class="fw-semibold text-muted">FECHA DE ENVÍO:</div>
+                                        <div class="fw-bold text-end" id="fechaEnvio">@Model.FechaEnvio.ToString("dd/MM/yyyy HH:mm")</div>
+                                    </div>
+
+                                    <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+                                        <div class="fw-semibold text-muted">NOMBRE DEL ASPIRANTE:</div>
+                                        <div class="fw-bold text-end" id="cpNombre">@Model.NombreAspirante</div>
+                                    </div>
+
+                                    <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+                                        <div class="fw-semibold text-muted">ESPECIALIDAD SOLICITADA:</div>
+                                        <div class="fw-bold text-end" id="cpEspecialidad">@Model.Especialidad</div>
+                                    </div>
+
+                                </div>
+
+                                <div class="px-4 py-4" style="background:#eef2f5;">
+                                    <div class="text-center fw-semibold mb-2">
+                                        Te hemos enviado un correo con tu ficha de preinscripción
+                                    </div>
+
+                                    <div class="text-center">
+                                        <a class="fw-bold text-primary text-break"
+                                           href="#"
+                                           target="_blank"
+                                           rel="noopener">
+                                            ¿Tienes sugerencias para mejorar este formulario?
+                                        </a>
+                                    </div>
+
+                                    <div class="d-flex flex-column flex-sm-row justify-content-center gap-2 mt-3">
+                                        <button class="btn btn-primary" type="button" onclick="convertirPdf()">
+                                            <i class="fa-solid fa-download me-2"></i>Descargar comprobante
+                                        </button>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+</div>
+
+<div hidden>
+    <span id="pdfGenero">@Model.Genero</span>
+    <span id="pdfFechaNacimiento">@Model.FechaNacimiento?.ToString("yyyy-MM-dd")</span>
+    <span id="pdfCurp">@Model.Curp</span>
+    <span id="pdfTipoSangre">@Model.TipoSangre</span>
+
+    <span id="pdfSecundaria">@Model.SecundariaProcedencia</span>
+    <span id="pdfPromedio">@Model.Promedio</span>
+    <span id="pdfFechaFinSecundaria">@Model.FechaFinSecundaria?.ToString("yyyy-MM-dd")</span>
+
+    <span id="pdfCalle">@Model.Calle</span>
+    <span id="pdfNumeroExterior">@Model.NumeroExterior</span>
+    <span id="pdfNumeroInterior">@Model.NumeroInterior</span>
+    <span id="pdfColonia">@Model.Colonia</span>
+    <span id="pdfCodigoPostal">@Model.CodigoPostal</span>
+    <span id="pdfMunicipio">@Model.Municipio</span>
+    <span id="pdfEstado">@Model.Estado</span>
+    <span id="pdfGeneracion">@Model.Generacion</span>
+</div>
+
+<img id="pdfLogo" src="@Url.Content("~/src/img/icons/ITACE.png")" style="display:none;" alt="logo">
+
+@section Styles {
+    <link href="@Url.Content("~/enrollment/static/css/app.css")" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+}
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+    <script src="@Url.Content("~/enrollment/static/js/app.js")"></script>
+    <script src="@Url.Content("~/enrollment/src/js/modules/pdf-comprobante.js")"></script>
+    <script src="@Url.Content("~/enrollment/src/js/modules/finalizar-scripts.js")"></script>
+}
