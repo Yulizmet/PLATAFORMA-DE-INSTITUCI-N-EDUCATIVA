@@ -15,17 +15,16 @@ using System.Security.Claims;
 namespace SchoolManager.Areas.Tutorship.Controllers
 {
     [Area("Gestion")]
-    [Authorize] 
+    [Authorize]
     public class TutorshipController : Controller
     {
         private readonly AppDbContext _context;
         private readonly IWebHostEnvironment _webHostEnvironment;
 
-        //private readonly int LoggedRoleId = 2;
-        //private readonly int LoggedRoleId = 44;
-
+        // 1. IDENTIDAD: Quién es el usuario (Su ID real en la base de datos)
         private int LoggedUserId => int.Parse(User.FindFirst("UserId")?.Value ?? "0");
 
+        // 2. PERMISOS: Qué puede hacer (1=Alumno, 2=Maestro, 3=Admin)
         private int LoggedRoleId
         {
             get
@@ -53,13 +52,14 @@ namespace SchoolManager.Areas.Tutorship.Controllers
         {
             ViewBag.RoleId = LoggedRoleId;
 
-            var entrevistaExistente = await _context.TutorshipInterviews.FirstOrDefaultAsync(e => e.StudentId == LoggedRoleId);
+            // ✅ CORREGIDO: Usa LoggedUserId para buscar al usuario real
+            var entrevistaExistente = await _context.TutorshipInterviews.FirstOrDefaultAsync(e => e.StudentId == LoggedUserId);
 
-            if (entrevistaExistente == null)
+            if (entrevistaExistente == null && LoggedRoleId == 1) // Solo creamos la entrevista vacía si es alumno
             {
                 var nuevaEntrevista = new tutorship_interview
                 {
-                    StudentId = LoggedRoleId,
+                    StudentId = LoggedUserId, // ✅ CORREGIDO
                     Status = "Pendiente",
                     FilePath = "Sin archivo",
                     DateCompleted = DateTime.Now
@@ -69,9 +69,9 @@ namespace SchoolManager.Areas.Tutorship.Controllers
             }
 
             var usuario = await _context.Users.Include(u => u.Person)
-                .FirstOrDefaultAsync(u => u.UserId == LoggedRoleId);
+                .FirstOrDefaultAsync(u => u.UserId == LoggedUserId); // ✅ CORREGIDO
 
-            ViewBag.NombreUsuario = (usuario != null && usuario.Person != null) ? usuario.Person.FirstName : "Alumno";
+            ViewBag.NombreUsuario = (usuario != null && usuario.Person != null) ? usuario.Person.FirstName : "Usuario";
 
             return View("~/Areas/Tutorship/Views/Controlador.cshtml");
         }
@@ -83,19 +83,19 @@ namespace SchoolManager.Areas.Tutorship.Controllers
 
             var usuario = await _context.Users
                 .Include(u => u.Person)
-                .FirstOrDefaultAsync(u => u.UserId == LoggedRoleId);
+                .FirstOrDefaultAsync(u => u.UserId == LoggedUserId); // ✅ CORREGIDO
 
             if (usuario == null) return NotFound("Usuario no encontrado.");
 
             var matriculaAlumno = await _context.PreenrollmentGenerals
-                .Where(p => p.UserId == LoggedRoleId)
+                .Where(p => p.UserId == LoggedUserId) // ✅ CORREGIDO
                 .Select(p => p.Matricula)
                 .FirstOrDefaultAsync();
             ViewBag.Matricula = matriculaAlumno ?? "Sin asignar";
 
             var entrevista = await _context.TutorshipInterviews
                 .Include(e => e.Answers)
-                .FirstOrDefaultAsync(e => e.StudentId == LoggedRoleId);
+                .FirstOrDefaultAsync(e => e.StudentId == LoggedUserId); // ✅ CORREGIDO
 
             ViewBag.Entrevista = entrevista;
 
@@ -107,16 +107,19 @@ namespace SchoolManager.Areas.Tutorship.Controllers
         {
             if (LoggedRoleId != 1) return RedirectToAction(nameof(AccesoDenegado));
 
+            // ✅ SEGURIDAD EXTRA: Evitar que un alumno modifique la entrevista de otro
+            if (modelo.UserId != LoggedUserId) return RedirectToAction(nameof(AccesoDenegado));
+
             var entrevista = await _context.TutorshipInterviews
                 .Include(e => e.Answers)
-                .FirstOrDefaultAsync(e => e.StudentId == modelo.UserId);
+                .FirstOrDefaultAsync(e => e.StudentId == LoggedUserId); // ✅ CORREGIDO
 
             if (entrevista == null) return NotFound();
 
             entrevista.Status = "Completada";
             entrevista.DateCompleted = DateTime.Now;
 
-            
+
             if (FotoPerfil != null && FotoPerfil.Length > 0)
             {
                 string folderPath = Path.Combine(_webHostEnvironment.WebRootPath, "uploads", "interview");
@@ -204,7 +207,7 @@ namespace SchoolManager.Areas.Tutorship.Controllers
                 .Include(e => e.Answers)
                 .Include(e => e.Student)
                 .ThenInclude(s => s.Person)
-                .FirstOrDefaultAsync(e => e.StudentId == LoggedRoleId);
+                .FirstOrDefaultAsync(e => e.StudentId == LoggedUserId); // ✅ CORREGIDO
 
             return View("~/Areas/Tutorship/Views/DetalleEntrevista.cshtml", entrevista);
         }
@@ -214,7 +217,8 @@ namespace SchoolManager.Areas.Tutorship.Controllers
             if (LoggedRoleId != 2) return RedirectToAction(nameof(AccesoDenegado));
             ViewBag.RoleId = LoggedRoleId;
 
-            bool esTutor = await _context.Tutorships.AnyAsync(t => t.StudentId == id && t.TeacherId == LoggedRoleId);
+            // ✅ CORREGIDO: Verificamos si este alumno le pertenece al maestro logueado
+            bool esTutor = await _context.Tutorships.AnyAsync(t => t.StudentId == id && t.TeacherId == LoggedUserId);
             if (!esTutor)
             {
                 TempData["Mensaje"] = "Acceso denegado: Este alumno no pertenece a tu grupo de tutoría.";
@@ -244,10 +248,10 @@ namespace SchoolManager.Areas.Tutorship.Controllers
             ViewBag.GradoSeleccionado = grado;
             ViewBag.GrupoSeleccionado = grupo;
 
-            // 1. Obtener SOLO los grupos donde este maestro tiene alumnos tutorados
+            // ✅ CORREGIDO: Buscamos los grupos donde este maestro (LoggedUserId) tiene alumnos
             var gruposDelMaestro = await _context.grades_Enrollments
                 .Include(e => e.Group)
-                .Where(e => _context.Tutorships.Any(t => t.StudentId == e.StudentId && t.TeacherId == LoggedRoleId))
+                .Where(e => _context.Tutorships.Any(t => t.StudentId == e.StudentId && t.TeacherId == LoggedUserId))
                 .Select(e => e.Group)
                 .Distinct()
                 .ToListAsync();
@@ -255,11 +259,11 @@ namespace SchoolManager.Areas.Tutorship.Controllers
             ViewBag.GradosDisponibles = gruposDelMaestro.Select(g => g.GradeLevelId).Distinct().OrderBy(g => g).ToList();
             ViewBag.GruposDisponibles = gruposDelMaestro.Select(g => g.Name).Distinct().OrderBy(g => g).ToList();
 
-            // 2. Obtener SOLO a los alumnos que estén vinculados a este maestro en la tabla tutorship
+            // ✅ CORREGIDO: Filtramos por el maestro logueado
             var query = _context.Users
                 .Include(u => u.Person)
                 .Where(u => u.UserRoles.Any(ur => ur.RoleId == 1) &&
-                            _context.Tutorships.Any(t => t.StudentId == u.UserId && t.TeacherId == LoggedRoleId))
+                            _context.Tutorships.Any(t => t.StudentId == u.UserId && t.TeacherId == LoggedUserId))
                 .AsQueryable();
 
             if (grado.HasValue && !string.IsNullOrEmpty(grupo))
@@ -291,10 +295,15 @@ namespace SchoolManager.Areas.Tutorship.Controllers
                 .Select(p => new { p.UserId, p.Matricula })
                 .ToDictionaryAsync(p => p.UserId.Value, p => p.Matricula);
 
-            ViewBag.Grupos = await _context.grades_Enrollments
+            // Evitamos error de llaves duplicadas con GroupBy
+            var enrollments = await _context.grades_Enrollments
                 .Include(e => e.Group)
                 .Where(e => userIds.Contains(e.StudentId))
-                .ToDictionaryAsync(e => e.StudentId, e => e.Group.GradeLevelId + e.Group.Name);
+                .ToListAsync();
+
+            ViewBag.Grupos = enrollments
+                .GroupBy(e => e.StudentId)
+                .ToDictionary(g => g.Key, g => g.First().Group.GradeLevelId + g.First().Group.Name);
 
             return View("~/Areas/Tutorship/Views/ListaDeAlumnos.cshtml", listaAlumnos);
         }
@@ -304,9 +313,10 @@ namespace SchoolManager.Areas.Tutorship.Controllers
             if (LoggedRoleId != 2) return RedirectToAction(nameof(AccesoDenegado));
             ViewBag.RoleId = LoggedRoleId;
 
+            // ✅ CORREGIDO: Usamos LoggedUserId
             var gruposDelMaestro = await _context.grades_Enrollments
                 .Include(e => e.Group)
-                .Where(e => _context.Tutorships.Any(t => t.StudentId == e.StudentId && t.TeacherId == LoggedRoleId))
+                .Where(e => _context.Tutorships.Any(t => t.StudentId == e.StudentId && t.TeacherId == LoggedUserId))
                 .Select(e => e.Group)
                 .Distinct()
                 .ToListAsync();
@@ -324,10 +334,11 @@ namespace SchoolManager.Areas.Tutorship.Controllers
                 var grupoDb = await _context.grades_GradeGroups.FirstOrDefaultAsync(g => g.Name == grupoNombre);
                 if (grupoDb != null)
                 {
+                    // ✅ CORREGIDO: Usamos LoggedUserId
                     alumnos = await _context.Users
                         .Include(u => u.Person)
                         .Where(u => u.UserRoles.Any(ur => ur.RoleId == 1) &&
-                                    _context.Tutorships.Any(t => t.StudentId == u.UserId && t.TeacherId == LoggedRoleId) &&
+                                    _context.Tutorships.Any(t => t.StudentId == u.UserId && t.TeacherId == LoggedUserId) &&
                                     _context.grades_Enrollments.Any(e => e.StudentId == u.UserId && e.GroupId == grupoDb.GroupId))
                         .ToListAsync();
 
@@ -338,6 +349,7 @@ namespace SchoolManager.Areas.Tutorship.Controllers
                         .Select(p => new { p.UserId, p.Matricula })
                         .ToDictionaryAsync(p => p.UserId.Value, p => p.Matricula);
 
+                    // Nota: Si ya cambiaste GroupName por GroupId en BD, actualiza las 2 consultas de abajo:
                     ViewBag.FaltasTotales = await _context.TutorshipAttendances
                         .Where(a => a.GroupName == grupoNombre && !a.IsPresent && userIds.Contains(a.StudentId))
                         .GroupBy(a => a.StudentId)
@@ -384,7 +396,8 @@ namespace SchoolManager.Areas.Tutorship.Controllers
                 return View("~/Areas/Tutorship/Views/Seguimiento.cshtml");
             }
 
-            bool esTutor = await _context.Tutorships.AnyAsync(t => t.StudentId == alumno.UserId && t.TeacherId == LoggedRoleId);
+            // ✅ CORREGIDO: Usamos LoggedUserId
+            bool esTutor = await _context.Tutorships.AnyAsync(t => t.StudentId == alumno.UserId && t.TeacherId == LoggedUserId);
             if (!esTutor)
             {
                 TempData["Error"] = "Acceso denegado: Puedes ver que el alumno existe, pero no pertenece a tu grupo de tutoría para dejar reportes.";
@@ -417,7 +430,6 @@ namespace SchoolManager.Areas.Tutorship.Controllers
                 }
 
                 string nombreArchivoUnico = Guid.NewGuid().ToString() + "_" + ArchivoAdjunto.FileName;
-
                 string rutaFisicaCompleta = Path.Combine(carpetaUploads, nombreArchivoUnico);
 
                 using (var stream = new FileStream(rutaFisicaCompleta, FileMode.Create))
@@ -431,7 +443,7 @@ namespace SchoolManager.Areas.Tutorship.Controllers
             var nuevoReporte = new tutorship_monitoring
             {
                 StudentId = studentId,
-                TeacherId = LoggedRoleId,
+                TeacherId = LoggedUserId, // ✅ CORREGIDO: Usar ID del maestro, no su Rol
                 Date = DateTime.Now,
                 PerformanceLevel = tipo ?? "General",
                 DetailedObservations = observaciones ?? "Sin observaciones",
@@ -446,6 +458,7 @@ namespace SchoolManager.Areas.Tutorship.Controllers
 
             return RedirectToAction("Seguimiento", new { matriculaBuscar = matricula });
         }
+
         public async Task<IActionResult> AsignarTutores()
         {
             if (LoggedRoleId != 3) return RedirectToAction(nameof(AccesoDenegado));
@@ -466,17 +479,14 @@ namespace SchoolManager.Areas.Tutorship.Controllers
         [HttpPost]
         public async Task<IActionResult> ReiniciarEntrevistasCuatrimestre()
         {
-            // OJO: Usa LoggedRoleId o _simulatedRoleId según como lo hayas dejado
             if (LoggedRoleId != 3) return RedirectToAction(nameof(AccesoDenegado));
 
-            // 1. Buscamos todas las entrevistas que ya estaban completadas
             var entrevistas = await _context.TutorshipInterviews
                 .Where(e => e.Status == "Completada")
                 .ToListAsync();
 
             if (entrevistas.Any())
             {
-                // 2. Les cambiamos el estatus a todas
                 foreach (var entrevista in entrevistas)
                 {
                     entrevista.Status = "Requiere Actualizacion";
@@ -533,8 +543,6 @@ namespace SchoolManager.Areas.Tutorship.Controllers
                     });
                 }
             }
-
-
 
             await _context.SaveChangesAsync();
 
