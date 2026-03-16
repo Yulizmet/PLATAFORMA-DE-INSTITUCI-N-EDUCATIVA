@@ -50,7 +50,7 @@
 
         <div class="col-md-4">
             <label asp-for="Domicilio.neighborhood" class="form-label">Colonia</label>
-            <select asp-for="Domicilio.neighborhood" id="domColonia" class="form-select" required disabled>
+            <select asp-for="Domicilio.neighborhood" id="domColonia" class="form-select" required>
                 <option value="">Sin selección</option>
             </select>
             <div class="invalid-feedback">Selecciona una colonia.</div>
@@ -67,15 +67,15 @@
 
         <div class="col-md-4">
             <label asp-for="Domicilio.city" class="form-label">Municipio</label>
-            <select asp-for="Domicilio.city" id="domMunicipio" class="form-select" required disabled>
+            <select asp-for="Domicilio.city" id="domMunicipio" class="form-select" required>
                 <option value="">Sin selección</option>
             </select>
             <div class="invalid-feedback">Selecciona un municipio.</div>
         </div>
 
         <div class="col-md-6">
-            <label asp-for="Domicilio.phone" class="form-label">Teléfono</label>
-            <input asp-for="Domicilio.phone" id="domTelefono" class="form-control"
+            <label asp-for="Persona.Phone" class="form-label">Teléfono</label>
+            <input asp-for="Persona.Phone" id="domTelefono" class="form-control"
                    type="tel" pattern="[0-9]{10}" maxlength="10"
                    oninput="this.value=this.value.replace(/[^0-9]/g,'');" required />
             <div class="invalid-feedback">Ingresa un número de 10 dígitos.</div>

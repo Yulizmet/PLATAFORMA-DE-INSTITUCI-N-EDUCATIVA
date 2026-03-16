@@ -197,7 +197,6 @@
         btnContinuar?.addEventListener("click", () => {
             const docs = getDocs();
 
-            // ✅ faltante si está false O si no tiene nombre de archivo guardado
             const faltantes = DOCS
                 .filter(d => docs[d.key] !== true || !docs.Files?.[d.key])
                 .map(d => d.label);
@@ -207,7 +206,7 @@
                 return;
             }
 
-            window.location.href = window.PRE_URLS?.confirmar || "/";
+            window.location.href = window.PRE_URLS?.confirmar || "/Enrollment/PreEnrollment/ConfirmarPreinscripcion";
         });
     }
 

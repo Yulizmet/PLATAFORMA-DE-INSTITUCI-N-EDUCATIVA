@@ -858,7 +858,7 @@
             savePayload(payload);
 
             // 👉 paso siguiente
-            window.location.href = "documentos.html";
+            window.location.href = window.PRE_URLS?.confirmar || "/Enrollment/PreEnrollment/ConfirmarPreinscripcion";
         });
     }
 

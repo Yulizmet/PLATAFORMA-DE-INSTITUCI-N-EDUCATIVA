@@ -203,7 +203,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const existente = leerPreinscripcionLS();
 
         if (existente && existente.hash === hash) {
-            window.location.href = window.PRE_URLS?.documentos || "/";
+            window.location.href = "/Enrollment/PreEnrollment/SubirDocumentos";
             return;
         }
 
@@ -214,7 +214,7 @@ document.addEventListener("DOMContentLoaded", () => {
         });
 
         // ✅ Enviar al paso de Documentos
-        window.location.href = window.PRE_URLS?.documentos || "/";
+        window.location.href = "/Enrollment/PreEnrollment/SubirDocumentos";
     }
 
     btn?.addEventListener("click", (e) => {

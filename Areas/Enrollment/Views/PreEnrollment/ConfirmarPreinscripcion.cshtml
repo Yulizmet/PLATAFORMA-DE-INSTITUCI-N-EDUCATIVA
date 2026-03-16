@@ -20,6 +20,8 @@
               asp-controller="PreEnrollment"
               asp-area="Enrollment">
 
+            <div asp-validation-summary="All" class="text-danger mb-3"></div>
+
             <!-- Carrera solicitada (card) -->
             <div class="card mb-4" data-section="Carrera">
                 <div class="card-header fw-bold text-uppercase d-flex justify-content-between align-items-center">
@@ -34,8 +36,7 @@
                     <select asp-for="DatosGenerales.IdCareer"
                             asp-items="ViewBag.IdCareer"
                             class="form-select"
-                            required
-                            disabled>
+                            required>
                         <option value="" selected disabled>Sin selección</option>
                     </select>
                     <span asp-validation-for="DatosGenerales.IdCareer" class="text-danger"></span>
@@ -62,7 +63,6 @@
 
 @section Scripts {
     @await Html.PartialAsync("_ValidationScriptsPartial")
-    <script src="~/js/preinscripcionLS.js"></script>
 
     <script>
         document.addEventListener("DOMContentLoaded", async function () {
@@ -265,4 +265,6 @@
             }
         });
     </script>
+
+    <script src="~/enrollment/src/js/modules/index-scripts.js"></script>
 }

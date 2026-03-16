@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 
 namespace SchoolManager.Models
 {
@@ -21,6 +22,8 @@ namespace SchoolManager.Models
         public bool IsActive { get; set; }
         public DateTime CreatedDate { get; set; }
 
-        public users_user User { get; set; }
+        [ValidateNever]
+        public users_user? User { get; set; }
     }
 }
+

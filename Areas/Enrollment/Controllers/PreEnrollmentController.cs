@@ -1,9 +1,10 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System.Security.Cryptography;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using SchoolManager.Areas.Enrollment.ViewModels;
 using SchoolManager.Data;
 using SchoolManager.Models;
-using System.Security.Cryptography;
 using SchoolManager.Models.ViewModels;
 
 
@@ -159,7 +160,6 @@ namespace SchoolManager.Areas.Enrollment.Controllers
                 neighborhood = vm.Neighborhood,
                 state = vm.State,
                 city = vm.City,
-                phone = vm.Phone
             };
             _context.PreenrollmentAddresses.Add(address);
 
@@ -443,130 +443,230 @@ namespace SchoolManager.Areas.Enrollment.Controllers
         // POST: Enrollment/PreEnrollment/ConfirmarPreinscripcion
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> ConfirmarPreinscripcion(SchoolManager.Areas.Enrollment.ViewModels.PreEnrollmentViewModel vm)
+        public async Task<IActionResult> ConfirmarPreinscripcion(PreEnrollmentViewModel vm)
         {
-            // Si tu VM tiene validaciones por DataAnnotations, esto te ayuda
+            Console.WriteLine("=== ENTRO AL POST ConfirmarPreinscripcion ===");
+
             if (!ModelState.IsValid)
             {
+                Console.WriteLine("=== MODELSTATE INVALIDO ===");
+
+                foreach (var item in ModelState)
+                {
+                    if (item.Value.Errors.Count > 0)
+                    {
+                        Console.WriteLine($"Campo: {item.Key}");
+                        foreach (var error in item.Value.Errors)
+                        {
+                            Console.WriteLine($" - Error: {error.ErrorMessage}");
+                            if (error.Exception != null)
+                                Console.WriteLine($" - Exception: {error.Exception.Message}");
+                        }
+                    }
+                }
+
                 ViewData["IdCareer"] = new SelectList(
                     _context.PreenrollmentCareers, "IdCareer", "name_career", vm?.DatosGenerales?.IdCareer
                 );
+                ViewData["ModoConfirmacion"] = true;
                 return View(vm);
             }
 
-            // Como tu form (LS) no trae IdGeneration, tomamos la última por Year
             var generation = await _context.Generations
                 .OrderByDescending(g => g.Year)
                 .FirstOrDefaultAsync();
 
             if (generation == null)
             {
+                Console.WriteLine("=== NO HAY GENERACION ===");
+
                 ModelState.AddModelError("", "No hay generaciones registradas en el sistema.");
-                ViewData["IdCareer"] = new SelectList(_context.PreenrollmentCareers, "IdCareer", "name_career", vm?.DatosGenerales?.IdCareer);
+                ViewData["IdCareer"] = new SelectList(
+                    _context.PreenrollmentCareers, "IdCareer", "name_career", vm?.DatosGenerales?.IdCareer
+                );
+                ViewData["ModoConfirmacion"] = true;
                 return View(vm);
             }
 
-            // --- Guardar en preenrollment_general ---
-            var general = new preenrollment_general
+            using var transaction = await _context.Database.BeginTransactionAsync();
+
+            try
             {
-                IdCareer = vm.DatosGenerales.IdCareer,
-                IdGeneration = generation.IdGeneration,
+                Console.WriteLine("=== VA A GUARDAR PERSON ===");
 
-                BloodType = vm.DatosGenerales.BloodType,
-                MaritalStatus = vm.DatosGenerales.MaritalStatus,
-                Nationality = vm.DatosGenerales.Nationality,
+                var person = new users_person
+                {
+                    FirstName = vm.Persona.FirstName,
+                    LastNamePaternal = vm.Persona.LastNamePaternal,
+                    LastNameMaternal = vm.Persona.LastNameMaternal,
+                    BirthDate = vm.Persona.BirthDate,
+                    Gender = vm.Persona.Gender,
+                    Curp = vm.Persona.Curp,
+                    Email = vm.Persona.Email,
+                    Phone = vm.Persona.Phone,
+                    IsActive = true,
+                    CreatedDate = DateTime.Now
+                };
 
-                Occupation = vm.DatosGenerales.Occupation,
-                Work = vm.DatosGenerales.Work,
-                WorkAddress = vm.DatosGenerales.WorkAddress,
-                WorkPhone = vm.DatosGenerales.WorkPhone,
+                _context.Persons.Add(person);
+                await _context.SaveChangesAsync();
 
-                CreateStat = DateTime.Now,
-                Matricula = GenerarMatriculaUnica(),
-                Folio = GenerarFolio(generation.IdGeneration)
-            };
+                Console.WriteLine("=== PERSON GUARDADA ===");
 
-            _context.PreenrollmentGenerals.Add(general);
-            await _context.SaveChangesAsync(); // para obtener general.IdData
+                var general = new preenrollment_general
+                {
+                    IdCareer = vm.DatosGenerales.IdCareer,
+                    IdGeneration = generation.IdGeneration,
+                    PersonId = person.PersonId,
+                    BloodType = vm.DatosGenerales.BloodType,
+                    MaritalStatus = vm.DatosGenerales.MaritalStatus,
+                    Nationality = vm.DatosGenerales.Nationality,
+                    Occupation = vm.DatosGenerales.Occupation,
+                    Work = vm.DatosGenerales.Work,
+                    WorkAddress = vm.DatosGenerales.WorkAddress,
+                    WorkPhone = vm.DatosGenerales.WorkPhone,
+                    CreateStat = DateTime.Now,
+                    Folio = GenerarFolio(generation.IdGeneration),
+                    Matricula = null
+                };
 
-            // --- Guardar domicilio ---
-            var address = new preenrollment_addresses
+                _context.PreenrollmentGenerals.Add(general);
+                await _context.SaveChangesAsync();
+
+                Console.WriteLine("=== GENERAL GUARDADA CON ID: " + general.IdData + " ===");
+
+                var address = new preenrollment_addresses
+                {
+                    id_data = general.IdData,
+                    street = vm.Domicilio.street,
+                    exterior_number = vm.Domicilio.exterior_number,
+                    interior_number = vm.Domicilio.interior_number,
+                    postal_code = vm.Domicilio.postal_code,
+                    neighborhood = vm.Domicilio.neighborhood,
+                    state = vm.Domicilio.state,
+                    city = vm.Domicilio.city,
+                };
+                _context.PreenrollmentAddresses.Add(address);
+
+                var school = new preenrollment_schools
+                {
+                    id_data = general.IdData,
+                    school = vm.DatosEscolares.school,
+                    degree = vm.DatosEscolares.degree,
+                    state = vm.DatosEscolares.state,
+                    city = vm.DatosEscolares.city,
+                    average = vm.DatosEscolares.average,
+                    start_date = vm.DatosEscolares.start_date,
+                    end_date = vm.DatosEscolares.end_date,
+                    study_system = vm.DatosEscolares.study_system,
+                    high_school_type = vm.DatosEscolares.high_school_type
+                };
+                _context.PreenrollmentSchools.Add(school);
+
+                var tutor = new preenrollment_tutors
+                {
+                    id_data = general.IdData,
+                    relationship = vm.Tutor.relationship,
+                    paternal_last_name = vm.Tutor.paternal_last_name,
+                    maternal_last_name = vm.Tutor.maternal_last_name,
+                    name = vm.Tutor.name,
+                    home_phone = vm.Tutor.home_phone,
+                    work_phone = vm.Tutor.work_phone
+                };
+                _context.PreenrollmentTutors.Add(tutor);
+
+                var info = new preenrollment_infos
+                {
+                    id_data = general.IdData,
+                    beca = vm.Otros.beca,
+                    comu_indi = vm.Otros.comu_indi,
+                    lengu_indi = vm.Otros.lengu_indi,
+                    incapa = vm.Otros.incapa,
+                    disease = vm.Otros.disease,
+                    comment = vm.Otros.comment
+                };
+                _context.PreenrollmentInfos.Add(info);
+
+                var docs = new preenrollment_docs
+                {
+                    IdData = general.IdData,
+                    Fotos = false,
+                    PagoExamen = false,
+                    ActaNacimiento = false,
+                    Curp = false,
+                    Certificados = false,
+                    ComprobanteDomicilio = false,
+                    CartaBuenaConducta = false
+                };
+                _context.PreenrollmentDocs.Add(docs);
+
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+
+                Console.WriteLine("=== TODO GUARDADO, REDIRIGIENDO A FINALIZAR ===");
+
+                return RedirectToAction(nameof(Finalizar), new { id = general.IdData });
+            }
+            catch (Exception ex)
             {
-                id_data = general.IdData,
-                street = vm.Domicilio.street,
-                exterior_number = vm.Domicilio.exterior_number,
-                interior_number = vm.Domicilio.interior_number,
-                postal_code = vm.Domicilio.postal_code,
-                neighborhood = vm.Domicilio.neighborhood,
-                state = vm.Domicilio.state,
-                city = vm.Domicilio.city,
-                phone = vm.Domicilio.phone
-            };
-            _context.PreenrollmentAddresses.Add(address);
+                await transaction.RollbackAsync();
 
-            // --- Guardar escuela ---
-            var school = new preenrollment_schools
-            {
-                id_data = general.IdData,
-                school = vm.DatosEscolares.school,
-                degree = vm.DatosEscolares.degree,
-                state = vm.DatosEscolares.state,
-                city = vm.DatosEscolares.city,
-                average = vm.DatosEscolares.average,
-                start_date = vm.DatosEscolares.start_date,
-                end_date = vm.DatosEscolares.end_date,
-                study_system = vm.DatosEscolares.study_system,
-                high_school_type = vm.DatosEscolares.high_school_type
-            };
-            _context.PreenrollmentSchools.Add(school);
+                Console.WriteLine("=== ERROR EN CATCH ===");
+                Console.WriteLine(ex.ToString());
 
-            // --- Guardar tutor ---
-            var tutor = new preenrollment_tutors
-            {
-                id_data = general.IdData,
-                relationship = vm.Tutor.relationship,
-                paternal_last_name = vm.Tutor.paternal_last_name,
-                maternal_last_name = vm.Tutor.maternal_last_name,
-                name = vm.Tutor.name,
-                home_phone = vm.Tutor.home_phone,
-                work_phone = vm.Tutor.work_phone
-            };
-            _context.PreenrollmentTutors.Add(tutor);
-
-            // --- Guardar otros datos ---
-            var info = new preenrollment_infos
-            {
-                id_data = general.IdData,
-                beca = vm.Otros.beca,
-                comu_indi = vm.Otros.comu_indi,
-                lengu_indi = vm.Otros.lengu_indi,
-                incapa = vm.Otros.incapa,
-                disease = vm.Otros.disease,
-                comment = vm.Otros.comment
-            };
-            _context.PreenrollmentInfos.Add(info);
-
-            // --- Guardar docs checklist inicial ---
-            var docs = new preenrollment_docs
-            {
-                IdData = general.IdData,
-                Fotos = false,
-                PagoExamen = false,
-                ActaNacimiento = false,
-                Curp = false,
-                Certificados = false,
-                ComprobanteDomicilio = false,
-                CartaBuenaConducta = false
-            };
-            _context.PreenrollmentDocs.Add(docs);
-
-            await _context.SaveChangesAsync();
-
-            // Opcional: aquí puedes redirigir a FolioGenerado como ya lo haces en Create
-            return RedirectToAction(nameof(FolioGenerado), new { id = general.IdData });
+                throw;
+            }
         }
 
+        [HttpGet]
+        public async Task<IActionResult> Finalizar(int id)
+        {
+            var general = await _context.PreenrollmentGenerals
+                .Include(g => g.Career)
+                .Include(g => g.Person)
+                .Include(g => g.Generation)
+                .FirstOrDefaultAsync(g => g.IdData == id);
 
+            if (general == null)
+                return NotFound();
+
+            var domicilio = await _context.PreenrollmentAddresses
+                .FirstOrDefaultAsync(x => x.id_data == id);
+
+            var escuela = await _context.PreenrollmentSchools
+                .FirstOrDefaultAsync(x => x.id_data == id);
+
+            var vm = new FinalizarViewModel
+            {
+                Folio = general.Folio,
+                FechaEnvio = general.CreateStat ?? DateTime.Now,
+                NombreAspirante = general.Person == null
+                    ? ""
+                    : $"{general.Person.FirstName} {general.Person.LastNamePaternal} {general.Person.LastNameMaternal}",
+                Especialidad = general.Career?.name_career ?? "",
+
+                Genero = general.Person?.Gender ?? "",
+                FechaNacimiento = general.Person?.BirthDate,
+                Curp = general.Person?.Curp ?? "",
+                TipoSangre = general.BloodType ?? "",
+
+                SecundariaProcedencia = escuela?.school ?? "",
+                Promedio = escuela?.average,
+                FechaFinSecundaria = escuela?.end_date,
+
+                Calle = domicilio?.street ?? "",
+                NumeroExterior = domicilio?.exterior_number ?? "",
+                NumeroInterior = domicilio?.interior_number ?? "",
+                Colonia = domicilio?.neighborhood ?? "",
+                CodigoPostal = domicilio?.postal_code ?? "",
+                Municipio = domicilio?.city ?? "",
+                Estado = domicilio?.state ?? "",
+
+                Generacion = general.Generation != null ? general.Generation.Year.ToString() : ""
+            };
+
+            return View(vm);
+        }
 
         // GET: Enrollment/PreEnrollment
 
