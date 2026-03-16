@@ -4,6 +4,8 @@
     const raw = window.__estadisticasData || {};
     const students = (typeof raw.students === 'string') ? JSON.parse(raw.students) : (raw.students || []);
     const employees = (typeof raw.employees === 'string') ? JSON.parse(raw.employees) : (raw.employees || []);
+    const socialServices = (typeof raw.socialServices === 'string') ? JSON.parse(raw.socialServices) : (raw.socialServices || []);
+    const procedures = (typeof raw.procedures === 'string') ? JSON.parse(raw.procedures) : (raw.procedures || []);
 
     let pieChart, barChart, employeeActivityChart, histogramChart, stackedChart;
 
@@ -287,6 +289,150 @@
         return byDept;
     }
 
+    // --- Servicios Sociales: Funciones para poblar tabla y tarjetas ---
+    function populateSocialServicesTable(list) {
+        const tbody = $('#socialServiceTable tbody');
+        if (!tbody.length) return;
+
+        tbody.empty();
+
+        if (!list || list.length === 0) {
+            tbody.html('<tr><td colspan="9" class="text-center text-muted py-4">Sin datos disponibles</td></tr>');
+            return;
+        }
+
+        list.forEach(item => {
+            const lastUpdate = item.LastUpdate ? new Date(item.LastUpdate).toLocaleDateString('es-MX') : 'N/A';
+            const row = `
+                <tr>
+                    <td>${item.StudentName || 'Sin nombre'}</td>
+                    <td>${item.TeacherName || 'Sin asignar'}</td>
+                    <td>${item.GroupName || 'Sin grupo'}</td>
+                    <td>${item.HoursPracticas || 0}</td>
+                    <td>${item.HoursServicioSocial || 0}</td>
+                    <td>${item.TotalHours || 0}</td>
+                    <td>${item.AttendanceRate.toFixed(2)}%</td>
+                    <td>
+                        ${getStatusBadge(item.Status)}
+                    </td>
+                    <td>${lastUpdate}</td>
+                </tr>
+            `;
+            tbody.append(row);
+        });
+    }
+
+    function getStatusBadge(status) {
+        const statusMap = {
+            'Completado': '<span class="badge bg-success">Completado</span>',
+            'En progreso': '<span class="badge bg-warning text-dark">En progreso</span>',
+            'Pendiente': '<span class="badge bg-secondary">Pendiente</span>'
+        };
+        return statusMap[status] || `<span class="badge bg-secondary">${status}</span>`;
+    }
+
+    function updateSocialServiceCards(list) {
+        if (!list || list.length === 0) {
+            $('#statSocialTotal').text('0');
+            $('#statSocialHours').text('0');
+            $('#statSocialPending').text('0');
+            $('#statSocialAttendance').text('0%');
+            return;
+        }
+
+        // Total de estudiantes
+        const totalStudents = list.length;
+        $('#statSocialTotal').text(totalStudents);
+
+        // Total de horas acumuladas
+        const totalHours = list.reduce((sum, item) => sum + (item.TotalHours || 0), 0);
+        $('#statSocialHours').text(totalHours);
+
+        // Bitácoras pendientes (estudiantes en estado "Pendiente")
+        const pending = list.filter(item => item.Status === 'Pendiente').length;
+        $('#statSocialPending').text(pending);
+
+        // Asistencia promedio
+        const avgAttendance = list.length > 0 
+            ? (list.reduce((sum, item) => sum + (item.AttendanceRate || 0), 0) / list.length).toFixed(2)
+            : 0;
+        $('#statSocialAttendance').text(avgAttendance + '%');
+    }
+
+    // --- Procedimientos (Inscripción/Trámites): Funciones para poblar tabla y tarjetas ---
+    function populateProceduresTable(list) {
+        const tbody = $('#proceduresTable tbody');
+        if (!tbody.length) return;
+
+        tbody.empty();
+
+        if (!list || list.length === 0) {
+            tbody.html('<tr><td colspan="8" class="text-center text-muted py-4">Sin datos disponibles</td></tr>');
+            return;
+        }
+
+        list.forEach(item => {
+            const dateCreated = item.DateCreated ? new Date(item.DateCreated).toLocaleDateString('es-MX') : 'N/A';
+            const dateUpdated = item.DateUpdated ? new Date(item.DateUpdated).toLocaleDateString('es-MX') : 'N/A';
+            const row = `
+                <tr>
+                    <td>${item.Folio || 'Sin folio'}</td>
+                    <td>${item.StudentName || 'Sin nombre'}</td>
+                    <td>${item.ProcedureType || 'Sin tipo'}</td>
+                    <td>${item.AreaName || 'Sin área'}</td>
+                    <td>
+                        ${getProcedureStatusBadge(item.InternalCode, item.StatusName)}
+                    </td>
+                    <td>${dateCreated}</td>
+                    <td>${dateUpdated}</td>
+                    <td>${item.DaysElapsed || 0} días</td>
+                </tr>
+            `;
+            tbody.append(row);
+        });
+    }
+
+    function getProcedureStatusBadge(internalCode, statusName) {
+        const statusMap = {
+            'APPROVED': '<span class="badge bg-success">Pagó inscripción</span>',
+            'PENDING': '<span class="badge bg-warning text-dark">Pendiente</span>',
+            'REJECTED': '<span class="badge bg-danger">No pagó</span>'
+        };
+        return statusMap[internalCode] || `<span class="badge bg-secondary">${statusName || 'Desconocido'}</span>`;
+    }
+
+    function updateProcedureCards(list) {
+        if (!list || list.length === 0) {
+            $('#statProcsTotal').text('0');
+            $('#statProcsAction').text('0');
+            $('#statProcsInProgress').text('0');
+            $('#statProcsFinalized').text('0');
+            return;
+        }
+
+        // Total de solicitudes
+        const totalRequests = list.length;
+        $('#statProcsTotal').text(totalRequests);
+
+        // Acción requerida: pendientes
+        const pending = list.filter(item => item.InternalCode === 'PENDING').length;
+        $('#statProcsAction').text(pending);
+
+        // En proceso: ni aprobado ni rechazado (estados intermedios)
+        const inProgress = list.filter(item => 
+            item.InternalCode !== 'APPROVED' 
+            && item.InternalCode !== 'REJECTED' 
+            && item.InternalCode !== 'PENDING'
+        ).length;
+        $('#statProcsInProgress').text(inProgress);
+
+        // Finalizadas: solo aprobadas
+        const approved = list.filter(item => item.InternalCode === 'APPROVED').length;
+        $('#statProcsFinalized').text(approved);
+    }
+
+    // Gráficos para empleados
+
     function renderEmployeePie(list) {
         const pieEl = document.getElementById('pieChart');
         if (!pieEl) return;
@@ -537,6 +683,14 @@
         // inicializar nuevas gráficas de alumnos
         renderGradeHistogram(students);
         renderCourseStatusStacked(students);
+
+        // Inicializar Servicios Sociales
+        populateSocialServicesTable(socialServices);
+        updateSocialServiceCards(socialServices);
+
+        // Inicializar Procedimientos (Trámites)
+        populateProceduresTable(procedures);
+        updateProcedureCards(procedures);
 
         // Listeners para filtros estudiantes
         $('#filterName').on('input', applyStudentFilters);

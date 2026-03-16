@@ -137,7 +137,7 @@
     </div>
 </div>
 
-<!-- Estadísticas rápidas (solo alumnos por ahora) -->
+<!-- Estadísticas rápidas - CALIFICACIONES -->
 <div class="row mb-4" id="studentStats">
     <div class="col-sm-6 col-md-3 mb-2">
         <div class="card p-3">
@@ -161,6 +161,62 @@
         <div class="card p-3">
             <div class="h6">Aprobados</div>
             <div id="statAprobados" class="display-6">@Model.CountAprobado</div>
+        </div>
+    </div>
+</div>
+
+<!-- Estadísticas rápidas - SERVICIOS SOCIALES (oculto) -->
+<div class="row mb-4 d-none" id="socialServiceStats">
+    <div class="col-sm-6 col-md-3 mb-2">
+        <div class="card p-3">
+            <div class="h6">Total estudiantes</div>
+            <div id="statSocialTotal" class="display-6">0</div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-md-3 mb-2">
+        <div class="card p-3">
+            <div class="h6">Total horas acumuladas</div>
+            <div id="statSocialHours" class="display-6">0</div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-md-3 mb-2">
+        <div class="card p-3">
+            <div class="h6">Bitácoras pendientes</div>
+            <div id="statSocialPending" class="display-6">0</div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-md-3 mb-2">
+        <div class="card p-3">
+            <div class="h6">Asistencia promedio</div>
+            <div id="statSocialAttendance" class="display-6">0%</div>
+        </div>
+    </div>
+</div>
+
+<!-- Estadísticas rápidas - TRÁMITES (oculto) -->
+<div class="row mb-4 d-none" id="proceduresStats">
+    <div class="col-sm-6 col-md-3 mb-2">
+        <div class="card p-3">
+            <div class="h6">Total solicitudes</div>
+            <div id="statProcsTotal" class="display-6">0</div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-md-3 mb-2">
+        <div class="card p-3">
+            <div class="h6">Acción requerida</div>
+            <div id="statProcsAction" class="display-6">0</div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-md-3 mb-2">
+        <div class="card p-3">
+            <div class="h6">En proceso</div>
+            <div id="statProcsInProgress" class="display-6">0</div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-md-3 mb-2">
+        <div class="card p-3">
+            <div class="h6">Finalizadas</div>
+            <div id="statProcsFinalized" class="display-6">0</div>
         </div>
     </div>
 </div>
@@ -221,13 +277,12 @@
     </div>
 </div>
 
-<!-- Paginación simple: máximo 15 filas visibles + controles -->
 <div class="row mb-4">
     <div class="col-12 d-flex justify-content-between align-items-center">
         <div>
             <small id="pageInfo">Mostrando 1-15</small>
         </div>
-        <div class="btn-group">
+        <div class="btn-group" id="paginationControls">
             <button id="firstPage" class="btn btn-sm btn-outline-secondary" title="Inicio">🏠</button>
             <button id="prevPage" class="btn btn-sm btn-outline-secondary">◀</button>
             <button id="nextPage" class="btn btn-sm btn-outline-secondary">▶</button>
@@ -237,40 +292,105 @@
 
 <!-- Sección de empleados removida -->
 
-<div class="row mt-4">
-    <div class="col-md-6">
-        <div class="card p-3">
-            <h5>Distribución por estado</h5>
-            <div class="chart-container">
-                <canvas id="pieChart"></canvas>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-6">
-        <div class="card p-3">
-            <h5>Promedio de nota por curso</h5>
-            <div class="chart-container">
-                <canvas id="barChart"></canvas>
+<!-- VIEW: SERVICIOS SOCIALES (oculto) -->
+<div id="viewSocialServices" class="d-none">
+    <div class="row">
+        <div class="col-12">
+            <div class="table-responsive mb-4">
+                <table id="socialServiceTable" class="table table-striped table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Alumno</th>
+                            <th>Maestro asesor</th>
+                            <th>Grupo</th>
+                            <th>Horas prácticas</th>
+                            <th>Horas servicio social</th>
+                            <th>Total horas</th>
+                            <th>Asistencia</th>
+                            <th>Estado</th>
+                            <th>Última actualización</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td colspan="9" class="text-center text-muted py-4">
+                                Cargando datos de Servicios Sociales...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Nuevas gráficas para alumnos: histograma de notas y barra apilada por curso -->
-<div class="row mt-3">
-    <div class="col-md-6">
-        <div class="card p-3">
-            <h5>Histograma de distribución de notas</h5>
-            <div class="chart-container">
-                <canvas id="gradeHistogramChart"></canvas>
+<!-- VIEW: TRÁMITES (oculto) -->
+<div id="viewProcedures" class="d-none">
+    <div class="row">
+        <div class="col-12">
+            <div class="table-responsive mb-4">
+                <table id="proceduresTable" class="table table-striped table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Folio</th>
+                            <th>Usuario</th>
+                            <th>Tipo de trámite</th>
+                            <th>Área</th>
+                            <th>Estado</th>
+                            <th>Fecha creación</th>
+                            <th>Fecha actualización</th>
+                            <th>Días transcurridos</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td colspan="8" class="text-center text-muted py-4">
+                                Cargando datos de Trámites...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
-    <div class="col-md-6">
-        <div class="card p-3">
-            <h5>Composición por estado por curso</h5>
-            <div class="chart-container">
-                <canvas id="courseStatusStacked"></canvas>
+</div>
+
+<div id="gradesCharts">
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <div class="card p-3">
+                <h5>Distribución por estado</h5>
+                <div class="chart-container">
+                    <canvas id="pieChart"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card p-3">
+                <h5>Promedio de nota por curso</h5>
+                <div class="chart-container">
+                    <canvas id="barChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Nuevas gráficas para alumnos: histograma de notas y barra apilada por curso -->
+    <div class="row mt-3">
+        <div class="col-md-6">
+            <div class="card p-3">
+                <h5>Histograma de distribución de notas</h5>
+                <div class="chart-container">
+                    <canvas id="gradeHistogramChart"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card p-3">
+                <h5>Composición por estado por curso</h5>
+                <div class="chart-container">
+                    <canvas id="courseStatusStacked"></canvas>
+                </div>
             </div>
         </div>
     </div>
@@ -278,9 +398,11 @@
 
 @section Scripts {
     <script>
-        // datos serializados para JS: solo alumnos (se removieron empleados)
+        // datos serializados para JS: alumnos, servicios sociales, procedimientos
         window.__estadisticasData = {
-            students: @Html.Raw(Model.JsonStudents)
+            students: @Html.Raw(Model.JsonStudents),
+            socialServices: @Html.Raw(Model.JsonSocialServiceStats),
+            procedures: @Html.Raw(Model.JsonProcedureStats)
         };
     </script>
 
@@ -288,30 +410,186 @@
     <script src="~/js/estadisticas.js" asp-append-version="true"></script>
 
     <script>
-        // Lógica simplificada: vista fija de alumnos y comportamiento del submenu de filtros
+        // Lógica de vistas: Calificaciones, Servicios Sociales, Trámites
         (function () {
-            const filtersStudents = document.getElementById('filtersStudents');
-            const filtersArea = document.getElementById('filtersArea');
-            const toggleFilters = document.getElementById('toggleFilters');
+            // Elementos de botones
+            const btnCalificaciones = document.getElementById('btnCalificaciones');
+            const btnServicios = document.getElementById('btnServicios');
+            const btnTramites = document.getElementById('btnTramites');
+
+            // Elementos de vistas
+            const viewStudents = document.getElementById('viewStudents');
+            const viewSocialServices = document.getElementById('viewSocialServices');
+            const viewProcedures = document.getElementById('viewProcedures');
+
+            // Elementos de estadísticas rápidas
+            const studentStats = document.getElementById('studentStats');
+            const socialServiceStats = document.getElementById('socialServiceStats');
+            const proceduresStats = document.getElementById('proceduresStats');
+
+            // Elementos de gráficas y paginación (solo para Calificaciones)
+            const gradesCharts = document.getElementById('gradesCharts');
+            const paginationControls = document.getElementById('paginationControls');
+
+            // Elementos de título y subtítulo
             const pageTitle = document.getElementById('pageTitle');
             const pageSubtitle = document.getElementById('pageSubtitle');
-            const studentStats = document.getElementById('studentStats');
 
-            // Asegurar que la vista de alumnos esté visible
-            if (filtersStudents) {
-                filtersStudents.classList.remove('d-none');
-            }
-            if (studentStats) {
+            // Elementos de filtros
+            const filtersStudents = document.getElementById('filtersStudents');
+            const filtersArea = document.getElementById('filtersArea');
+
+            /**
+             * Función para mostrar la vista de Calificaciones
+             */
+            function showCalificaciones() {
+                // Botones
+                btnCalificaciones.classList.add('btn-primary');
+                btnCalificaciones.classList.remove('btn-outline-primary');
+                btnServicios.classList.remove('btn-primary');
+                btnServicios.classList.add('btn-outline-primary');
+                btnTramites.classList.remove('btn-primary');
+                btnTramites.classList.add('btn-outline-primary');
+
+                // Vistas
+                viewStudents.classList.remove('d-none');
+                viewSocialServices.classList.add('d-none');
+                viewProcedures.classList.add('d-none');
+
+                // Estadísticas rápidas
                 studentStats.classList.remove('d-none');
+                socialServiceStats.classList.add('d-none');
+                proceduresStats.classList.add('d-none');
+
+                // Gráficas y paginación
+                if (gradesCharts) {
+                    gradesCharts.classList.remove('d-none');
+                }
+                if (paginationControls) {
+                    paginationControls.classList.remove('d-none');
+                }
+
+                // Filtros
+                if (filtersStudents) {
+                    filtersStudents.classList.remove('d-none');
+                }
+                if (filtersArea) {
+                    filtersArea.classList.remove('collapse', 'show');
+                    filtersArea.classList.add('collapse');
+                }
+
+                // Títulos
+                if (pageTitle) {
+                    pageTitle.textContent = 'Estadísticas de alumnos';
+                }
+                if (pageSubtitle) {
+                    pageSubtitle.textContent = 'Control y seguimiento: inscritos, cursando, aprobados y reprobados.';
+                }
             }
-            if (pageTitle) {
-                pageTitle.textContent = 'Estadísticas de alumnos';
+
+            /**
+             * Función para mostrar la vista de Servicios Sociales
+             */
+            function showServicios() {
+                // Botones
+                btnCalificaciones.classList.remove('btn-primary');
+                btnCalificaciones.classList.add('btn-outline-primary');
+                btnServicios.classList.add('btn-primary');
+                btnServicios.classList.remove('btn-outline-primary');
+                btnTramites.classList.remove('btn-primary');
+                btnTramites.classList.add('btn-outline-primary');
+
+                // Vistas
+                viewStudents.classList.add('d-none');
+                viewSocialServices.classList.remove('d-none');
+                viewProcedures.classList.add('d-none');
+
+                // Estadísticas rápidas
+                studentStats.classList.add('d-none');
+                socialServiceStats.classList.remove('d-none');
+                proceduresStats.classList.add('d-none');
+
+                // Gráficas y paginación (ocultar para Servicios Sociales)
+                if (gradesCharts) {
+                    gradesCharts.classList.add('d-none');
+                }
+                if (paginationControls) {
+                    paginationControls.classList.add('d-none');
+                }
+
+                // Filtros
+                if (filtersArea) {
+                    filtersArea.classList.remove('collapse', 'show');
+                    filtersArea.classList.add('collapse');
+                }
+
+                // Títulos
+                if (pageTitle) {
+                    pageTitle.textContent = 'Estadísticas de Servicios Sociales';
+                }
+                if (pageSubtitle) {
+                    pageSubtitle.textContent = 'Seguimiento de horas, asistencia y bitácoras de estudiantes.';
+                }
             }
-            if (pageSubtitle) {
-                pageSubtitle.textContent = 'Control y seguimiento: inscritos, cursando, aprobados y reprobados.';
+
+            /**
+             * Función para mostrar la vista de Trámites
+             */
+            function showTramites() {
+                // Botones
+                btnCalificaciones.classList.remove('btn-primary');
+                btnCalificaciones.classList.add('btn-outline-primary');
+                btnServicios.classList.remove('btn-primary');
+                btnServicios.classList.add('btn-outline-primary');
+                btnTramites.classList.add('btn-primary');
+                btnTramites.classList.remove('btn-outline-primary');
+
+                // Vistas
+                viewStudents.classList.add('d-none');
+                viewSocialServices.classList.add('d-none');
+                viewProcedures.classList.remove('d-none');
+
+                // Estadísticas rápidas
+                studentStats.classList.add('d-none');
+                socialServiceStats.classList.add('d-none');
+                proceduresStats.classList.remove('d-none');
+
+                // Gráficas y paginación (ocultar para Trámites)
+                if (gradesCharts) {
+                    gradesCharts.classList.add('d-none');
+                }
+                if (paginationControls) {
+                    paginationControls.classList.add('d-none');
+                }
+
+                // Filtros
+                if (filtersArea) {
+                    filtersArea.classList.remove('collapse', 'show');
+                    filtersArea.classList.add('collapse');
+                }
+
+                // Títulos
+                if (pageTitle) {
+                    pageTitle.textContent = 'Estadísticas de Trámites';
+                }
+                if (pageSubtitle) {
+                    pageSubtitle.textContent = 'Seguimiento y control de solicitudes administrativas.';
+                }
+            }
+
+            // Event listeners para botones
+            if (btnCalificaciones) {
+                btnCalificaciones.addEventListener('click', showCalificaciones);
+            }
+            if (btnServicios) {
+                btnServicios.addEventListener('click', showServicios);
+            }
+            if (btnTramites) {
+                btnTramites.addEventListener('click', showTramites);
             }
 
             // Toggle para submenu de filtros
+            const toggleFilters = document.getElementById('toggleFilters');
             if (toggleFilters && filtersArea) {
                 toggleFilters.addEventListener('click', function () {
                     if (filtersArea.classList.contains('show')) {
@@ -323,6 +601,9 @@
                     }
                 });
             }
+
+            // Inicializar con vista de Calificaciones
+            showCalificaciones();
         })();
     </script>
 }
