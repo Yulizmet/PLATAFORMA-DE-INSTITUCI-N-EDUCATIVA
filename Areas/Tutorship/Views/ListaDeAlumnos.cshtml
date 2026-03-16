@@ -1,143 +1,217 @@
-﻿@{
-    ViewData["Title"] = "Mis Alumnos Asignados";
+﻿@model IEnumerable<SchoolManager.Models.users_user>
+
+@{
+    ViewData["Title"] = "Directorio de Alumnos";
 }
 
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
 
+<style>
+    /* =====================================================================
+           TRUCO CSS: Convertir una Tabla en "Tarjetas" flotantes (Estilo Imagen 7)
+           ===================================================================== */
+    #tablaAlumnos {
+        border-collapse: separate !important;
+        border-spacing: 0 1.2rem !important; /* Esto crea el espacio en blanco entre las "tarjetas" */
+        border: none !important;
+        width: 100%;
+    }
+
+        /* Estilo de los encabezados (FOTO, INFORMACIÓN, ACCIONES) */
+        #tablaAlumnos thead th {
+            border: none !important;
+            color: #888;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05rem;
+            padding-bottom: 0;
+            background: transparent !important;
+        }
+
+        /* Estilo de la "Tarjeta" (Fila) */
+        #tablaAlumnos tbody tr {
+            background-color: #ffffff;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06); /* Sombra suave */
+            border-radius: 10px;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+            #tablaAlumnos tbody tr:hover {
+                transform: translateY(-3px);
+                box-shadow: 0 6px 15px rgba(0,0,0,0.1); /* Efecto al pasar el mouse */
+            }
+
+        /* Estilo de las celdas dentro de la tarjeta */
+        #tablaAlumnos tbody td {
+            border-top: 1px solid #f4f4f4;
+            border-bottom: 1px solid #f4f4f4;
+            vertical-align: middle;
+            padding: 1.2rem 1rem;
+        }
+
+            /* Bordes redondeados para que la fila parezca una caja perfecta */
+            #tablaAlumnos tbody td:first-child {
+                border-left: 1px solid #f4f4f4;
+                border-top-left-radius: 10px;
+                border-bottom-left-radius: 10px;
+            }
+
+            #tablaAlumnos tbody td:last-child {
+                border-right: 1px solid #f4f4f4;
+                border-top-right-radius: 10px;
+                border-bottom-right-radius: 10px;
+            }
+
+    /* Evitar que DataTables le ponga fondo gris a las filas impares */
+    table.dataTable.table-striped > tbody > tr.odd > * {
+        box-shadow: none !important;
+    }
+
+    /* Alineación de los controles superiores de DataTables (Buscar y Mostrar X) */
+    .dataTables_wrapper .row {
+        align-items: center;
+        margin-bottom: 0.5rem;
+    }
+
+    /* Botones rojo oscuro (Vino) */
+    .btn-vino {
+        background-color: #620900;
+        color: white;
+        border: none;
+    }
+
+        .btn-vino:hover {
+            background-color: #620900;
+            color: white;
+        }
+</style>
 
 <div class="container-fluid p-0">
+    <h2 class="fw-bold mb-4" style="color:#620900;">Directorios de Alumnos</h2>
 
-    <h2 class="fw-bold mb-4" style="color: var(--utt-dark-red);">Directorios de Alumnos</h2>
-
-    <div class="filter-container">
-        <form class="row g-3 align-items-end" method="get" asp-action="ListaDeAlumnos">
-
-            <div class="col-md-4">
-                <label class="form-label fw-bold">Grado</label>
-                <select class="form-select" name="grado" style="border-color: var(--utt-beige);">
-                    <option value="">Todos los grados...</option>
-                    @if (ViewBag.GradosDisponibles != null)
-                    {
-                        foreach (int gradoDb in ViewBag.GradosDisponibles)
+    <div class="card border-0 shadow-sm mb-5" style="border-left: 6px solid #620900 !important; border-radius: 10px;">
+        <div class="card-body p-4">
+            <form class="row g-3 align-items-end" method="get" asp-action="ListaDeAlumnos">
+                <div class="col-md-4">
+                    <label class="form-label fw-bold text-dark">Grado</label>
+                    <select class="form-select" name="grado" style="border-color: #ddd;">
+                        <option value="">Todos los grados...</option>
+                        @if (ViewBag.GradosDisponibles != null)
                         {
-                            if (ViewBag.GradoSeleccionado == gradoDb)
+                            foreach (int gradoDb in ViewBag.GradosDisponibles)
                             {
-                                <option value="@gradoDb" selected>@gradoDb</option>
-                            }
-                            else
-                            {
-                                <option value="@gradoDb">@gradoDb</option>
+                                <option value="@gradoDb" selected="@(ViewBag.GradoSeleccionado == gradoDb)">@gradoDb</option>
                             }
                         }
-                    }
-                </select>
-            </div>
+                    </select>
+                </div>
 
-            <div class="col-md-4">
-                <label class="form-label fw-bold">Grupo</label>
-                <select class="form-select" name="grupo" style="border-color: var(--utt-beige);">
-                    <option value="">Todos los grupos...</option>
-                    @if (ViewBag.GruposDisponibles != null)
-                    {
-                        foreach (string grupoDb in ViewBag.GruposDisponibles)
+                <div class="col-md-5">
+                    <label class="form-label fw-bold text-dark">Grupo</label>
+                    <select class="form-select" name="grupo" style="border-color: #ddd;">
+                        <option value="">Todos los grupos...</option>
+                        @if (ViewBag.GruposDisponibles != null)
                         {
-                            if (ViewBag.GrupoSeleccionado == grupoDb)
+                            foreach (string grupoDb in ViewBag.GruposDisponibles)
                             {
-                                <option value="@grupoDb" selected>@grupoDb</option>
-                            }
-                            else
-                            {
-                                <option value="@grupoDb">@grupoDb</option>
+                                <option value="@grupoDb" selected="@(ViewBag.GrupoSeleccionado == grupoDb)">@grupoDb</option>
                             }
                         }
-                    }
-                </select>
-            </div>
+                    </select>
+                </div>
 
-            <div class="col-md-4">
-                <button type="submit" class="btn w-100 fw-bold"
-                        style="background-color: var(--utt-beige); color: var(--utt-dark-red);">
-                    <i class="bi bi-funnel-fill"></i> Filtrar Lista
-                </button>
-            </div>
-        </form>
+                <div class="col-md-3">
+                    <button type="submit" class="btn w-100 fw-bold" style="background-color: #A89B8C; color: white;">
+                        <i class="bi bi-funnel-fill"></i> Filtrar Lista
+                    </button>
+                </div>
+            </form>
 
-        @if (ViewBag.MensajeFiltro != null)
-        {
-            <div class="alert alert-warning mt-3 text-center">
-                <i class="bi bi-exclamation-triangle"></i> @ViewBag.MensajeFiltro
-            </div>
-        }
-    </div>
-
-    <div class="student-list">
-
-        <div class="d-none d-md-flex px-4 mb-2 text-muted small fw-bold">
-            <div style="width: 70px;">FOTO</div>
-            <div class="flex-grow-1">INFORMACIÓN DEL ALUMNO</div>
-            <div style="width: 300px;" class="text-center">ACCIONES</div>
-        </div>
-
-        @{
-            var dictMatriculas = ViewBag.Matriculas as Dictionary<int, string> ?? new Dictionary<int, string>();
-            var dictGrupos = ViewBag.Grupos as Dictionary<int, string> ?? new Dictionary<int, string>();
-            var dictFotos = ViewBag.FotosPerfil as Dictionary<int, string> ?? new Dictionary<int, string>();
-        }
-
-        @foreach (var alumno in Model)
-        {
-            @if (alumno.Person != null)
+            @if (ViewBag.MensajeFiltro != null)
             {
-                string matriculaAlumno = dictMatriculas.ContainsKey(alumno.UserId) ? dictMatriculas[alumno.UserId] : "Sin Matrícula";
-                string grupoAlumno = dictGrupos.ContainsKey(alumno.UserId) ? dictGrupos[alumno.UserId] : "Sin Grupo";
-
-                string rutaFoto = dictFotos.ContainsKey(alumno.UserId) ? dictFotos[alumno.UserId] : "";
-                bool tieneFoto = !string.IsNullOrEmpty(rutaFoto);
-
-                string imgSrc = tieneFoto
-                ? rutaFoto
-                : $"https://ui-avatars.com/api/?name={alumno.Person.FirstName}&background=8C1B1B&color=fff";
-
-                <div class="student-row">
-                    <div style="width: 70px;">
-                        <img src="@imgSrc" class="avatar-circle" alt="Foto de @alumno.Person.FirstName" style="object-fit: cover; width: 50px; height: 50px; border-radius: 50%;">
-                    </div>
-
-                    <div class="flex-grow-1 ps-2">
-                        <div class="student-name">@alumno.Person.FirstName @alumno.Person.LastNamePaternal @alumno.Person.LastNameMaternal</div>
-
-                        <div class="student-meta">
-                            Matrícula: @matriculaAlumno | Grado y Grupo: @grupoAlumno
-                        </div>
-                    </div>
-
-                    <div class="d-flex gap-2 justify-content-end flex-wrap">
-                        <a asp-area="Gestion" asp-controller="Tutorship" asp-action="VerEntrevistaAlumno" asp-route-id="@alumno.UserId" class="btn btn-action-entrevista">
-                            <i class="bi bi-file-text"></i> Ver Entrevista
-                        </a>
-
-                        <a asp-area="Gestion" asp-controller="Tutorship" asp-action="Seguimiento" asp-route-matriculaBuscar="@matriculaAlumno" class="btn btn-action-seguimiento">
-                            <i class="bi bi-graph-up"></i> Ver Seguimiento
-                        </a>
-                    </div>
+                <div class="alert alert-warning mt-3 mb-0 text-center">
+                    <i class="bi bi-exclamation-triangle"></i> @ViewBag.MensajeFiltro
                 </div>
             }
-        }
-        @* <div class="student-row">
-            <div style="width: 70px;">
-                <img src="https://ui-avatars.com/api/?name=Diego+Gonzalez&background=8C1B1B&color=fff" class="avatar-circle" alt="Foto">
-            </div>
-            <div class="flex-grow-1 ps-2">
-                <div class="student-name">Diego González</div>
-                <div class="student-meta">Matrícula: 220015 • TIC-4A</div>
-            </div>
-            <div class="d-flex gap-2 justify-content-end flex-wrap">
-                <a asp-area="Gestion" asp-controller="Tutorship" asp-action="DetalleEntrevista" asp-route-id="3" class="btn btn-action-entrevista">
-                    <i class="bi bi-file-text"></i> Ver Entrevista
-                </a>
-                <a asp-area="Gestion" asp-controller="Tutorship" asp-action="Seguimiento" asp-route-id="3" class="btn btn-action-seguimiento">
-                    <i class="bi bi-graph-up"></i> Ver Seguimiento
-                </a>
-            </div>
-        </div> *@
+        </div>
     </div>
+
+    <table id="tablaAlumnos" class="table w-100">
+        <thead>
+            <tr>
+                <th class="text-center" style="width: 80px;">Foto</th>
+                <th>Información del Alumno</th>
+                <th class="text-end" style="width: 320px; padding-right: 1.5rem;">Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            @{
+                var dictMatriculas = ViewBag.Matriculas as Dictionary<int, string> ?? new Dictionary<int, string>();
+                var dictGrupos = ViewBag.Grupos as Dictionary<int, string> ?? new Dictionary<int, string>();
+                var dictFotos = ViewBag.FotosPerfil as Dictionary<int, string> ?? new Dictionary<int, string>();
+            }
+
+            @foreach (var alumno in Model)
+            {
+                @if (alumno.Person != null)
+                {
+                    string matriculaAlumno = dictMatriculas.ContainsKey(alumno.UserId) ? dictMatriculas[alumno.UserId] : "Sin Matrícula";
+                    string grupoAlumno = dictGrupos.ContainsKey(alumno.UserId) ? dictGrupos[alumno.UserId] : "Sin Grupo";
+                    string rutaFoto = dictFotos.ContainsKey(alumno.UserId) ? dictFotos[alumno.UserId] : "";
+                    bool tieneFoto = !string.IsNullOrEmpty(rutaFoto);
+
+                    string imgSrc = tieneFoto ? rutaFoto : $"https://ui-avatars.com/api/?name={alumno.Person.FirstName}&background=8C1B1B&color=fff";
+                    string nombreCompleto = $"{alumno.Person.FirstName} {alumno.Person.LastNamePaternal} {alumno.Person.LastNameMaternal}";
+
+                    <tr>
+                        <td class="text-center ps-3">
+                            <img src="@imgSrc" alt="Foto" class="rounded-circle border" style="object-fit: cover; width: 55px; height: 55px; border-color: #ddd !important;">
+                        </td>
+
+                        <td data-sort="@nombreCompleto">
+                            <div class="fw-bold fs-6 text-dark mb-1">@nombreCompleto</div>
+                            <div class="text-muted small">
+                                Matrícula: @matriculaAlumno | Grado y Grupo: @grupoAlumno
+                            </div>
+                        </td>
+
+                        <td class="text-end pe-3">
+                            <div class="d-flex gap-2 justify-content-end">
+                                <a asp-area="Gestion" asp-controller="Tutorship" asp-action="VerEntrevistaAlumno" asp-route-id="@alumno.UserId" class="btn btn-vino shadow-sm">
+                                    <i class="bi bi-file-text"></i> Ver Entrevista
+                                </a>
+                                <a asp-area="Gestion" asp-controller="Tutorship" asp-action="Seguimiento" asp-route-matriculaBuscar="@matriculaAlumno" class="btn btn-vino shadow-sm">
+                                    <i class="bi bi-graph-up"></i> Ver Seguimiento
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
 </div>
+
+@section Scripts {
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+
+    <script>
+        $(document).ready(function () {
+            $('#tablaAlumnos').DataTable({
+                language: {
+                    url: 'https://cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json'
+                },
+                lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "Todos"]],
+                pageLength: 10,
+                columnDefs: [
+                    { orderable: false, targets: [0, 2] },
+                    { searchable: false, targets: [0, 2] }
+                ],
+                order: [[1, 'asc']]
+            });
+        });
+    </script>
+}

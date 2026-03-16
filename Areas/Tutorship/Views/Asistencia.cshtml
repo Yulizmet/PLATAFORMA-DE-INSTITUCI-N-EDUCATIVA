@@ -1,69 +1,159 @@
-﻿@{
+﻿@model List<SchoolManager.Models.users_user>
+
+@{
     ViewData["Title"] = "Control de Asistencia";
+    int roleId = ViewBag.RoleId ?? 0;
 }
 
 <div class="container mt-4">
     <h2 class="text-center mb-4 fw-bold" style="color: var(--utt-red);">Registro de Asistencia</h2>
 
-    <div class="p-4 rounded shadow-sm mb-4" style="background-color: var(--utt-light);">
-        <form asp-action="CargarLista" method="get" class="row g-3">
-            <div class="col-md-3">
-                <label class="form-label fw-bold">Fecha</label>
-                <input type="date" class="form-control" style="border-color: var(--utt-beige);">
+    @if (TempData["Exito"] != null)
+    {
+        <div class="alert alert-success shadow-sm text-center"><i class="bi bi-check-circle-fill"></i> @TempData["Exito"]</div>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger shadow-sm text-center"><i class="bi bi-exclamation-triangle-fill"></i> @TempData["Error"]</div>
+    }
+
+    @if (roleId == 3)
+    {
+        <div class="p-4 rounded shadow-sm mb-4" style="background-color: var(--utt-light);">
+            <form asp-action="Asistencia" method="get" class="row g-3">
+                <div class="col-md-3">
+                    <label class="form-label fw-bold">Fecha</label>
+                    <input type="date" name="fecha" value="@ViewBag.FechaSeleccionada" class="form-control" style="border-color: var(--utt-beige);" required>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label fw-bold">Materia</label>
+                    <select class="form-select" style="border-color: var(--utt-beige);" disabled>
+                        <option>Tutorías</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label fw-bold">Grupo</label>
+                    <select class="form-select" name="groupId" style="border-color: var(--utt-beige);" required>
+                        <option value="">Selecciona un grupo...</option>
+                        @if (ViewBag.GruposDisponibles != null)
+                        {
+                            foreach (var grupo in ViewBag.GruposDisponibles)
+                            {
+                                <option value="@grupo.GroupId" selected="@(ViewBag.GrupoSeleccionado == grupo.GroupId)">
+                                    Grado @grupo.GradeLevelId | Grupo @grupo.Name
+                                </option>
+                            }
+                        }
+                    </select>
+                </div>
+                <div class="col-md-3 d-flex align-items-end">
+                    <button type="submit" class="btn btn-utt-primary w-100 fw-bold">
+                        <i class="bi bi-search"></i> Cargar Grupo
+                    </button>
+                </div>
+            </form>
+        </div>
+    }
+    else if (roleId == 2)
+    {
+        <div class="p-4 rounded shadow-sm mb-4 d-flex flex-wrap justify-content-between align-items-center" style="background-color: var(--utt-light);">
+            <div class="mb-2 mb-md-0">
+                <h5 class="m-0 fw-bold" style="color: var(--utt-dark-red);">
+                    <i class="bi bi-people-fill"></i> Mi Grupo Asignado: 
+                    @{
+                        var gruposDisp = ViewBag.GruposDisponibles as List<SchoolManager.Models.grades_group>;
+                        var miGrupo = gruposDisp?.FirstOrDefault(g => g.GroupId == ViewBag.GrupoSeleccionado);
+                        string nombreMiGrupo = miGrupo != null ? $"Grado {miGrupo.GradeLevelId} | {miGrupo.Name}" : "Cargando...";
+                    }
+                    <span class="text-dark">@nombreMiGrupo</span>
+                </h5>
             </div>
-            <div class="col-md-3">
-                <label class="form-label fw-bold">Materia</label>
-                <select class="form-select" style="border-color: var(--utt-beige);">
-                    <option>Desarrollo Web</option>
-                    <option>Ingles</option>
-                    <option>Matematicas</option>
-                    <option>Integradora</option>
-                </select>
+            
+            <form asp-action="Asistencia" method="get" class="d-flex align-items-center gap-2">
+                <input type="hidden" name="groupId" value="@ViewBag.GrupoSeleccionado" />
+                <label class="fw-bold mb-0 text-dark">Fecha:</label>
+                <input type="date" name="fecha" value="@ViewBag.FechaSeleccionada" class="form-control shadow-sm" style="border-color: var(--utt-beige); width: auto;" onchange="this.form.submit()">
+            </form>
+        </div>
+    }
+
+    @if (Model != null && Model.Any())
+    {
+        <form asp-action="GuardarAsistencia" method="post">
+            <input type="hidden" name="groupId" value="@ViewBag.GrupoSeleccionado" />
+            <input type="hidden" name="fecha" value="@ViewBag.FechaSeleccionada" />
+
+            <div class="table-responsive shadow">
+                <table class="table table-hover mb-0">
+                    <thead class="table-utt-head text-center">
+                        <tr>
+                            <th>Matrícula</th>
+                            <th class="text-start">Nombre</th>
+                            <th>Faltas Totales</th>
+                            <th>Asistencia</th>
+                        </tr>
+                    </thead>
+                    <tbody style="background-color: var(--utt-white);">
+                        @{
+                            var dictMatriculas = ViewBag.Matriculas as Dictionary<int, string> ?? new Dictionary<int, string>();
+                            var dictFaltas = ViewBag.FaltasTotales as Dictionary<int, int> ?? new Dictionary<int, int>();
+                            var dictAsistenciaHoy = ViewBag.AsistenciaHoy as Dictionary<int, bool> ?? new Dictionary<int, bool>();
+                            
+                            int index = 0;
+                            bool yaSePasoLista = dictAsistenciaHoy.Any();
+                        }
+
+                        @foreach (var alumno in Model)
+                        {
+                            string matricula = dictMatriculas.ContainsKey(alumno.UserId) ? dictMatriculas[alumno.UserId] : "S/N";
+                            int faltas = dictFaltas.ContainsKey(alumno.UserId) ? dictFaltas[alumno.UserId] : 0;
+                            bool asistio = yaSePasoLista ? (dictAsistenciaHoy.ContainsKey(alumno.UserId) ? dictAsistenciaHoy[alumno.UserId] : false) : true;
+
+                            <tr>
+                                <td class="text-center align-middle fw-bold text-muted">@matricula</td>
+                                <td class="align-middle fw-bold">@alumno.Person.FirstName @alumno.Person.LastNamePaternal @alumno.Person.LastNameMaternal</td>
+                                <td class="text-center align-middle">
+                                    <span class="badge" style="background-color: var(--utt-beige); color: var(--utt-black); font-size: 0.9rem;">
+                                        @faltas
+                                    </span>
+                                </td>
+                                <td class="text-center align-middle">
+                                    <input type="hidden" name="studentIds[@index]" value="@alumno.UserId" />
+                                    <div class="form-check d-flex justify-content-center">
+                                        <input class="form-check-input" type="checkbox" name="isPresent[@index]" value="true" @(asistio ? "checked" : "") style="transform: scale(1.3); cursor: pointer;" @(yaSePasoLista ? "disabled" : "") />
+                                        <input type="hidden" name="isPresent[@index]" value="false" />
+                                    </div>
+                                </td>
+                            </tr>
+
+                            @* Volvemos al index++ normal, ahora que el HTML está bien cerrado *@
+                            index++;
+                        }
+                    </tbody>
+                </table>
             </div>
-            <div class="col-md-3">
-                <label class="form-label fw-bold">Grupo</label>
-                <select class="form-select" style="border-color: var(--utt-beige);">
-                    <option>TIC-4A</option>
-                </select>
-            </div>
-            <div class="col-md-3 d-flex align-items-end">
-                <button type="button" class="btn btn-utt-primary w-100">
-                    Cargar Grupo
-                </button>
-            </div>
+
+            @if (!yaSePasoLista)
+            {
+                <div class="text-end mt-4 mb-5">
+                    <button type="submit" class="btn btn-utt-primary px-5 btn-lg shadow-sm">
+                        <i class="bi bi-save"></i> Guardar Asistencia
+                    </button>
+                </div>
+            }
+            else
+            {
+                <div class="alert alert-info mt-4 text-center fw-bold shadow-sm">
+                    <i class="bi bi-info-circle-fill"></i> La asistencia de este grupo ya fue guardada el día de hoy.
+                </div>
+            }
         </form>
-    </div>
-
-    <form asp-action="GuardarAsistencia" method="post">
-        <div class="table-responsive shadow">
-            <table class="table table-hover mb-0">
-                <thead class="table-utt-head text-center">
-                    <tr>
-                        <th>Matrícula</th>
-                        <th>Nombre</th>
-                        <th>Faltas Totales</th>
-                        <th>Asistencia</th>
-                    </tr>
-                </thead>
-                <tbody style="background-color: var(--utt-white);">
-                    <tr>
-                        <td class="text-center align-middle">12345</td>
-                        <td class="align-middle">Hernandez ana karengod</td>
-                        <td class="text-center align-middle">
-                            <span class="badge" style="background-color: var(--utt-beige); color: var(--utt-black);">2</span>
-                        </td>
-                        <td class="text-center">
-                            <div class="form-check d-flex justify-content-center">
-                                <input class="form-check-input" type="checkbox" value="true" checked style="transform: scale(1.3); cursor: pointer;">
-                            </div>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
+    }
+    else if (ViewBag.GrupoSeleccionado != null)
+    {
+        <div class="text-center p-5 text-muted">
+            <i class="bi bi-people-fill fs-1"></i>
+            <h4>No hay alumnos asignados a este grupo.</h4>
         </div>
-
-        <div class="text-end mt-4">
-            <button type="submit" class="btn btn-utt-primary px-5 btn-lg">Guardar Asistencia</button>
-        </div>
-    </form>
+    }
 </div>

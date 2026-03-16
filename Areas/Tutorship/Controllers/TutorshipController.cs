@@ -242,30 +242,42 @@ namespace SchoolManager.Areas.Tutorship.Controllers
 
         public async Task<IActionResult> ListaDeAlumnos(int? grado, string? grupo)
         {
-            if (LoggedRoleId != 2) return RedirectToAction(nameof(AccesoDenegado));
+            // ✅ 1. Permitimos el paso a Maestros (2) y Administradores (3)
+            if (LoggedRoleId != 2 && LoggedRoleId != 3) return RedirectToAction(nameof(AccesoDenegado));
             ViewBag.RoleId = LoggedRoleId;
 
             ViewBag.GradoSeleccionado = grado;
             ViewBag.GrupoSeleccionado = grupo;
 
-            // ✅ CORREGIDO: Buscamos los grupos donde este maestro (LoggedUserId) tiene alumnos
-            var gruposDelMaestro = await _context.grades_Enrollments
-                .Include(e => e.Group)
-                .Where(e => _context.Tutorships.Any(t => t.StudentId == e.StudentId && t.TeacherId == LoggedUserId))
-                .Select(e => e.Group)
-                .Distinct()
-                .ToListAsync();
-
-            ViewBag.GradosDisponibles = gruposDelMaestro.Select(g => g.GradeLevelId).Distinct().OrderBy(g => g).ToList();
-            ViewBag.GruposDisponibles = gruposDelMaestro.Select(g => g.Name).Distinct().OrderBy(g => g).ToList();
-
-            // ✅ CORREGIDO: Filtramos por el maestro logueado
-            var query = _context.Users
+            // Preparamos las consultas base (sin ejecutarlas todavía)
+            IQueryable<grades_group> gruposQuery = _context.grades_GradeGroups;
+            IQueryable<users_user> alumnosQuery = _context.Users
                 .Include(u => u.Person)
-                .Where(u => u.UserRoles.Any(ur => ur.RoleId == 1) &&
-                            _context.Tutorships.Any(t => t.StudentId == u.UserId && t.TeacherId == LoggedUserId))
-                .AsQueryable();
+                .Where(u => u.UserRoles.Any(ur => ur.RoleId == 1)); // Solo alumnos
 
+            // ✅ 2. Lógica condicional según el Rol
+            if (LoggedRoleId == 2)
+            {
+                // Si es maestro: Filtramos SOLO sus grupos y sus alumnos asignados
+                gruposQuery = _context.grades_Enrollments
+                    .Include(e => e.Group)
+                    .Where(e => _context.Tutorships.Any(t => t.StudentId == e.StudentId && t.TeacherId == LoggedUserId))
+                    .Select(e => e.Group)
+                    .Distinct();
+
+                alumnosQuery = alumnosQuery.Where(u => _context.Tutorships.Any(t => t.StudentId == u.UserId && t.TeacherId == LoggedUserId));
+            }
+            else if (LoggedRoleId == 3)
+            {
+                // Si es Admin: No le ponemos filtros extra, cargará toda la escuela por defecto.
+            }
+
+            // Ejecutamos la consulta de grupos para los menús desplegables
+            var gruposDisponibles = await gruposQuery.ToListAsync();
+            ViewBag.GradosDisponibles = gruposDisponibles.Select(g => g.GradeLevelId).Distinct().OrderBy(g => g).ToList();
+            ViewBag.GruposDisponibles = gruposDisponibles.Select(g => g.Name).Distinct().OrderBy(g => g).ToList();
+
+            // Filtros manuales del formulario (Grado y Grupo seleccionados)
             if (grado.HasValue && !string.IsNullOrEmpty(grupo))
             {
                 var grupoDb = await _context.grades_GradeGroups
@@ -273,19 +285,20 @@ namespace SchoolManager.Areas.Tutorship.Controllers
 
                 if (grupoDb != null)
                 {
-                    query = query.Where(u => _context.grades_Enrollments
+                    alumnosQuery = alumnosQuery.Where(u => _context.grades_Enrollments
                         .Any(e => e.StudentId == u.UserId && e.GroupId == grupoDb.GroupId));
                 }
                 else
                 {
-                    query = query.Where(u => false);
-                    ViewBag.MensajeFiltro = "No se encontró ningún grupo " + grado + grupo + " asignado a ti.";
+                    alumnosQuery = alumnosQuery.Where(u => false);
+                    ViewBag.MensajeFiltro = "No se encontró ningún grupo " + grado + grupo + " en el sistema.";
                 }
             }
 
-            var listaAlumnos = await query.ToListAsync();
+            var listaAlumnos = await alumnosQuery.ToListAsync();
             var userIds = listaAlumnos.Select(u => u.UserId).ToList();
 
+            // Diccionarios (Igual que antes, completamente seguros)
             ViewBag.FotosPerfil = await _context.TutorshipInterviews
                 .Where(e => userIds.Contains(e.StudentId) && e.FilePath != null && e.FilePath != "Sin archivo")
                 .ToDictionaryAsync(e => e.StudentId, e => e.FilePath);
@@ -295,7 +308,6 @@ namespace SchoolManager.Areas.Tutorship.Controllers
                 .Select(p => new { p.UserId, p.Matricula })
                 .ToDictionaryAsync(p => p.UserId.Value, p => p.Matricula);
 
-            // Evitamos error de llaves duplicadas con GroupBy
             var enrollments = await _context.grades_Enrollments
                 .Include(e => e.Group)
                 .Where(e => userIds.Contains(e.StudentId))
@@ -308,61 +320,134 @@ namespace SchoolManager.Areas.Tutorship.Controllers
             return View("~/Areas/Tutorship/Views/ListaDeAlumnos.cshtml", listaAlumnos);
         }
 
-        public async Task<IActionResult> Asistencia(DateTime? fecha, string grupoNombre)
+        
+        [HttpGet]
+        public async Task<IActionResult> Asistencia(DateTime? fecha, int? groupId)
         {
-            if (LoggedRoleId != 2) return RedirectToAction(nameof(AccesoDenegado));
+            // Permitir acceso a Maestros (2) y Administradores (3)
+            if (LoggedRoleId != 2 && LoggedRoleId != 3) return RedirectToAction(nameof(AccesoDenegado));
             ViewBag.RoleId = LoggedRoleId;
-
-            // ✅ CORREGIDO: Usamos LoggedUserId
-            var gruposDelMaestro = await _context.grades_Enrollments
-                .Include(e => e.Group)
-                .Where(e => _context.Tutorships.Any(t => t.StudentId == e.StudentId && t.TeacherId == LoggedUserId))
-                .Select(e => e.Group)
-                .Distinct()
-                .ToListAsync();
-
-            ViewBag.GruposDisponibles = gruposDelMaestro.Select(g => g.Name).Distinct().OrderBy(g => g).ToList();
 
             DateTime fechaSeleccionada = fecha ?? DateTime.Now.Date;
             ViewBag.FechaSeleccionada = fechaSeleccionada.ToString("yyyy-MM-dd");
-            ViewBag.GrupoSeleccionado = grupoNombre;
+
+            List<grades_group> gruposDisponibles = new List<grades_group>();
+
+            if (LoggedRoleId == 2)
+            {
+                // 1. Maestro: Traer SOLO sus grupos
+                gruposDisponibles = await _context.grades_Enrollments
+                    .Include(e => e.Group)
+                    .Where(e => _context.Tutorships.Any(t => t.StudentId == e.StudentId && t.TeacherId == LoggedUserId))
+                    .Select(e => e.Group)
+                    .Distinct()
+                    .ToListAsync();
+
+                if (!groupId.HasValue && gruposDisponibles.Any())
+                {
+                    groupId = gruposDisponibles.First().GroupId;
+                }
+            }
+            else if (LoggedRoleId == 3)
+            {
+                // 2. Administrador: Traer TODOS los grupos de la escuela
+                gruposDisponibles = await _context.grades_GradeGroups
+                    .OrderBy(g => g.GradeLevelId).ThenBy(g => g.Name)
+                    .ToListAsync();
+            }
+
+            ViewBag.GruposDisponibles = gruposDisponibles;
+            ViewBag.GrupoSeleccionado = groupId;
 
             List<users_user> alumnos = new List<users_user>();
 
-            if (!string.IsNullOrEmpty(grupoNombre))
+            if (groupId.HasValue)
             {
-                var grupoDb = await _context.grades_GradeGroups.FirstOrDefaultAsync(g => g.Name == grupoNombre);
-                if (grupoDb != null)
+                // --- INICIO DE LA PROYECCIÓN ---
+                // Preparamos la consulta base
+                var query = _context.Users
+                    .Where(u => u.UserRoles.Any(ur => ur.RoleId == 1) &&
+                                _context.grades_Enrollments.Any(e => e.StudentId == u.UserId && e.GroupId == groupId.Value));
+
+                // Candado para maestros
+                if (LoggedRoleId == 2)
                 {
-                    // ✅ CORREGIDO: Usamos LoggedUserId
-                    alumnos = await _context.Users
-                        .Include(u => u.Person)
-                        .Where(u => u.UserRoles.Any(ur => ur.RoleId == 1) &&
-                                    _context.Tutorships.Any(t => t.StudentId == u.UserId && t.TeacherId == LoggedUserId) &&
-                                    _context.grades_Enrollments.Any(e => e.StudentId == u.UserId && e.GroupId == grupoDb.GroupId))
-                        .ToListAsync();
-
-                    var userIds = alumnos.Select(u => u.UserId).ToList();
-
-                    ViewBag.Matriculas = await _context.PreenrollmentGenerals
-                        .Where(p => p.UserId != null && userIds.Contains(p.UserId.Value))
-                        .Select(p => new { p.UserId, p.Matricula })
-                        .ToDictionaryAsync(p => p.UserId.Value, p => p.Matricula);
-
-                    // Nota: Si ya cambiaste GroupName por GroupId en BD, actualiza las 2 consultas de abajo:
-                    ViewBag.FaltasTotales = await _context.TutorshipAttendances
-                        .Where(a => a.GroupName == grupoNombre && !a.IsPresent && userIds.Contains(a.StudentId))
-                        .GroupBy(a => a.StudentId)
-                        .Select(g => new { StudentId = g.Key, Faltas = g.Count() })
-                        .ToDictionaryAsync(x => x.StudentId, x => x.Faltas);
-
-                    ViewBag.AsistenciaHoy = await _context.TutorshipAttendances
-                        .Where(a => a.GroupName == grupoNombre && a.Date.Date == fechaSeleccionada)
-                        .ToDictionaryAsync(a => a.StudentId, a => a.IsPresent);
+                    query = query.Where(u => _context.Tutorships.Any(t => t.StudentId == u.UserId && t.TeacherId == LoggedUserId));
                 }
+
+                // Ejecutamos la proyección con el SELECT para limpiar el objeto
+                alumnos = await query.Select(u => new users_user
+                {
+                    UserId = u.UserId,
+                    Person = new users_person
+                    {
+                        FirstName = u.Person.FirstName,
+                        LastNamePaternal = u.Person.LastNamePaternal,
+                        LastNameMaternal = u.Person.LastNameMaternal
+                    }
+                }).ToListAsync();
+                // --- FIN DE LA PROYECCIÓN ---
+
+                var userIds = alumnos.Select(u => u.UserId).ToList();
+
+                ViewBag.Matriculas = await _context.PreenrollmentGenerals
+                    .Where(p => p.UserId != null && userIds.Contains(p.UserId.Value))
+                    .ToDictionaryAsync(p => p.UserId.Value, p => p.Matricula);
+
+                ViewBag.FaltasTotales = await _context.TutorshipAttendances
+                    .Where(a => a.GroupId == groupId.Value && !a.IsPresent && userIds.Contains(a.StudentId))
+                    .GroupBy(a => a.StudentId)
+                    .Select(g => new { StudentId = g.Key, Faltas = g.Count() })
+                    .ToDictionaryAsync(x => x.StudentId, x => x.Faltas);
+
+                ViewBag.AsistenciaHoy = await _context.TutorshipAttendances
+                    .Where(a => a.GroupId == groupId.Value && a.Date.Date == fechaSeleccionada)
+                    .ToDictionaryAsync(a => a.StudentId, a => a.IsPresent);
             }
 
             return View("~/Areas/Tutorship/Views/Asistencia.cshtml", alumnos);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> GuardarAsistencia(List<int> studentIds, List<bool> isPresent, int groupId, DateTime fecha)
+        {
+            // Permitir guardar a Maestros y Administradores
+            if (LoggedRoleId != 2 && LoggedRoleId != 3) return RedirectToAction(nameof(AccesoDenegado));
+
+            if (studentIds == null || !studentIds.Any())
+            {
+                TempData["Error"] = "No hay alumnos para guardar asistencia.";
+                return RedirectToAction(nameof(Asistencia), new { fecha = fecha.ToString("yyyy-MM-dd"), groupId = groupId });
+            }
+
+            bool asistenciaYaTomada = await _context.TutorshipAttendances
+                .AnyAsync(a => a.GroupId == groupId && a.Date.Date == fecha.Date);
+
+            if (asistenciaYaTomada)
+            {
+                TempData["Error"] = "La asistencia para este grupo ya fue registrada en la fecha seleccionada.";
+                return RedirectToAction(nameof(Asistencia), new { fecha = fecha.ToString("yyyy-MM-dd"), groupId = groupId });
+            }
+
+            var registrosAsistencia = new List<tutorship_attendance>();
+
+            for (int i = 0; i < studentIds.Count; i++)
+            {
+                registrosAsistencia.Add(new tutorship_attendance
+                {
+                    StudentId = studentIds[i],
+                    TeacherId = LoggedUserId,
+                    Date = fecha,
+                    IsPresent = isPresent[i],
+                    GroupId = groupId
+                });
+            }
+
+            _context.TutorshipAttendances.AddRange(registrosAsistencia);
+            await _context.SaveChangesAsync();
+
+            TempData["Exito"] = "Asistencia guardada correctamente.";
+            return RedirectToAction(nameof(Asistencia), new { fecha = fecha.ToString("yyyy-MM-dd"), groupId = groupId });
         }
 
         public async Task<IActionResult> Seguimiento(string matriculaBuscar)

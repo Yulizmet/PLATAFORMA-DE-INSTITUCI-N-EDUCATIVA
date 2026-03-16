@@ -22,7 +22,7 @@ namespace SchoolManager.Models
         public bool IsPresent { get; set; }
 
         [Required]
-        public string GroupName { get; set; } = null!;
+        public int GroupId { get; set; }
 
         [ForeignKey("StudentId")]
         public virtual users_user Student { get; set; } = null!;
