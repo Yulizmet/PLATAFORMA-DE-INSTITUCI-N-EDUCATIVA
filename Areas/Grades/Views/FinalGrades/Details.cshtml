@@ -1,0 +1,177 @@
+﻿@model SchoolManager.Areas.Grades.ViewModels.FinalGrades.FinalGradeListViewModel
+
+@{
+    ViewData["Title"] = $"Finales - {Model.SubjectName}";
+    Layout = "~/Areas/MainScreen/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container-fluid py-4">
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-action="Index">Calificaciones Finales</a></li>
+            <li class="breadcrumb-item active">@Model.SubjectName - @Model.GroupName</li>
+        </ol>
+    </nav>
+
+    <div class="sistema-card mb-4">
+        <div class="row align-items-center">
+            <div class="col-md-4">
+                <h4 class="fw-bold mb-1">@Model.SubjectName</h4>
+                <p class="text-muted">
+                    <i class="bi bi-people me-2"></i>@Model.GroupName
+                    <span class="mx-2">|</span>
+                    <i class="bi bi-layers me-2"></i>@Model.GradeLevelName
+                </p>
+            </div>
+            <div class="col-md-4 text-center">
+                <h6 class="mb-1">Calificación mínima</h6>
+                <h3 style="color: #D42D2D;">@Model.MinPassingGradeUsed.ToString("F1")</h3>
+            </div>
+            <div class="col-md-4">
+                <div class="d-flex gap-3">
+                    <div class="text-center flex-fill p-2" style="background-color: #d4edda; border-radius: 10px;">
+                        <span class="fw-bold" style="color: #28a745;">@Model.Students.Count(s => s.Passed)</span>
+                        <small class="d-block">Aprobados</small>
+                    </div>
+                    <div class="text-center flex-fill p-2" style="background-color: #f8d7da; border-radius: 10px;">
+                        <span class="fw-bold" style="color: #D42D2D;">@Model.Students.Count(s => !s.Passed)</span>
+                        <small class="d-block">Reprobados</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle-fill me-2"></i>@TempData["Success"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <div class="sistema-card">
+        <div class="d-flex justify-content-end mb-3">
+            <form asp-action="Calculate" method="post"
+                  onsubmit="return confirm('¿Calcular calificaciones finales? Esto actualizará los promedios.');">
+                <input type="hidden" name="groupId" value="@Model.GroupId" />
+                <input type="hidden" name="subjectId" value="@Model.SubjectId" />
+                <button type="submit" class="btn btn-calificaciones">
+                    <i class="bi bi-calculator me-2"></i>Calcular Finales
+                </button>
+            </form>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>Matrícula</th>
+                        <th>Estudiante</th>
+                        <th class="text-center">Calificación Final</th>
+                        <th class="text-center">Extraordinario</th>  <!-- 👈 NUEVA COLUMNA -->
+                        <th class="text-center">Estado</th>
+                        <th class="text-center">Acciones</th>        <!-- 👈 NUEVA COLUMNA -->
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var student in Model.Students)
+                    {
+                        <tr>
+                            <td class="fw-semibold">@student.Matricula</td>
+                            <td>@student.StudentName</td>
+                            <td class="text-center fw-bold">@student.FinalGrade?.ToString("F2")</td>
+                            <td class="text-center">
+                                @if (student.HasExtraordinary)
+                                {
+                                    <span class="badge bg-warning text-dark">
+                                        @student.ExtraordinaryGrade?.ToString("F2")
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="text-muted">-</span>
+                                }
+                            </td>
+                            <td class="text-center">
+                                @if (student.Passed)
+                                {
+                                    <span class="badge bg-success">Aprobado</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-danger">Reprobado</span>
+                                }
+                            </td>
+                            <td class="text-center">
+                                @if (!student.Passed || student.HasExtraordinary)
+                                {
+                                    <button type="button" class="btn btn-sm btn-warning"
+                                            onclick="openExtraordinaryModal(@student.FinalGradeId, '@student.StudentName', @student.FinalGrade, @Model.MinPassingGradeUsed)">
+                                        <i class="bi bi-plus-circle"></i>
+                                    </button>
+                                }
+
+                                @if (student.HasExtraordinary)
+                                {
+                                    <form asp-action="DeleteExtraordinary" method="post" style="display:inline;"
+                                          onsubmit="return confirm('¿Eliminar extraordinario?')">
+                                        <input type="hidden" name="extraordinaryId" value="@student.ExtraordinaryGradeId" />
+                                        <button type="submit" class="btn btn-sm btn-outline-danger">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </form>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para Extraordinario -->
+<div class="modal fade" id="extraordinaryModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content" style="border-radius: 20px; border: none;">
+            <div class="modal-header" style="background-color: #8C1B1B; color: white; border-radius: 20px 20px 0 0;">
+                <h5 class="modal-title">
+                    <i class="bi bi-plus-circle me-2"></i>
+                    Agregar Extraordinario
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form asp-action="AddExtraordinary" method="post">
+                <div class="modal-body p-4">
+                    <input type="hidden" name="finalGradeId" id="extraFinalGradeId" />
+
+                    <p>Estudiante: <strong id="extraStudentName"></strong></p>
+                    <p>Promedio final: <strong id="extraFinalGrade"></strong></p>
+                    <p>Mínimo requerido: <strong id="extraMinGrade"></strong></p>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Calificación Extraordinario</label>
+                        <input type="number" name="extraordinaryValue" class="form-control"
+                               step="0.01" min="0" max="10" required />
+                        <small class="text-muted">Si es >= mínimo, el alumno aprueba</small>
+                    </div>
+                </div>
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn" style="background-color: #D42D2D; color: white;">Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    function openExtraordinaryModal(finalGradeId, studentName, finalGrade, minGrade) {
+        document.getElementById('extraFinalGradeId').value = finalGradeId;
+        document.getElementById('extraStudentName').innerText = studentName;
+        document.getElementById('extraFinalGrade').innerText = finalGrade?.toFixed(2) || 'N/A';
+        document.getElementById('extraMinGrade').innerText = minGrade.toFixed(2);
+        new bootstrap.Modal(document.getElementById('extraordinaryModal')).show();
+    }
+</script>

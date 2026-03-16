@@ -1,0 +1,91 @@
+﻿@model SchoolManager.Areas.Grades.ViewModels.Enrollment.EnrollmentCreateViewModel
+
+@{
+    ViewData["Title"] = $"Asignar Estudiantes - Grupo {Model.GroupName}";
+    Layout = "~/Pages/Shared/_Layout.cshtml";
+
+}
+
+<div class="container-fluid py-4">
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-controller="Groups" asp-action="Index">Grupos</a></li>
+            <li class="breadcrumb-item"><a asp-controller="Groups" asp-action="Details" asp-route-id="@Model.GroupId">@Model.GroupName</a></li>
+            <li class="breadcrumb-item active">Asignar Estudiantes</li>
+        </ol>
+    </nav>
+
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <div class="sistema-card">
+                <div class="sistema-icon icon-calificaciones mb-4">
+                    <i class="bi bi-person-plus"></i>
+                </div>
+
+                <div class="mb-4">
+                    <h4 class="fw-bold" style="color: #1f2937;">Grupo @Model.GroupName</h4>
+                    <p class="text-muted">
+                        <i class="bi bi-layers me-2" style="color: #8C1B1B;"></i>@Model.GradeLevelName
+                    </p>
+                </div>
+
+                <form asp-action="SaveAssignments" method="post">
+                    <input type="hidden" name="groupId" value="@Model.GroupId" />
+
+                    <h5 class="fw-semibold mb-3" style="color: #1f2937;">Selecciona los estudiantes</h5>
+
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th style="width: 50px;">
+                                        <input type="checkbox" class="form-check-input" id="selectAll" />
+                                    </th>
+                                    <th>Matrícula</th>
+                                    <th>Nombre</th>
+                                    <th>Email</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @for (int i = 0; i < Model.AvailableStudents.Count; i++)
+                                {
+                                    <tr>
+                                        <td>
+                                            <input type="checkbox" name="selectedStudentIds" value="@Model.AvailableStudents[i].StudentId"
+                                                   class="form-check-input student-checkbox"
+                                                   @(Model.AvailableStudents[i].IsSelected ? "checked" : "") />
+                                        </td>
+                                        <td>@Model.AvailableStudents[i].Matricula</td>
+                                        <td class="fw-semibold">@Model.AvailableStudents[i].FullName</td>
+                                        <td>@Model.AvailableStudents[i].Email</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="d-flex gap-2 justify-content-end mt-4">
+                        <a asp-controller="Groups" asp-action="Details" asp-route-id="@Model.GroupId"
+                           class="btn btn-secondary" style="border-radius: 10px; background-color: #6c757d; color: white; padding: 10px 25px;">
+                            <i class="bi bi-x-circle me-2"></i>Cancelar
+                        </a>
+                        <button type="submit" class="btn btn-calificaciones" style="padding: 10px 25px;">
+                            <i class="bi bi-save me-2"></i>Guardar Asignaciones
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.getElementById('selectAll').addEventListener('change', function() {
+            var checkboxes = document.getElementsByClassName('student-checkbox');
+            for(var i = 0; i < checkboxes.length; i++) {
+                checkboxes[i].checked = this.checked;
+            }
+        });
+    </script>
+}

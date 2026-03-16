@@ -24,8 +24,9 @@ namespace SchoolManager.Areas.Procedures.Controllers
         public async Task<IActionResult> Index()
         {
             var requests = await _context.ProcedureRequest
-                .Include(r => r.ProcedureFlow)
-                .OrderByDescending(r => r.DateUpdated)
+                .Include(r => r.ProcedureType)
+                .Include(r => r.ProcedureFlow).ThenInclude(f => f.ProcedureStatus)
+                .Include(r => r.Preenrollments)
                 .ToListAsync();
 
             return View(requests);
@@ -71,65 +72,58 @@ namespace SchoolManager.Areas.Procedures.Controllers
 
             if (initialFlow == null)
             {
-                return Json(new { success = false, errors = new[] { "Este trámite no tiene un flujo de pasos configurado. Por favor, contacta al administrador." } });
+                return Json(new { success = false, errors = new[] { "Flujo de pasos no configurado." } });
             }
 
+            int currentUserId = 1;
+
             request.DateCreated = DateTime.Now;
-            request.DateUpdated = DateTime.Now;
             request.IdProcedureFlow = initialFlow.Id;
-            request.IdUser = 1;
+            request.IdUser = currentUserId;
 
             if (string.IsNullOrEmpty(request.Folio))
             {
                 request.Folio = DateTime.Now.Ticks.ToString().Substring(10).ToUpper();
             }
 
-            ModelState.Remove("IdUser");
-            ModelState.Remove("ProcedureStatus");
-            ModelState.Remove("ProcedureType");
-            ModelState.Remove("ProcedureFlow");
-            ModelState.Remove("User");
-            ModelState.Remove("Folio");
+            ModelState.Clear();
 
-            if (ModelState.IsValid)
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try
             {
-                using var transaction = await _context.Database.BeginTransactionAsync();
-                try
-                {
-                    _context.ProcedureRequest.Add(request);
-                    await _context.SaveChangesAsync();
+                _context.ProcedureRequest.Add(request);
+                await _context.SaveChangesAsync();
 
-                    foreach (var file in form.Files)
+                var student = await _context.PreenrollmentGenerals.FirstOrDefaultAsync(p => p.UserId == currentUserId);
+                if (student != null)
+                {
+                    student.ProcedureRequestId = request.Id;
+                    _context.Update(student);
+                }
+
+                foreach (var file in form.Files)
+                {
+                    if (file.Length > 0)
                     {
-                        if (file.Length > 0)
+                        string fileUrl = await _storageService.UploadFileAsync(file, "proceduresfiles", STORAGE_CONNECTION);
+                        _context.ProcedureDocuments.Add(new procedure_documents
                         {
-                            string fileUrl = await _storageService.UploadFileAsync(file, "proceduresfiles", STORAGE_CONNECTION);
-
-                            _context.ProcedureDocuments.Add(new procedure_documents
-                            {
-                                IdProcedure = request.Id,
-                                Name = file.FileName,
-                                FilePath = fileUrl,
-                                DateUpdated = DateTime.Now
-                            });
-                        }
+                            IdProcedure = request.Id,
+                            Name = file.FileName,
+                            FilePath = fileUrl,
+                        });
                     }
-
-                    await _context.SaveChangesAsync();
-                    await transaction.CommitAsync();
-
-                    return Json(new { success = true, folio = request.Folio });
                 }
-                catch (Exception ex)
-                {
-                    await transaction.RollbackAsync();
-                    var message = ex.InnerException != null ? ex.InnerException.Message : ex.Message;
-                    return Json(new { success = false, errors = new[] { "Error al guardar: " + message } });
-                }
+
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+                return Json(new { success = true, folio = request.Folio });
             }
-
-            var modelErrors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToArray();
-            return Json(new { success = false, errors = modelErrors });
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                return Json(new { success = false, errors = new[] { ex.Message } });
+            }
         }
 
         public async Task<IActionResult> Tracking()
@@ -139,7 +133,7 @@ namespace SchoolManager.Areas.Procedures.Controllers
                 .Include(r => r.ProcedureFlow)
                     .ThenInclude(f => f.ProcedureStatus)
                 .Include(r => r.ProcedureDocuments)
-                .OrderByDescending(r => r.DateUpdated)
+                .OrderByDescending(r => r.DateCreated)
                 .ToListAsync();
 
             foreach (var req in requests)
@@ -221,8 +215,16 @@ namespace SchoolManager.Areas.Procedures.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> CreatePaymentValidation(int personId, int procedureTypeId, IFormCollection form)
+        public async Task<IActionResult> CreatePaymentValidation(string identifier, int procedureTypeId, IFormCollection form)
         {
+            var student = await _context.PreenrollmentGenerals
+                .FirstOrDefaultAsync(p => p.Folio == identifier || p.Matricula == identifier);
+
+            if (student == null)
+            {
+                return Json(new { success = false, errors = new[] { "No se encontró ningún aspirante o alumno con ese Folio/Matrícula." } });
+            }
+
             var flow = await _context.ProcedureFlow
                 .Include(f => f.ProcedureStatus)
                 .FirstOrDefaultAsync(f => f.IdTypeProcedure == procedureTypeId &&
@@ -230,61 +232,54 @@ namespace SchoolManager.Areas.Procedures.Controllers
 
             if (flow == null)
             {
-                return Json(new { success = false, errors = new[] { "No se encontró un flujo de 'Validación de Pago' para este trámite." } });
+                return Json(new { success = false, errors = new[] { "Flujo de validación no encontrado para este trámite." } });
             }
 
             var request = new procedure_request
             {
                 IdTypeProcedure = procedureTypeId,
                 IdProcedureFlow = flow.Id,
-                IdUser = 1,
-                DateUpdated = DateTime.Now,
+                IdUser = student.UserId ?? 1,
+                DateCreated = DateTime.Now,
                 Subject = "Validación de pago institucional",
-                Message = $"Validación para identificador: {personId}",
+                Message = $"Validación de pago institucional para folio/matrícula: {identifier}",
                 Folio = DateTime.Now.Ticks.ToString().Substring(10).ToUpper()
             };
 
-            ModelState.Remove("IdUser");
-            ModelState.Remove("ProcedureStatus");
-            ModelState.Remove("ProcedureType");
-            ModelState.Remove("ProcedureFlow");
-            ModelState.Remove("User");
-            ModelState.Remove("Folio");
+            ModelState.Clear();
 
-            if (ModelState.IsValid)
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try
             {
-                using var transaction = await _context.Database.BeginTransactionAsync();
-                try
-                {
-                    _context.ProcedureRequest.Add(request);
-                    await _context.SaveChangesAsync();
+                _context.ProcedureRequest.Add(request);
+                await _context.SaveChangesAsync();
 
-                    foreach (var file in form.Files)
+                student.ProcedureRequestId = request.Id;
+                _context.Update(student);
+
+                foreach (var file in form.Files)
+                {
+                    if (file.Length > 0)
                     {
-                        if (file.Length > 0)
+                        string fileUrl = await _storageService.UploadFileAsync(file, "proceduresfiles", STORAGE_CONNECTION);
+                        _context.ProcedureDocuments.Add(new procedure_documents
                         {
-                            string fileUrl = await _storageService.UploadFileAsync(file, "proceduresfiles", STORAGE_CONNECTION);
-                            _context.ProcedureDocuments.Add(new procedure_documents
-                            {
-                                IdProcedure = request.Id,
-                                Name = $"Voucher_{personId}_{file.FileName}",
-                                FilePath = fileUrl,
-                                DateUpdated = DateTime.Now
-                            });
-                        }
+                            IdProcedure = request.Id,
+                            Name = $"Voucher_{identifier}",
+                            FilePath = fileUrl,
+                        });
                     }
+                }
 
-                    await _context.SaveChangesAsync();
-                    await transaction.CommitAsync();
-                    return Json(new { success = true, folio = request.Folio });
-                }
-                catch (Exception ex)
-                {
-                    await transaction.RollbackAsync();
-                    return Json(new { success = false, errors = new[] { ex.Message } });
-                }
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+                return Json(new { success = true, folio = request.Folio });
             }
-            return Json(new { success = false, errors = new[] { "Datos inválidos" } });
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                return Json(new { success = false, errors = new[] { "Error: " + ex.Message } });
+            }
         }
 
         [HttpPost]

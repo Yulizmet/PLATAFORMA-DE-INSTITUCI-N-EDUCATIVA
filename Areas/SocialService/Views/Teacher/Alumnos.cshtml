@@ -1,0 +1,136 @@
+@model IEnumerable<SchoolManager.Models.social_service_assignment>
+@using Microsoft.EntityFrameworkCore
+@using Microsoft.Extensions.DependencyInjection
+
+<h3>Alumnos Asignados</h3>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        @TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+<div class="mb-3">
+    <a href="/SocialService/Teacher/AgregarAlumnos" class="btn btn-success">
+        <i class="bi bi-plus-circle"></i> Agregar Alumnos
+    </a>
+    <a href="/SocialService/Teacher/Dashboard" class="btn btn-secondary">
+        <i class="bi bi-arrow-left"></i> Regresar al Dashboard
+    </a>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        @if (Model.Any())
+        {
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th style="width:40%">Nombre</th>
+                        <th class="text-center">Semestre</th>
+                        <th class="text-center">Grupo</th>
+                        <th class="text-center">Fecha de Asignación</th>
+                        <th class="text-center">Bitácoras</th>
+                        <th class="text-center">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var assignment in Model)
+                    {
+                        var fullName = $"{assignment.Student.Person.FirstName} {assignment.Student.Person.LastNamePaternal} {assignment.Student.Person.LastNameMaternal}";
+
+                        <tr>
+                            <td>@fullName</td>
+                            <td class="text-center">
+                                @if (!string.IsNullOrEmpty(assignment.SemesterName))
+                                {
+                                    <span class="badge bg-primary">@assignment.SemesterName</span>
+                                }
+                                else
+                                {
+                                    <span class="text-muted">N/A</span>
+                                }
+                            </td>
+                            <td class="text-center">
+                                @if (!string.IsNullOrEmpty(assignment.GroupName))
+                                {
+                                    <span class="badge bg-info">@assignment.GroupName</span>
+                                }
+                                else
+                                {
+                                    <span class="text-muted">N/A</span>
+                                }
+                            </td>
+                            <td class="text-center">@assignment.AssignedDate.ToString("dd/MM/yyyy")</td>
+                            <td class="text-center">
+                                <a class="btn btn-sm btn-info" href="/SocialService/Teacher/RevisarBitacorasAlumno/@assignment.StudentId">
+                                    <i class="bi bi-journal-text"></i> Revisar
+                                </a>
+                            </td>
+                            <td class="text-center">
+                                <form method="post" action="/SocialService/Teacher/DesasignarAlumno" class="desasignar-form" style="display:inline;">
+                                    <input type="hidden" name="studentId" value="@assignment.StudentId" />
+                                    <input type="hidden" name="studentName" value="@fullName" />
+                                    <button type="button" class="btn btn-danger btn-sm btn-desasignar" 
+                                            data-student-id="@assignment.StudentId"
+                                            data-student-name="@fullName">
+                                        <i class="bi bi-trash"></i> Desasignar
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+        else
+        {
+            <div class="alert alert-info">
+                <i class="bi bi-info-circle"></i> No hay alumnos asignados. 
+                <a href="/SocialService/Teacher/AgregarAlumnos">Haz clic aquí para agregar alumnos.</a>
+            </div>
+        }
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const desasignarButtons = document.querySelectorAll('.btn-desasignar');
+
+        desasignarButtons.forEach(button => {
+            button.addEventListener('click', function(e) {
+                e.preventDefault();
+                const studentName = this.getAttribute('data-student-name');
+                const form = this.closest('form');
+
+                Swal.fire({
+                    title: '¿Desasignar alumno?',
+                    html: `¿Estás seguro que deseas desasignar a <strong>${studentName}</strong>?<br><br>
+                           <small class="text-muted">Esta acción desactivará la asignación pero conservará todo el historial de bitácoras y asistencias del alumno.</small>`,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#6c757d',
+                    confirmButtonText: '<i class="bi bi-check-circle"></i> Sí, desasignar',
+                    cancelButtonText: '<i class="bi bi-x-circle"></i> Cancelar',
+                    reverseButtons: true
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        form.submit();
+                    }
+                });
+            });
+        });
+    });
+</script>

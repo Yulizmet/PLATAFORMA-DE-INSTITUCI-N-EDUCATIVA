@@ -1,0 +1,174 @@
+﻿@model SchoolManager.Areas.Grades.ViewModels.Groups.GroupDetailsViewModel
+
+@{
+    ViewData["Title"] = $"Grupo {Model.Name}";
+    Layout = "~/Areas/MainScreen/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container-fluid py-4">
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-action="Index" style="color: #8C1B1B;">Grupos</a></li>
+            <li class="breadcrumb-item active" aria-current="page">@Model.Name</li>
+        </ol>
+    </nav>
+
+    <div class="row">
+        <div class="col-md-4 mb-4">
+            <div class="sistema-card">
+                <div class="sistema-icon icon-calificaciones mb-4">
+                    <i class="bi bi-info-circle"></i>
+                </div>
+
+                <h4 class="fw-bold mb-3" style="color: #1f2937;">Grupo @Model.Name</h4>
+
+                <div class="mb-4">
+                    <small class="text-muted d-block mb-1">Nivel Escolar</small>
+                    <p class="fw-semibold" style="color: #8C1B1B;">
+                        <i class="bi bi-layers me-2"></i>@Model.GradeLevelName
+                    </p>
+                </div>
+
+                <div class="row g-3">
+                    <div class="col-6">
+                        <div class="p-3 text-center" style="background-color: #f8f9fa; border-radius: 15px;">
+                            <h3 class="fw-bold mb-1" style="color: #D42D2D;">@Model.Subjects.Count</h3>
+                            <small class="text-muted">Materias</small>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="p-3 text-center" style="background-color: #f8f9fa; border-radius: 15px;">
+                            <h3 class="fw-bold mb-1" style="color: #8C1B1B;">0</h3>
+                            <small class="text-muted">Estudiantes</small>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-4 d-flex gap-2">
+                    <a asp-action="Edit" asp-route-id="@Model.GroupId" class="btn flex-fill"
+                       style="background-color: #8C1B1B; color: white; border-radius: 10px; padding: 12px;">
+                        <i class="bi bi-pencil me-2"></i>Editar
+                    </a>
+                    <a asp-action="Index" class="btn flex-fill"
+                       style="background-color: #6c757d; color: white; border-radius: 10px; padding: 12px;">
+                        <i class="bi bi-arrow-left me-2"></i>Volver
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-8">
+            <div class="sistema-card">
+                <h4 class="fw-bold mb-4" style="color: #1f2937;">
+                    <i class="bi bi-book me-2" style="color: #8C1B1B;"></i>
+                    Materias Asignadas
+                </h4>
+
+                @if (Model.Subjects.Any())
+                {
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead style="background-color: #f8f9fa;">
+                                <tr>
+                                    <th style="border-radius: 10px 0 0 10px;">Materia</th>
+                                    <th style="border-radius: 0 10px 10px 0;">Profesor</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var subject in Model.Subjects)
+                                {
+                                    <tr>
+                                        <td class="fw-semibold">@subject.SubjectName</td>
+                                        <td>
+                                            <span class="badge" style="background-color: #B1A596; color: white; padding: 8px 15px; border-radius: 20px;">
+                                                <i class="bi bi-person me-1"></i>
+                                                @subject.TeacherName
+                                            </span>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+                else
+                {
+                    <div class="text-center py-5">
+                        <i class="bi bi-book" style="font-size: 3rem; color: #B1A596;"></i>
+                        <p class="text-muted mt-3">No hay materias asignadas a este grupo</p>
+                        <p class="text-muted">Esto se configurará en el módulo de asignación de profesores</p>
+                    </div>
+                }
+            </div>
+        </div>
+        <!-- En Groups/Details.cshtml, después de la sección de Materias Asignadas -->
+        <!-- Sección de Estudiantes -->
+        <div class="card shadow mt-4">
+            <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="bi bi-people me-2 text-primary"></i>
+                    Estudiantes (@Model.StudentsCount)
+                </h5>
+                <a asp-controller="Enrollment" asp-action="AssignToGroup" asp-route-groupId="@Model.GroupId"
+                   class="btn btn-sm btn-calificaciones">
+                    <i class="bi bi-person-plus me-2"></i>Asignar Estudiantes
+                </a>
+            </div>
+            <div class="card-body">
+                @if (Model.Students != null && Model.Students.Any())
+                {
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Matrícula</th>
+                                    <th>Nombre</th>
+                                    <th>Email</th>
+                                    <th class="text-end">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var student in Model.Students)
+                                {
+                                    <tr>
+                                        <td class="fw-semibold">@student.Matricula</td>
+                                        <td>@student.FullName</td>
+                                        <td>@student.Email</td>
+                                        <td class="text-end">
+                                            <form asp-controller="Enrollment" asp-action="Remove" method="post"
+                                                  onsubmit="return confirm('¿Estás seguro de remover este estudiante del grupo?');"
+                                                  style="display: inline;">
+                                                <input type="hidden" name="enrollmentId" value="@student.EnrollmentId" />
+                                                <button type="submit" class="btn btn-sm btn-outline-danger"
+                                                        title="Remover del grupo">
+                                                    <i class="bi bi-person-x"></i>
+                                                </button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+                else
+                {
+                    <div class="text-center py-4">
+                        <i class="bi bi-people" style="font-size: 3rem; color: #B1A596;"></i>
+                        <p class="text-muted mt-3">No hay estudiantes asignados a este grupo</p>
+                        <a asp-controller="Enrollment" asp-action="ByGroup" asp-route-groupId="@Model.GroupId"
+                           class="btn btn-sm btn-calificaciones">
+                            <i class="bi bi-people me-2"></i>Ver Estudiantes
+                        </a>
+
+                        <!-- Asignar estudiantes -->
+                        <a asp-controller="Enrollment" asp-action="AssignToGroup" asp-route-groupId="@Model.GroupId"
+                           class="btn btn-sm btn-outline-primary ms-2">
+                            <i class="bi bi-person-plus me-2"></i>Asignar
+                        </a>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>

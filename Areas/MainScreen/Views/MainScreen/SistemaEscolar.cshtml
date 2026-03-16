@@ -51,10 +51,9 @@
                         Gestiona tu proceso de servicio social, horas acumuladas y seguimiento institucional.
                     </p>
 
-                    <a href="#" class="btn btn-servicio mt-3">
+                    <a href="#" id="btnServicioSocial" class="btn btn-servicio mt-4">
                         Ir a Servicio Social →
                     </a>
-
                 </div>
             </div>
 
@@ -62,3 +61,26 @@
     </div>
 </section>
 
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var btnServicioSocial = document.getElementById('btnServicioSocial');
+        if (btnServicioSocial) {
+            btnServicioSocial.addEventListener('click', function(e) {
+                e.preventDefault();
+                var isAssigned = @Html.Raw((ViewBag.IsStudentAssignedToSocialService ?? true).ToString().ToLower());
+
+                if (!isAssigned) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Acceso Restringido',
+                        text: 'No has sido asignado a ningún maestro para entrar a este apartado.',
+                        confirmButtonText: 'Entendido',
+                        confirmButtonColor: '#b23b3b'
+                    });
+                } else {
+                    window.location.href = '@Url.Action("Index", "Account", new { area = "SocialService" })';
+                }
+            });
+        }
+    });
+</script>

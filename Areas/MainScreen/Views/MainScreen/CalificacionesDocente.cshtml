@@ -1,0 +1,69 @@
+﻿@{
+    ViewData["Title"] = "Mi Espacio Docente";
+    Layout = "~/Areas/MainScreen/Views/Shared/_Layout.cshtml";
+}
+
+<section class="sistema-section">
+    <div class="container text-center">
+
+        <h2 class="sistema-title mb-3">
+            Mi Espacio Docente
+        </h2>
+
+        <p class="sistema-subtitle mb-5">
+            Aquí puedes capturar calificaciones y dar seguimiento a tus grupos
+        </p>
+
+        <div class="row justify-content-center g-5">
+
+            <!-- MIS CLASES -->
+            <div class="col-lg-5 col-md-6">
+                <div class="sistema-card border-calificaciones text-start">
+                    <div class="sistema-icon icon-calificaciones">
+                        <i class="bi bi-pencil-square"></i>
+                    </div>
+                    <h4>Mis Clases</h4>
+                    <p class="text-muted mt-3">
+                        Captura las calificaciones de tus grupos por unidad y agrega recuperaciones.
+                    </p>
+                    <a href="/Grades/GradeCapture/MyClasses" class="btn btn-calificaciones mt-4">
+                        Ir a Mis Clases →
+                    </a>
+                </div>
+            </div>
+
+            <!-- CALIFICACIONES FINALES -->
+            <div class="col-lg-5 col-md-6">
+                <div class="sistema-card border-servicio text-start">
+                    <div class="sistema-icon icon-servicio">
+                        <i class="bi bi-clipboard-data"></i>
+                    </div>
+                    <h4>Calificaciones Finales</h4>
+                    <p class="text-muted mt-3">
+                        Calcula promedios, consulta resultados y asigna extraordinarios.
+                    </p>
+                    <a href="/Grades/FinalGrades" class="btn btn-servicio mt-4">
+                        Ver Finales →
+                    </a>
+                </div>
+            </div>
+
+            <!-- REPORTES DE GRUPO -->
+            <div class="col-lg-5 col-md-6">
+                <div class="sistema-card border-calificaciones text-start">
+                    <div class="sistema-icon icon-calificaciones">
+                        <i class="bi bi-bar-chart"></i>
+                    </div>
+                    <h4>Reportes de Grupo</h4>
+                    <p class="text-muted mt-3">
+                        Visualiza estadísticas de rendimiento por grupo y materia.
+                    </p>
+                    <a href="#" class="btn btn-calificaciones mt-4">
+                        Ver Reportes →
+                    </a>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</section>

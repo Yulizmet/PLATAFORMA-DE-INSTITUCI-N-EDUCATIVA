@@ -1,0 +1,94 @@
+﻿@model IEnumerable<SchoolManager.Areas.Grades.ViewModels.Enrollment.EnrollmentViewModel>
+
+@{
+    ViewData["Title"] = $"Estudiantes del Grupo";
+    Layout = "~/Pages/Shared/_Layout.cshtml";
+    var groupName = ViewBag.GroupName;
+    var gradeLevelName = ViewBag.GradeLevelName;
+}
+
+<div class="container-fluid py-4">
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-controller="Groups" asp-action="Index">Grupos</a></li>
+            <li class="breadcrumb-item"><a asp-controller="Groups" asp-action="Details" asp-route-id="@ViewBag.GroupId">@groupName</a></li>
+            <li class="breadcrumb-item active">Estudiantes</li>
+        </ol>
+    </nav>
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="users-title">
+            <i class="bi bi-people me-2"></i>Estudiantes - @groupName
+        </h1>
+        <div>
+            <a asp-action="AssignToGroup" asp-route-groupId="@ViewBag.GroupId" class="btn btn-calificaciones me-2">
+                <i class="bi bi-person-plus me-2"></i>Asignar Estudiantes
+            </a>
+            <a asp-controller="Groups" asp-action="Details" asp-route-id="@ViewBag.GroupId" class="btn btn-secondary"
+               style="background-color: #6c757d; color: white;">
+                <i class="bi bi-arrow-left me-2"></i>Volver al Grupo
+            </a>
+        </div>
+    </div>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert" style="background-color: #d4edda; color: #155724; border-left: 5px solid #28a745;">
+            <i class="bi bi-check-circle-fill me-2"></i>@TempData["Success"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    @if (!Model.Any())
+    {
+        <div class="text-center py-5">
+            <div class="mb-3">
+                <i class="bi bi-people" style="font-size: 4rem; color: #B1A596;"></i>
+            </div>
+            <h5 class="text-muted">No hay estudiantes en este grupo</h5>
+            <p class="text-muted mb-4">Comienza asignando estudiantes al grupo</p>
+            <a asp-action="AssignToGroup" asp-route-groupId="@ViewBag.GroupId" class="btn btn-calificaciones">
+                <i class="bi bi-person-plus me-2"></i>Asignar Estudiantes
+            </a>
+        </div>
+    }
+    else
+    {
+        <div class="card shadow" style="border-radius: 20px; border: none;">
+            <div class="card-body p-4">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Matrícula</th>
+                                <th>Nombre</th>
+                                <th class="text-end">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model)
+                            {
+                                <tr>
+                                    <td class="fw-semibold">@item.Matricula</td>
+                                    <td>@item.StudentName</td>
+                                    <td class="text-end">
+                                        <form asp-action="Remove" method="post"
+                                              onsubmit="return confirm('¿Estás seguro de remover este estudiante del grupo?');"
+                                              style="display: inline;">
+                                            <input type="hidden" name="enrollmentId" value="@item.EnrollmentId" />
+                                            <button type="submit" class="btn btn-sm btn-outline-danger"
+                                                    style="border-radius: 8px; padding: 5px 15px;"
+                                                    title="Remover del grupo">
+                                                <i class="bi bi-person-x me-1"></i>Remover
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    }
+</div>

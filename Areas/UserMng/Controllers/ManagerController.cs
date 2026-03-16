@@ -23,10 +23,12 @@ namespace SchoolManager.Areas.UserMng.Controllers
         {
             return View();
         }
-        
+            
         public IActionResult Test()
         {
             return View();
         }
+        
+
     }
 }
