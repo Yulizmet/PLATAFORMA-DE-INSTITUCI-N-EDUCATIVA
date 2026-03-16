@@ -16,7 +16,8 @@ namespace SchoolManager.Models
         [ValidateNever]
         public virtual preenrollment_general General { get; set; } = null!;
 
-        public string? beca { get; set; }
+        [Required]
+        public string beca { get; set; } = "No";
         public bool comu_indi { get; set; }
         public bool lengu_indi { get; set; }
         public bool incapa { get; set; }

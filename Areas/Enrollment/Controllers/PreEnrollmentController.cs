@@ -578,14 +578,13 @@ namespace SchoolManager.Areas.Enrollment.Controllers
                 var info = new preenrollment_infos
                 {
                     id_data = general.IdData,
-                    beca = vm.Otros.beca,
-                    comu_indi = vm.Otros.comu_indi,
-                    lengu_indi = vm.Otros.lengu_indi,
-                    incapa = vm.Otros.incapa,
-                    disease = vm.Otros.disease,
-                    comment = vm.Otros.comment
+                    beca = string.IsNullOrWhiteSpace(vm.Otros?.beca) ? "No" : vm.Otros.beca,
+                    comu_indi = vm.Otros?.comu_indi ?? false,
+                    lengu_indi = vm.Otros?.lengu_indi ?? false,
+                    incapa = vm.Otros?.incapa ?? false,
+                    disease = vm.Otros?.disease ?? false,
+                    comment = vm.Otros?.comment
                 };
-                _context.PreenrollmentInfos.Add(info);
 
                 var docs = new preenrollment_docs
                 {
