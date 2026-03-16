@@ -473,21 +473,21 @@ namespace SchoolManager.Areas.Enrollment.Controllers
             }
 
             var generation = await _context.PreenrollmentGenerations
-            var generation = await _context.Generations
-            var generation = await _context.Generations
-            var generation = await _context.Generations
-            var generation = await _context.Generations
-            var generation = await _context.Generations
-            var generation = await _context.Generations
-            var generation = await _context.Generations
-            var generation = await _context.Generations
-            var generation = await _context.Generations
                 .OrderByDescending(g => g.Year)
                 .FirstOrDefaultAsync();
 
             if (generation == null)
             {
                 Console.WriteLine("=== NO HAY GENERACION ===");
+
+                ModelState.AddModelError("", "No hay generaciones registradas en el sistema.");
+                ViewData["IdCareer"] = new SelectList(
+                    _context.PreenrollmentCareers, "IdCareer", "name_career", vm?.DatosGenerales?.IdCareer
+                );
+                ViewData["ModoConfirmacion"] = true;
+                return View(vm);
+            }
+
             using var transaction = await _context.Database.BeginTransactionAsync();
 
             try
@@ -529,15 +529,6 @@ namespace SchoolManager.Areas.Enrollment.Controllers
                     Folio = GenerarFolio(generation.IdGeneration),
                     Matricula = GenerarMatriculaUnica()
                 };
-                Occupation = vm.DatosGenerales.Occupation,
-                Work = vm.DatosGenerales.Work,
-                WorkAddress = vm.DatosGenerales.WorkAddress,
-                WorkPhone = vm.DatosGenerales.WorkPhone,
-
-                CreateStat = DateTime.Now,
-                Matricula = GenerarMatriculaUnica(),
-                Folio = GenerarFolio(generation.IdGeneration)
-            };
 
                 _context.PreenrollmentGenerals.Add(general);
                 await _context.SaveChangesAsync();
