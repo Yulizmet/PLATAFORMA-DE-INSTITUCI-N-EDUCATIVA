@@ -8,28 +8,18 @@ namespace SchoolManager.Models
         [Key]
         public int IdInfo { get; set; }
 
+
         [Required]
         public int id_data { get; set; }
+        [ForeignKey("IdData")]
+        public virtual preenrollment_general General { get; set; } = null!;
 
-        [ForeignKey("id_data")]
-        public preenrollment_general preenrollment_general { get; set; } = null!;
-
-        [Required]
-        public string beca { get; set; } = null!;
-
-        [Required]
+        public string beca { get; set; }
         public bool comu_indi { get; set; }
-
-        [Required]
         public bool lengu_indi { get; set; }
-
-        [Required]
         public bool incapa { get; set; }
-
-        [Required]
         public bool disease { get; set; }
-
-        [Required]
-        public string comment { get; set; } = null!;
+        public string comment { get; set; }
     }
+
 }
