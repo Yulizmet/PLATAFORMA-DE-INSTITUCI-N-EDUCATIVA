@@ -402,38 +402,26 @@ namespace SchoolManager.Areas.Tutorship.Controllers
         [HttpPost]
         public async Task<IActionResult> GuardarAsistencia(List<int> studentIds, List<bool> isPresent, int groupId, DateTime fecha, DateTime fechaInicio, DateTime fechaFin)
         {
-
             if (LoggedRoleId != 2 && LoggedRoleId != 3) return RedirectToAction(nameof(AccesoDenegado));
 
             if (studentIds == null || !studentIds.Any())
             {
-                TempData["Error"] = "No hay alumnos para guardar asistencia.";
-                return RedirectToAction(nameof(Asistencia), new
-                {
-                    fecha = fecha.ToString("yyyy-MM-dd"),
-                    groupId = groupId,
-                    fechaInicio = fechaInicio.ToString("yyyy-MM-dd"),
-                    fechaFin = fechaFin.ToString("yyyy-MM-dd")
-                });
+                TempData["Error"] = "No hay alumnos para procesar asistencia.";
+                return RedirectToAction(nameof(Asistencia), new { fecha = fecha.ToString("yyyy-MM-dd"), groupId, fechaInicio = fechaInicio.ToString("yyyy-MM-dd"), fechaFin = fechaFin.ToString("yyyy-MM-dd") });
             }
 
-            bool asistenciaYaTomada = await _context.TutorshipAttendances
-                .AnyAsync(a => a.GroupId == groupId && a.Date.Date == fecha.Date);
+            var asistenciasExistentes = await _context.TutorshipAttendances
+                .Where(a => a.GroupId == groupId && a.Date.Date == fecha.Date)
+                .ToListAsync();
 
-            if (asistenciaYaTomada)
+            bool esActualizacion = asistenciasExistentes.Any();
+
+            if (esActualizacion)
             {
-                TempData["Error"] = "La asistencia para este grupo ya fue registrada en la fecha seleccionada.";
-                return RedirectToAction(nameof(Asistencia), new
-                {
-                    fecha = fecha.ToString("yyyy-MM-dd"),
-                    groupId = groupId,
-                    fechaInicio = fechaInicio.ToString("yyyy-MM-dd"),
-                    fechaFin = fechaFin.ToString("yyyy-MM-dd")
-                });
+                _context.TutorshipAttendances.RemoveRange(asistenciasExistentes);
             }
 
             var registrosAsistencia = new List<tutorship_attendance>();
-
             for (int i = 0; i < studentIds.Count; i++)
             {
                 registrosAsistencia.Add(new tutorship_attendance
@@ -449,8 +437,14 @@ namespace SchoolManager.Areas.Tutorship.Controllers
             _context.TutorshipAttendances.AddRange(registrosAsistencia);
             await _context.SaveChangesAsync();
 
-            TempData["Exito"] = "Asistencia guardada correctamente.";
-
+            if (esActualizacion)
+            {
+                TempData["Exito"] = "La asistencia fue actualizada correctamente.";
+            }
+            else
+            {
+                TempData["Exito"] = "Asistencia guardada correctamente.";
+            }
 
             return RedirectToAction(nameof(Asistencia), new
             {
@@ -460,6 +454,8 @@ namespace SchoolManager.Areas.Tutorship.Controllers
                 fechaFin = fechaFin.ToString("yyyy-MM-dd")
             });
         }
+
+
 
         public async Task<IActionResult> Seguimiento(string matriculaBuscar)
         {
