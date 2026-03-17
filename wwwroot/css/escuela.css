@@ -140,3 +140,57 @@ a, .link {
     .display-6 { font-size: 1.4rem; }
     .card { padding: 10px; }
 }
+
+.excel-header {
+    position: relative;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.filter-icon {
+    font-size: 10px;
+    margin-left: 4px;
+    color: #777;
+}
+
+.excel-filter-popup {
+    position: absolute;
+    background: #fff;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    padding: 8px;
+    width: 180px;
+    font-size: 12px;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.2);
+    z-index: 9999;
+}
+
+    .excel-filter-popup input[type="text"] {
+        width: 100%;
+        padding: 3px;
+        margin-bottom: 5px;
+        font-size: 12px;
+    }
+
+.filter-values {
+    max-height: 120px;
+    overflow-y: auto;
+    border: 1px solid #eee;
+    padding: 4px;
+}
+
+    .filter-values label {
+        display: block;
+        font-size: 12px;
+    }
+
+.excel-filter-popup button {
+    font-size: 11px;
+    padding: 3px 6px;
+    margin-top: 4px;
+}
+
+.view-btn.active {
+    background-color: #0d6efd;
+    color: white;
+}
