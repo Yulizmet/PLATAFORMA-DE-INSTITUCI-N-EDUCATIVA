@@ -7,9 +7,7 @@
 <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
 
 <style>
-    /* =====================================================================
-               TRUCO CSS: Convertir una Tabla en "Tarjetas" flotantes
-           ===================================================================== */
+
     #tablaAlumnos {
         border-collapse: separate !important;
         border-spacing: 0 1.2rem !important;
@@ -17,7 +15,6 @@
         width: 100%;
     }
 
-        /* Estilo de los encabezados */
         #tablaAlumnos thead th {
             border: none !important;
             color: #888;
@@ -29,7 +26,6 @@
             background: transparent !important;
         }
 
-        /* Estilo de la "Tarjeta" (Fila) */
         #tablaAlumnos tbody tr {
             background-color: #ffffff;
             box-shadow: 0 2px 8px rgba(0,0,0,0.06);
@@ -42,7 +38,6 @@
                 box-shadow: 0 6px 15px rgba(0,0,0,0.1);
             }
 
-        /* Estilo de las celdas dentro de la tarjeta */
         #tablaAlumnos tbody td {
             border-top: 1px solid #f4f4f4;
             border-bottom: 1px solid #f4f4f4;
@@ -50,7 +45,6 @@
             padding: 1.2rem 1rem;
         }
 
-            /* Bordes redondeados */
             #tablaAlumnos tbody td:first-child {
                 border-left: 1px solid #f4f4f4;
                 border-top-left-radius: 10px;
@@ -63,12 +57,11 @@
                 border-bottom-right-radius: 10px;
             }
 
-    /* Evitar que DataTables le ponga fondo gris a las filas impares */
     table.dataTable.table-striped > tbody > tr.odd > * {
         box-shadow: none !important;
     }
 
-    /* Botones rojo oscuro (Vino) */
+
     .btn-vino {
         background-color: #620900;
         color: white;
@@ -76,26 +69,22 @@
     }
 
         .btn-vino:hover {
-            background-color: #4a0700; /* Un poco más oscuro al pasar el mouse */
+            background-color: #4a0700;
             color: white;
         }
 
-    /* =====================================================================
-               ESTILOS PARA DOMAR DATATABLES (Buscador, Paginación, Textos)
-           ===================================================================== */
     .dataTables_wrapper {
         font-family: inherit !important;
         font-size: 0.95rem;
     }
 
-    /* Letras de "Buscar" y "Mostrar registros" */
+
     .dataTables_length label,
     .dataTables_filter label {
         font-weight: bold;
         color: #444;
     }
 
-    /* Cajas de texto y selectores */
     .dataTables_filter input,
     .dataTables_length select {
         border: 1px solid #ddd;
@@ -111,14 +100,12 @@
             box-shadow: 0 0 0 0.2rem rgba(98, 9, 0, 0.25);
         }
 
-    /* Texto de abajo "Mostrando 1 a N registros" */
     .dataTables_info {
         font-weight: 500;
         color: #666;
         padding-top: 1rem !important;
     }
 
-    /* Paginación UTTN (Color Vino) */
     .page-item.active .page-link {
         background-color: #620900 !important;
         border-color: #620900 !important;
@@ -131,7 +118,7 @@
     }
 
         .page-link:hover {
-            background-color: #A89B8C; /* Tu color dorado/beige */
+            background-color: #A89B8C; 
             color: white;
             border-color: #A89B8C;
         }
@@ -258,12 +245,9 @@
                 lengthMenu: [[10, 25, 50, -1], [10, 25, 50, "Todos"]],
                 pageLength: 10,
                 columnDefs: [
-                    // Quitamos la flecha de ordenamiento en Foto (0) y Acciones (2)
                     { orderable: false, targets: [0, 2] },
-                    // Evitamos que el buscador intente buscar dentro de los botones de acciones y la foto
                     { searchable: false, targets: [0, 2] }
                 ],
-                // Ordenar por defecto por la columna de Nombre (1) alfabéticamente
                 order: [[1, 'asc']]
             });
         });

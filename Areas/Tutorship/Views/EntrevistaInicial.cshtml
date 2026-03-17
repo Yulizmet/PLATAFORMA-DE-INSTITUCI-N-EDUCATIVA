@@ -5,11 +5,10 @@
 
     var entrevistaGuardada = ViewBag.Entrevista as SchoolManager.Models.tutorship_interview;
 
-    // Evaluamos los estatus
     bool estaCompletada = entrevistaGuardada != null && entrevistaGuardada.Status == "Completada";
     bool requiereActualizacion = entrevistaGuardada != null && entrevistaGuardada.Status == "Requiere Actualizacion";
 
-    // SOLO se bloquea si está 100% completada. Si requiere actualización, se queda habilitado.
+
     string atributoBloqueo = estaCompletada ? "disabled" : "";
 
     bool tieneFotoGuardada = entrevistaGuardada != null &&

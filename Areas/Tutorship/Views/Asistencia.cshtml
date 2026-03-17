@@ -4,43 +4,40 @@
     ViewData["Title"] = "Control de Asistencia";
     int roleId = ViewBag.RoleId ?? 0;
 
-    // Obtener el nombre del grupo para el maestro
     var gruposDisp = ViewBag.GruposDisponibles as List<SchoolManager.Models.grades_group>;
     var miGrupo = gruposDisp?.FirstOrDefault(g => g.GroupId == ViewBag.GrupoSeleccionado);
     string nombreMiGrupo = miGrupo != null ? $"Grado {miGrupo.GradeLevelId} | {miGrupo.Name}" : "Sin asignar";
 }
 
 <style>
-    /* 1. Forzar a DataTables a usar la misma fuente del sistema */
+
     .dataTables_wrapper {
         font-family: inherit !important;
-        font-size: 0.95rem; /* Un tamaño un poco más elegante */
+        font-size: 0.95rem;
     }
 
-    /* 2. Poner las letras de "Buscar" y "Mostrar registros" en negrita (como tus otros títulos) */
+
     .dataTables_length label,
     .dataTables_filter label {
         font-weight: bold;
-        color: #444; /* Un gris oscuro para que no desentone */
+        color: #444; 
     }
 
-    /* 3. Darle estilo a la cajita de texto de búsqueda y al selector */
+
     .dataTables_filter input,
     .dataTables_length select {
-        border: 1px solid var(--utt-beige, #d3c4b1); /* Usa tu color beige de borde */
-        border-radius: 0.375rem; /* Bordes redondeados como Bootstrap */
+        border: 1px solid var(--utt-beige, #d3c4b1);
+        border-radius: 0.375rem; 
         padding: 0.25rem 0.5rem;
-        box-shadow: 0 .125rem .25rem rgba(0,0,0,.075); /* Sombra suave */
+        box-shadow: 0 .125rem .25rem rgba(0,0,0,.075); 
     }
 
-    /* 4. Estilo para el texto de abajo "Mostrando 1 a N registros" */
     .dataTables_info {
         font-weight: 500;
         color: #666;
         padding-top: 1rem !important;
     }
 
-    /* 5. BONUS: Cambiar el botón azul de paginación por tu rojo UTTN */
     .page-item.active .page-link {
         background-color: var(--utt-red, #8b0000) !important;
         border-color: var(--utt-red, #8b0000) !important;
@@ -48,7 +45,7 @@
     }
 
     .page-link {
-        color: var(--utt-red, #8b0000); /* Color de los números inactivos */
+        color: var(--utt-red, #8b0000); 
     }
 
         .page-link:hover {
@@ -213,7 +210,6 @@
 
     <script>
         $(document).ready(function () {
-            // Verificamos que la tabla exista antes de iniciar
             if ($('#tablaAsistencia').length) {
                 var table = $('#tablaAsistencia').DataTable({
                     "language": {
@@ -222,12 +218,10 @@
                     "lengthMenu": [[10, 25, 50, 100, -1], [10, 25, 50, 100, "Todos"]],
                     "pageLength": 25,
                     "columnDefs": [
-                        // Quitamos las flechitas de ordenar en la columna del Checkbox (la número 3)
                         { "orderable": false, "targets": 3 }
                     ]
                 });
 
-                // Truco para que al guardar, se envíen todos los alumnos (incluso los ocultos en otra página)
                 $('#formAsistencia').on('submit', function () {
                     table.destroy();
                 });
