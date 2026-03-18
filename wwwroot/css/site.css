@@ -265,6 +265,7 @@ p {
     height: 100%;
 }
 
+
     .sistema-card:hover {
         transform: translateY(-8px);
     }
@@ -477,4 +478,29 @@ p {
     display: flex;
     flex-direction: column;
     border-left: 6px solid #D42D2D;
+}
+
+/* ===== FORO PUBLICO ADAPTABLE ===== */
+
+.preview-card {
+    height: auto;
+    overflow: hidden;
+}
+
+    .preview-card img {
+        width: 100%;
+        height: auto;
+        border-radius: 12px;
+        margin-bottom: 15px;
+        display: block;
+    }
+
+    .preview-card h3,
+    .preview-card h2,
+    .preview-card h4 {
+        margin-bottom: 10px;
+    }
+
+.foro-post {
+    margin-bottom: 40px;
 }

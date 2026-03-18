@@ -74,13 +74,22 @@
                        class="nav-link">
                         Trámites
                     </a>
-                    <a asp-area="MainScreen"
-                       asp-controller="MainScreen"
-                       asp-action="Foro"
-                       class="nav-link">
-                        Foro
-                    </a>
-
+                    <li class="nav-item">
+                        <a class="nav-link"
+                           asp-area="MainScreen"
+                           asp-controller="Foro"
+                           asp-action="Index">
+                            Foro Admin
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link"
+                           asp-area="MainScreen"
+                           asp-controller="Foro"
+                           asp-action="ForoPublico">
+                            Foro
+                        </a>
+                    </li>
                 
                     <li class="nav-item">
                         <a class="nav-link" href="#">Sobre Nosotros</a>

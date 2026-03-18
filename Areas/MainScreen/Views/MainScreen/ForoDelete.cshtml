@@ -1,0 +1,79 @@
+﻿@model SchoolManager.Models.ForoPublicacion
+
+@{
+    ViewData["Title"] = "Eliminar Publicación";
+    Layout = "~/Areas/MainScreen/Views/Shared/_Layout.cshtml";
+}
+
+<section class="admin-section">
+    <div class="container">
+
+        <div class="admin-card">
+
+            <h2 class="admin-title mb-4 text-danger">
+                Eliminar Publicación
+            </h2>
+
+            <p class="text-muted mb-4">
+                ¿Estás seguro de que deseas eliminar esta publicación? Esta acción no se puede deshacer.
+            </p>
+
+            <hr />
+
+            <div class="mb-3">
+                <strong>Título:</strong>
+                <p>@Model.Titulo</p>
+            </div>
+
+            <div class="mb-3">
+                <strong>Descripción:</strong>
+                <p>@Model.Descripcion</p>
+            </div>
+
+            <div class="mb-3">
+                <strong>Estilo visual:</strong>
+                <p>@Model.EstiloVisual</p>
+            </div>
+
+            <div class="mb-3">
+                <strong>Fecha inicio:</strong>
+                <p>@Model.FechaInicio.ToString("yyyy-MM-dd HH:mm")</p>
+            </div>
+
+            <div class="mb-4">
+                <strong>Fecha fin:</strong>
+                <p>
+                    @(Model.FechaFin != null
+                                        ? Model.FechaFin.Value.ToString("yyyy-MM-dd HH:mm")
+                                        : "Sin fecha fin")
+                </p>
+            </div>
+
+            <form asp-area="MainScreen"
+                  asp-controller="Foro"
+                  asp-action="Delete"
+                  method="post">
+
+                <input type="hidden" asp-for="PublicacionId" />
+
+                <div class="d-flex gap-3">
+
+                    <button type="submit" class="btn btn-danger">
+                        Eliminar
+                    </button>
+
+                    <a asp-area="MainScreen"
+                       asp-controller="Foro"
+                       asp-action="Index"
+                       class="btn btn-outline-secondary">
+                        Cancelar
+                    </a>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+</section>
