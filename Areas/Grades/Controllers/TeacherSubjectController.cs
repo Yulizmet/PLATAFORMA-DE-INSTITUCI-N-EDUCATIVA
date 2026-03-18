@@ -265,10 +265,10 @@ namespace SchoolManager.Areas.Grades.Controllers
             // Traer usuarios con el rol de profesor
             return await _context.UserRoles
                 .Include(ur => ur.User)
-                    .ThenInclude(u => u.Person)
+                    .ThenInclude(u => u!.Person)
                 .Where(ur => ur.RoleId == teacherRole.RoleId && ur.IsActive)
                 .Select(ur => new {
-                    ur.User.UserId,
+                    ur!.User!.UserId,
                     FullName = ur.User.Person.FirstName + " " +
                               ur.User.Person.LastNamePaternal + " " +
                               ur.User.Person.LastNameMaternal

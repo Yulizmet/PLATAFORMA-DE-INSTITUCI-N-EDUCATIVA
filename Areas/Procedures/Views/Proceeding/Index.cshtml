@@ -1,0 +1,272 @@
+﻿@model IEnumerable<SchoolManager.Areas.Procedures.ViewModels.StudentExpedienteViewModel>
+
+@{
+    ViewData["Title"] = "Expedientes de Alumnos";
+    Layout = "_ProceduresLayout";
+}
+
+
+@section Scripts
+{
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+    <partial name="_DataTableConfig" />
+
+    <script>
+         function loadDeactivateModal(id) {
+            $('#modalContainer').html('');
+
+            $.get('/Procedures/Proceeding/Deactivate/' + id, function (data) {
+                $('#modalContainer').html(data);
+
+                const modalElement = document.getElementById('deactivateModal');
+                const myModal = new bootstrap.Modal(modalElement);
+                myModal.show();
+            }).fail(function() {
+                Swal.fire('Error', 'No se pudo cargar el formulario de baja.', 'error');
+            });
+        }
+        
+        function confirmDeactivateLogic() {
+            const form = document.getElementById('formDeleteStudent');
+            const formData = new FormData(form);
+
+            fetch('/Procedures/Proceeding/DeactivateConfirmed', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire('¡Baja Exitosa!', data.message, 'success')
+                        .then(() => location.reload());
+                } else {
+                    Swal.fire('Error', data.message, 'error');
+                }
+            });
+        }
+
+        function loadActivateModal(id) {
+            $('#modalContainer').html('');
+
+            $.get('/Procedures/Proceeding/Activate/' + id, function (data) {
+                $('#modalContainer').html(data);
+
+                const modalElement = document.getElementById('activateModal');
+                const myModal = new bootstrap.Modal(modalElement);
+                myModal.show();
+            }).fail(function() {
+                Swal.fire('Error', 'No se pudo cargar el formulario de reactivación.', 'error');
+            });
+        }
+
+        function confirmActivateLogic() {
+            const form = document.getElementById('formActivateStudent');
+            const formData = new FormData(form);
+
+            fetch('/Procedures/Proceeding/ActivateConfirmed', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire('¡Expediente Activo!', data.message, 'success')
+                        .then(() => location.reload());
+                } else {
+                    Swal.fire('Error', data.message, 'error');
+                }
+            })
+            .catch(error => {
+                Swal.fire('Error', 'Ocurrió un error en la comunicación con el servidor.', 'error');
+            });
+        }
+
+        window.loadQuickStudentModal = function() {
+            $.get('/Procedures/Proceeding/QuickAddStudent', function (data) {
+                $('#modalContainer').html(data);
+                const modalElement = document.getElementById('quickStudentModal');
+                const myModal = new bootstrap.Modal(modalElement);
+                myModal.show();
+
+                $('#formQuickStudent').on('submit', function(e) {
+                    e.preventDefault();
+                    $.post($(this).attr('action'), $(this).serialize(), function(r) {
+                        if(r.success) {
+                            myModal.hide();
+                            Swal.fire('¡Éxito!', r.message, 'success').then(() => location.reload());
+                        } else {
+                            Swal.fire('Error', r.message, 'error');
+                        }
+                    });
+                });
+            });
+        };
+
+        function fillStudentData() {
+            const r = Math.floor(Math.random() * 900) + 100;
+            $('input[name="FirstName"]').val("Alumno");
+            $('input[name="LastNamePaternal"]').val("Prueba");
+            $('input[name="Curp"]').val("CURP" + r + r + "XTSXXX00");
+            $('input[name="Email"]').val("alumno" + r + "@@email.com");
+            $('input[name="Username"]').val("alum." + r);
+            $('input[name="Matricula"]').val("2616" + r + "99");
+        }
+
+        $(document).on('input', 'input[name="Curp"]', function() {
+            this.value = this.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+        });
+
+        $(document).on('input', 'input[name="ZipCode"]', function() {
+            this.value = this.value.replace(/[^0-9]/g, '').substring(0, 5);
+        });
+
+       $(document).ready(function() {
+            const dtToday = new Date();
+            let month = dtToday.getMonth() + 1;
+            let day = dtToday.getDate();
+            const year = dtToday.getFullYear();
+
+            if(month < 10) month = '0' + month.toString();
+            if(day < 10) day = '0' + day.toString();
+
+            const maxDate = year + '-' + month + '-' + day;
+            $('input[name="BirthDate"]').attr('max', maxDate);
+        });
+
+        window.editStudent = function(personId) {
+            window.location.href = '/Procedures/Proceeding/Edit/' + personId;
+        };
+    </script>
+}
+
+<div id="modalContainer"></div>
+
+<div class="container-fluid  px-4 py-4 pt-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold text-dark"><i class="bi bi-folder2-open me-2"></i>Expedientes Escolares</h2>
+        <button class="btn btn-burgundy shadow-sm" onclick="loadQuickStudentModal()">
+            <i class="bi bi-plus-circle me-1"></i> Añadir Alumno
+        </button>
+    </div>
+
+    <partial name="_TableTools" />
+
+    <div class="border-0 overflow-hidden">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table id="mainTable" class="table table-hover align-middle mb-0">
+                    <thead class="small bg-burgundy text-white">
+                        <tr>
+                            <th class="no-sort text-center"> <input type="checkbox" id="checkAll"> </th>
+                            <th class="ps-4">Alumno / Contacto</th>
+                            <th>Identificador</th>
+                            <th>Carrera</th>
+                            @* <th class="text-center">Trámites</th> *@
+                            <th>Estado</th>
+                            <th>Fecha Registro</th>
+                            <th class="text-center pe-4">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody class="table-white">
+                        @foreach (var item in Model)
+                        {
+                            <tr class="@(item.IsActive ? "" : "opacity-50 bg-light")">
+                                <td class="text-center">
+                                    <input type="checkbox" class="form-check-input row-checkbox" value="@item.PersonId" />
+                                </td>
+                                <td class="ps-4">
+                                    <div class="d-flex align-items-center">
+                                        <div class="avatar-circle bg-burgundy-light text-white me-3">
+                                            @item.Initials
+                                        </div>
+                                        <div>
+                                            <div class="fw-bold text-dark">@item.FullName</div>
+                                            <small class="text-muted"><i class="bi bi-envelope me-1"></i>@item.Email</small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    @if (!string.IsNullOrEmpty(item.Matricula) && item.Matricula != "0")
+                                    {
+                                        <span class="badge bg-light text-dark border"><i class="bi bi-hash me-1"></i>@item.Matricula</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-light text-secondary border">Folio: @item.Folio</span>
+                                    }
+                                </td>
+                                <td>
+                                    <span class="small fw-bold">@item.CareerName</span>
+                                </td>
+                                @* <td class="text-center">
+                                    <span class="badge rounded-pill bg-info text-white">5</span>
+                                </td> *@
+                                <td>
+                                    @if (item.IsActive)
+                                    {
+                                        <span class="badge bg-success-subtle text-success rounded-pill border border-success">Activo</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-danger-subtle text-danger rounded-pill border border-danger">Inactivo</span>
+                                    }
+                                </td>
+                                <td>
+                                    <div class="small">@item.CreatedDate.ToString("dd/MM/yyyy")</div>
+                                    <div class="text-muted" style="font-size: 0.7rem;">@item.CreatedDate.ToString("hh:mm tt")</div>
+                                </td>
+                                <td class="text-center pe-4">
+                                    <div class="btn-group">
+                                        @if (item.IsActive)
+                                        {
+                                            @* Botones habilitados si el alumno está ACTIVO *@
+                                            <a asp-area="Procedures"
+                                               asp-controller="Proceeding"
+                                               asp-action="Details"
+                                               asp-route-id="@item.PersonId"
+                                               class="btn btn-sm btn-light border shadow-sm me-2"
+                                               title="Ver Detalles">
+                                                <i class="bi bi-eye"></i>
+                                            </a>
+
+                                            <button type="button" class="btn btn-sm btn-light border shadow-sm me-2"
+                                                    title="Editar Alumno"
+                                                    onclick="window.editStudent(@item.PersonId)">
+                                                <i class="bi bi-pencil-square text-warning"></i>
+                                            </button>
+
+                                            <button class="btn btn-sm btn-light border shadow-sm"
+                                                    title="Dar de Baja"
+                                                    onclick="loadDeactivateModal(@item.PersonId)">
+                                                <i class="bi bi-person-x-fill text-danger"></i>
+                                            </button>
+                                        }
+                                        else
+                                        {
+                                            <button class="btn btn-sm btn-light border shadow-sm me-2 opacity-50"
+                                                    disabled title="Activa el expediente para ver detalles">
+                                                <i class="bi bi-eye text-muted"></i>
+                                            </button>
+
+                                            <button class="btn btn-sm btn-light border shadow-sm me-2 opacity-50"
+                                                    disabled title="Activa el expediente para editar">
+                                                <i class="bi bi-pencil-square text-muted"></i>
+                                            </button>
+
+                                            <button class="btn btn-sm btn-light border shadow-sm"
+                                                    title="Reactivar Expediente"
+                                                    onclick="loadActivateModal(@item.PersonId)">
+                                                <i class="bi bi-person-check-fill text-success"></i>
+                                            </button>
+                                        }
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

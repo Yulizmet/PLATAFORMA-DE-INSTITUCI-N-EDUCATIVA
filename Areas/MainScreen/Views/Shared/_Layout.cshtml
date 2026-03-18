@@ -12,14 +12,15 @@
 
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/SchoolManager.styles.css" asp-append-version="true" />
+    @RenderSection("Styles", required: false)
 </head>
 
 <body>
 
     <!-- NAVBAR -->
     <nav class="navbar navbar-expand-lg navbar-dark navbar-custom">
-        <div class="container">
-            <a class="navbar-brand fw-bold" href="#">
+        <div class="container-fluid px-3">
+            <a class="navbar-brand fw-bold me-3" href="#" style="font-size: 1rem;">
                 SE Sistema Educativo
             </a>
 
@@ -28,46 +29,104 @@
                 <span class="navbar-toggler-icon"></span>
             </button>
 
-            <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
-                <ul class="navbar-nav">
-                    <a class="nav-link"
-                       asp-area="MainScreen"
-                       asp-controller="MainScreen"
-                       asp-action="Index">
-                        <i class="bi bi-house-fill me-1"></i> Inicio
-                    </a>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto align-items-center flex-nowrap" style="gap: 0.25rem;">
+                    <li class="nav-item">
+                        <a class="nav-link px-2" style="font-size: 0.875rem; white-space: nowrap;"
+                           asp-area="MainScreen"
+                           asp-controller="MainScreen"
+                           asp-action="Index">
+                            <i class="bi bi-house-fill me-1"></i> Inicio
+                        </a>
+                    </li>
 
-                    <a class="nav-link"
-                       asp-area="MainScreen"
-                       asp-controller="MainScreen"
-                       asp-action="SistemaEscolar">
-                        Sistema Escolar
-                    </a>
-                    <a class="nav-link"
-                       asp-area="MainScreen"
-                       asp-controller="MainScreen"
-                       asp-action="PanelAdministrativo">
-                        Panel Administrativo
-                    </a>
-                    <a class="nav-link"
-                       asp-area="MainScreen"
-                       asp-controller="MainScreen"
-                       asp-action="CalificacionesDocente">
-                        Calificaciones
-                    </a>
-                    <a class="nav-link"
-                       asp-area="MainScreen"
-                       asp-controller="MainScreen"
-                       asp-action="CalificacionesEstudiante">
-                        Mis Calificaciones
-                    </a>
-                    <a asp-area="MainScreen"
-                       asp-controller="MainScreen"
-                       asp-action="Extension"
-                       class="nav-link">
-                        Extensión
-                    </a>
+                    <li class="nav-item">
+                        <a class="nav-link px-2"
+                           asp-area="Enrollment"
+                           asp-controller="PreEnrollment"
+                           asp-action="Index">
+                           Preinscripción
+                        </a>
+                    </li>
 
+                    <li class="nav-item">
+                        <a class="nav-link px-2" style="font-size: 0.875rem; white-space: nowrap;"
+                           asp-area="MainScreen"
+                           asp-controller="MainScreen"
+                           asp-action="SistemaEscolar">
+                            Sistema Escolar
+                        </a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link px-2" style="font-size: 0.875rem; white-space: nowrap;"
+                           asp-area="MainScreen"
+                           asp-controller="MainScreen"
+                           asp-action="PanelAdministrativo">
+                            Panel Administrativo
+                        </a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link px-2" style="font-size: 0.875rem; white-space: nowrap;"
+                           asp-area="MainScreen"
+                           asp-controller="MainScreen"
+                           asp-action="CalificacionesDocente">
+                            Calificaciones
+                        </a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link px-2" style="font-size: 0.875rem; white-space: nowrap;"
+                           asp-area="MainScreen"
+                           asp-controller="MainScreen"
+                           asp-action="CalificacionesEstudiante">
+                            Mis Calificaciones
+                        </a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a asp-area="MainScreen"
+                           asp-controller="MainScreen"
+                           asp-action="Extension"
+                           class="nav-link px-2" style="font-size: 0.875rem; white-space: nowrap;">
+                            Extensión
+                        </a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a asp-area="MainScreen"
+                           asp-controller="MainScreen"
+                           asp-action="Tramites"
+                           class="nav-link px-2" style="font-size: 0.875rem; white-space: nowrap;">
+                            Trámites
+                        </a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a asp-area="MainScreen"
+                           asp-controller="MainScreen"
+                           asp-action="Foro"
+                           class="nav-link px-2" style="font-size: 0.875rem; white-space: nowrap;">
+                            Foro
+                        </a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link px-2" href="#" style="font-size: 0.875rem; white-space: nowrap;">Sobre Nosotros</a>
+                    </li>
+
+                    @if (User.Identity?.IsAuthenticated == true)
+                    {
+                        <li class="nav-item">
+                            <form asp-area="UserMng" asp-controller="Account" asp-action="Logout" method="post" class="d-inline">
+                                @Html.AntiForgeryToken()
+                                <button type="submit" class="nav-link btn btn-link text-decoration-none px-2" style="font-size: 0.875rem; white-space: nowrap;">
+                                    <i class="bi bi-box-arrow-right me-1"></i> Cerrar Sesión
+                                </button>
+                            </form>
+                        </li>
+                    }
                     <a asp-area="MainScreen"
                        asp-controller="MainScreen"
                        asp-action="Tramites"
@@ -100,7 +159,7 @@
     </nav>
 
     <!-- CONTENIDO -->
-    <div class="container mt-4">
+    <main class="container mt-4">
         @RenderBody()
     </div>
 

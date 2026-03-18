@@ -4,9 +4,9 @@
     {
         public int AuditId { get; set; }
         public int UserId { get; set; }
-        public string Action { get; set; }
-        public string TableName { get; set; }
+        public string Action { get; set; } = null!;
+        public string TableName { get; set; } = null!;
         public DateTime CreatedDate { get; set; }
-        public users_user User { get; set; }
+        public users_user User { get; set; } = null!;
     }
 }

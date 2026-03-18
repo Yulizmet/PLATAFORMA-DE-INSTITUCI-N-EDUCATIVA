@@ -24,6 +24,7 @@
 
   <ItemGroup>
     <PackageReference Include="Azure.Storage.Blobs" Version="12.27.0" />
+    <PackageReference Include="BCrypt.Net-Next" Version="4.1.0" />
     <PackageReference Include="ClosedXML" Version="0.105.0" />
     <PackageReference Include="DinkToPdf" Version="1.0.8" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.ViewFeatures" Version="2.3.9" />
@@ -37,11 +38,17 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="8.0.23" />
+    <PackageReference Include="MiniExcel" Version="1.42.0" />
   </ItemGroup>
 
   <ItemGroup>
     <Folder Include="Areas\Enrollment\Controllers\" />
+    <Folder Include="Areas\Enrollment\Views\" />
     <Folder Include="Areas\Grades\JS\" />
+    <Folder Include="Areas\Grades\Controllers\" />
+    <Folder Include="Areas\Grades\Views\" />
+    <Folder Include="Areas\Grades\Views\" />
+    <None Include="wwwroot\templates\Notification.html" />
     <Folder Include="Areas\Procedures\Controllers\" />
     <Folder Include="Areas\Procedures\Views\" />
     <Folder Include="Areas\Procedures\Templates\" />

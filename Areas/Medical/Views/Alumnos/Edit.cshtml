@@ -1,0 +1,69 @@
+﻿@* @model PIBitacoras.Models.Alumno
+
+@{
+    ViewData["Title"] = "Editar registro médico";
+}
+
+<div class="container mt-4">
+
+    <div class="card shadow-lg border-0">
+
+        <!-- HEADER -->
+        <div class="card-header bg-warning text-dark">
+            <h3 class="mb-0">EDITAR REGISTRO MÉDICO</h3>
+        </div>
+
+        <!-- BODY -->
+        <div class="card-body p-4">
+
+            <form asp-action="Edit" method="post">
+
+                <input type="hidden" asp-for="Id" />
+                <input type="hidden" asp-for="PreenrollmentId" />
+
+                <div class="row g-4">
+
+                    <div class="col-md-4">
+                        <label class="fw-bold">Peso</label>
+                        <input asp-for="Peso" class="form-control" />
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="fw-bold">Alergias</label>
+                        <input asp-for="Alergias" class="form-control" />
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="fw-bold">Condiciones crónicas</label>
+                        <input asp-for="CondicionesCronicas" class="form-control" />
+                    </div>
+
+                </div>
+
+                <hr class="mt-4" />
+
+                <div class="d-flex justify-content-between">
+
+                    <a asp-action="Index" class="btn btn-secondary px-4">
+                        Cancelar
+                    </a>
+
+                    <button type="submit" class="btn btn-warning text-white px-4">
+                        Guardar cambios
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+    </div>
+</div>
+
+<style>
+    .form-control {
+        background: #f8f9fa;
+        border-radius: 8px;
+        font-weight: 600;
+    }
+</style> *@

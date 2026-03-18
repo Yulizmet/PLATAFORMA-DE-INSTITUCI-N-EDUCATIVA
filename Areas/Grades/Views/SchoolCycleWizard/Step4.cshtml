@@ -1,0 +1,260 @@
+﻿@using SchoolManager.Areas.Grades.ViewModels.Wizard
+@* /Areas/Grades/Views/SchoolCycleWizard/Step4.cshtml *@
+@model SchoolCycleWizardViewModel
+
+@{
+    ViewData["Title"] = "Paso 4: Asignar Profesores";
+    Layout = "~/Areas/MainScreen/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-11">
+            <div class="sistema-card">
+                <!-- Barra de progreso -->
+                <div class="progress mb-4" style="height: 10px;">
+                    <div class="progress-bar bg-success" role="progressbar" style="width: 80%;" aria-valuenow="80" aria-valuemin="0" aria-valuemax="100"></div>
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h3 class="fw-bold mb-0">Paso 4/5: Asignar Profesores</h3>
+                    <span class="badge bg-info" style="font-size: 1rem;">
+                        Nivel: @Model.LevelName
+                    </span>
+                </div>
+
+                <p class="text-muted mb-4">
+                    Asigna los profesores a cada materia y selecciona los grupos donde impartirán clase.
+                </p>
+
+                <form asp-action="Step4" method="post" id="assignmentsForm">
+                    <!-- Campos ocultos para datos del nivel -->
+                    <input type="hidden" name="LevelName" value="@(Model.LevelName ?? "")" />
+                    <input type="hidden" name="StartDate" value="@(Model.StartDate?.ToString("yyyy-MM-dd") ?? "")" />
+                    <input type="hidden" name="EndDate" value="@(Model.EndDate?.ToString("yyyy-MM-dd") ?? "")" />
+                    <input type="hidden" name="MinPassingGrade" value="@(Model.MinPassingGrade?.ToString() ?? "")" />
+
+                    <!-- Campos ocultos para materias -->
+                    @for (int i = 0; i < Model.Subjects.Count; i++)
+                    {
+                        <input type="hidden" name="Subjects[@i].TempId" value="@Model.Subjects[i].TempId" />
+                        <input type="hidden" name="Subjects[@i].Name" value="@(Model.Subjects[i].Name ?? "")" />
+
+                        @for (int j = 0; j < Model.Subjects[i].Units.Count; j++)
+                        {
+                            <input type="hidden" name="Subjects[@i].Units[@j].Number" value="@Model.Subjects[i].Units[j].Number" />
+                            <input type="hidden" name="Subjects[@i].Units[@j].IsOpen" value="@Model.Subjects[i].Units[j].IsOpen" />
+                        }
+                    }
+
+                    <!-- Campos ocultos para grupos -->
+                    @for (int i = 0; i < Model.Groups.Count; i++)
+                    {
+                        <input type="hidden" name="Groups[@i].TempId" value="@Model.Groups[i].TempId" />
+                        <input type="hidden" name="Groups[@i].Name" value="@(Model.Groups[i].Name ?? "")" />
+                    }
+
+<div id="assignmentsContainer">
+    @for (int i = 0; i < Model.Assignments.Count; i++)
+    {
+        <div class="assignment-item card mb-4">
+            <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                <h5 class="fw-bold mb-0">@Model.Assignments[i].SubjectName</h5>
+                <input type="hidden" name="Assignments[@i].SubjectTempId" value="@Model.Assignments[i].SubjectTempId" />
+                <input type="hidden" name="Assignments[@i].SubjectName"   value="@Model.Assignments[i].SubjectName" />
+            </div>
+            <div class="card-body">
+
+                <div class="teacher-assignments-list" data-subject-index="@i">
+                    @for (int t = 0; t < Model.Assignments[i].TeacherAssignments.Count; t++)
+                    {
+                        <div class="teacher-row border rounded p-3 mb-2 position-relative">
+                            <div class="row">
+                                <div class="col-md-6 mb-2">
+                                    <label class="form-label fw-semibold">Profesor</label>
+                                    <select name="Assignments[@i].TeacherAssignments[@t].TeacherId"
+                                            class="form-select teacher-select">
+                                        <option value="">-- Seleccionar profesor --</option>
+                                        @foreach (var teacher in ViewBag.Teachers)
+                                        {
+                                            var selected = teacher.Value == Model.Assignments[i].TeacherAssignments[t].TeacherId?.ToString();
+                                            if (selected)
+                                            {
+                                                <option value="@teacher.Value" selected>@teacher.Text</option>
+                                            }
+                                            else
+                                            {
+                                                <option value="@teacher.Value">@teacher.Text</option>
+                                            }
+                                        }
+                                    </select>
+                                </div>
+                                <div class="col-md-5 mb-2">
+                                    <label class="form-label fw-semibold">Grupos</label>
+                                    <div class="border rounded p-2" style="max-height:130px; overflow-y:auto;">
+                                        @for (int g = 0; g < Model.Groups.Count; g++)
+                                        {
+                                            var isChecked = Model.Assignments[i].TeacherAssignments[t].SelectedGroupIds.Contains(Model.Groups[g].TempId);
+                                            <div class="form-check">
+                                                <input type="checkbox" class="form-check-input group-checkbox"
+                                                       name="Assignments[@i].TeacherAssignments[@t].SelectedGroupIds"
+                                                       value="@Model.Groups[g].TempId"
+                                                       id="g_@(i)_@(t)_@(g)"
+                                                       @(isChecked ? "checked" : "") />
+                                                <label class="form-check-label" for="g_@(i)_@(t)_@(g)">
+                                                    @Model.Groups[g].Name
+                                                </label>
+                                            </div>
+                                        }
+                                    </div>
+                                </div>
+                                <div class="col-md-1 d-flex align-items-end mb-2">
+                                    <button type="button" class="btn btn-outline-danger btn-sm btn-remove-teacher"
+                                            title="Eliminar">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+
+                <button type="button" class="btn btn-outline-secondary btn-sm btn-add-teacher"
+                        data-subject-index="@i">
+                    <i class="bi bi-plus-circle me-1"></i>Agregar otro profesor
+                </button>
+
+            </div>
+        </div>
+    }
+</div>
+                    <!-- Botones de navegación -->
+                    <div class="d-flex justify-content-between mt-4">
+                        <a asp-action="Step3" class="btn btn-secondary">
+                            <i class="bi bi-arrow-left me-2"></i>Regresar
+                        </a>
+                        <div>
+                            <button type="submit" name="saveType" value="draft" class="btn btn-outline-secondary me-2">
+                                Guardar Borrador
+                            </button>
+                            <button type="submit" class="btn btn-calificaciones">
+                                Finalizar Configuración <i class="bi bi-check-circle ms-2"></i>
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Plantilla de grupos para clonar
+        const groupsTemplate = `
+            @for (int g = 0; g < Model.Groups.Count; g++)
+            {
+                    <text>
+                    <div class="form-check">
+                        <input type="checkbox" class="form-check-input group-checkbox"
+                               name="__NAME__" value="@Model.Groups[g].TempId" id="__ID__@(g)" />
+                        <label class="form-check-label" for="__ID__@(g)">@Model.Groups[g].Name</label>
+                    </div>
+                    </text>
+            }
+        `;
+
+        function buildTeacherRow(subjectIndex, teacherIndex) {
+            const teacherOptions = `@foreach (var t in ViewBag.Teachers) {
+                <text><option value="@t.Value">@t.Text</option></text>
+        }
+`;
+
+        const groupsHtml = groupsTemplate
+            .replace(/__NAME__/g, `Assignments[${subjectIndex}].TeacherAssignments[${teacherIndex}].SelectedGroupIds`)
+            .replace(/__ID__/g,   `g_${subjectIndex}_${teacherIndex}_`);
+
+        return `
+            <div class="teacher-row border rounded p-3 mb-2 position-relative">
+                <div class="row">
+                    <div class="col-md-6 mb-2">
+                        <label class="form-label fw-semibold">Profesor</label>
+                        <select name="Assignments[${subjectIndex}].TeacherAssignments[${teacherIndex}].TeacherId"
+                                class="form-select teacher-select">
+                            <option value="">-- Seleccionar profesor --</option>
+                            ${teacherOptions}
+                        </select>
+                    </div>
+                    <div class="col-md-5 mb-2">
+                        <label class="form-label fw-semibold">Grupos</label>
+                        <div class="border rounded p-2" style="max-height:130px; overflow-y:auto;">
+                            ${groupsHtml}
+                        </div>
+                    </div>
+                    <div class="col-md-1 d-flex align-items-end mb-2">
+                        <button type="button" class="btn btn-outline-danger btn-sm btn-remove-teacher">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>`;
+    }
+
+    // Agregar fila de profesor
+    document.querySelectorAll('.btn-add-teacher').forEach(btn => {
+        btn.addEventListener('click', function () {
+            const subjectIndex = parseInt(this.dataset.subjectIndex);
+            const list = this.previousElementSibling;
+            const teacherIndex = list.querySelectorAll('.teacher-row').length;
+            list.insertAdjacentHTML('beforeend', buildTeacherRow(subjectIndex, teacherIndex));
+        });
+    });
+
+    // Eliminar fila de profesor (delegado)
+    document.addEventListener('click', function (e) {
+        if (e.target.closest('.btn-remove-teacher')) {
+            const row = e.target.closest('.teacher-row');
+            const list = row.closest('.teacher-assignments-list');
+            if (list.querySelectorAll('.teacher-row').length > 1) {
+                row.remove();
+                // Re-indexar nombres
+                reindexTeacherRows(list);
+            } else {
+                alert('Debe haber al menos un profesor por materia.');
+            }
+        }
+    });
+
+    function reindexTeacherRows(list) {
+        const subjectIndex = list.dataset.subjectIndex;
+        list.querySelectorAll('.teacher-row').forEach((row, t) => {
+            row.querySelectorAll('[name]').forEach(el => {
+                el.name = el.name.replace(/TeacherAssignments\[\d+\]/, `TeacherAssignments[${t}]`);
+            });
+            row.querySelectorAll('[id]').forEach(el => {
+                el.id = el.id.replace(/g_\d+_\d+_/, `g_${subjectIndex}_${t}_`);
+            });
+            row.querySelectorAll('[for]').forEach(el => {
+                el.htmlFor = el.htmlFor.replace(/g_\d+_\d+_/, `g_${subjectIndex}_${t}_`);
+            });
+        });
+    }
+
+    // Validación al enviar
+    document.getElementById('assignmentsForm').addEventListener('submit', function (e) {
+        let errors = [];
+        document.querySelectorAll('.assignment-item').forEach(card => {
+            const subjectName = card.querySelector('.card-header h5').innerText;
+            card.querySelectorAll('.teacher-row').forEach(row => {
+                const teacher = row.querySelector('.teacher-select').value;
+                const groups  = row.querySelectorAll('.group-checkbox:checked').length;
+                if (teacher && groups === 0)
+                    errors.push(`• ${subjectName}: Profesor seleccionado sin grupos.`);
+                if (!teacher && groups > 0)
+                    errors.push(`• ${subjectName}: Grupos seleccionados sin profesor.`);
+            });
+        });
+        if (errors.length) { e.preventDefault(); alert('Corrige:\n\n' + errors.join('\n')); }
+    });
+</script>
+}

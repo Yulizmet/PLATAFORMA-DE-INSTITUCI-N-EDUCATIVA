@@ -1,0 +1,261 @@
+﻿@model SchoolManager.Areas.Enrollment.ViewModels.PreEnrollmentViewModel
+@{
+    Layout = "~/Areas/Enrollment/Views/_Layout.cshtml";
+    ViewData["Title"] = "Confirmar Preinscripción";
+
+    ViewData["ModoConfirmacion"] = true;
+}
+
+<main class="content">
+    <div class="container-fluid p-0">
+        <h1 class="h3 mb-3"><strong>Confirmar Datos del Aspirante</strong></h1>
+        <p class="text-muted mb-0">Revisa la información. Si necesitas cambiar algo, usa <strong>Editar</strong> en la sección correspondiente.</p>
+    </div>
+
+    <div class="container my-5">
+
+        <form id="confirmacionForm"
+              method="post"
+              asp-action="ConfirmarPreinscripcion"
+              asp-controller="PreEnrollment"
+              asp-area="Enrollment">
+
+            <div asp-validation-summary="All" class="text-danger mb-3"></div>
+
+            <!-- Carrera solicitada (card) -->
+            <div class="card mb-4" data-section="Carrera">
+                <div class="card-header fw-bold text-uppercase d-flex justify-content-between align-items-center">
+                    Carrera solicitada
+                    <button type="button" class="btn btn-outline-secondary btn-sm btn-editar" data-target="Carrera">
+                        Editar
+                    </button>
+                </div>
+
+                <div class="card-body">
+                    <label asp-for="DatosGenerales.IdCareer" class="form-label">Carrera solicitada</label>
+                    <select asp-for="DatosGenerales.IdCareer"
+                            asp-items="ViewBag.IdCareer"
+                            class="form-select"
+                            required>
+                        <option value="" selected disabled>Sin selección</option>
+                    </select>
+                    <span asp-validation-for="DatosGenerales.IdCareer" class="text-danger"></span>
+                </div>
+            </div>
+
+            <!-- Tus partials (ya tienen card) -->
+            <partial name="Partials/_DatosGenerales" model="Model" />
+            <partial name="Partials/_DatosEscolares" model="Model" />
+            <partial name="Partials/_Domicilio" model="Model" />
+            <partial name="Partials/_Tutor" model="Model" />
+            <partial name="Partials/_OtrosDatos" model="Model" />
+
+            <div class="d-flex justify-content-between">
+
+                <button type="submit" class="btn btn-success">
+                    Confirmar y enviar
+                </button>
+            </div>
+        </form>
+
+    </div>
+</main>
+
+@section Scripts {
+    @await Html.PartialAsync("_ValidationScriptsPartial")
+
+    <script>
+        document.addEventListener("DOMContentLoaded", async function () {
+            const form = document.getElementById("confirmacionForm");
+            if (!form) return;
+
+            // 1) Cargar del LocalStorage
+            const data = leerPreinscripcionLS();
+            if (!data) {
+                console.warn("No hay preinscripción activa en LocalStorage.");
+                return;
+            }
+
+            // ================== HELPERS ==================
+            function getByName(name) {
+                return form.querySelector(`[name="${name}"]`);
+            }
+
+            async function waitUntil(fn, timeoutMs = 7000, stepMs = 80) {
+                const start = Date.now();
+                while (Date.now() - start < timeoutMs) {
+                    if (fn()) return true;
+                    await new Promise(r => setTimeout(r, stepMs));
+                }
+                return false;
+            }
+
+            async function setSelectWhenReady(select, value, { triggerChange = false, timeoutMs = 7000 } = {}) {
+                if (!select) return false;
+                const valStr = String(value ?? "");
+
+                // Espera a que exista la opción (porque se carga dinámicamente)
+                await waitUntil(() =>
+                    Array.from(select.options).some(o => o.value === valStr),
+                    timeoutMs
+                );
+
+                select.value = valStr;
+
+                if (triggerChange) {
+                    select.dispatchEvent(new Event("change", { bubbles: true }));
+                }
+                return true;
+            }
+
+            // 2) Rellenar por name (lo normal)
+            Object.keys(data).forEach(key => {
+                const els = form.querySelectorAll(`[name="${key}"]`);
+                if (!els || els.length === 0) return;
+
+                els.forEach(el => {
+                    if (el.type === "radio") {
+                        el.checked = (el.value === String(data[key]));
+                    } else if (el.type === "checkbox") {
+                        el.checked = (data[key] === true || data[key] === "true" || data[key] === "on");
+                    } else {
+                        el.value = data[key];
+                    }
+                });
+            });
+
+            // 2.1) Rellenar dependientes (cascada)
+            await rellenarDependientes();
+
+            // 3) Bloquear todo al inicio (modo confirmación)
+            bloquearTodo();
+
+            // 4) Botones Editar: habilitan SOLO su card
+            document.querySelectorAll(".btn-editar").forEach(btn => {
+                btn.addEventListener("click", function () {
+                    const target = btn.getAttribute("data-target");
+                    const card = document.querySelector(`[data-section="${target}"]`);
+                    if (!card) return;
+
+                    const enEdicion = card.getAttribute("data-editing") === "1";
+                    if (enEdicion) {
+                        setCardEditable(card, false);
+                        card.setAttribute("data-editing", "0");
+                        btn.textContent = "Editar";
+                    } else {
+                        setCardEditable(card, true);
+                        card.setAttribute("data-editing", "1");
+                        btn.textContent = "Listo";
+                    }
+                });
+            });
+
+            function bloquearTodo() {
+                document.querySelectorAll('[data-section]').forEach(card => {
+                    setCardEditable(card, false);
+                    card.setAttribute("data-editing", "0");
+
+                    const btn = card.querySelector(".btn-editar");
+                    if (btn) btn.textContent = "Editar";
+                });
+            }
+
+        function setCardEditable(card, editable) {
+            card.querySelectorAll("input, select, textarea").forEach(el => {
+                if (el.type === "radio" || el.type === "checkbox") {
+                    el.disabled = !editable;
+                    return;
+                }
+                // readOnly funciona en inputs y textarea, para select usamos pointer-events
+                el.readOnly = !editable;
+                el.style.pointerEvents = editable ? "" : "none";
+                el.style.backgroundColor = editable ? "" : "#e9ecef";
+                el.tabIndex = editable ? "" : -1;
+            });
+        }
+                    // POR ESTO — solo quita el bloque de habilitar campos
+        form.addEventListener("submit", function () {
+            const fd = new FormData(form);
+            const updated = {};
+            fd.forEach((v, k) => updated[k] = v);
+            guardarPreinscripcionLS(updated);
+        });
+
+            // 6) Borrar LS
+            document.getElementById("btnBorrarLS")?.addEventListener("click", function () {
+                borrarPreinscripcionLS();
+                window.location.href = '@Url.Action("Index", "PreEnrollment", new { area = "Enrollment" })';
+            });
+
+            // ================== DEPENDIENTES ==================
+            async function rellenarDependientes() {
+
+                // ===== ESCOLARES: Estado -> Municipio =====
+                const escEstado = document.getElementById("escEstado");
+                const escMunicipio = document.getElementById("escMunicipio");
+
+                const escEstadoKey = "DatosEscolares.state";
+                const escMunicipioKey = "DatosEscolares.city";
+
+                if (escEstado && data[escEstadoKey] != null) {
+                    // Set Estado y dispara change para que se carguen municipios
+                    await setSelectWhenReady(escEstado, data[escEstadoKey], { triggerChange: true });
+
+                    // Espera a que municipio se habilite y tenga opciones
+                    await waitUntil(() => escMunicipio && !escMunicipio.disabled && escMunicipio.options.length > 1);
+
+                    // Set Municipio
+                    if (escMunicipio && data[escMunicipioKey] != null) {
+                        await setSelectWhenReady(escMunicipio, data[escMunicipioKey], { triggerChange: true });
+                    }
+                }
+
+                // ===== DOMICILIO: Estado -> Municipio =====
+                const domEstado = document.getElementById("domEstado");
+                const domMunicipio = document.getElementById("domMunicipio");
+
+                const domEstadoKey = "Domicilio.state";
+                const domMunicipioKey = "Domicilio.city";
+
+                if (domEstado && data[domEstadoKey] != null) {
+                    await setSelectWhenReady(domEstado, data[domEstadoKey], { triggerChange: true });
+
+                    await waitUntil(() => domMunicipio && !domMunicipio.disabled && domMunicipio.options.length > 1);
+
+                    if (domMunicipio && data[domMunicipioKey] != null) {
+                        await setSelectWhenReady(domMunicipio, data[domMunicipioKey], { triggerChange: true });
+                    }
+                }
+
+                // ===== DOMICILIO: CP -> Colonia =====
+                // ⚠️ Asegúrate que tu input del CP tenga id="domCP"
+                const domCP = document.getElementById("domCP");
+                const domColonia = document.getElementById("domColonia");
+
+                // ⚠️ Si tu propiedad NO se llama zipCode, cambia esta key al name real
+                const domCPKey = "Domicilio.postal_code";
+                const domColoniaKey = "Domicilio.neighborhood";
+
+                if (domCP && data[domCPKey]) {
+                    // Set CP
+                    domCP.value = data[domCPKey];
+
+                    // Disparar eventos para que tu script cargue colonias y habilite el select
+                    domCP.dispatchEvent(new Event("input", { bubbles: true }));
+                    domCP.dispatchEvent(new Event("change", { bubbles: true }));
+                    domCP.dispatchEvent(new Event("blur", { bubbles: true }));
+
+                    // Espera a que colonia se habilite y tenga opciones
+                    await waitUntil(() => domColonia && !domColonia.disabled && domColonia.options.length > 1);
+
+                    // Set Colonia
+                    if (domColonia && data[domColoniaKey] != null) {
+                        await setSelectWhenReady(domColonia, data[domColoniaKey]);
+                    }
+                }
+            }
+        });
+    </script>
+
+    <script src="~/enrollment/src/js/modules/index-scripts.js"></script>
+}

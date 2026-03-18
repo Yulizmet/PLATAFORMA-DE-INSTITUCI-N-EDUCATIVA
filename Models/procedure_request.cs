@@ -15,8 +15,9 @@ namespace SchoolManager.Models
         [Required]
         public DateTime DateCreated { get; set; } = DateTime.Now;
 
-        [Required]
-        public DateTime DateUpdated { get; set; } = DateTime.Now;
+        public DateTime? DateUpdated { get; set; }
+
+        public DateTime? DateTerminated { get; set; }
 
         [Required]
         [MaxLength(200)]
@@ -42,6 +43,8 @@ namespace SchoolManager.Models
 
         [ForeignKey("IdProcedureFlow")]
         public virtual procedure_flow ProcedureFlow { get; set; } = null!;
+
+        public virtual ICollection<preenrollment_general> Preenrollments { get; set; } = new List<preenrollment_general>();
 
         public virtual ICollection<procedure_documents> ProcedureDocuments { get; set; } = new List<procedure_documents>();
         public virtual ICollection<procedure_monitoring> ProcedureMonitorings { get; set; } = new List<procedure_monitoring>();
