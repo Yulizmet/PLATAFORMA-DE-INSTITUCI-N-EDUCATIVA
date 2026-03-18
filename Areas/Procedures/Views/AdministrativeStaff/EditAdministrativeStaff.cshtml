@@ -1,0 +1,120 @@
+﻿@model SchoolManager.Areas.Procedures.ViewModels.StaffViewModel
+
+@section Scripts {
+    <script>
+        $(document).on('input', '#inputCurp', function() {
+            this.value = this.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+        });
+
+        $(document).on('submit', '#formEditStaff', function (e) {
+            e.preventDefault();
+            const form = $(this);
+
+            Swal.fire({
+                title: 'Actualizando personal...',
+                didOpen: () => { Swal.showLoading(); }
+            });
+
+            fetch(form.attr('action'), {
+                method: 'POST',
+                body: new FormData(this)
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: '¡Actualizado!',
+                        text: data.message,
+                        confirmButtonColor: '#620900'
+                    }).then(() => {
+                        window.location.href = '/Procedures/AdministrativeStaff/DetailsStaff/' + @Model.Id;
+                    });
+                } else {
+                    Swal.fire('Error', data.message, 'error');
+                }
+            });
+        });
+    </script>
+}
+
+<div class="container py-4">
+    <div class="mb-4">
+        <a asp-action="Index" class="btn btn-link text-decoration-none text-secondary p-0 mb-2">
+            <i class="bi bi-arrow-left-circle-fill fs-5 me-1"></i> Regresar al listado
+        </a>
+        <h2 class="fw-bold text-dark">Modificar Perfil Administrativo</h2>
+    </div>
+
+    <form id="formEditStaff" asp-action="UpdateStaff" method="post">
+        <input type="hidden" asp-for="Id" />
+        <input type="hidden" asp-for="PersonId" />
+        <input type="hidden" asp-for="UserId" />
+
+        <div class="card shadow-sm border-0 rounded-4 overflow-hidden">
+            <div class="bg-burgundy text-white p-3">
+                <h5 class="mb-0 fw-bold"><i class="bi bi-pencil-square me-2"></i>Edición de Expediente</h5>
+            </div>
+            <div class="card-body p-4">
+
+                <div class="section-header text-uppercase small mb-4">1. Identidad Personal</div>
+                <div class="row g-3 mb-4">
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold small text-muted">Nombre(s)</label>
+                        <input asp-for="FirstName" class="form-control shadow-sm border-2" required />
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold small text-muted">Apellido Paterno</label>
+                        <input asp-for="LastNamePaternal" class="form-control shadow-sm border-2" required />
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold small text-muted">Apellido Materno</label>
+                        <input asp-for="LastNameMaternal" class="form-control shadow-sm border-2" required />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold small text-muted">CURP</label>
+                        <input asp-for="Curp" class="form-control shadow-sm border-2" maxlength="18" id="inputCurp" required />
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label fw-bold small text-muted">Fecha de Nacimiento</label>
+                        <input type="date" asp-for="BirthDate" class="form-control shadow-sm border-2" required />
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label fw-bold small text-muted">Género</label>
+                        <select asp-for="Gender" class="form-select shadow-sm border-2">
+                            <option value="M">Masculino</option>
+                            <option value="F">Femenino</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="section-header text-uppercase small mb-3 mt-5">2. Datos de Acceso y Estatus</div>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold small text-muted">Nombre de Usuario</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-2"><i class="bi bi-person-badge"></i></span>
+                            <input asp-for="Username" class="form-control shadow-sm border-2 bg-light" />
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold small text-muted">Correo Institucional</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-2"><i class="bi bi-envelope"></i></span>
+                            <input asp-for="Email" class="form-control shadow-sm border-2 bg-light" />
+                        </div>
+                    </div>
+                </div>
+
+                <div class="text-end mt-5 pt-3 border-top">
+                    <button type="button" class="btn btn-outline-secondary px-4 rounded-pill me-2" onclick="history.back()">
+                        Descartar
+                    </button>
+                    <button type="submit" class="btn btn-burgundy px-5 rounded-pill shadow">
+                        <i class="bi bi-save2 me-2"></i>Guardar Cambios
+                    </button>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>

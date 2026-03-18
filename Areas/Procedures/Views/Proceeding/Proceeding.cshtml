@@ -1,0 +1,136 @@
+﻿@model SchoolManager.Areas.Procedures.ViewModels.ProceedingDetailViewModel
+
+<div class="container py-4">
+    <div class="mb-3">
+        <a asp-action="Index" class="btn btn-link text-decoration-none text-secondary p-0">
+            <i class="bi bi-arrow-left-circle-fill fs-4 me-1"></i> Regresar al listado
+        </a>
+    </div>
+
+    <div class="card shadow-sm border-0 rounded-4 overflow-hidden">
+        <div class="bg-burgundy text-white p-3 d-flex justify-content-between align-items-center">
+            <h5 class="mb-0 fw-bold">DATOS GENERALES</h5>
+            <span class="badge bg-white text-dark">Matrícula: @Model.Matricula</span>
+        </div>
+
+        <div class="card-body p-4 pt-2">
+            <div class="section-header text-uppercase small">Información de Identidad</div>
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label class="expediente-label">Apellido Paterno</label>
+                    <div class="expediente-value">@Model.LastNamePaternal</div>
+                </div>
+                <div class="col-md-4">
+                    <label class="expediente-label">Apellido Materno</label>
+                    <div class="expediente-value">@Model.LastNameMaternal</div>
+                </div>
+                <div class="col-md-4">
+                    <label class="expediente-label">Nombre(s)</label>
+                    <div class="expediente-value">@Model.FirstName</div>
+                </div>
+                <div class="col-md-3">
+                    <label class="expediente-label">CURP</label>
+                    <div class="expediente-value">@Model.Curp</div>
+                </div>
+                <div class="col-md-3">
+                    <label class="expediente-label">Sexo</label>
+                    <div class="expediente-value">@Model.Gender</div>
+                </div>
+                <div class="col-md-3">
+                    <label class="expediente-label">Tipo de Sangre</label>
+                    <div class="expediente-value">@Model.BloodType</div>
+                </div>
+                <div class="col-md-3">
+                    <label class="expediente-label">Beca ITABEC / Federal</label>
+                    <div class="expediente-value">@Model.Beca</div>
+                </div>
+            </div>
+
+            <div class="section-header text-uppercase small">Información Académica Actual</div>
+            <div class="row g-3">
+                <div class="col-md-8">
+                    <label class="expediente-label">Carrera / Programa</label>
+                    <div class="expediente-value text-burgundy fw-bold">
+                        <i class="bi bi-mortarboard-fill me-1"></i> @Model.CareerName
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <label class="expediente-label">Generación</label>
+                    <div class="expediente-value">
+                        <span class="badge bg-secondary">@Model.Generation</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section-header text-uppercase small">Antecedentes Escolares</div>
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="expediente-label">Escuela de Procedencia</label>
+                    <div class="expediente-value">@Model.PreviousSchool</div>
+                </div>
+                <div class="col-md-4">
+                    <label class="expediente-label">Grado/Título obtenido</label>
+                    <div class="expediente-value">@Model.PreviousDegree</div>
+                </div>
+                <div class="col-md-2">
+                    <label class="expediente-label">Promedio</label>
+                    <div class="expediente-value fw-bold">@Model.PreviousAverage</div>
+                </div>
+            </div>
+
+            <div class="section-header text-uppercase small">Información de Salud y Social</div>
+            <div class="row g-3">
+                <div class="col-md-3 text-center border-end">
+                    <label class="expediente-label d-block">Indígena</label>
+                    <i class="bi @(Model.IsIndigena ? "bi-check-circle-fill text-success" : "bi-x-circle text-muted")"></i>
+                </div>
+                <div class="col-md-3 text-center border-end">
+                    <label class="expediente-label d-block">Discapacidad</label>
+                    <i class="bi @(Model.HasIncapacidad ? "bi-check-circle-fill text-success" : "bi-x-circle text-muted")"></i>
+                </div>
+                <div class="col-md-3 text-center">
+                    <label class="expediente-label d-block">Enfermedad Crónica</label>
+                    <i class="bi @(Model.HasDisease ? "bi-check-circle-fill text-warning" : "bi-x-circle text-muted")"></i>
+                </div>
+                <div class="col-md-12">
+                    <label class="expediente-label">Observaciones Médicas</label>
+                    <div class="expediente-value text-muted small">@(Model.HealthComments ?? "Sin comentarios adicionales")</div>
+                </div>
+            </div>
+
+            <div class="section-header text-uppercase small">Domicilio</div>
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label class="expediente-label">Calle</label>
+                    <div class="expediente-value">@Model.Street</div>
+                </div>
+                <div class="col-md-2">
+                    <label class="expediente-label">Núm. Ext/Int</label>
+                    <div class="expediente-value">@Model.ExtNum / @Model.IntNum</div>
+                </div>
+                <div class="col-md-3">
+                    <label class="expediente-label">Colonia</label>
+                    <div class="expediente-value">@Model.Colony</div>
+                </div>
+                <div class="col-md-3">
+                    <label class="expediente-label">C.P.</label>
+                    <div class="expediente-value">@Model.ZipCode</div>
+                </div>
+                <div class="col-md-6">
+                    <label class="expediente-label">Ciudad y Estado</label>
+                    <div class="expediente-value">@Model.CityState</div>
+                </div>
+                <div class="col-md-6">
+                    <label class="expediente-label">e-mail personal</label>
+                    <div class="expediente-value">@Model.Email</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card-footer bg-white border-top-0 p-4 text-end">
+            <button class="btn btn-outline-secondary btn-sm" onclick="window.print()">
+                <i class="bi bi-printer"></i> Imprimir Expediente
+            </button>
+        </div>
+    </div>
+</div>

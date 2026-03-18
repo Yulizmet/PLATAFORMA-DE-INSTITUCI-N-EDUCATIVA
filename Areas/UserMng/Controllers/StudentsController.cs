@@ -24,7 +24,7 @@ public class StudentsController : Controller
             .Include(u => u.Person)
             .Include(u => u.UserRoles)
                 .ThenInclude(ur => ur.Role)
-            .Include(u => u.PreEnrollments)
+            .Include(u => u.Preenrollments)
             .Where(u => u.IsActive
                         && u.UserRoles.Any(ur => ur.Role.Name == "Student"))
             .ToListAsync();

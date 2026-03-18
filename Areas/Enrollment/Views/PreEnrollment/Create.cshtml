@@ -5,16 +5,12 @@
 }
 
 <main class="content">
-
     <div class="container-fluid p-0">
         <h1 class="h3 mb-3"><strong>Datos del Aspirante</strong></h1>
     </div>
 
     <div class="container my-5">
-
-        <form id="preinscripcionForm">
-            <!-- agregamos id para JS -->
-            <!-- Carrera -->
+        <form id="preinscripcionForm" novalidate>
             <div class="card mb-4">
                 <div class="card-body">
                     <label asp-for="DatosGenerales.IdCareer" class="form-label">
@@ -25,8 +21,7 @@
                             asp-items="ViewBag.IdCareer"
                             class="form-select"
                             required>
-                        <option value="MANT_IND">Mantenimiento Industrial</option>
-
+                        <option value="" selected disabled>Sin selección</option>
                     </select>
 
                     <span asp-validation-for="DatosGenerales.IdCareer" class="text-danger"></span>
@@ -40,55 +35,89 @@
             <partial name="Partials/_OtrosDatos" model="Model" />
 
             <div class="d-flex justify-content-end">
+                <!-- IMPORTANTE: type submit está bien porque prevenimos el submit con JS -->
                 <button type="submit" class="btn btn-primary">
                     Continuar
                 </button>
             </div>
-
         </form>
-
     </div>
 </main>
-
-
 
 @section Scripts {
     @await Html.PartialAsync("_ValidationScriptsPartial")
 
     <script>
-        const LS_KEY = "preinscripcion_activa";
+        // URLs para otros scripts (Documentos usa PRE_URLS.preinscripcion y PRE_URLS.confirmar)
+        window.PRE_URLS = {
+            preinscripcion: '@Url.Action("Create", "PreEnrollment", new { area = "Enrollment" })',
+            documentos: '@Url.Action("SubirDocumentos", "PreEnrollment", new { area = "Enrollment" })',
+            confirmar: '@Url.Action("ConfirmarPreinscripcion", "PreEnrollment", new { area = "Enrollment" })'
+        };
 
-        function guardarPreinscripcionLS(payload) {
-            localStorage.setItem(LS_KEY, JSON.stringify(payload));
-        }
-
-        function generarHash(curp, fechaNacimiento) {
-            const base = `${(curp || "").toUpperCase()}|${fechaNacimiento || ""}`;
-            return btoa(unescape(encodeURIComponent(base)));
-        }
-
-        document.addEventListener("DOMContentLoaded", function() {
+        document.addEventListener("DOMContentLoaded", function () {
             const form = document.getElementById("preinscripcionForm");
             if (!form) return;
 
-            form.addEventListener("submit", function(e) {
-                e.preventDefault(); // Evita enviar al servidor
+            form.addEventListener("submit", function (e) {
+                e.preventDefault();
+
+                // Validación HTML5
+                if (!form.checkValidity()) {
+                    form.classList.add("was-validated");
+                    return;
+                }
 
                 const formData = new FormData(form);
                 const data = {};
                 formData.forEach((value, key) => data[key] = value);
 
-                // Si tienes CURP y fecha de nacimiento, genera hash
-                if (data["Persona.CURP"] && data["Persona.BirthDate"]) {
-                    data.hash = generarHash(data["Persona.CURP"], data["Persona.BirthDate"]);
+                // --- Ajusta estas llaves según tus inputs reales ---
+                const curp = (data["Persona.CURP"] || data["curp"] || "").trim().toUpperCase();
+                const birth = (data["Persona.BirthDate"] || data["fechaNacimiento"] || "").trim();
+
+                if (curp && birth) {
+                    data.hash = generarHash(curp, birth);
                 }
 
-                // Guardar en LocalStorage
+                // 1) Guarda el “payload” completo (sesión activa)
                 guardarPreinscripcionLS(data);
 
-                // Redirigir a la vista de subir documentos
-                window.location.href = '@Url.Action("SubirDocumentos", "PreEnrollment", new { area = "Enrollment" })';
+                // 2) Guarda lo mínimo para que SubirDocumentos NO se regrese
+                const nombre = (data["Persona.Name"] || data["nombres"] || "").trim();
+                const apPat = (data["Persona.PaternalLastName"] || data["apPaterno"] || "").trim();
+                const apMat = (data["Persona.MaternalLastName"] || data["apMaterno"] || "").trim();
+                const nombreCompleto = `${nombre} ${apPat} ${apMat}`.trim();
+
+                localStorage.setItem("preenrollment_general", JSON.stringify({
+                    IdData: 0,
+                    Nombre: nombre,
+                    NombreCompleto: nombreCompleto || nombre || "Aspirante",
+                    Curp: curp,
+                    FechaNacimiento: birth
+                }));
+
+                // 3) Inicializa docs si no existe (checklist)
+                if (!localStorage.getItem("preenrollment_docs")) {
+                    localStorage.setItem("preenrollment_docs", JSON.stringify({
+                        IdData: 0,
+                        Fotos: false,
+                        PagoExamen: false,
+                        ActaNacimiento: false,
+                        Curp: false,
+                        Certificados: false,
+                        ComprobanteDomicilio: false,
+                        CartaBuenaConducta: false
+                    }));
+                }
+
+                // 4) Ir a SubirDocumentos
+                window.location.href = window.PRE_URLS.documentos;
             });
         });
     </script>
+
+    <script src="~/enrollment/src/js/modules/index-scripts.js"></script>
+
+    
 }

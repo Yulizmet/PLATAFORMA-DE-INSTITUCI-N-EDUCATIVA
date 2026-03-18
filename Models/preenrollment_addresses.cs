@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 
 namespace SchoolManager.Models
 {
@@ -12,30 +13,16 @@ namespace SchoolManager.Models
         public int id_data { get; set; }
 
         [ForeignKey("id_data")]
-        public preenrollment_general preenrollment_general { get; set; }
+        [ValidateNever]
+        public virtual preenrollment_general General { get; set; } = null!;
 
-        [Required]
-        public string street { get; set; }
+        public string? street { get; set; }
+        public string? exterior_number { get; set; }
+        public string? interior_number { get; set; }
+        public string? postal_code { get; set; }
+        public string? neighborhood { get; set; }
+        public string? state { get; set; }
+        public string? city { get; set; }
 
-        [Required]
-        public string exterior_number { get; set; }
-
-        [Required]
-        public string interior_number { get; set; }
-
-        [Required]
-        public string postal_code { get; set; }
-
-        [Required]
-        public string neighborhood { get; set; }
-
-        [Required]
-        public string state { get; set; }
-
-        [Required]
-        public string city { get; set; }
-
-        [Required]
-        public string phone { get; set; }
     }
 }

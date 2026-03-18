@@ -22,7 +22,7 @@ namespace SchoolManager.Models
         [Required]
         public string FilePath { get; set; } = null!;
 
-        public virtual ICollection<tutorship_interview_answer> Answers { get; set; }
+        public virtual ICollection<tutorship_interview_answer> Answers { get; set; } = null!;
 
         [ForeignKey("StudentId")]
         public virtual users_user Student { get; set; } = null!;
