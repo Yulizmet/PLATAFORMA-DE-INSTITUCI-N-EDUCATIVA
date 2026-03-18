@@ -4,7 +4,10 @@
     ViewData["Title"] = "Entrevista Inicial";
 
     var entrevistaGuardada = ViewBag.Entrevista as SchoolManager.Models.tutorship_interview;
+
     bool estaCompletada = entrevistaGuardada != null && entrevistaGuardada.Status == "Completada";
+    bool requiereActualizacion = entrevistaGuardada != null && entrevistaGuardada.Status == "Requiere Actualizacion";
+
 
     string atributoBloqueo = estaCompletada ? "disabled" : "";
 
@@ -21,11 +24,23 @@
 
 <div class="container mt-5">
     <div class="card shadow border-0">
+
         <div class="card-header-utt p-4 rounded-top" style="background-color: var(--utt-red, #dc3545); color: white;">
             <h3 class="mb-0 fw-bold"><i class="bi bi-person-lines-fill"></i> Entrevista Inicial de Tutoría</h3>
         </div>
 
         <div class="card-body p-4" style="background-color: var(--utt-white);">
+
+            @if (requiereActualizacion)
+            {
+                <div class="alert alert-warning shadow-sm border-warning mb-4">
+                    <h5 class="fw-bold text-dark"><i class="bi bi-bell-fill text-warning"></i> ¡Nuevo Ciclo Escolar!</h5>
+                    <p class="mb-0 text-dark">
+                        Por favor, revisa que tu información siga siendo correcta. Si cambiaste de transporte, internet, o situación laboral, actualízalo y haz clic en <strong>Enviar Información</strong> al final de la página.
+                    </p>
+                </div>
+            }
+
             <form asp-area="Gestion" asp-controller="Tutorship" asp-action="GuardarEntrevista" method="post" enctype="multipart/form-data">
 
                 <input type="hidden" name="UserId" value="@Model.UserId" />

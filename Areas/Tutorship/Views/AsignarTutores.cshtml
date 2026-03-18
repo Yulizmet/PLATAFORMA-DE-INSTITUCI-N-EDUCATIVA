@@ -12,7 +12,7 @@
                 <h2 class="fw-bold m-0" style="color: var(--utt-dark-red);">
                     <i class="bi bi-diagram-3-fill"></i> Asignación de Tutores a Grupos
                 </h2>
-                <a asp-area="Gestion" asp-controller="Tutorship" asp-action="Controlador" class="btn btn-outline-secondary btn-sm">
+                <a asp-action="Controlador" class="btn btn-outline-secondary btn-sm">
                     <i class="bi bi-arrow-left"></i> Volver al panel
                 </a>
             </div>
@@ -42,7 +42,7 @@
                             <label class="form-label fw-bold" style="color: var(--utt-black);">1. Selecciona al Maestro (Tutor)</label>
                             <select name="teacherId" class="form-select form-select-lg" style="border-color: var(--utt-beige);" required>
                                 <option value="">-- Elige un profesor --</option>
-                                @if (maestros != null && maestros.Any())
+                                @if (maestros != null)
                                 {
                                     foreach (var maestro in maestros)
                                     {
@@ -51,10 +51,6 @@
                                         </option>
                                     }
                                 }
-                                else
-                                {
-                                    <option value="" disabled>No hay maestros con Rol 2 registrados</option>
-                                }
                             </select>
                         </div>
 
@@ -62,7 +58,7 @@
                             <label class="form-label fw-bold" style="color: var(--utt-black);">2. Selecciona el Grupo</label>
                             <select name="groupId" class="form-select form-select-lg" style="border-color: var(--utt-beige);" required>
                                 <option value="">-- Elige un grupo --</option>
-                                @if (grupos != null && grupos.Any())
+                                @if (grupos != null)
                                 {
                                     foreach (var grupo in grupos)
                                     {
@@ -70,10 +66,6 @@
                                             Grado @grupo.GradeLevelId | Grupo @grupo.Name
                                         </option>
                                     }
-                                }
-                                else
-                                {
-                                    <option value="" disabled>No hay grupos disponibles en el módulo Grades</option>
                                 }
                             </select>
                             <div class="form-text mt-2 text-muted">
