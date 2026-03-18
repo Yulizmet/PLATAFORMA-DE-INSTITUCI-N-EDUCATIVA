@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/SchoolManager.styles.css" asp-append-version="true" />
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    @await RenderSectionAsync("Styles", required: false)
 </head>
 <body>
     <header>
@@ -29,10 +30,18 @@
                         </li>
                         <li class="nav-item">
                             <a class="nav-link text-dark"
-                               asp-area="Procedures"
-                               asp-controller="Dashboard"
-                               asp-action="Index">
+                                   asp-area="Procedures"
+                                   asp-controller="Dashboard"
+                                   asp-action="Index">
                                 Trámites
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-dark"
+                                   asp-area="Enrollment"
+                                   asp-controller="PreEnrollment"
+                                   asp-action="Create">
+                                Preinscripción/Inscripción
                             </a>
                         </li>
                         <li class="nav-item">
@@ -63,7 +72,6 @@
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
     <script src="/js/Areas/Index/GeneralFrontEnd.js"></script>
-
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     @await RenderSectionAsync("Scripts", required: false)
