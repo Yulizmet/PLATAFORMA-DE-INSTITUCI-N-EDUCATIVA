@@ -1,0 +1,136 @@
+﻿@model IEnumerable<SchoolManager.Models.ForoPublicacion>
+
+@{
+    ViewData["Title"] = "Foro";
+    Layout = "~/Areas/MainScreen/Views/Shared/_Layout.cshtml";
+}
+
+<section class="sistema-section">
+    <div class="container">
+        <h2 class="sistema-title mb-5 text-center">Foro Escolar</h2>
+
+        @if (Model != null && Model.Any())
+        {
+            @foreach (var post in Model)
+            {
+                var imagen = post.Imagenes?.FirstOrDefault();
+
+                <div class="foro-post">
+
+                    @if (post.EstiloVisual == "clasico")
+                    {
+                        <div class="preview-card clasico-style">
+                            @if (imagen != null)
+                            {
+                                <img src="@imagen.UrlImagen"
+                                     alt="@post.Titulo"
+                                     class="img-fluid">
+                            }
+
+                            <h3>@post.Titulo</h3>
+                            <p>@post.Descripcion</p>
+
+                            @if (!string.IsNullOrWhiteSpace(post.LinkExterno))
+                            {
+                                <a href="@post.LinkExterno" target="_blank" class="btn btn-calificaciones btn-sm mt-2">
+                                    Leer más
+                                </a>
+                            }
+                        </div>
+                    }
+                    else if (post.EstiloVisual == "destacado")
+                    {
+                        <div class="preview-card destacado-style">
+                            @if (imagen != null)
+                            {
+                                <img src="@imagen.UrlImagen"
+                                     alt="@post.Titulo"
+                                     class="img-fluid">
+                            }
+
+                            <h2>@post.Titulo</h2>
+                            <p>@post.Descripcion</p>
+
+                            @if (!string.IsNullOrWhiteSpace(post.LinkExterno))
+                            {
+                                <a href="@post.LinkExterno" target="_blank" class="btn btn-hero-primary btn-sm mt-2">
+                                    Leer más
+                                </a>
+                            }
+                        </div>
+                    }
+                    else if (post.EstiloVisual == "minimalista")
+                    {
+                        <div class="preview-card minimalista-style">
+                            @if (imagen != null)
+                            {
+                                <img src="@imagen.UrlImagen"
+                                     alt="@post.Titulo"
+                                     class="img-fluid">
+                            }
+
+                            <h4>@post.Titulo</h4>
+                            <p>@post.Descripcion</p>
+
+                            @if (!string.IsNullOrWhiteSpace(post.LinkExterno))
+                            {
+                                <a href="@post.LinkExterno" target="_blank" class="portal-link d-inline-block mt-2">
+                                    Link →
+                                </a>
+                            }
+                        </div>
+                    }
+                    else if (post.EstiloVisual == "banner")
+                    {
+                        <div class="preview-card banner-style">
+                            @if (imagen != null)
+                            {
+                                <img src="@imagen.UrlImagen"
+                                     alt="@post.Titulo"
+                                     class="img-fluid">
+                            }
+
+                            <h2>@post.Titulo</h2>
+                            <p>@post.Descripcion</p>
+
+                            @if (!string.IsNullOrWhiteSpace(post.LinkExterno))
+                            {
+                                <a href="@post.LinkExterno" target="_blank" class="btn btn-light btn-sm mt-2">
+                                    Leer más
+                                </a>
+                            }
+                        </div>
+                    }
+                    else if (post.EstiloVisual == "horizontal")
+                    {
+                        <div class="preview-card horizontal-style">
+                            @if (imagen != null)
+                            {
+                                <img src="@imagen.UrlImagen"
+                                     alt="@post.Titulo"
+                                     class="img-fluid">
+                            }
+
+                            <h3>@post.Titulo</h3>
+                            <p>@post.Descripcion</p>
+
+                            @if (!string.IsNullOrWhiteSpace(post.LinkExterno))
+                            {
+                                <a href="@post.LinkExterno" target="_blank" class="btn btn-calificaciones btn-sm mt-2">
+                                    Leer más
+                                </a>
+                            }
+                        </div>
+                    }
+
+                </div>
+            }
+        }
+        else
+        {
+            <div class="admin-card text-center">
+                <p class="text-muted m-0">No hay publicaciones disponibles en este momento.</p>
+            </div>
+        }
+    </div>
+</section>
