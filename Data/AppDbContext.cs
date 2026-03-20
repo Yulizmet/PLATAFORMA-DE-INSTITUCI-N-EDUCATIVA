@@ -66,6 +66,7 @@ namespace SchoolManager.Data
         public DbSet<social_service_assignment> SocialServiceAssignments { get; set; } = default!;
         public DbSet<social_service_attendance> SocialServiceAttendances { get; set; } = default!;
         public DbSet<social_service_log> SocialServiceLogs { get; set; } = default!;
+        public DbSet<social_service_rejection> SocialServiceRejections { get; set; } = default!;
 
         // Foro (Noticias y Publicaciones)
         public DbSet<ForoPublicacion> ForoPublicaciones { get; set; }

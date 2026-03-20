@@ -55,6 +55,10 @@ namespace SchoolManager.Models
         [Column("TeacherComments")]
         public string? TeacherComments { get; set; }
 
+        [MaxLength(255)]
+        [Column("PdfFileName")]
+        public string? PdfFileName { get; set; }
+
         [ForeignKey("StudentId")]
         public virtual users_user? Student { get; set; }
 

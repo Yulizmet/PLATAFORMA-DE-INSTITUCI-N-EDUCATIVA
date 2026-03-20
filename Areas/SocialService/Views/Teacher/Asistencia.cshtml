@@ -22,9 +22,69 @@
     <a href="/SocialService/Teacher/Dashboard" class="btn btn-secondary">
         <i class="bi bi-arrow-left"></i> Regresar al Dashboard
     </a>
-    <button type="button" class="btn btn-info" data-bs-toggle="modal" data-bs-target="#historialModal">
-        <i class="bi bi-clock-history"></i> Ver Historial Completo
-    </button>
+</div>
+
+<!-- Filtros -->
+<div class="card mb-3">
+    <div class="card-body py-3">
+        <form method="get" action="/SocialService/Teacher/Asistencia" id="filterForm">
+            <div class="row g-3 align-items-end">
+                <div class="col-md-4">
+                    <label for="searchName" class="form-label">
+                        <i class="bi bi-search"></i> Buscar Alumno
+                    </label>
+                    <input type="text" class="form-control" id="searchName" name="searchName"
+                           value="@ViewBag.SearchName" placeholder="Escribe para buscar...">
+                </div>
+
+                <div class="col-md-3">
+                    <label for="groupFilter" class="form-label">
+                        <i class="bi bi-funnel"></i> Filtrar por Grupo
+                    </label>
+                    <select id="groupFilter" name="groupFilter" class="form-select" onchange="this.form.submit()">
+                        <option value="">Todos los grupos</option>
+                        @if (ViewBag.Groups != null)
+                        {
+                            foreach (var group in ViewBag.Groups)
+                            {
+                                <option value="@group" selected="@(ViewBag.GroupFilter == group)">@group</option>
+                            }
+                        }
+                    </select>
+                </div>
+
+                <div class="col-md-3">
+                    <label for="pageSize" class="form-label">
+                        <i class="bi bi-list-ol"></i> Registros
+                    </label>
+                    <select id="pageSize" name="pageSize" class="form-select" onchange="this.form.submit()">
+                        @foreach (var size in new[] { 10, 25, 50, 100 })
+                        {
+                            <option value="@size" selected="@(ViewBag.PageSize == size)">@size</option>
+                        }
+                    </select>
+                </div>
+
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="bi bi-search"></i> Buscar
+                    </button>
+                </div>
+            </div>
+            <input type="hidden" name="sortBy" value="@ViewBag.CurrentSort" />
+            <input type="hidden" name="sortOrder" value="@ViewBag.SortOrder" />
+            <input type="hidden" name="page" value="1" />
+        </form>
+
+        @if (ViewBag.TotalRecords != null)
+        {
+            <div class="mt-2">
+                <small class="text-muted">
+                    Mostrando @Model.Students.Count() de @ViewBag.TotalRecords registro(s)
+                </small>
+            </div>
+        }
+    </div>
 </div>
 
 <div class="card">
@@ -38,20 +98,54 @@
         @if (Model.Students.Any())
         {
             <form method="post" action="/SocialService/Teacher/GuardarAsistencia">
+                <input type="hidden" name="sortBy" value="@ViewBag.CurrentSort" />
+                <input type="hidden" name="sortOrder" value="@ViewBag.SortOrder" />
+                <input type="hidden" name="groupFilter" value="@ViewBag.GroupFilter" />
+                <input type="hidden" name="searchName" value="@ViewBag.SearchName" />
+                <input type="hidden" name="page" value="@ViewBag.CurrentPage" />
+                <input type="hidden" name="pageSize" value="@ViewBag.PageSize" />
+
+                @foreach (var student in Model.Students)
+                {
+                    <input type="hidden" name="allStudentsOnPage" value="@student.Assignment.StudentId" />
+                }
+
                 <div class="table-responsive">
-                    <table class="table table-hover">
+                    <table class="table table-hover ss-table-cards">
                         <thead>
                             <tr>
-                                <th style="width:40%">Alumno</th>
-                                <th class="text-center">Grupo</th>
+                                @{
+                                    string currentSort = ViewBag.CurrentSort ?? "name";
+                                    string currentOrder = ViewBag.SortOrder ?? "asc";
+
+                                    string SortUrl(string column)
+                                    {
+                                        string order = (currentSort == column && currentOrder == "asc") ? "desc" : "asc";
+                                        return $"?sortBy={column}&sortOrder={order}&groupFilter={ViewBag.GroupFilter}&searchName={ViewBag.SearchName}&pageSize={ViewBag.PageSize}&page=1";
+                                    }
+
+                                    string SortIcon(string column)
+                                    {
+                                        if (currentSort != column) return "bi bi-arrow-down-up text-muted";
+                                        return currentOrder == "asc" ? "bi bi-sort-up" : "bi bi-sort-down";
+                                    }
+                                }
+                                <th>
+                                    <a href="@SortUrl("name")">
+                                        Alumno <i class="@SortIcon("name")"></i>
+                                    </a>
+                                </th>
+                                <th class="text-center">
+                                    <a href="@SortUrl("group")">
+                                        Grupo <i class="@SortIcon("group")"></i>
+                                    </a>
+                                </th>
                                 @{
                                     var allDates = Model.Students
                                         .SelectMany(s => s.RecentAttendances.Select(a => a.Date.Date))
                                         .Where(d => d < Model.Today)
                                         .Distinct()
                                         .OrderByDescending(d => d)
-                                        .Take(3)
-                                        .OrderBy(d => d)
                                         .ToList();
 
                                     foreach (var date in allDates)
@@ -67,7 +161,7 @@
                         <tbody>
                             @foreach (var student in Model.Students)
                             {
-                                var fullName = $"{student.Assignment.Student.Person.FirstName} {student.Assignment.Student.Person.LastNamePaternal} {student.Assignment.Student.Person.LastNameMaternal}";
+                                var fullName = $"{student.Assignment.Student.Person.LastNamePaternal} {student.Assignment.Student.Person.LastNameMaternal} {student.Assignment.Student.Person.FirstName}";
                                 <tr>
                                     <td>@fullName</td>
                                     <td class="text-center">
@@ -180,102 +274,65 @@
     }
 </style>
 
-<!-- Modal Historial Completo -->
-<div class="modal fade" id="historialModal" tabindex="-1" aria-labelledby="historialModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-xl">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="historialModalLabel">
-                    <i class="bi bi-clock-history"></i> Historial Completo de Asistencias
-                </h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                @if (Model.Students.Any())
+<!-- Paginación -->
+@if (ViewBag.TotalPages > 1)
+{
+    <nav aria-label="Navegación de páginas" class="mt-4">
+        <ul class="pagination justify-content-center">
+            <li class="page-item @(ViewBag.CurrentPage == 1 ? "disabled" : "")">
+                <a class="page-link"
+                   href="?sortBy=@ViewBag.CurrentSort&sortOrder=@ViewBag.SortOrder&groupFilter=@ViewBag.GroupFilter&searchName=@ViewBag.SearchName&pageSize=@ViewBag.PageSize&page=@(ViewBag.CurrentPage - 1)"
+                   aria-label="Anterior">
+                    <span aria-hidden="true">&laquo; Anterior</span>
+                </a>
+            </li>
+
+            @{
+                int currentPage = ViewBag.CurrentPage;
+                int totalPages = ViewBag.TotalPages;
+                int startPage = Math.Max(1, currentPage - 2);
+                int endPage = Math.Min(totalPages, currentPage + 2);
+
+                if (startPage > 1)
                 {
-                    <div class="table-responsive">
-                        <table class="table table-hover table-striped">
-                            <thead class="table-light">
-                                <tr>
-                                    <th style="width:40%">Alumno</th>
-                                    <th class="text-center">Grupo</th>
-                                    @{
-                                        var allHistoricalDates = Model.Students
-                                            .SelectMany(s => s.RecentAttendances.Select(a => a.Date.Date))
-                                            .Distinct()
-                                            .OrderByDescending(d => d)
-                                            .ToList();
-
-                                        foreach (var date in allHistoricalDates)
-                                        {
-                                            <th class="text-center">@date.ToString("dd/MM/yyyy")</th>
-                                        }
-                                    }
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach (var student in Model.Students)
-                                {
-                                    var fullName = $"{student.Assignment.Student.Person.FirstName} {student.Assignment.Student.Person.LastNamePaternal} {student.Assignment.Student.Person.LastNameMaternal}";
-                                    <tr>
-                                        <td>@fullName</td>
-                                        <td class="text-center">
-                                            @if (!string.IsNullOrEmpty(student.Assignment.GroupName))
-                                            {
-                                                <span class="badge bg-info">@student.Assignment.GroupName</span>
-                                            }
-                                            else
-                                            {
-                                                <span class="text-muted">N/A</span>
-                                            }
-                                        </td>
-
-                                        @foreach (var date in allHistoricalDates)
-                                        {
-                                            var attendance = student.RecentAttendances.FirstOrDefault(a => a.Date.Date == date);
-                                            <td class="text-center">
-                                                @if (attendance != null)
-                                                {
-                                                    @if (attendance.IsPresent)
-                                                    {
-                                                        <span class="badge-present">P</span>
-                                                    }
-                                                    else
-                                                    {
-                                                        <span class="badge-absent">A</span>
-                                                    }
-                                                }
-                                                else
-                                                {
-                                                    <span class="text-muted">-</span>
-                                                }
-                                            </td>
-                                        }
-                                    </tr>
-                                }
-                            </tbody>
-                        </table>
-                    </div>
-
-                    @if (!allHistoricalDates.Any())
+                    <li class="page-item">
+                        <a class="page-link"
+                           href="?sortBy=@ViewBag.CurrentSort&sortOrder=@ViewBag.SortOrder&groupFilter=@ViewBag.GroupFilter&searchName=@ViewBag.SearchName&pageSize=@ViewBag.PageSize&page=1">1</a>
+                    </li>
+                    if (startPage > 2)
                     {
-                        <div class="alert alert-info">
-                            <i class="bi bi-info-circle"></i> No hay registros de asistencia previos.
-                        </div>
+                        <li class="page-item disabled"><span class="page-link">...</span></li>
                     }
                 }
-                else
+
+                for (int i = startPage; i <= endPage; i++)
                 {
-                    <div class="alert alert-info">
-                        <i class="bi bi-info-circle"></i> No tienes alumnos asignados.
-                    </div>
+                    <li class="page-item @(i == currentPage ? "active" : "")">
+                        <a class="page-link"
+                           href="?sortBy=@ViewBag.CurrentSort&sortOrder=@ViewBag.SortOrder&groupFilter=@ViewBag.GroupFilter&searchName=@ViewBag.SearchName&pageSize=@ViewBag.PageSize&page=@i">@i</a>
+                    </li>
                 }
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                    <i class="bi bi-x-circle"></i> Cerrar
-                </button>
-            </div>
-        </div>
-    </div>
-</div>
+
+                if (endPage < totalPages)
+                {
+                    if (endPage < totalPages - 1)
+                    {
+                        <li class="page-item disabled"><span class="page-link">...</span></li>
+                    }
+                    <li class="page-item">
+                        <a class="page-link"
+                           href="?sortBy=@ViewBag.CurrentSort&sortOrder=@ViewBag.SortOrder&groupFilter=@ViewBag.GroupFilter&searchName=@ViewBag.SearchName&pageSize=@ViewBag.PageSize&page=@totalPages">@totalPages</a>
+                    </li>
+                }
+            }
+
+            <li class="page-item @(ViewBag.CurrentPage >= ViewBag.TotalPages ? "disabled" : "")">
+                <a class="page-link"
+                   href="?sortBy=@ViewBag.CurrentSort&sortOrder=@ViewBag.SortOrder&groupFilter=@ViewBag.GroupFilter&searchName=@ViewBag.SearchName&pageSize=@ViewBag.PageSize&page=@(ViewBag.CurrentPage + 1)"
+                   aria-label="Siguiente">
+                    <span aria-hidden="true">Siguiente &raquo;</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+}
