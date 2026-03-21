@@ -174,31 +174,23 @@
                                             @(alumno.GroupName ?? "N/A")
                                         </td>
                                         <td class="text-center" data-label="Total Bitácoras">
-                                            <span class="badge bg-info">
-                                                @alumno.TotalBitacoras
-                                            </span>
+                                            @alumno.TotalBitacoras
                                         </td>
                                         <td class="text-center" data-label="Bitácoras Pendientes">
                                             @if (alumno.BitacorasPendientesCount > 0)
                                             {
-                                                <span class="badge bg-warning text-dark">
-                                                    @alumno.BitacorasPendientesCount
-                                                </span>
+                                                @alumno.BitacorasPendientesCount
                                             }
                                             else
                                             {
-                                                <span class="badge bg-success">0</span>
+                                                <text>0</text>
                                             }
                                         </td>
                                         <td class="text-center" data-label="Horas Prácticas">
-                                            <span class="badge bg-primary">
-                                                @alumno.TotalHorasPracticas h
-                                            </span>
+                                            @alumno.TotalHorasPracticas h
                                         </td>
                                         <td class="text-center" data-label="Horas Servicio Social">
-                                            <span class="badge bg-primary">
-                                                @alumno.TotalHorasServicioSocial h
-                                            </span>
+                                            @alumno.TotalHorasServicioSocial h
                                         </td>
                                         <td class="text-center" data-label="Validación">
                                             @{

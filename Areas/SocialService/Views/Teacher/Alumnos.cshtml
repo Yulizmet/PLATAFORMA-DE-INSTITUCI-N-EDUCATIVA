@@ -227,7 +227,7 @@
                             <td class="text-center" data-label="Semestre">
                                 @if (!string.IsNullOrEmpty(assignment.SemesterName))
                                 {
-                                    <span class="badge bg-primary">@assignment.SemesterName</span>
+                                    @assignment.SemesterName
                                 }
                                 else
                                 {
@@ -237,7 +237,7 @@
                             <td class="text-center" data-label="Grupo">
                                 @if (!string.IsNullOrEmpty(assignment.GroupName))
                                 {
-                                    <span class="badge bg-info">@assignment.GroupName</span>
+                                    @assignment.GroupName
                                 }
                                 else
                                 {

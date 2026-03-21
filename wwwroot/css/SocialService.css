@@ -436,7 +436,6 @@ textarea.form-control {
     padding: 1.25rem;
     border-radius: 12px;
     box-shadow: var(--ss-shadow-md);
-    border-left: 4px solid var(--rojo-principal);
     display: flex;
     flex-direction: column;
     height: 100%;
@@ -895,28 +894,6 @@ textarea.form-control {
 
 /* Role Arrow */
 /* Role arrow eliminado */
-
-/* Student Card Accent */
-.ss-role-card:first-child .ss-role-card-inner::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 5px;
-    background: #667eea;
-}
-
-/* Teacher Card Accent */
-.ss-role-card:last-child .ss-role-card-inner::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 5px;
-    background: var(--rojo-principal);
-}
 
 /* ====== RESPONSIVE - INDEX ====== */
 @media (max-width: 768px) {
