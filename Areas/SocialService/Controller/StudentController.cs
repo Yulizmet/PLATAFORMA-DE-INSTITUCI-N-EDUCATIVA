@@ -263,13 +263,15 @@ namespace SchoolManager.Areas.SocialService.Controllers
                 // Guardar archivo PDF si se proporcionó
                 if (vm.PdfFile != null && vm.PdfFile.Length > 0)
                 {
-                    var pdfFileName = SavePdfFile(vm.PdfFile, currentStudentId, vm.Week);
-                    if (pdfFileName == null)
+                    var pdfData = ValidateAndReadPdfFile(vm.PdfFile);
+                    if (pdfData == null)
                     {
                         TempData["Error"] = "Solo se permiten archivos PDF de máximo 10 MB.";
                         return View(vm);
                     }
-                    log.PdfFileName = pdfFileName;
+                    log.PdfFileName = vm.PdfFile.FileName;
+                    log.PdfFileData = pdfData;
+                    log.PdfContentType = "application/pdf";
                 }
 
                 _context.SocialServiceLogs.Add(log);
@@ -370,19 +372,16 @@ namespace SchoolManager.Areas.SocialService.Controllers
                 // Guardar archivo PDF si se proporcionó uno nuevo
                 if (vm.PdfFile != null && vm.PdfFile.Length > 0)
                 {
-                    var pdfFileName = SavePdfFile(vm.PdfFile, currentStudentId, vm.Week);
-                    if (pdfFileName == null)
+                    var pdfData = ValidateAndReadPdfFile(vm.PdfFile);
+                    if (pdfData == null)
                     {
                         TempData["Error"] = "Solo se permiten archivos PDF de máximo 10 MB.";
                         ViewBag.LogId = id;
                         return View(vm);
                     }
-                    // Eliminar el PDF anterior si existe
-                    if (!string.IsNullOrEmpty(bitacora.PdfFileName))
-                    {
-                        DeletePdfFile(bitacora.PdfFileName);
-                    }
-                    bitacora.PdfFileName = pdfFileName;
+                    bitacora.PdfFileName = vm.PdfFile.FileName;
+                    bitacora.PdfFileData = pdfData;
+                    bitacora.PdfContentType = "application/pdf";
                 }
 
                 _context.SaveChanges();
@@ -458,7 +457,7 @@ namespace SchoolManager.Areas.SocialService.Controllers
             return 0;
         }
 
-        private string? SavePdfFile(IFormFile pdfFile, int studentId, string week)
+        private byte[]? ValidateAndReadPdfFile(IFormFile pdfFile)
         {
             if (pdfFile == null || pdfFile.Length == 0)
                 return null;
@@ -472,28 +471,9 @@ namespace SchoolManager.Areas.SocialService.Controllers
             if (pdfFile.Length > 10 * 1024 * 1024)
                 return null;
 
-            var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "bitacoras");
-            if (!Directory.Exists(uploadsFolder))
-                Directory.CreateDirectory(uploadsFolder);
-
-            var fileName = $"bitacora_{studentId}_semana{week}_{DateTime.Now:yyyyMMddHHmmss}.pdf";
-            var filePath = Path.Combine(uploadsFolder, fileName);
-
-            using (var stream = new FileStream(filePath, FileMode.Create))
-            {
-                pdfFile.CopyTo(stream);
-            }
-
-            return fileName;
-        }
-
-        private void DeletePdfFile(string fileName)
-        {
-            var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "bitacoras", fileName);
-            if (System.IO.File.Exists(filePath))
-            {
-                System.IO.File.Delete(filePath);
-            }
+            using var ms = new MemoryStream();
+            pdfFile.CopyTo(ms);
+            return ms.ToArray();
         }
 
         [HttpGet]
@@ -516,13 +496,21 @@ namespace SchoolManager.Areas.SocialService.Controllers
             if (!isOwner && !isTeacher)
                 return Forbid();
 
+            // Servir desde la base de datos
+            if (bitacora.PdfFileData != null && bitacora.PdfFileData.Length > 0)
+            {
+                return File(bitacora.PdfFileData, bitacora.PdfContentType ?? "application/pdf", bitacora.PdfFileName);
+            }
+
+            // Fallback: intentar leer del filesystem para archivos anteriores
             var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "bitacoras", bitacora.PdfFileName);
+            if (System.IO.File.Exists(filePath))
+            {
+                var stream = System.IO.File.OpenRead(filePath);
+                return File(stream, "application/pdf", bitacora.PdfFileName);
+            }
 
-            if (!System.IO.File.Exists(filePath))
-                return NotFound();
-
-            var stream = System.IO.File.OpenRead(filePath);
-            return File(stream, "application/pdf");
+            return NotFound();
         }
     }
 }

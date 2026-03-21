@@ -614,16 +614,6 @@ namespace SchoolManager.Areas.SocialService.Controllers
 
             _context.SocialServiceRejections.Add(rejection);
 
-            // Eliminar el archivo PDF si existe
-            if (!string.IsNullOrEmpty(bitacora.PdfFileName))
-            {
-                var pdfPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "bitacoras", bitacora.PdfFileName);
-                if (System.IO.File.Exists(pdfPath))
-                {
-                    System.IO.File.Delete(pdfPath);
-                }
-            }
-
             _context.SocialServiceLogs.Remove(bitacora);
             await _context.SaveChangesAsync();
 

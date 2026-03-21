@@ -59,6 +59,13 @@ namespace SchoolManager.Models
         [Column("PdfFileName")]
         public string? PdfFileName { get; set; }
 
+        [Column("PdfFileData")]
+        public byte[]? PdfFileData { get; set; }
+
+        [MaxLength(100)]
+        [Column("PdfContentType")]
+        public string? PdfContentType { get; set; }
+
         [ForeignKey("StudentId")]
         public virtual users_user? Student { get; set; }
 
