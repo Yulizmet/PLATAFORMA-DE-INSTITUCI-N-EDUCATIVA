@@ -1,10 +1,12 @@
-﻿// estadisticas.js — Calificaciones, Servicios Sociales, Trámites
+﻿// estadisticas.js — Calificaciones, Servicios Sociales, Trámites, Bitácoras
 (function () {
     // ── Datos ────────────────────────────────────────────────────────────────
     const raw = window.__estadisticasData || {};
-    const students = (typeof raw.students === 'string') ? JSON.parse(raw.students) : (raw.students || []);
+    const students       = (typeof raw.students       === 'string') ? JSON.parse(raw.students)       : (raw.students       || []);
     const socialServices = (typeof raw.socialServices === 'string') ? JSON.parse(raw.socialServices) : (raw.socialServices || []);
-    const procedures = (typeof raw.procedures === 'string') ? JSON.parse(raw.procedures) : (raw.procedures || []);
+    const procedures     = (typeof raw.procedures     === 'string') ? JSON.parse(raw.procedures)     : (raw.procedures     || []);
+    const psychologyLogs = (typeof raw.psychologyLogs === 'string') ? JSON.parse(raw.psychologyLogs) : (raw.psychologyLogs || []);
+    const medicalLogs    = (typeof raw.medicalLogs    === 'string') ? JSON.parse(raw.medicalLogs)    : (raw.medicalLogs    || []);
 
     // Estado de listas filtradas (para social y trámites que viven en memoria)
     let filteredSocialServices = [...socialServices];
@@ -627,6 +629,102 @@
     }
 
     // ════════════════════════════════════════════════════════════════════════
+    // BITÁCORAS — Psicología
+    // ════════════════════════════════════════════════════════════════════════
+    function populatePsychologyTable(list) {
+        const tbody = $('#psychologyTable tbody');
+        if (!tbody.length) return;
+        tbody.empty();
+        if (!list || !list.length) {
+            tbody.html('<tr><td colspan="7" class="text-center text-muted py-4">Sin datos disponibles</td></tr>');
+            return;
+        }
+        list.forEach(item => {
+            const apptDate = item.AppointmentDate ? new Date(item.AppointmentDate).toLocaleString('es-MX') : 'N/A';
+            const createdAt = item.CreatedAt ? new Date(item.CreatedAt).toLocaleDateString('es-MX') : 'N/A';
+            tbody.append(`<tr>
+                <td>${escapeHtml(item.Folio || 'Sin folio')}</td>
+                <td>${escapeHtml(item.StudentName || 'Sin nombre')}</td>
+                <td>${escapeHtml(item.EnrollmentOrMatricula || 'Sin matrícula')}</td>
+                <td>${apptDate}</td>
+                <td>${getPsyAttendanceBadge(item.AttendanceStatus)}</td>
+                <td>${escapeHtml(item.Observations || '')}</td>
+                <td>${createdAt}</td>
+            </tr>`);
+        });
+    }
+
+    function getPsyAttendanceBadge(status) {
+        const m = {
+            'Asistió': '<span class="badge bg-success">Asistió</span>',
+            'No asistió': '<span class="badge bg-danger">No asistió</span>',
+            'Justificado': '<span class="badge bg-warning text-dark">Justificado</span>'
+        };
+        return m[status] || `<span class="badge bg-secondary">${escapeHtml(status || 'Sin estado')}</span>`;
+    }
+
+    function updatePsychologyCards(list) {
+        if (!list || !list.length) {
+            $('#statPsyTotal,#statPsyAttended,#statPsyAbsent,#statPsyJustified').text('0'); return;
+        }
+        $('#statPsyTotal').text(list.length);
+        $('#statPsyAttended').text(list.filter(i => (i.AttendanceStatus || '') === 'Asistió').length);
+        $('#statPsyAbsent').text(list.filter(i => (i.AttendanceStatus || '') === 'No asistió').length);
+        $('#statPsyJustified').text(list.filter(i => (i.AttendanceStatus || '') === 'Justificado').length);
+    }
+
+    // ════════════════════════════════════════════════════════════════════════
+    // BITÁCORAS — Enfermería
+    // ════════════════════════════════════════════════════════════════════════
+    function populateMedicalTable(list) {
+        const tbody = $('#medicalTable tbody');
+        if (!tbody.length) return;
+        tbody.empty();
+        if (!list || !list.length) {
+            tbody.html('<tr><td colspan="9" class="text-center text-muted py-4">Sin datos disponibles</td></tr>');
+            return;
+        }
+        list.forEach(item => {
+            const recDate = item.RecordDate ? new Date(item.RecordDate).toLocaleString('es-MX') : 'N/A';
+            tbody.append(`<tr>
+                <td>${escapeHtml(item.Folio || 'Sin folio')}</td>
+                <td>${escapeHtml(item.StudentName || 'Sin nombre')}</td>
+                <td>${escapeHtml(item.EnrollmentOrMatricula || 'Sin matrícula')}</td>
+                <td>${recDate}</td>
+                <td>${escapeHtml(item.ConsultationReason || '')}</td>
+                <td>${escapeHtml(item.VitalSigns || '')}</td>
+                <td>${escapeHtml(item.Observations || '')}</td>
+                <td>${escapeHtml(item.TreatmentAction || '')}</td>
+                <td>${getMedStatusBadge(item.Status)}</td>
+            </tr>`);
+        });
+    }
+
+    function getMedStatusBadge(status) {
+        const m = {
+            'Estable': '<span class="badge bg-success">Estable</span>',
+            'Alta': '<span class="badge bg-success">Alta</span>',
+            'Urgente': '<span class="badge bg-danger">Urgente</span>',
+            'Critico': '<span class="badge bg-danger">Crítico</span>',
+            'Observacion': '<span class="badge bg-warning text-dark">Observación</span>',
+            'Pendiente': '<span class="badge bg-warning text-dark">Pendiente</span>'
+        };
+        return m[status] || `<span class="badge bg-secondary">${escapeHtml(status || 'Sin estado')}</span>`;
+    }
+
+    function updateMedicalCards(list) {
+        if (!list || !list.length) {
+            $('#statMedTotal,#statMedAttended,#statMedPending,#statMedOther').text('0'); return;
+        }
+        const attended = ['Estable', 'Alta'];
+        const pending  = ['Urgente', 'Critico', 'Observacion', 'Pendiente'];
+        $('#statMedTotal').text(list.length);
+        $('#statMedAttended').text(list.filter(i => attended.includes(i.Status || '')).length);
+        $('#statMedPending').text(list.filter(i => pending.includes(i.Status || '')).length);
+        $('#statMedOther').text(list.filter(i => !attended.includes(i.Status || '') && !pending.includes(i.Status || '')).length);
+    }
+
+    // ════════════════════════════════════════════════════════════════════════
     // INIT
     // ════════════════════════════════════════════════════════════════════════
     $(function () {
@@ -645,6 +743,14 @@
         populateProceduresTable(filteredProcedures);
         updateProcedureCards(filteredProcedures);
         renderAllTramitesCharts(filteredProcedures);
+
+        // Bitácoras — Psicología
+        populatePsychologyTable(psychologyLogs);
+        updatePsychologyCards(psychologyLogs);
+
+        // Bitácoras — Enfermería
+        populateMedicalTable(medicalLogs);
+        updateMedicalCards(medicalLogs);
 
         // ── Listeners Calificaciones ──
         $('#filterName').on('input', applyStudentFilters);
@@ -691,6 +797,16 @@
                     ['Folio', 'Usuario', 'Tipo de trámite', 'Área', 'Estado', 'Fecha creación', 'Fecha actualización', 'Días transcurridos'],
                     ['Folio', 'StudentName', 'ProcedureType', 'AreaName', 'StatusName', 'DateCreated', 'DateUpdated', 'DaysElapsed'],
                     `tramites_${d}.csv`);
+            else if ($('#subViewPsicologia').is(':visible') && $('#viewBitacoras').is(':visible'))
+                exportDataToCSV(psychologyLogs,
+                    ['Folio', 'Alumno', 'Matrícula', 'Fecha cita', 'Asistencia', 'Observaciones', 'Fecha creación'],
+                    ['Folio', 'StudentName', 'EnrollmentOrMatricula', 'AppointmentDate', 'AttendanceStatus', 'Observations', 'CreatedAt'],
+                    `psicologia_${d}.csv`);
+            else if ($('#subViewEnfermeria').is(':visible') && $('#viewBitacoras').is(':visible'))
+                exportDataToCSV(medicalLogs,
+                    ['Folio', 'Alumno', 'Matrícula', 'Fecha registro', 'Motivo', 'Signos vitales', 'Observaciones', 'Acción', 'Estado'],
+                    ['Folio', 'StudentName', 'EnrollmentOrMatricula', 'RecordDate', 'ConsultationReason', 'VitalSigns', 'Observations', 'TreatmentAction', 'Status'],
+                    `enfermeria_${d}.csv`);
         });
     });
 })(); // ── fin IIFE ──

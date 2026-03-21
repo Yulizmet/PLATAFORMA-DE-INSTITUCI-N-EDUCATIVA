@@ -22,11 +22,18 @@ namespace SchoolManager.Pages.Estadisticas
         public List<EmployeeStatisticsVM> Employees { get; private set; } = new();
         public List<SocialServiceStatisticsVM> SocialServiceStats { get; private set; } = new();
         public List<ProcedureStatisticsVM> ProcedureStats { get; private set; } = new();
+        public List<PsychologyLogStatisticsVM> PsychologyLogs { get; private set; } = new();
+        public List<MedicalLogStatisticsVM> MedicalLogs { get; private set; } = new();
 
         public string JsonStudents { get; private set; } = "[]";
         public string JsonEmployees { get; private set; } = "[]";
         public string JsonSocialServiceStats { get; private set; } = "[]";
         public string JsonProcedureStats { get; private set; } = "[]";
+        public string JsonPsychologyLogs { get; private set; } = "[]";
+        public string JsonMedicalLogs { get; private set; } = "[]";
+
+        // Temporal: captura diagnóstico de la carga de Bitácoras
+        public string BitacorasDebugInfo { get; private set; } = string.Empty;
 
         public int Total => Students.Count;
         public int CountInscrito => Students.Count(s => s.Estado == "Inscrito");
@@ -42,11 +49,15 @@ namespace SchoolManager.Pages.Estadisticas
             LoadEmployees();
             LoadSocialServiceStatistics();
             LoadProcedureStatistics();
+            LoadPsychologyLogs();
+            LoadMedicalLogs();
 
             JsonStudents = JsonSerializer.Serialize(Students);
             JsonEmployees = JsonSerializer.Serialize(Employees);
             JsonSocialServiceStats = JsonSerializer.Serialize(SocialServiceStats);
             JsonProcedureStats = JsonSerializer.Serialize(ProcedureStats);
+            JsonPsychologyLogs = JsonSerializer.Serialize(PsychologyLogs);
+            JsonMedicalLogs = JsonSerializer.Serialize(MedicalLogs);
         }
 
         private void LoadStudents()
@@ -368,6 +379,191 @@ namespace SchoolManager.Pages.Estadisticas
             {
                 System.Diagnostics.Debug.WriteLine($"Error cargando estadísticas de procedimientos: {ex.Message}");
                 ProcedureStats = new List<ProcedureStatisticsVM>();
+            }
+        }
+
+        private void LoadPsychologyLogs()
+        {
+            var debug = new System.Text.StringBuilder();
+            int step = 0;
+            try
+            {
+                // Step 0 — verify table is reachable
+                step = 0;
+                int tableCount = _context.MedicalPsychologyAppointments.Count();
+                debug.AppendLine($"[OK] Paso 0 — filas en BD: {tableCount}");
+
+                if (tableCount == 0)
+                {
+                    debug.AppendLine("[INFO] La tabla no contiene filas.");
+                    PsychologyLogs = new List<PsychologyLogStatisticsVM>();
+                    BitacorasDebugInfo = debug.ToString();
+                    return;
+                }
+
+                // Step 1 — fetch every appointment row; no joins so no rows are dropped
+                step = 1;
+                var appts = _context.MedicalPsychologyAppointments
+                    .OrderByDescending(a => a.CreatedAt)
+                    .Select(a => new
+                    {
+                        a.AppointmentId,
+                        a.Folio,
+                        a.PreenrollmentId,
+                        a.AttendanceStatus,
+                        a.PsychologyObservations,
+                        a.AppointmentDatetime,
+                        a.CreatedAt
+                    })
+                    .ToList();
+                debug.AppendLine($"[OK] Paso 1 — filas mapeadas: {appts.Count}");
+
+                // Step 2 — fetch preenrollment records only for the IDs that exist
+                step = 2;
+                var preIds = appts
+                    .Where(a => a.PreenrollmentId.HasValue)
+                    .Select(a => a.PreenrollmentId!.Value)
+                    .Distinct().ToList();
+                debug.AppendLine($"[OK] Paso 2 — preenrollment IDs únicos: {preIds.Count}");
+
+                var preDict = _context.PreenrollmentGenerals
+                    .Where(p => preIds.Contains(p.IdData))
+                    .Select(p => new { p.IdData, p.UserId, Matricula = (string?)p.Matricula })
+                    .ToDictionary(p => p.IdData);
+                debug.AppendLine($"[OK] Paso 2 — preenrollments encontrados: {preDict.Count}");
+
+                // Step 3 — fetch person info for the linked users
+                step = 3;
+                var userIds = preDict.Values
+                    .Where(p => p.UserId.HasValue)
+                    .Select(p => p.UserId!.Value)
+                    .Distinct().ToList();
+                debug.AppendLine($"[OK] Paso 3 — userIds a buscar: {userIds.Count}");
+
+                var personDict = (from u in _context.Users
+                                  join p in _context.Persons on u.PersonId equals p.PersonId
+                                  where userIds.Contains(u.UserId)
+                                  select new { u.UserId, p.FirstName, p.LastNamePaternal })
+                                 .ToDictionary(x => x.UserId);
+                debug.AppendLine($"[OK] Paso 3 — personas encontradas: {personDict.Count}");
+
+                // Step 4 — combine in memory; every appointment survives
+                step = 4;
+                PsychologyLogs = appts.Select(a =>
+                {
+                    string? firstName = null, lastName = null, matricula = null;
+                    if (a.PreenrollmentId.HasValue &&
+                        preDict.TryGetValue(a.PreenrollmentId.Value, out var pre))
+                    {
+                        matricula = pre.Matricula;
+                        if (pre.UserId.HasValue &&
+                            personDict.TryGetValue(pre.UserId.Value, out var person))
+                        {
+                            firstName = person.FirstName;
+                            lastName  = person.LastNamePaternal;
+                        }
+                    }
+                    var name = $"{firstName ?? ""} {lastName ?? ""}".Trim();
+                    return new PsychologyLogStatisticsVM
+                    {
+                        Id                    = a.AppointmentId,
+                        Folio                 = string.IsNullOrWhiteSpace(a.Folio) ? "Sin folio" : a.Folio,
+                        StudentName           = string.IsNullOrWhiteSpace(name) ? "Sin nombre" : name,
+                        EnrollmentOrMatricula = string.IsNullOrWhiteSpace(matricula) ? "Sin matrícula" : matricula,
+                        AttendanceStatus      = string.IsNullOrWhiteSpace(a.AttendanceStatus) ? "Sin estado" : a.AttendanceStatus,
+                        Observations          = string.IsNullOrWhiteSpace(a.PsychologyObservations) ? "" : a.PsychologyObservations,
+                        AppointmentDate       = a.AppointmentDatetime ?? a.CreatedAt,
+                        CreatedAt             = a.CreatedAt
+                    };
+                }).ToList();
+                debug.AppendLine($"[OK] Paso 4 — PsychologyLogs final: {PsychologyLogs.Count}");
+            }
+            catch (Exception ex)
+            {
+                string inner = ex.InnerException != null
+                    ? $" | Inner → {ex.InnerException.GetType().Name}: {ex.InnerException.Message}"
+                    : string.Empty;
+                debug.AppendLine($"[ERROR] Paso {step}: {ex.GetType().Name}: {ex.Message}{inner}");
+                PsychologyLogs = new List<PsychologyLogStatisticsVM>();
+            }
+            BitacorasDebugInfo = debug.ToString();
+            System.Diagnostics.Debug.WriteLine($"[Psicología Debug]\n{debug}");
+        }
+
+        private void LoadMedicalLogs()
+        {
+            try
+            {
+                // Step 1 — fetch every medical record row; no joins so no rows are dropped
+                var records = _context.MedicalRecords
+                    .OrderByDescending(r => r.CreatedAt)
+                    .Select(r => new
+                    {
+                        r.RecordId,
+                        r.Folio,
+                        r.StudentId,
+                        r.ConsultationReason,
+                        r.VitalSigns,
+                        r.Observations,
+                        r.TreatmentAction,
+                        r.Status,
+                        r.RecordDatetime,
+                        r.CreatedAt
+                    })
+                    .ToList();
+
+                // Step 2 — fetch person info for the linked students
+                var studentIds = records
+                    .Where(r => r.StudentId.HasValue)
+                    .Select(r => r.StudentId!.Value)
+                    .Distinct().ToList();
+
+                var personDict = (from u in _context.Users
+                                  join p in _context.Persons on u.PersonId equals p.PersonId
+                                  where studentIds.Contains(u.UserId)
+                                  select new { u.UserId, p.FirstName, p.LastNamePaternal })
+                                 .ToDictionary(x => x.UserId);
+
+                // Step 3 — fetch matricula from preenrollment (one per student)
+                var matriculaDict = _context.PreenrollmentGenerals
+                    .Where(p => p.UserId.HasValue && studentIds.Contains(p.UserId.Value))
+                    .Select(p => new { UserId = p.UserId!.Value, Matricula = (string?)p.Matricula })
+                    .ToList()
+                    .GroupBy(p => p.UserId)
+                    .ToDictionary(g => g.Key, g => g.First().Matricula);
+
+                // Step 4 — combine in memory; every record survives
+                MedicalLogs = records.Select(r =>
+                {
+                    string? firstName = null, lastName = null, matricula = null;
+                    if (r.StudentId.HasValue)
+                    {
+                        personDict.TryGetValue(r.StudentId.Value, out var person);
+                        firstName = person?.FirstName;
+                        lastName  = person?.LastNamePaternal;
+                        matriculaDict.TryGetValue(r.StudentId.Value, out matricula);
+                    }
+                    var name = $"{firstName ?? ""} {lastName ?? ""}".Trim();
+                    return new MedicalLogStatisticsVM
+                    {
+                        Id                    = r.RecordId,
+                        Folio                 = string.IsNullOrWhiteSpace(r.Folio) ? "Sin folio" : r.Folio,
+                        StudentName           = string.IsNullOrWhiteSpace(name) ? "Sin nombre" : name,
+                        EnrollmentOrMatricula = string.IsNullOrWhiteSpace(matricula) ? "Sin matrícula" : matricula,
+                        ConsultationReason    = string.IsNullOrWhiteSpace(r.ConsultationReason) ? "" : r.ConsultationReason,
+                        VitalSigns            = string.IsNullOrWhiteSpace(r.VitalSigns) ? "" : r.VitalSigns,
+                        Observations          = string.IsNullOrWhiteSpace(r.Observations) ? "" : r.Observations,
+                        TreatmentAction       = string.IsNullOrWhiteSpace(r.TreatmentAction) ? "" : r.TreatmentAction,
+                        Status                = string.IsNullOrWhiteSpace(r.Status) ? "Sin estado" : r.Status,
+                        RecordDate            = r.RecordDatetime ?? r.CreatedAt,
+                        CreatedAt             = r.CreatedAt
+                    };
+                }).ToList();
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error cargando logs de enfermería: {ex.Message}");
+                MedicalLogs = new List<MedicalLogStatisticsVM>();
             }
         }
     }

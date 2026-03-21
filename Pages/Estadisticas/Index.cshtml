@@ -69,6 +69,7 @@
             <button id="btnCalificaciones" class="btn btn-primary view-btn active">Calificaciones</button>
             <button id="btnServicios" class="btn btn-outline-primary view-btn">Servicios Sociales</button>
             <button id="btnTramites" class="btn btn-outline-primary view-btn">Trámites</button>
+            <button id="btnBitacoras" class="btn btn-outline-primary view-btn">Bitácoras</button>
         </div>
     </div>
 </div>
@@ -227,6 +228,38 @@
     </div>
     <div class="col-sm-6 col-md-3 mb-2">
         <div class="card p-3"><div class="h6">Finalizadas</div><div id="statProcsFinalized" class="display-6">0</div></div>
+    </div>
+</div>
+
+<!-- ── Tarjetas BITÁCORAS PSICOLOGÍA ── -->
+<div class="row mb-4 d-none" id="psychologyStats">
+    <div class="col-sm-6 col-md-3 mb-2">
+        <div class="card p-3"><div class="h6">Total registros</div><div id="statPsyTotal" class="display-6">0</div></div>
+    </div>
+    <div class="col-sm-6 col-md-3 mb-2">
+        <div class="card p-3"><div class="h6">Asistió</div><div id="statPsyAttended" class="display-6">0</div></div>
+    </div>
+    <div class="col-sm-6 col-md-3 mb-2">
+        <div class="card p-3"><div class="h6">No asistió</div><div id="statPsyAbsent" class="display-6">0</div></div>
+    </div>
+    <div class="col-sm-6 col-md-3 mb-2">
+        <div class="card p-3"><div class="h6">Justificados</div><div id="statPsyJustified" class="display-6">0</div></div>
+    </div>
+</div>
+
+<!-- ── Tarjetas BITÁCORAS ENFERMERÍA ── -->
+<div class="row mb-4 d-none" id="medicalStats">
+    <div class="col-sm-6 col-md-3 mb-2">
+        <div class="card p-3"><div class="h6">Total registros</div><div id="statMedTotal" class="display-6">0</div></div>
+    </div>
+    <div class="col-sm-6 col-md-3 mb-2">
+        <div class="card p-3"><div class="h6">Atendidos</div><div id="statMedAttended" class="display-6">0</div></div>
+    </div>
+    <div class="col-sm-6 col-md-3 mb-2">
+        <div class="card p-3"><div class="h6">Pendientes</div><div id="statMedPending" class="display-6">0</div></div>
+    </div>
+    <div class="col-sm-6 col-md-3 mb-2">
+        <div class="card p-3"><div class="h6">Otros estados</div><div id="statMedOther" class="display-6">0</div></div>
     </div>
 </div>
 
@@ -416,12 +449,75 @@
     </div>
 </div>
 
+<!-- ══════════════════════════════════════════════
+     VIEW: BITÁCORAS
+══════════════════════════════════════════════ -->
+<div id="viewBitacoras" class="d-none">
+    <!-- Sub-botones internos -->
+    <div class="row mb-3">
+        <div class="col-12">
+            <div class="btn-group" role="group">
+                <button id="btnSubPsicologia" class="btn btn-sm btn-primary">Psicología</button>
+                <button id="btnSubEnfermeria" class="btn btn-sm btn-outline-primary">Enfermería</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sub-vista: Psicología -->
+    <div id="subViewPsicologia">
+        <div class="table-responsive mb-2">
+            <table id="psychologyTable" class="table table-striped table-hover">
+                <thead class="table-light">
+                    <tr>
+                        <th>Folio</th>
+                        <th>Alumno</th>
+                        <th>Matrícula</th>
+                        <th>Fecha cita</th>
+                        <th>Asistencia</th>
+                        <th>Observaciones</th>
+                        <th>Fecha creación</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td colspan="7" class="text-center text-muted py-4">Cargando datos de Psicología...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Sub-vista: Enfermería -->
+    <div id="subViewEnfermeria" class="d-none">
+        <div class="table-responsive mb-2">
+            <table id="medicalTable" class="table table-striped table-hover">
+                <thead class="table-light">
+                    <tr>
+                        <th>Folio</th>
+                        <th>Alumno</th>
+                        <th>Matrícula</th>
+                        <th>Fecha registro</th>
+                        <th>Motivo de consulta</th>
+                        <th>Signos vitales</th>
+                        <th>Observaciones</th>
+                        <th>Acción tomada</th>
+                        <th>Estado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td colspan="9" class="text-center text-muted py-4">Cargando datos de Enfermería...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
 @section Scripts {
     <script>
         window.__estadisticasData = {
             students:       @Html.Raw(Model.JsonStudents),
             socialServices: @Html.Raw(Model.JsonSocialServiceStats),
-            procedures:     @Html.Raw(Model.JsonProcedureStats)
+            procedures:     @Html.Raw(Model.JsonProcedureStats),
+            psychologyLogs: @Html.Raw(Model.JsonPsychologyLogs),
+            medicalLogs:    @Html.Raw(Model.JsonMedicalLogs)
         };
     </script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -432,23 +528,34 @@
         const btnCalificaciones     = document.getElementById('btnCalificaciones');
         const btnServicios          = document.getElementById('btnServicios');
         const btnTramites           = document.getElementById('btnTramites');
+        const btnBitacoras          = document.getElementById('btnBitacoras');
         const viewStudents          = document.getElementById('viewStudents');
         const viewSocialServices    = document.getElementById('viewSocialServices');
         const viewProcedures        = document.getElementById('viewProcedures');
+        const viewBitacoras         = document.getElementById('viewBitacoras');
         const studentStats          = document.getElementById('studentStats');
         const socialServiceStats    = document.getElementById('socialServiceStats');
         const proceduresStats       = document.getElementById('proceduresStats');
+        const psychologyStats       = document.getElementById('psychologyStats');
+        const medicalStats          = document.getElementById('medicalStats');
         const filtersStudents       = document.getElementById('filtersStudents');
         const filtersSocialServices = document.getElementById('filtersSocialServices');
         const filtersTramites       = document.getElementById('filtersTramites');
         const filtersArea           = document.getElementById('filtersArea');
 
+        const allMainBtns  = [btnCalificaciones, btnServicios, btnTramites, btnBitacoras];
+        const allViews     = [viewStudents, viewSocialServices, viewProcedures, viewBitacoras];
+        const allStats     = [studentStats, socialServiceStats, proceduresStats, psychologyStats, medicalStats];
+
         function setActiveBtn(active) {
-            [btnCalificaciones, btnServicios, btnTramites].forEach(b => {
+            allMainBtns.forEach(b => {
+                if (!b) return;
                 b.classList.toggle('btn-primary', b === active);
                 b.classList.toggle('btn-outline-primary', b !== active);
             });
         }
+        function hideAllViews() { allViews.forEach(v => v && v.classList.add('d-none')); }
+        function hideAllStats() { allStats.forEach(s => s && s.classList.add('d-none')); }
         function hideAllFilters() {
             [filtersStudents, filtersSocialServices, filtersTramites]
                 .forEach(f => f && f.classList.add('d-none'));
@@ -456,56 +563,97 @@
         function collapseFilters() {
             if (filtersArea) {
                 filtersArea.classList.remove('show');
-                document.getElementById('toggleFilters').setAttribute('aria-expanded', 'false');
+                const tog = document.getElementById('toggleFilters');
+                if (tog) tog.setAttribute('aria-expanded', 'false');
             }
         }
 
         function showCalificaciones() {
             setActiveBtn(btnCalificaciones);
+            hideAllViews(); hideAllStats(); hideAllFilters();
             viewStudents.classList.remove('d-none');
-            viewSocialServices.classList.add('d-none');
-            viewProcedures.classList.add('d-none');
             studentStats.classList.remove('d-none');
-            socialServiceStats.classList.add('d-none');
-            proceduresStats.classList.add('d-none');
-            hideAllFilters();
-            filtersStudents.classList.remove('d-none');
+            if (filtersStudents) filtersStudents.classList.remove('d-none');
             collapseFilters();
             document.getElementById('pageTitle').textContent = 'Estadísticas de alumnos';
             document.getElementById('pageSubtitle').textContent = 'Control y seguimiento: inscritos, cursando, aprobados y reprobados.';
         }
         function showServicios() {
             setActiveBtn(btnServicios);
-            viewStudents.classList.add('d-none');
+            hideAllViews(); hideAllStats(); hideAllFilters();
             viewSocialServices.classList.remove('d-none');
-            viewProcedures.classList.add('d-none');
-            studentStats.classList.add('d-none');
             socialServiceStats.classList.remove('d-none');
-            proceduresStats.classList.add('d-none');
-            hideAllFilters();
-            filtersSocialServices.classList.remove('d-none');
+            if (filtersSocialServices) filtersSocialServices.classList.remove('d-none');
             collapseFilters();
             document.getElementById('pageTitle').textContent = 'Estadísticas de Servicios Sociales';
             document.getElementById('pageSubtitle').textContent = 'Seguimiento de horas, asistencia y bitácoras de estudiantes.';
         }
         function showTramites() {
             setActiveBtn(btnTramites);
-            viewStudents.classList.add('d-none');
-            viewSocialServices.classList.add('d-none');
+            hideAllViews(); hideAllStats(); hideAllFilters();
             viewProcedures.classList.remove('d-none');
-            studentStats.classList.add('d-none');
-            socialServiceStats.classList.add('d-none');
             proceduresStats.classList.remove('d-none');
-            hideAllFilters();
-            filtersTramites.classList.remove('d-none');
+            if (filtersTramites) filtersTramites.classList.remove('d-none');
             collapseFilters();
             document.getElementById('pageTitle').textContent = 'Estadísticas de Trámites';
             document.getElementById('pageSubtitle').textContent = 'Seguimiento y control de solicitudes administrativas.';
+        }
+        function showBitacoras() {
+            setActiveBtn(btnBitacoras);
+            hideAllViews(); hideAllStats(); hideAllFilters();
+            viewBitacoras.classList.remove('d-none');
+            collapseFilters();
+            document.getElementById('pageTitle').textContent = 'Bitácoras';
+            document.getElementById('pageSubtitle').textContent = 'Registros de atención psicológica y de enfermería.';
+            // mostrar sub-vista activa por defecto (Psicología)
+            const subPsy = document.getElementById('subViewPsicologia');
+            const subEnf = document.getElementById('subViewEnfermeria');
+            if (subPsy) subPsy.classList.remove('d-none');
+            if (subEnf) subEnf.classList.add('d-none');
+            if (psychologyStats) psychologyStats.classList.remove('d-none');
+            if (medicalStats) medicalStats.classList.add('d-none');
+            setActiveSubBtn('psicologia');
+        }
+
+        // Sub-botones de Bitácoras
+        function setActiveSubBtn(active) {
+            const btnPsy = document.getElementById('btnSubPsicologia');
+            const btnEnf = document.getElementById('btnSubEnfermeria');
+            if (!btnPsy || !btnEnf) return;
+            if (active === 'psicologia') {
+                btnPsy.classList.replace('btn-outline-primary', 'btn-primary');
+                btnEnf.classList.replace('btn-primary', 'btn-outline-primary');
+            } else {
+                btnEnf.classList.replace('btn-outline-primary', 'btn-primary');
+                btnPsy.classList.replace('btn-primary', 'btn-outline-primary');
+            }
+        }
+
+        const btnSubPsy = document.getElementById('btnSubPsicologia');
+        const btnSubEnf = document.getElementById('btnSubEnfermeria');
+        if (btnSubPsy) {
+            btnSubPsy.addEventListener('click', function () {
+                document.getElementById('subViewPsicologia').classList.remove('d-none');
+                document.getElementById('subViewEnfermeria').classList.add('d-none');
+                if (psychologyStats) psychologyStats.classList.remove('d-none');
+                if (medicalStats) medicalStats.classList.add('d-none');
+                setActiveSubBtn('psicologia');
+            });
+        }
+        if (btnSubEnf) {
+            btnSubEnf.addEventListener('click', function () {
+                document.getElementById('subViewPsicologia').classList.add('d-none');
+                document.getElementById('subViewEnfermeria').classList.remove('d-none');
+                if (psychologyStats) psychologyStats.classList.add('d-none');
+                if (medicalStats) medicalStats.classList.remove('d-none');
+                setActiveSubBtn('enfermeria');
+            });
         }
 
         btnCalificaciones.addEventListener('click', showCalificaciones);
         btnServicios.addEventListener('click', showServicios);
         btnTramites.addEventListener('click', showTramites);
+        if (btnBitacoras) btnBitacoras.addEventListener('click', showBitacoras);
 
         document.getElementById('toggleFilters').addEventListener('click', function () {
             const open = filtersArea.classList.toggle('show');
