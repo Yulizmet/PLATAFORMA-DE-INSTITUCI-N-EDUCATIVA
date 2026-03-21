@@ -496,13 +496,45 @@ namespace SchoolManager.Areas.SocialService.Controllers
             if (!isOwner && !isTeacher)
                 return Forbid();
 
-            // Servir desde la base de datos
+            // Servir desde la base de datos (sin fileDownloadName para mostrar inline)
+            if (bitacora.PdfFileData != null && bitacora.PdfFileData.Length > 0)
+            {
+                return File(bitacora.PdfFileData, bitacora.PdfContentType ?? "application/pdf");
+            }
+
+            // Fallback: intentar leer del filesystem para archivos anteriores
+            var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "bitacoras", bitacora.PdfFileName);
+            if (System.IO.File.Exists(filePath))
+            {
+                var stream = System.IO.File.OpenRead(filePath);
+                return File(stream, "application/pdf");
+            }
+
+            return NotFound();
+        }
+
+        [HttpGet]
+        public IActionResult DescargarBitacoraPdfArchivo(int logId)
+        {
+            var bitacora = _context.SocialServiceLogs.FirstOrDefault(b => b.LogId == logId);
+
+            if (bitacora == null || string.IsNullOrEmpty(bitacora.PdfFileName))
+                return NotFound();
+
+            int currentUserId = int.Parse(User.FindFirst("UserId")?.Value ?? "0");
+
+            bool isOwner = bitacora.StudentId == currentUserId;
+            bool isTeacher = _context.SocialServiceAssignments
+                .Any(a => a.TeacherId == currentUserId && a.StudentId == bitacora.StudentId && a.IsActive);
+
+            if (!isOwner && !isTeacher)
+                return Forbid();
+
             if (bitacora.PdfFileData != null && bitacora.PdfFileData.Length > 0)
             {
                 return File(bitacora.PdfFileData, bitacora.PdfContentType ?? "application/pdf", bitacora.PdfFileName);
             }
 
-            // Fallback: intentar leer del filesystem para archivos anteriores
             var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "bitacoras", bitacora.PdfFileName);
             if (System.IO.File.Exists(filePath))
             {
