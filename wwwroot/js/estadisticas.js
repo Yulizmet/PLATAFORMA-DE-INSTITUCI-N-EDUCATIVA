@@ -955,10 +955,16 @@ function updatePagination() {
 
 $(document).on('click', '.excel-header', function (e) {
     e.stopPropagation();
-    $('.excel-filter-popup').remove();
 
+    // Si ya hay un popup abierto para este mismo encabezado, cerrarlo (toggle)
     const col = $(this).data('col');
     const tableId = $(this).data('table');
+    const existing = $('.excel-filter-popup');
+    if (existing.length && existing.data('origin-col') == col && existing.data('origin-table') === tableId) {
+        existing.remove();
+        return;
+    }
+    $('.excel-filter-popup').remove();
     const $table = $('#' + tableId);
     const offset = $(this).offset();
     const curFilters = getExcelFilters(tableId);
@@ -999,6 +1005,8 @@ $(document).on('click', '.excel-header', function (e) {
     });
 
     $('body').append(popup);
+    popup.data('origin-col', col);
+    popup.data('origin-table', tableId);
     popup.on('click', ev => ev.stopPropagation());
 
     popup.find('.sort-asc').click(() => { sortGeneric(tableId, col, true); popup.remove(); });
