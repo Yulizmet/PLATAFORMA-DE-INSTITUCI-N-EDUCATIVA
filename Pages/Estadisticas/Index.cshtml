@@ -202,13 +202,13 @@
 <!-- ── Tarjetas SERVICIOS SOCIALES ── -->
 <div class="row mb-4 d-none" id="socialServiceStats">
     <div class="col-sm-6 col-md-3 mb-2">
-        <div class="card p-3"><div class="h6">Total estudiantes</div><div id="statSocialTotal" class="display-6">0</div></div>
+        <div class="card p-3"><div class="h6">Alumnos con asistencia</div><div id="statSocialTotal" class="display-6">0</div></div>
     </div>
     <div class="col-sm-6 col-md-3 mb-2">
-        <div class="card p-3"><div class="h6">Total horas acumuladas</div><div id="statSocialHours" class="display-6">0</div></div>
+        <div class="card p-3"><div class="h6">Asistencias presentes</div><div id="statSocialHours" class="display-6">0</div></div>
     </div>
     <div class="col-sm-6 col-md-3 mb-2">
-        <div class="card p-3"><div class="h6">Bitácoras pendientes</div><div id="statSocialPending" class="display-6">0</div></div>
+        <div class="card p-3"><div class="h6">Ausencias totales</div><div id="statSocialPending" class="display-6">0</div></div>
     </div>
     <div class="col-sm-6 col-md-3 mb-2">
         <div class="card p-3"><div class="h6">Asistencia promedio</div><div id="statSocialAttendance" class="display-6">0%</div></div>
@@ -347,12 +347,12 @@
                     <th class="excel-header" data-table="socialServiceTable" data-col="0">Alumno <span class="excel-icon">▼</span></th>
                     <th class="excel-header" data-table="socialServiceTable" data-col="1">Maestro asesor <span class="excel-icon">▼</span></th>
                     <th class="excel-header" data-table="socialServiceTable" data-col="2">Grupo <span class="excel-icon">▼</span></th>
-                    <th class="excel-header" data-table="socialServiceTable" data-col="3">Horas prácticas <span class="excel-icon">▼</span></th>
-                    <th class="excel-header" data-table="socialServiceTable" data-col="4">Horas serv. social <span class="excel-icon">▼</span></th>
-                    <th class="excel-header" data-table="socialServiceTable" data-col="5">Total horas <span class="excel-icon">▼</span></th>
-                    <th class="excel-header" data-table="socialServiceTable" data-col="6">Asistencia <span class="excel-icon">▼</span></th>
+                    <th class="excel-header" data-table="socialServiceTable" data-col="3">Asistencias <span class="excel-icon">▼</span></th>
+                    <th class="excel-header" data-table="socialServiceTable" data-col="4">Faltas <span class="excel-icon">▼</span></th>
+                    <th class="excel-header" data-table="socialServiceTable" data-col="5">Justificadas <span class="excel-icon">▼</span></th>
+                    <th class="excel-header" data-table="socialServiceTable" data-col="6">% Asistencia <span class="excel-icon">▼</span></th>
                     <th class="excel-header" data-table="socialServiceTable" data-col="7">Estado <span class="excel-icon">▼</span></th>
-                    <th class="excel-header" data-table="socialServiceTable" data-col="8">Última actualización <span class="excel-icon">▼</span></th>
+                    <th class="excel-header" data-table="socialServiceTable" data-col="8">Última asistencia <span class="excel-icon">▼</span></th>
                 </tr>
             </thead>
             <tbody>
@@ -377,7 +377,7 @@
                 <div class="chart-container"><canvas id="socialPieChart"></canvas></div></div>
         </div>
         <div class="col-md-6 mb-3">
-            <div class="card p-3"><h5>Horas totales por alumno (Top 10)</h5>
+            <div class="card p-3"><h5>Asistencias por alumno (Top 10)</h5>
                 <div class="chart-container"><canvas id="socialHoursBar"></canvas></div></div>
         </div>
     </div>
@@ -387,7 +387,7 @@
                 <div class="chart-container"><canvas id="socialAttendanceBar"></canvas></div></div>
         </div>
         <div class="col-md-6 mb-3">
-            <div class="card p-3"><h5>Horas prácticas vs. servicio social</h5>
+            <div class="card p-3"><h5>Presentes vs. Ausencias por grupo</h5>
                 <div class="chart-container"><canvas id="socialHoursStacked"></canvas></div></div>
         </div>
     </div>

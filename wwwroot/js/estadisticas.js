@@ -250,17 +250,17 @@
         const start = (currentPageSocial - 1) * PAGE_SIZE;
         const end = Math.min(start + PAGE_SIZE, list.length);
         list.slice(start, end).forEach(item => {
-            const lu = item.LastUpdate ? new Date(item.LastUpdate).toLocaleDateString('es-MX') : 'N/A';
+            const la = item.LastAttendanceDate ? new Date(item.LastAttendanceDate).toLocaleDateString('es-MX') : 'Sin registro';
             tbody.append(`<tr>
                 <td>${escapeHtml(item.StudentName || 'Sin nombre')}</td>
                 <td>${escapeHtml(item.TeacherName || 'Sin asignar')}</td>
                 <td>${escapeHtml(item.GroupName || 'Sin grupo')}</td>
-                <td>${item.HoursPracticas || 0}</td>
-                <td>${item.HoursServicioSocial || 0}</td>
-                <td>${item.TotalHours || 0}</td>
-                <td>${(item.AttendanceRate || 0).toFixed(2)}%</td>
+                <td>${item.TotalPresent || 0}</td>
+                <td>${item.TotalAbsent || 0}</td>
+                <td>${item.TotalJustified || 0}</td>
+                <td>${(item.AttendanceRate || 0).toFixed(1)}%</td>
                 <td>${getStatusBadge(item.Status)}</td>
-                <td>${lu}</td>
+                <td>${la}</td>
             </tr>`);
         });
         updateSocialPagInfo(start + 1, end, list.length);
@@ -275,10 +275,16 @@
             $('#statSocialTotal').text('0'); $('#statSocialHours').text('0');
             $('#statSocialPending').text('0'); $('#statSocialAttendance').text('0%'); return;
         }
-        $('#statSocialTotal').text(list.length);
-        $('#statSocialHours').text(list.reduce((s, i) => s + (i.TotalHours || 0), 0));
-        $('#statSocialPending').text(list.filter(i => i.Status === 'Pendiente').length);
-        $('#statSocialAttendance').text((list.reduce((s, i) => s + (i.AttendanceRate || 0), 0) / list.length).toFixed(1) + '%');
+        const withAttendance = list.filter(i => (i.TotalAttendances || 0) > 0);
+        const totalPresent = list.reduce((s, i) => s + (i.TotalPresent || 0), 0);
+        const totalAbsences = list.reduce((s, i) => s + (i.TotalAbsent || 0) + (i.TotalJustified || 0), 0);
+        const avgRate = withAttendance.length > 0
+            ? (withAttendance.reduce((s, i) => s + (i.AttendanceRate || 0), 0) / withAttendance.length).toFixed(1)
+            : '0.0';
+        $('#statSocialTotal').text(withAttendance.length);
+        $('#statSocialHours').text(totalPresent);
+        $('#statSocialPending').text(totalAbsences);
+        $('#statSocialAttendance').text(avgRate + '%');
     }
 
     // Gráfica 1: Pie — estado del servicio social
@@ -295,21 +301,21 @@
         });
     }
 
-    // Gráfica 2: Barras horizontales — Top 10 alumnos por total de horas
+    // Gráfica 2: Barras horizontales — Top 10 alumnos por asistencias
     function renderSocialHoursBar(list) {
         if (!list.length) { emptyChart('socialHoursBar'); return; }
-        const sorted = [...list].sort((a, b) => (b.TotalHours || 0) - (a.TotalHours || 0)).slice(0, 10);
+        const sorted = [...list].sort((a, b) => (b.TotalPresent || 0) - (a.TotalPresent || 0)).slice(0, 10);
         makeChart('socialHoursBar', {
             type: 'bar',
             data: {
                 labels: sorted.map(i => (i.StudentName || '?').split(' ').slice(0, 2).join(' ')),
-                datasets: [{ label: 'Horas totales', data: sorted.map(i => i.TotalHours || 0), backgroundColor: '#0d6efd' }]
+                datasets: [{ label: 'Asistencias', data: sorted.map(i => i.TotalPresent || 0), backgroundColor: '#198754' }]
             },
             plugins: [valueLabelPlugin],
             options: {
                 indexAxis: 'y',
                 responsive: true, maintainAspectRatio: false,
-                scales: { x: { beginAtZero: true } },
+                scales: { x: { beginAtZero: true, ticks: { precision: 0 } } },
                 plugins: { legend: { display: false }, ...pluginOpts('#fff') }
             }
         });
@@ -337,27 +343,29 @@
         });
     }
 
-    // Gráfica 4: Barras apiladas — horas prácticas vs servicio social por grupo
+    // Gráfica 4: Barras apiladas — Presentes vs. Ausencias vs. Justificadas por grupo
     function renderSocialHoursStacked(list) {
         if (!list.length) { emptyChart('socialHoursStacked'); return; }
         const byGroup = {};
         list.forEach(i => {
             const g = i.GroupName || 'Sin grupo';
-            if (!byGroup[g]) byGroup[g] = { prac: 0, serv: 0 };
-            byGroup[g].prac += (i.HoursPracticas || 0);
-            byGroup[g].serv += (i.HoursServicioSocial || 0);
+            if (!byGroup[g]) byGroup[g] = { present: 0, absent: 0, justified: 0 };
+            byGroup[g].present   += (i.TotalPresent   || 0);
+            byGroup[g].absent    += (i.TotalAbsent    || 0);
+            byGroup[g].justified += (i.TotalJustified || 0);
         });
         const labels = Object.keys(byGroup);
         makeChart('socialHoursStacked', {
             type: 'bar',
             data: {
                 labels, datasets: [
-                    { label: 'Horas prácticas', data: labels.map(l => byGroup[l].prac), backgroundColor: '#fd7e14' },
-                    { label: 'Horas serv. social', data: labels.map(l => byGroup[l].serv), backgroundColor: '#6610f2' }
+                    { label: 'Presentes',    data: labels.map(l => byGroup[l].present),   backgroundColor: '#198754' },
+                    { label: 'Ausencias',    data: labels.map(l => byGroup[l].absent),    backgroundColor: '#dc3545' },
+                    { label: 'Justificadas', data: labels.map(l => byGroup[l].justified), backgroundColor: '#ffc107' }
                 ]
             },
             plugins: [valueLabelPlugin],
-            options: { responsive: true, maintainAspectRatio: false, scales: { x: { stacked: true }, y: { stacked: true, beginAtZero: true } }, plugins: { legend: { position: 'top' }, ...pluginOpts('#fff') } }
+            options: { responsive: true, maintainAspectRatio: false, scales: { x: { stacked: true }, y: { stacked: true, beginAtZero: true, ticks: { precision: 0 } } }, plugins: { legend: { position: 'top' }, ...pluginOpts('#fff') } }
         });
     }
 
@@ -789,8 +797,8 @@
                 exportVisibleTableToCSV('#studentsTable', `alumnos_${d}.csv`);
             else if ($('#viewSocialServices').is(':visible'))
                 exportDataToCSV(filteredSocialServices,
-                    ['Alumno', 'Maestro asesor', 'Grupo', 'Horas prácticas', 'Horas serv. social', 'Total horas', 'Asistencia', 'Estado', 'Última actualización'],
-                    ['StudentName', 'TeacherName', 'GroupName', 'HoursPracticas', 'HoursServicioSocial', 'TotalHours', 'AttendanceRate', 'Status', 'LastUpdate'],
+                    ['Alumno', 'Maestro asesor', 'Grupo', 'Asistencias', 'Faltas', 'Justificadas', '% Asistencia', 'Estado', 'Última asistencia'],
+                    ['StudentName', 'TeacherName', 'GroupName', 'TotalPresent', 'TotalAbsent', 'TotalJustified', 'AttendanceRate', 'Status', 'LastAttendanceDate'],
                     `servicios_sociales_${d}.csv`);
             else if ($('#viewProcedures').is(':visible'))
                 exportDataToCSV(filteredProcedures,

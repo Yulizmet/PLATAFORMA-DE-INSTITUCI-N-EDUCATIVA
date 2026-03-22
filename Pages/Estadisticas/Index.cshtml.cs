@@ -176,7 +176,7 @@ namespace SchoolManager.Pages.Estadisticas
         {
             try
             {
-                // Obtener todas las asignaciones activas de servicio social
+                // Step 1: Obtener todas las asignaciones activas
                 var assignments = _context.SocialServiceAssignments
                     .Where(a => a.IsActive)
                     .ToList();
@@ -188,115 +188,137 @@ namespace SchoolManager.Pages.Estadisticas
                 }
 
                 var studentIds = assignments.Select(a => a.StudentId).Distinct().ToList();
+                var teacherIds = assignments
+                    .Where(a => a.TeacherId > 0)
+                    .Select(a => a.TeacherId)
+                    .Distinct()
+                    .ToList();
+                var allUserIds = studentIds.Union(teacherIds).Distinct().ToList();
 
-                // Para cada estudiante, agregar datos de logs, asistencia y nombres
+                // Step 2: Batch-load user + person data en una sola consulta
+                var userPersonMap = (from u in _context.Users
+                                     join p in _context.Persons on u.PersonId equals p.PersonId
+                                     where allUserIds.Contains(u.UserId)
+                                     select new
+                                     {
+                                         u.UserId,
+                                         FirstName = (string?)p.FirstName,
+                                         LastName = (string?)p.LastNamePaternal
+                                     })
+                                     .ToList()
+                                     .ToDictionary(x => x.UserId);
+
+                // Step 3: Batch-aggregate asistencias — una sola consulta para todos los alumnos
+                var attendanceRaw = _context.SocialServiceAttendances
+                    .Where(a => studentIds.Contains(a.StudentId))
+                    .Select(a => new
+                    {
+                        a.StudentId,
+                        a.IsPresent,
+                        a.Date,
+                        HasNotes = a.Notes != null && a.Notes != ""
+                    })
+                    .ToList();
+
+                var attendanceByStudent = attendanceRaw
+                    .GroupBy(a => a.StudentId)
+                    .ToDictionary(g => g.Key, g => new
+                    {
+                        Total     = g.Count(),
+                        Present   = g.Count(a => a.IsPresent),
+                        Absent    = g.Count(a => !a.IsPresent && !a.HasNotes),
+                        Justified = g.Count(a => !a.IsPresent && a.HasNotes),
+                        LastDate  = g.Max(a => (DateTime?)a.Date)
+                    });
+
+                // Step 4: Batch-aggregate horas aprobadas — una sola consulta
+                var logsRaw = _context.SocialServiceLogs
+                    .Where(l => studentIds.Contains(l.StudentId) && l.IsApproved)
+                    .Select(l => new
+                    {
+                        l.StudentId,
+                        l.ApprovedHoursPracticas,
+                        l.ApprovedHoursServicioSocial,
+                        l.CreatedAt
+                    })
+                    .ToList();
+
+                var logsByStudent = logsRaw
+                    .GroupBy(l => l.StudentId)
+                    .ToDictionary(g => g.Key, g => new
+                    {
+                        HoursPracticas      = g.Sum(l => l.ApprovedHoursPracticas),
+                        HoursServicioSocial = g.Sum(l => l.ApprovedHoursServicioSocial),
+                        LastCreatedAt       = g.Max(l => (DateTime?)l.CreatedAt)
+                    });
+
+                // Step 5: Combinar en memoria
                 SocialServiceStats = studentIds.Select(studentId =>
                 {
-                    var assignment = assignments.FirstOrDefault(a => a.StudentId == studentId);
+                    var assignment = assignments.First(a => a.StudentId == studentId);
 
-                    // Obtener información del estudiante
-                    var studentUser = _context.Users.FirstOrDefault(u => u.UserId == studentId);
-                    var studentPerson = studentUser != null 
-                        ? _context.Persons.FirstOrDefault(p => p.PersonId == studentUser.PersonId)
-                        : null;
-
-                    var studentName = "";
-                    if (studentPerson != null)
+                    // Nombre del alumno
+                    var studentName = "Sin nombre";
+                    if (userPersonMap.TryGetValue(studentId, out var sp))
                     {
-                        var firstName = (string?)studentPerson.FirstName ?? "";
-                        var lastName = (string?)studentPerson.LastNamePaternal ?? "";
-                        studentName = $"{firstName} {lastName}".Trim();
-                    }
-                    if (string.IsNullOrWhiteSpace(studentName))
-                    {
-                        studentName = "Sin nombre";
+                        var full = $"{sp.FirstName ?? ""} {sp.LastName ?? ""}".Trim();
+                        if (!string.IsNullOrWhiteSpace(full)) studentName = full;
                     }
 
-                    // Obtener información del maestro asesor
+                    // Nombre del maestro asesor
                     var teacherName = "Sin asignar";
-                    if (assignment?.TeacherId > 0)
+                    if (assignment.TeacherId > 0 && userPersonMap.TryGetValue(assignment.TeacherId, out var tp))
                     {
-                        var teacherUser = _context.Users.FirstOrDefault(u => u.UserId == assignment.TeacherId);
-                        var teacherPerson = teacherUser != null
-                            ? _context.Persons.FirstOrDefault(p => p.PersonId == teacherUser.PersonId)
-                            : null;
-
-                        if (teacherPerson != null)
-                        {
-                            var teacherFirstName = (string?)teacherPerson.FirstName ?? "";
-                            var teacherLastName = (string?)teacherPerson.LastNamePaternal ?? "";
-                            teacherName = $"{teacherFirstName} {teacherLastName}".Trim();
-                        }
-                        if (string.IsNullOrWhiteSpace(teacherName))
-                        {
-                            teacherName = "Sin asignar";
-                        }
+                        var full = $"{tp.FirstName ?? ""} {tp.LastName ?? ""}".Trim();
+                        if (!string.IsNullOrWhiteSpace(full)) teacherName = full;
                     }
 
-                    // Obtener nombre del grupo
-                    var groupName = assignment?.GroupName ?? "Sin asignar";
-                    if (string.IsNullOrWhiteSpace(groupName))
-                    {
-                        groupName = "Sin asignar";
-                    }
+                    var groupName = string.IsNullOrWhiteSpace(assignment.GroupName) ? "Sin asignar" : assignment.GroupName;
 
-                    // Agregar horas aprobadas de los logs
-                    var logs = _context.SocialServiceLogs
-                        .Where(l => l.StudentId == studentId && l.IsApproved)
-                        .ToList();
+                    // Horas de logs
+                    var logData = logsByStudent.TryGetValue(studentId, out var ld) ? ld : null;
+                    var hoursPracticas      = logData?.HoursPracticas      ?? 0;
+                    var hoursServicioSocial = logData?.HoursServicioSocial ?? 0;
+                    var totalHours          = hoursPracticas + hoursServicioSocial;
 
-                    var hoursPracticas = logs.Sum(l => l.ApprovedHoursPracticas);
-                    var hoursServicioSocial = logs.Sum(l => l.ApprovedHoursServicioSocial);
-                    var totalHours = hoursPracticas + hoursServicioSocial;
+                    // Datos de asistencia
+                    var att              = attendanceByStudent.TryGetValue(studentId, out var ad) ? ad : null;
+                    var totalAttendances = att?.Total     ?? 0;
+                    var totalPresent     = att?.Present   ?? 0;
+                    var totalAbsent      = att?.Absent    ?? 0;
+                    var totalJustified   = att?.Justified ?? 0;
+                    var lastAttendance   = att?.LastDate;
 
-                    // Calcular tasa de asistencia
-                    var attendanceRecords = _context.SocialServiceAttendances
-                        .Where(a => a.StudentId == studentId)
-                        .ToList();
+                    double attendanceRate = totalAttendances > 0
+                        ? Math.Round((double)totalPresent / totalAttendances * 100.0, 2)
+                        : 0.0;
 
-                    double attendanceRate = 0.0;
-                    if (attendanceRecords.Any())
-                    {
-                        var presentCount = attendanceRecords.Count(a => a.IsPresent);
-                        attendanceRate = (double)presentCount / attendanceRecords.Count * 100.0;
-                    }
-
-                    // Determinar estado basado en horas
-                    // Umbrales: 120 horas para completado, 20 horas para en progreso
+                    // Estado basado en horas acumuladas
                     string status = "Pendiente";
-                    if (totalHours >= 120)
-                    {
-                        status = "Completado";
-                    }
-                    else if (totalHours >= 20)
-                    {
-                        status = "En progreso";
-                    }
+                    if (totalHours >= 120) status = "Completado";
+                    else if (totalHours >= 20) status = "En progreso";
 
-                    // Obtener última actualización
-                    DateTime? lastUpdate = null;
-                    var latestLog = logs.OrderByDescending(l => l.CreatedAt).FirstOrDefault();
-                    if (latestLog != null)
-                    {
-                        lastUpdate = latestLog.CreatedAt;
-                    }
-                    if (assignment?.AssignedDate > lastUpdate)
-                    {
-                        lastUpdate = assignment.AssignedDate;
-                    }
+                    // Última actualización
+                    DateTime? lastUpdate = logData?.LastCreatedAt;
+                    if (assignment.AssignedDate > lastUpdate) lastUpdate = assignment.AssignedDate;
 
                     return new SocialServiceStatisticsVM
                     {
-                        StudentId = studentId,
-                        StudentName = studentName,
-                        TeacherName = teacherName,
-                        GroupName = groupName,
-                        HoursPracticas = hoursPracticas,
+                        StudentId           = studentId,
+                        StudentName         = studentName,
+                        TeacherName         = teacherName,
+                        GroupName           = groupName,
+                        HoursPracticas      = hoursPracticas,
                         HoursServicioSocial = hoursServicioSocial,
-                        TotalHours = totalHours,
-                        AttendanceRate = Math.Round(attendanceRate, 2),
-                        Status = status,
-                        LastUpdate = lastUpdate
+                        TotalHours          = totalHours,
+                        AttendanceRate      = attendanceRate,
+                        Status              = status,
+                        LastUpdate          = lastUpdate,
+                        TotalAttendances    = totalAttendances,
+                        TotalPresent        = totalPresent,
+                        TotalAbsent         = totalAbsent,
+                        TotalJustified      = totalJustified,
+                        LastAttendanceDate  = lastAttendance
                     };
                 })
                 .OrderBy(s => s.StudentName)
