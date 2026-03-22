@@ -1,4 +1,4 @@
- // documentos-scripts.js
+// documentos-scripts.js
 (() => {
     "use strict";
 
@@ -27,7 +27,6 @@
         return safeParse(localStorage.getItem(LS_GENERAL_KEY), null);
     }
 
-    // ✅ Incluye Files para guardar nombre del archivo
     function emptyDocs() {
         return {
             IdData: 0,
@@ -76,16 +75,14 @@
             .replaceAll(">", "&gt;");
     }
 
-    // ✅ Por Entregar: input normal
     function buildFileInput(docKey) {
         return `
-      <input type="file" class="form-control form-control-sm"
-             data-doc="${docKey}" accept=".pdf,.jpg,.jpeg,.png" />
-      <small class="text-muted d-block mt-1">PDF</small>
-    `;
+            <input type="file" class="form-control form-control-sm"
+                   data-doc="${docKey}" accept=".pdf,.jpg,.jpeg,.png" />
+            <small class="text-muted d-block mt-1">PDF, JPG o PNG</small>
+        `;
     }
 
-    // ✅ Entregados: solo nombre (link)
     function buildFileName(docKey, docs) {
         const name = docs.Files?.[docKey];
         if (!name) return `<span class="text-muted">Sin archivo</span>`;
@@ -108,28 +105,30 @@
             if (isDone) {
                 const tr = document.createElement("tr");
                 tr.innerHTML = `
-          <td>${d.label}</td>
-          <td>${usuario}</td>
-          <td>${fecha}</td>
-          <td>—</td>
-
-          <!-- ✅ SOLO nombre -->
-          <td>${buildFileName(d.key, docs)}</td>
-
-          <td class="text-center">
-            <button type="button" class="btn btn-sm btn-outline-danger"
-                    data-action="undo" data-doc="${d.key}" title="Eliminar / marcar como no entregado">
-              <i class="fa-solid fa-trash"></i>
-            </button>
-          </td>
-        `;
+                    <td>
+                        <div class="fw-semibold">${d.label}</div>
+                        <span class="badge badge-status badge-ok">Entregado</span>
+                    </td>
+                    <td>${escapeHtml(usuario)}</td>
+                    <td>${fecha}</td>
+                    <td>${buildFileName(d.key, docs)}</td>
+                    <td class="text-center">
+                        <button type="button" class="btn btn-sm btn-outline-danger"
+                                data-action="undo" data-doc="${d.key}" title="Eliminar / marcar como no entregado">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
+                    </td>
+                `;
                 tbodyEntregados.appendChild(tr);
             } else {
                 const tr = document.createElement("tr");
                 tr.innerHTML = `
-          <td>${d.label}</td>
-          <td>${buildFileInput(d.key)}</td>
-        `;
+                    <td>
+                        <div class="fw-semibold">${d.label}</div>
+                        <span class="badge badge-status badge-pendiente">Pendiente</span>
+                    </td>
+                    <td>${buildFileInput(d.key)}</td>
+                `;
                 tbodyPorEntregar.appendChild(tr);
             }
         });
@@ -138,7 +137,6 @@
     }
 
     function bindEvents() {
-        // ✅ Subir: marcar true y guardar nombre
         document.querySelectorAll('input[type="file"][data-doc]').forEach((inp) => {
             inp.addEventListener("change", (e) => {
                 const key = e.target.getAttribute("data-doc");
@@ -153,18 +151,27 @@
             });
         });
 
-        // ✅ Click en nombre: solo aviso (porque no guardas archivo real)
         document.querySelectorAll("[data-open-name]").forEach((a) => {
             a.addEventListener("click", (e) => {
                 e.preventDefault();
                 const key = a.getAttribute("data-open-name");
                 const docs = getDocs();
                 const name = docs.Files?.[key];
-                alert(name ? `Archivo: ${name}\n\n(No se descarga porque no se guarda el archivo real.)` : "Sin archivo");
+
+                const alerta = document.getElementById("alertaDocs");
+                if (alerta) {
+                    alerta.innerHTML = name
+                        ? `<strong>Archivo seleccionado:</strong> ${escapeHtml(name)}`
+                        : `Sin archivo`;
+
+                    alerta.classList.remove("d-none");
+                    alerta.classList.remove("alert-danger");
+                    alerta.classList.add("alert-info");
+                    alerta.scrollIntoView({ behavior: "smooth", block: "center" });
+                }
             });
         });
 
-        // ✅ Eliminar: regresar a Por Entregar
         document.querySelectorAll('button[data-action="undo"][data-doc]').forEach((btn) => {
             btn.addEventListener("click", () => {
                 const key = btn.getAttribute("data-doc");
@@ -196,14 +203,30 @@
 
         btnContinuar?.addEventListener("click", () => {
             const docs = getDocs();
+            const alerta = document.getElementById("alertaDocs");
 
             const faltantes = DOCS
                 .filter(d => docs[d.key] !== true || !docs.Files?.[d.key])
                 .map(d => d.label);
 
             if (faltantes.length > 0) {
-                alert("Te faltan documentos por subir:\n\n- " + faltantes.join("\n- "));
+                if (alerta) {
+                    alerta.innerHTML = `
+                        <strong>Faltan documentos por subir:</strong>
+                        <ul class="mb-0 mt-2">
+                            ${faltantes.map(f => `<li>${f}</li>`).join("")}
+                        </ul>
+                    `;
+
+                    alerta.classList.remove("d-none", "alert-info");
+                    alerta.classList.add("alert-danger");
+                    alerta.scrollIntoView({ behavior: "smooth", block: "center" });
+                }
                 return;
+            }
+
+            if (alerta) {
+                alerta.classList.add("d-none");
             }
 
             window.location.href = window.PRE_URLS?.confirmar || "/Enrollment/PreEnrollment/ConfirmarPreinscripcion";

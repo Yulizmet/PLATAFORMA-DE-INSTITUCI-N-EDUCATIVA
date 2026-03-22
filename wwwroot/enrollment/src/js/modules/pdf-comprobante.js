@@ -248,7 +248,7 @@
             // ====== Encabezado ======
             doc.setFont("helvetica", "bold");
             doc.setFontSize(18);
-            const title = "FICHA DE PREINSCRIPCION ITACE";
+            const title = "FICHA DE PREINSCRIPCION";
             const titleLines = doc.splitTextToSize(title, titleMaxW);
             doc.text(titleLines, titleXRight, CONFIG.titleY, { align: "right" });
 
@@ -543,7 +543,7 @@
                 bigLineGap
             );
 
-            const filename = `Ficha_ITACE_${folio}.pdf`;
+            const filename = `Ficha_Folio_${folio}.pdf`;
             doc.save(filename);
         } catch (err) {
             console.error("PDF: error al generar", err);

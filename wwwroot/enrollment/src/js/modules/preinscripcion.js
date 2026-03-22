@@ -39,7 +39,7 @@ document.addEventListener("DOMContentLoaded", () => {
     trabajaNo?.addEventListener("change", toggleTrabajo);
     toggleTrabajo();
 
-    function toggleReq({ yesId, wrapId, fieldId, type = "input" }) {
+    function toggleReq({ yesId, wrapId, fieldId }) {
         const yes = $(yesId);
         const wrap = $(wrapId);
         const field = $(fieldId);
@@ -47,7 +47,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const activo = yes.checked;
         wrap.classList.toggle("d-none", !activo);
-
         field.required = activo;
 
         if (!activo) {
@@ -56,14 +55,17 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function becaHandler() {
-        toggleReq({ yesId: "becaSi", wrapId: "wrapTipoBeca", fieldId: "tipoBeca", type: "select" });
+        toggleReq({ yesId: "becaSi", wrapId: "wrapTipoBeca", fieldId: "tipoBeca" });
     }
+
     function lenguaHandler() {
         toggleReq({ yesId: "lenguaSi", wrapId: "wrapLenguaCual", fieldId: "lenguaCual" });
     }
+
     function discapHandler() {
         toggleReq({ yesId: "discapacidadSi", wrapId: "wrapDiscapEspec", fieldId: "discapEspec" });
     }
+
     function enfHandler() {
         toggleReq({ yesId: "enfermedadSi", wrapId: "wrapEnfEspec", fieldId: "enfEspec" });
     }
@@ -81,14 +83,14 @@ document.addEventListener("DOMContentLoaded", () => {
     const btn = $("btnContinuar");
     const form = $("formPreinscripcion");
 
-    // ✅ FIX: si no estamos en la vista de Preinscripción, NO ejecutar este script
+    // Si no estamos en la vista de Preinscripción, no ejecutar
     if (!form) return;
 
     function initDocsIfMissing() {
         const key = "preenrollment_docs";
-        if (localStorage.getItem(key)) return;
+        if (sessionStorage.getItem(key)) return;
 
-        localStorage.setItem(key, JSON.stringify({
+        sessionStorage.setItem(key, JSON.stringify({
             IdData: 0,
             Fotos: false,
             PagoExamen: false,
@@ -113,6 +115,7 @@ document.addEventListener("DOMContentLoaded", () => {
             alert("CURP inválida. Debe tener 18 caracteres.");
             return;
         }
+
         if (!fecha) {
             alert("Falta la fecha de nacimiento.");
             return;
@@ -185,9 +188,9 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         };
 
-        // ✅ Guarda "general" para que SubirDocumentos NO se regrese
         const nombreCompleto = `${datos.generales.nombres} ${datos.generales.apPaterno} ${datos.generales.apMaterno}`.trim();
-        localStorage.setItem("preenrollment_general", JSON.stringify({
+
+        sessionStorage.setItem("preenrollment_general", JSON.stringify({
             IdData: 0,
             Nombre: datos.generales.nombres,
             NombreCompleto: nombreCompleto,
@@ -195,10 +198,8 @@ document.addEventListener("DOMContentLoaded", () => {
             FechaNacimiento: fecha
         }));
 
-        // ✅ Inicializa docs
         initDocsIfMissing();
 
-        // Guarda “sesión activa” como ya lo hacías
         const hash = generarHash(curp, fecha);
         const existente = leerPreinscripcionLS();
 
@@ -213,7 +214,6 @@ document.addEventListener("DOMContentLoaded", () => {
             datos
         });
 
-        // ✅ Enviar al paso de Documentos
         window.location.href = "/Enrollment/PreEnrollment/SubirDocumentos";
     }
 
