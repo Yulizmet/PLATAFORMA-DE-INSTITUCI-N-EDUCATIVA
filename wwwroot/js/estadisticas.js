@@ -953,20 +953,49 @@ function updatePagination() {
     $('#pageInfo').text(`Mostrando ${from}-${Math.min(end, total)} de ${total}`);
 }
 
+// Estado de ordenamiento por tabla/columna
+const sortState = {};
+
+// Clic en la FLECHA ▼ — ordena A→Z / Z→A alternando
+$(document).on('click', '.excel-icon', function (e) {
+    e.stopPropagation();
+    $('.excel-filter-popup').remove();
+
+    const $th = $(this).closest('.excel-header');
+    const col = $th.data('col');
+    const tableId = $th.data('table');
+    const key = tableId + '_' + col;
+
+    // Alternar dirección
+    const asc = !(sortState[key] === true);
+    sortState[key] = asc;
+
+    // Actualizar icono en este encabezado y resetear los demás de la misma tabla
+    $(this).text(asc ? '▲' : '▼');
+    $('[data-table="' + tableId + '"].excel-header').not($th).find('.excel-icon').text('▼');
+
+    sortGeneric(tableId, col, asc);
+});
+
+// Clic en el TEXTO del encabezado (no en la flecha) — abre el popup de filtros
 $(document).on('click', '.excel-header', function (e) {
+    // Si el clic fue exactamente en la flecha, no hacer nada aquí
+    if ($(e.target).hasClass('excel-icon')) return;
     e.stopPropagation();
 
-    // Si ya hay un popup abierto para este mismo encabezado, cerrarlo (toggle)
     const col = $(this).data('col');
     const tableId = $(this).data('table');
+    const offset = $(this).offset();
+
+    // Toggle: si ya está abierto este popup, cerrarlo
     const existing = $('.excel-filter-popup');
     if (existing.length && existing.data('origin-col') == col && existing.data('origin-table') === tableId) {
         existing.remove();
         return;
     }
     $('.excel-filter-popup').remove();
+
     const $table = $('#' + tableId);
-    const offset = $(this).offset();
     const curFilters = getExcelFilters(tableId);
 
     const values = new Set();
@@ -977,10 +1006,6 @@ $(document).on('click', '.excel-header', function (e) {
 
     const popup = $(`
         <div class="excel-filter-popup">
-            <div style="display:flex;gap:6px;margin-bottom:8px;">
-                <button class="sort-asc">A → Z</button>
-                <button class="sort-desc">Z → A</button>
-            </div>
             <input type="text" class="search-filter" placeholder="Buscar valor..."
                 style="width:100%;padding:6px;border-radius:4px;border:1px solid rgba(255,255,255,0.12);background:#2a2a2a;color:#fff;margin-bottom:4px;box-sizing:border-box;">
             <div class="filter-values"></div>
@@ -993,7 +1018,7 @@ $(document).on('click', '.excel-header', function (e) {
     `);
 
     popup.css({
-        top: Math.min(offset.top + $(this).outerHeight() + 4 - $(window).scrollTop(), window.innerHeight - 320),
+        top: Math.min(offset.top + $(this).outerHeight() + 4 - $(window).scrollTop(), window.innerHeight - 280),
         left: Math.min(offset.left, window.innerWidth - 260)
     });
 
@@ -1009,8 +1034,6 @@ $(document).on('click', '.excel-header', function (e) {
     popup.data('origin-table', tableId);
     popup.on('click', ev => ev.stopPropagation());
 
-    popup.find('.sort-asc').click(() => { sortGeneric(tableId, col, true); popup.remove(); });
-    popup.find('.sort-desc').click(() => { sortGeneric(tableId, col, false); popup.remove(); });
     popup.find('.select-all').click(() => container.find('input[type=checkbox]').prop('checked', true));
     popup.find('.deselect-all').click(() => container.find('input[type=checkbox]').prop('checked', false));
 
