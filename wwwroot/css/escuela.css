@@ -1,25 +1,26 @@
-:root{
-    --school-primary: #620900; /* 620900 */
-    --school-dark:    #090909; /* 090909 */
-    --school-white:   #FFFFFF; /* FFFFFF */
-    --school-accent:  #8C1B1B; /* 8C1B1B */
-    --school-warm:    #B1A596; /* B1A596 */
-    --school-light:   #D5D0CB; /* D5D0CB */
+ï»¿:root {
+    --school-primary: #620900;
+    --school-dark: #090909;
+    --school-white: #FFFFFF;
+    --school-accent: #8C1B1B;
+    --school-warm: #B1A596;
+    --school-light: #D5D0CB;
 }
 
-/* Fondo general y tipografía */
+/* Fondo general y tipografÃ­a */
 body {
     background: linear-gradient(180deg, var(--school-light) 0%, #fff 60%);
     color: var(--school-dark);
     font-family: "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 }
 
-/* Encabezados de la página */
+/* Encabezados de la pÃ¡gina */
 #pageTitle {
     color: var(--school-primary);
     font-weight: 700;
     letter-spacing: 0.2px;
 }
+
 #pageSubtitle {
     color: rgba(9,9,9,0.72);
     margin-top: 4px;
@@ -32,16 +33,43 @@ body {
     color: var(--school-white) !important;
     box-shadow: none;
 }
+
 .btn-outline-primary {
     color: var(--school-primary) !important;
     border-color: var(--school-primary) !important;
     background: transparent !important;
 }
+
 .btn-secondary, .btn-outline-secondary {
     background: linear-gradient(180deg, rgba(177,165,150,0.08), transparent) !important;
     border-color: rgba(177,165,150,0.35) !important;
     color: var(--school-dark) !important;
 }
+
+/* â”€â”€ BotÃ³n Filtros â€” rojo escolar, bien visible â”€â”€ */
+.btn-filter-toggle {
+    background-color: var(--school-primary) !important;
+    border-color: var(--school-accent) !important;
+    color: var(--school-white) !important;
+    font-weight: 600;
+    letter-spacing: 0.4px;
+    box-shadow: 0 2px 8px rgba(98,9,0,0.40);
+    padding: 5px 14px;
+    border-radius: 6px;
+}
+
+    .btn-filter-toggle:hover,
+    .btn-filter-toggle:focus {
+        background-color: var(--school-accent) !important;
+        border-color: var(--school-primary) !important;
+        box-shadow: 0 4px 12px rgba(98,9,0,0.55);
+        color: var(--school-white) !important;
+    }
+
+    .btn-filter-toggle[aria-expanded="true"] {
+        background-color: var(--school-accent) !important;
+        box-shadow: inset 0 2px 5px rgba(0,0,0,0.25);
+    }
 
 /* Tarjetas */
 .card {
@@ -51,7 +79,7 @@ body {
     color: var(--school-dark);
 }
 
-/* Estadísticas rápidas */
+/* EstadÃ­sticas rÃ¡pidas */
 .display-6 {
     color: var(--school-dark);
     font-weight: 600;
@@ -65,8 +93,7 @@ body {
     background: linear-gradient(180deg, rgba(213,208,203,0.95), rgba(255,255,255,0.6));
 }
 
-/* Encabezados de tablas — asegurar contraste y visibilidad */
-/* Se aplica directamente a th/td para sobreescribir posibles clases de Bootstrap */
+/* Encabezados de tablas */
 .table thead th,
 .table thead td,
 .table thead.table-light th,
@@ -76,7 +103,6 @@ body {
     border-bottom: 2px solid rgba(177,165,150,0.30) !important;
 }
 
-/* Si el thead tiene la clase table-light, quitar su fondo por defecto (evita mezcla de estilos) */
 .table thead.table-light {
     background-color: transparent !important;
 }
@@ -85,15 +111,16 @@ body {
 .table tbody tr {
     background: transparent;
 }
+
 .table-striped tbody tr:nth-of-type(odd) {
     background-color: rgba(177,165,150,0.06);
 }
+
 .table th, .table td {
     vertical-align: middle;
 }
 
-/* Badges — permitir colores contextuales de Bootstrap */
-/* Estilo común para todas las badges, sin forzar fondo */
+/* Badges */
 .badge {
     color: var(--school-white);
     font-weight: 600;
@@ -102,45 +129,52 @@ body {
     border: 1px solid rgba(0,0,0,0.04);
 }
 
-/* Si la badge NO tiene una clase 'bg-*', aplicar color de acento escolar */
-.badge:not([class*="bg-"]) {
-    background-color: var(--school-accent);
-    color: var(--school-white);
-}
+    .badge:not([class*="bg-"]) {
+        background-color: var(--school-accent);
+        color: var(--school-white);
+    }
 
-/* Ajustes visuales de títulos internos */
+/* TÃ­tulos internos */
 h5, .h6 {
     color: var(--school-primary);
     font-weight: 600;
 }
 
-/* Contenedor de gráficas: mantener altura pero no tocar colores del canvas */
+/* Contenedor de grÃ¡ficas */
 .chart-container {
     height: 300px;
     position: relative;
     width: 100%;
 }
-.chart-container canvas {
-    width: 100% !important;
-    height: 100% !important;
-    display: block;
-    background: transparent;
-}
 
-/* Pequeños detalles y accesibilidad */
+    .chart-container canvas {
+        width: 100% !important;
+        height: 100% !important;
+        display: block;
+        background: transparent;
+    }
+
+/* Detalles y accesibilidad */
 a, .link {
     color: var(--school-primary);
 }
+
 .card p, .card .text-muted {
     color: rgba(9,9,9,0.7);
 }
 
-/* Responsive tweaks */
+/* Responsive */
 @media (max-width: 576px) {
-    .display-6 { font-size: 1.4rem; }
-    .card { padding: 10px; }
+    .display-6 {
+        font-size: 1.4rem;
+    }
+
+    .card {
+        padding: 10px;
+    }
 }
 
+/* Excel headers */
 .excel-header {
     position: relative;
     cursor: pointer;
@@ -153,44 +187,63 @@ a, .link {
     color: #777;
 }
 
+/* Popup de filtros tipo Excel */
 .excel-filter-popup {
-    position: absolute;
-    background: #fff;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    padding: 8px;
-    width: 180px;
-    font-size: 12px;
-    box-shadow: 0 3px 8px rgba(0,0,0,0.2);
-    z-index: 9999;
+    position: fixed;
+    background: #1f1f1f;
+    color: #fff;
+    border-radius: 6px;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.45);
+    padding: 10px;
+    z-index: 2000;
+    border: 1px solid rgba(255,255,255,0.06);
+    min-width: 240px;
+    max-width: 320px;
 }
 
     .excel-filter-popup input[type="text"] {
         width: 100%;
-        padding: 3px;
+        padding: 6px;
         margin-bottom: 5px;
         font-size: 12px;
+        background: #2a2a2a;
+        color: #fff;
+        border: 1px solid rgba(255,255,255,0.12);
+        border-radius: 4px;
+        box-sizing: border-box;
     }
 
 .filter-values {
-    max-height: 120px;
+    max-height: 160px;
     overflow-y: auto;
-    border: 1px solid #eee;
-    padding: 4px;
+    background: #141414;
+    padding: 6px;
+    border-radius: 4px;
+    border: 1px solid rgba(255,255,255,0.04);
+    margin-top: 6px;
 }
 
     .filter-values label {
         display: block;
         font-size: 12px;
+        margin-bottom: 4px;
+        cursor: pointer;
     }
 
 .excel-filter-popup button {
     font-size: 11px;
     padding: 3px 6px;
     margin-top: 4px;
+    background: transparent;
+    color: #fff;
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 4px;
+    cursor: pointer;
 }
 
+/* BotÃ³n activo de vista */
 .view-btn.active {
-    background-color: #0d6efd;
-    color: white;
+    background-color: var(--school-primary) !important;
+    border-color: var(--school-accent) !important;
+    color: white !important;
 }

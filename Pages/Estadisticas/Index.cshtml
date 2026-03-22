@@ -9,66 +9,50 @@
 }
 
 <style>
-.chart-container {
-    height: 300px;
-    position: relative;
-    width: 100%;
-}
-.chart-container canvas {
-    width: 100% !important;
-    height: 100% !important;
-    display: block;
-}
-.filter-submenu {
-    border: 1px solid #e3e6ea;
-    padding: 12px;
-    border-radius: 6px;
-    background: #f8f9fa;
-}
+.chart-container { height: 300px; position: relative; width: 100%; }
+.chart-container canvas { width: 100% !important; height: 100% !important; display: block; }
+.filter-submenu { border: 1px solid #e3e6ea; padding: 12px; border-radius: 6px; background: #f8f9fa; }
 .excel-filter-popup {
-    position: fixed;
-    min-width: 240px;
-    max-width: 320px;
-    background: #1f1f1f;
-    color: #fff;
-    border-radius: 6px;
-    box-shadow: 0 6px 18px rgba(0,0,0,0.45);
-    padding: 10px;
-    z-index: 2000;
-    border: 1px solid rgba(255,255,255,0.06);
+    position: fixed; min-width: 240px; max-width: 320px;
+    background: #1f1f1f; color: #fff; border-radius: 6px;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.45); padding: 10px;
+    z-index: 2000; border: 1px solid rgba(255,255,255,0.06);
 }
 .excel-filter-popup button {
-    background: transparent;
-    color: #fff;
+    background: transparent; color: #fff;
     border: 1px solid rgba(255,255,255,0.15);
-    padding: 4px 8px;
-    border-radius: 4px;
-    cursor: pointer;
+    padding: 4px 8px; border-radius: 4px; cursor: pointer;
 }
 .filter-values {
-    max-height: 160px;
-    overflow-y: auto;
-    background: #141414;
-    padding: 6px;
-    border-radius: 4px;
-    border: 1px solid rgba(255,255,255,0.04);
-    margin-top: 6px;
+    max-height: 160px; overflow-y: auto; background: #141414;
+    padding: 6px; border-radius: 4px;
+    border: 1px solid rgba(255,255,255,0.04); margin-top: 6px;
 }
-.filter-values label {
-    display: block;
-    font-size: 0.85rem;
-    margin-bottom: 4px;
-    cursor: pointer;
+.filter-values label { display: block; font-size: 0.85rem; margin-bottom: 4px; cursor: pointer; }
+
+/* Botón Filtros — resaltado */
+.btn-filter-toggle {
+    background-color: var(--school-primary) !important;
+    border-color: var(--school-accent) !important;
+    color: #fff !important;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+    box-shadow: 0 2px 6px rgba(98,9,0,0.35);
+}
+.btn-filter-toggle:hover, .btn-filter-toggle:focus {
+    background-color: var(--school-accent) !important;
+    box-shadow: 0 3px 10px rgba(98,9,0,0.5);
 }
 </style>
 
-<!-- Botones de sección -->
+<!-- ── Botones de sección ── -->
 <div class="row mb-3">
     <div class="col-12">
         <div class="btn-group" role="group">
             <button id="btnCalificaciones" class="btn btn-primary view-btn active">Calificaciones</button>
-            <button id="btnServicios" class="btn btn-outline-primary view-btn">Servicios Sociales</button>
-            <button id="btnTramites" class="btn btn-outline-primary view-btn">Trámites</button>
+            <button id="btnServicios"      class="btn btn-outline-primary view-btn">Servicios Sociales</button>
+            <button id="btnTramites"       class="btn btn-outline-primary view-btn">Trámites</button>
+            <button id="btnBitacoras"      class="btn btn-outline-primary view-btn">Bitácoras</button>
         </div>
     </div>
 </div>
@@ -79,21 +63,23 @@
             <h2 id="pageTitle">Estadísticas de alumnos</h2>
             <p class="text-muted" id="pageSubtitle">Control y seguimiento: inscritos, cursando, aprobados y reprobados.</p>
         </div>
-        <button id="btnExportTable" class="btn btn-success ms-2">Exportar a Excel</button>
+        <div class="d-flex gap-2">
+            <button id="btnExportTable" class="btn btn-success">Exportar a Excel</button>
+            <button id="btnExportPDF"   class="btn btn-danger">Exportar a PDF</button>
+        </div>
     </div>
 </div>
 
-<!-- Filtros colapsables -->
+<!-- ── Filtros colapsables ── -->
 <div class="row mb-3">
     <div class="col-12">
-        <button id="toggleFilters" class="btn btn-sm btn-secondary mb-2" type="button" aria-expanded="false">Filtros</button>
+        <button id="toggleFilters" class="btn btn-sm btn-filter-toggle mb-2" type="button" aria-expanded="false">⚙ Filtros</button>
         <div id="filtersArea" class="filter-submenu collapse">
 
+            <!-- Calificaciones -->
             <div id="filtersStudents">
                 <div class="row g-2">
-                    <div class="col-md-3">
-                        <input id="filterName" class="form-control" placeholder="Filtrar por nombre..." />
-                    </div>
+                    <div class="col-md-3"><input id="filterName" class="form-control" placeholder="Filtrar por nombre..." /></div>
                     <div class="col-md-2">
                         <select id="filterStatus" class="form-select">
                             <option value="">Todos los estados</option>
@@ -126,14 +112,11 @@
                 </div>
             </div>
 
+            <!-- Servicios Sociales -->
             <div id="filtersSocialServices" class="d-none">
                 <div class="row g-2">
-                    <div class="col-md-3">
-                        <input id="filterSocialName" class="form-control" placeholder="Filtrar por alumno..." />
-                    </div>
-                    <div class="col-md-2">
-                        <input id="filterSocialTeacher" class="form-control" placeholder="Filtrar por maestro..." />
-                    </div>
+                    <div class="col-md-3"><input id="filterSocialName" class="form-control" placeholder="Filtrar por alumno..." /></div>
+                    <div class="col-md-2"><input id="filterSocialTeacher" class="form-control" placeholder="Filtrar por maestro..." /></div>
                     <div class="col-md-2">
                         <select id="filterSocialStatus" class="form-select">
                             <option value="">Todos los estados</option>
@@ -142,9 +125,7 @@
                             <option value="Pendiente">Pendiente</option>
                         </select>
                     </div>
-                    <div class="col-md-2">
-                        <input id="filterSocialGroup" class="form-control" placeholder="Filtrar por grupo..." />
-                    </div>
+                    <div class="col-md-2"><input id="filterSocialGroup" class="form-control" placeholder="Filtrar por grupo..." /></div>
                     <div class="col-md-3 d-flex gap-2">
                         <button id="applySocialFilters" class="btn btn-primary">Aplicar</button>
                         <button id="resetSocialFilters" class="btn btn-outline-secondary">Reset</button>
@@ -152,14 +133,11 @@
                 </div>
             </div>
 
+            <!-- Trámites -->
             <div id="filtersTramites" class="d-none">
                 <div class="row g-2">
-                    <div class="col-md-3">
-                        <input id="filterTramiteUser" class="form-control" placeholder="Filtrar por usuario..." />
-                    </div>
-                    <div class="col-md-2">
-                        <input id="filterTramiteFolio" class="form-control" placeholder="Filtrar por folio..." />
-                    </div>
+                    <div class="col-md-3"><input id="filterTramiteUser" class="form-control" placeholder="Filtrar por usuario..." /></div>
+                    <div class="col-md-2"><input id="filterTramiteFolio" class="form-control" placeholder="Filtrar por folio..." /></div>
                     <div class="col-md-2">
                         <select id="filterTramiteStatus" class="form-select">
                             <option value="">Todos los estados</option>
@@ -168,12 +146,55 @@
                             <option value="REJECTED">No pagó</option>
                         </select>
                     </div>
-                    <div class="col-md-2">
-                        <input id="filterTramiteArea" class="form-control" placeholder="Filtrar por área..." />
-                    </div>
+                    <div class="col-md-2"><input id="filterTramiteArea" class="form-control" placeholder="Filtrar por área..." /></div>
                     <div class="col-md-3 d-flex gap-2">
                         <button id="applyTramiteFilters" class="btn btn-primary">Aplicar</button>
                         <button id="resetTramiteFilters" class="btn btn-outline-secondary">Reset</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bitácoras Psicología -->
+            <div id="filtersBitacorasPsy" class="d-none">
+                <div class="row g-2">
+                    <div class="col-md-3"><input id="filterPsyName" class="form-control" placeholder="Filtrar por alumno..." /></div>
+                    <div class="col-md-2"><input id="filterPsyFolio" class="form-control" placeholder="Filtrar por folio..." /></div>
+                    <div class="col-md-2">
+                        <select id="filterPsyStatus" class="form-select">
+                            <option value="">Todos los estados</option>
+                            <option value="Asistió">Asistió</option>
+                            <option value="No asistió">No asistió</option>
+                            <option value="Justificado">Justificado</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2"><input id="filterPsyMatricula" class="form-control" placeholder="Filtrar por matrícula..." /></div>
+                    <div class="col-md-3 d-flex gap-2">
+                        <button id="applyPsyFilters" class="btn btn-primary">Aplicar</button>
+                        <button id="resetPsyFilters" class="btn btn-outline-secondary">Reset</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bitácoras Enfermería -->
+            <div id="filtersBitacorasMed" class="d-none">
+                <div class="row g-2">
+                    <div class="col-md-3"><input id="filterMedName" class="form-control" placeholder="Filtrar por alumno..." /></div>
+                    <div class="col-md-2"><input id="filterMedFolio" class="form-control" placeholder="Filtrar por folio..." /></div>
+                    <div class="col-md-2">
+                        <select id="filterMedStatus" class="form-select">
+                            <option value="">Todos los estados</option>
+                            <option value="Estable">Estable</option>
+                            <option value="Alta">Alta</option>
+                            <option value="Urgente">Urgente</option>
+                            <option value="Critico">Crítico</option>
+                            <option value="Observacion">Observación</option>
+                            <option value="Pendiente">Pendiente</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2"><input id="filterMedReason" class="form-control" placeholder="Filtrar por motivo..." /></div>
+                    <div class="col-md-3 d-flex gap-2">
+                        <button id="applyMedFilters" class="btn btn-primary">Aplicar</button>
+                        <button id="resetMedFilters" class="btn btn-outline-secondary">Reset</button>
                     </div>
                 </div>
             </div>
@@ -182,57 +203,49 @@
     </div>
 </div>
 
-<!-- ── Tarjetas CALIFICACIONES ── -->
+<!-- ══ Tarjetas CALIFICACIONES ══ -->
 <div class="row mb-4" id="studentStats">
-    <div class="col-sm-6 col-md-3 mb-2">
-        <div class="card p-3"><div class="h6">Total alumnos</div><div id="statTotal" class="display-6">@Model.Total</div></div>
-    </div>
-    <div class="col-sm-6 col-md-3 mb-2">
-        <div class="card p-3"><div class="h6">Inscritos</div><div id="statInscritos" class="display-6">@Model.CountInscrito</div></div>
-    </div>
-    <div class="col-sm-6 col-md-3 mb-2">
-        <div class="card p-3"><div class="h6">Cursando</div><div id="statCursando" class="display-6">@Model.CountCursando</div></div>
-    </div>
-    <div class="col-sm-6 col-md-3 mb-2">
-        <div class="card p-3"><div class="h6">Aprobados</div><div id="statAprobados" class="display-6">@Model.CountAprobado</div></div>
-    </div>
+    <div class="col-sm-6 col-md-3 mb-2"><div class="card p-3"><div class="h6">Total alumnos</div><div id="statTotal" class="display-6">@Model.Total</div></div></div>
+    <div class="col-sm-6 col-md-3 mb-2"><div class="card p-3"><div class="h6">Inscritos</div><div id="statInscritos" class="display-6">@Model.CountInscrito</div></div></div>
+    <div class="col-sm-6 col-md-3 mb-2"><div class="card p-3"><div class="h6">Cursando</div><div id="statCursando" class="display-6">@Model.CountCursando</div></div></div>
+    <div class="col-sm-6 col-md-3 mb-2"><div class="card p-3"><div class="h6">Aprobados</div><div id="statAprobados" class="display-6">@Model.CountAprobado</div></div></div>
 </div>
 
-<!-- ── Tarjetas SERVICIOS SOCIALES ── -->
+<!-- ══ Tarjetas SERVICIOS SOCIALES ══ -->
 <div class="row mb-4 d-none" id="socialServiceStats">
-    <div class="col-sm-6 col-md-3 mb-2">
-        <div class="card p-3"><div class="h6">Total estudiantes</div><div id="statSocialTotal" class="display-6">0</div></div>
-    </div>
-    <div class="col-sm-6 col-md-3 mb-2">
-        <div class="card p-3"><div class="h6">Total horas acumuladas</div><div id="statSocialHours" class="display-6">0</div></div>
-    </div>
-    <div class="col-sm-6 col-md-3 mb-2">
-        <div class="card p-3"><div class="h6">Bitácoras pendientes</div><div id="statSocialPending" class="display-6">0</div></div>
-    </div>
-    <div class="col-sm-6 col-md-3 mb-2">
-        <div class="card p-3"><div class="h6">Asistencia promedio</div><div id="statSocialAttendance" class="display-6">0%</div></div>
-    </div>
+    <div class="col-sm-6 col-md-3 mb-2"><div class="card p-3"><div class="h6">Alumnos con asistencia</div><div id="statSocialTotal" class="display-6">0</div></div></div>
+    <div class="col-sm-6 col-md-3 mb-2"><div class="card p-3"><div class="h6">Asistencias presentes</div><div id="statSocialHours" class="display-6">0</div></div></div>
+    <div class="col-sm-6 col-md-3 mb-2"><div class="card p-3"><div class="h6">Ausencias totales</div><div id="statSocialPending" class="display-6">0</div></div></div>
+    <div class="col-sm-6 col-md-3 mb-2"><div class="card p-3"><div class="h6">Asistencia promedio</div><div id="statSocialAttendance" class="display-6">0%</div></div></div>
 </div>
 
-<!-- ── Tarjetas TRÁMITES ── -->
+<!-- ══ Tarjetas TRÁMITES ══ -->
 <div class="row mb-4 d-none" id="proceduresStats">
-    <div class="col-sm-6 col-md-3 mb-2">
-        <div class="card p-3"><div class="h6">Total solicitudes</div><div id="statProcsTotal" class="display-6">0</div></div>
-    </div>
-    <div class="col-sm-6 col-md-3 mb-2">
-        <div class="card p-3"><div class="h6">Acción requerida</div><div id="statProcsAction" class="display-6">0</div></div>
-    </div>
-    <div class="col-sm-6 col-md-3 mb-2">
-        <div class="card p-3"><div class="h6">En proceso</div><div id="statProcsInProgress" class="display-6">0</div></div>
-    </div>
-    <div class="col-sm-6 col-md-3 mb-2">
-        <div class="card p-3"><div class="h6">Finalizadas</div><div id="statProcsFinalized" class="display-6">0</div></div>
-    </div>
+    <div class="col-sm-6 col-md-3 mb-2"><div class="card p-3"><div class="h6">Total solicitudes</div><div id="statProcsTotal" class="display-6">0</div></div></div>
+    <div class="col-sm-6 col-md-3 mb-2"><div class="card p-3"><div class="h6">Acción requerida</div><div id="statProcsAction" class="display-6">0</div></div></div>
+    <div class="col-sm-6 col-md-3 mb-2"><div class="card p-3"><div class="h6">En proceso</div><div id="statProcsInProgress" class="display-6">0</div></div></div>
+    <div class="col-sm-6 col-md-3 mb-2"><div class="card p-3"><div class="h6">Finalizadas</div><div id="statProcsFinalized" class="display-6">0</div></div></div>
 </div>
 
-<!-- ══════════════════════════════════════════════
+<!-- ══ Tarjetas PSICOLOGÍA ══ -->
+<div class="row mb-4 d-none" id="psychologyStats">
+    <div class="col-sm-6 col-md-3 mb-2"><div class="card p-3"><div class="h6">Total registros</div><div id="statPsyTotal" class="display-6">0</div></div></div>
+    <div class="col-sm-6 col-md-3 mb-2"><div class="card p-3"><div class="h6">Asistió</div><div id="statPsyAttended" class="display-6">0</div></div></div>
+    <div class="col-sm-6 col-md-3 mb-2"><div class="card p-3"><div class="h6">No asistió</div><div id="statPsyAbsent" class="display-6">0</div></div></div>
+    <div class="col-sm-6 col-md-3 mb-2"><div class="card p-3"><div class="h6">Justificados</div><div id="statPsyJustified" class="display-6">0</div></div></div>
+</div>
+
+<!-- ══ Tarjetas ENFERMERÍA ══ -->
+<div class="row mb-4 d-none" id="medicalStats">
+    <div class="col-sm-6 col-md-3 mb-2"><div class="card p-3"><div class="h6">Total registros</div><div id="statMedTotal" class="display-6">0</div></div></div>
+    <div class="col-sm-6 col-md-3 mb-2"><div class="card p-3"><div class="h6">Atendidos</div><div id="statMedAttended" class="display-6">0</div></div></div>
+    <div class="col-sm-6 col-md-3 mb-2"><div class="card p-3"><div class="h6">Pendientes</div><div id="statMedPending" class="display-6">0</div></div></div>
+    <div class="col-sm-6 col-md-3 mb-2"><div class="card p-3"><div class="h6">Otros estados</div><div id="statMedOther" class="display-6">0</div></div></div>
+</div>
+
+<!-- ══════════════════════════════════════
      VIEW: CALIFICACIONES
-══════════════════════════════════════════════ -->
+══════════════════════════════════════ -->
 <div id="viewStudents">
     <div class="table-responsive mb-2">
         <table id="studentsTable" class="table table-striped table-hover">
@@ -252,19 +265,14 @@
             @foreach (var s in Model.Students)
             {
                 <tr data-name="@s.Nombre" data-status="@s.Estado" data-genero="@s.Genero" data-semestre="@s.Semestre">
-                    <td>@s.Id</td>
-                    <td>@s.Nombre</td>
-                    <td>@s.Genero</td>
-                    <td>@s.Curso</td>
-                    <td>@s.Semestre</td>
+                    <td>@s.Id</td><td>@s.Nombre</td><td>@s.Genero</td><td>@s.Curso</td><td>@s.Semestre</td>
                     <td>
-                        @if (s.Estado == "Aprobado") { <span class="badge bg-success">Aprobado</span> }
+                        @if (s.Estado == "Aprobado")      { <span class="badge bg-success">Aprobado</span> }
                         else if (s.Estado == "Reprobado") { <span class="badge bg-danger">Reprobado</span> }
-                        else if (s.Estado == "Cursando") { <span class="badge bg-warning text-dark">Cursando</span> }
-                        else { <span class="badge bg-secondary">Inscrito</span> }
+                        else if (s.Estado == "Cursando")  { <span class="badge bg-warning text-dark">Cursando</span> }
+                        else                              { <span class="badge bg-secondary">Inscrito</span> }
                     </td>
-                    <td>@s.Nota</td>
-                    <td>@s.FechaInscripcion.ToString("yyyy-MM-dd")</td>
+                    <td>@s.Nota</td><td>@s.FechaInscripcion.ToString("yyyy-MM-dd")</td>
                 </tr>
             }
             </tbody>
@@ -275,37 +283,24 @@
             <small id="pageInfo">Mostrando 1-15</small>
             <div class="btn-group">
                 <button id="firstPage" class="btn btn-sm btn-outline-secondary">🏠</button>
-                <button id="prevPage" class="btn btn-sm btn-outline-secondary">◀</button>
-                <button id="nextPage" class="btn btn-sm btn-outline-secondary">▶</button>
+                <button id="prevPage"  class="btn btn-sm btn-outline-secondary">◀</button>
+                <button id="nextPage"  class="btn btn-sm btn-outline-secondary">▶</button>
             </div>
         </div>
     </div>
-    <!-- Gráficas Calificaciones -->
     <div class="row mt-2">
-        <div class="col-md-6 mb-3">
-            <div class="card p-3"><h5>Distribución por estado</h5>
-                <div class="chart-container"><canvas id="pieChart"></canvas></div></div>
-        </div>
-        <div class="col-md-6 mb-3">
-            <div class="card p-3"><h5>Promedio de nota por curso</h5>
-                <div class="chart-container"><canvas id="barChart"></canvas></div></div>
-        </div>
+        <div class="col-md-6 mb-3"><div class="card p-3"><h5>Distribución por estado</h5><div class="chart-container"><canvas id="pieChart"></canvas></div></div></div>
+        <div class="col-md-6 mb-3"><div class="card p-3"><h5>Promedio de nota por curso</h5><div class="chart-container"><canvas id="barChart"></canvas></div></div></div>
     </div>
     <div class="row">
-        <div class="col-md-6 mb-3">
-            <div class="card p-3"><h5>Histograma de distribución de notas</h5>
-                <div class="chart-container"><canvas id="gradeHistogramChart"></canvas></div></div>
-        </div>
-        <div class="col-md-6 mb-3">
-            <div class="card p-3"><h5>Composición por estado por curso</h5>
-                <div class="chart-container"><canvas id="courseStatusStacked"></canvas></div></div>
-        </div>
+        <div class="col-md-6 mb-3"><div class="card p-3"><h5>Histograma de distribución de notas</h5><div class="chart-container"><canvas id="gradeHistogramChart"></canvas></div></div></div>
+        <div class="col-md-6 mb-3"><div class="card p-3"><h5>Composición por estado por curso</h5><div class="chart-container"><canvas id="courseStatusStacked"></canvas></div></div></div>
     </div>
 </div>
 
-<!-- ══════════════════════════════════════════════
+<!-- ══════════════════════════════════════
      VIEW: SERVICIOS SOCIALES
-══════════════════════════════════════════════ -->
+══════════════════════════════════════ -->
 <div id="viewSocialServices" class="d-none">
     <div class="table-responsive mb-2">
         <table id="socialServiceTable" class="table table-striped table-hover">
@@ -314,17 +309,15 @@
                     <th class="excel-header" data-table="socialServiceTable" data-col="0">Alumno <span class="excel-icon">▼</span></th>
                     <th class="excel-header" data-table="socialServiceTable" data-col="1">Maestro asesor <span class="excel-icon">▼</span></th>
                     <th class="excel-header" data-table="socialServiceTable" data-col="2">Grupo <span class="excel-icon">▼</span></th>
-                    <th class="excel-header" data-table="socialServiceTable" data-col="3">Horas prácticas <span class="excel-icon">▼</span></th>
-                    <th class="excel-header" data-table="socialServiceTable" data-col="4">Horas serv. social <span class="excel-icon">▼</span></th>
-                    <th class="excel-header" data-table="socialServiceTable" data-col="5">Total horas <span class="excel-icon">▼</span></th>
-                    <th class="excel-header" data-table="socialServiceTable" data-col="6">Asistencia <span class="excel-icon">▼</span></th>
+                    <th class="excel-header" data-table="socialServiceTable" data-col="3">Asistencias <span class="excel-icon">▼</span></th>
+                    <th class="excel-header" data-table="socialServiceTable" data-col="4">Faltas <span class="excel-icon">▼</span></th>
+                    <th class="excel-header" data-table="socialServiceTable" data-col="5">Justificadas <span class="excel-icon">▼</span></th>
+                    <th class="excel-header" data-table="socialServiceTable" data-col="6">% Asistencia <span class="excel-icon">▼</span></th>
                     <th class="excel-header" data-table="socialServiceTable" data-col="7">Estado <span class="excel-icon">▼</span></th>
-                    <th class="excel-header" data-table="socialServiceTable" data-col="8">Última actualización <span class="excel-icon">▼</span></th>
+                    <th class="excel-header" data-table="socialServiceTable" data-col="8">Última asistencia <span class="excel-icon">▼</span></th>
                 </tr>
             </thead>
-            <tbody>
-                <tr><td colspan="9" class="text-center text-muted py-4">Cargando datos...</td></tr>
-            </tbody>
+            <tbody><tr><td colspan="9" class="text-center text-muted py-4">Cargando datos...</td></tr></tbody>
         </table>
     </div>
     <div class="row mb-3">
@@ -332,37 +325,24 @@
             <small id="pageInfoSocial">Mostrando resultados</small>
             <div class="btn-group">
                 <button id="firstPageSocial" class="btn btn-sm btn-outline-secondary">🏠</button>
-                <button id="prevPageSocial" class="btn btn-sm btn-outline-secondary">◀</button>
-                <button id="nextPageSocial" class="btn btn-sm btn-outline-secondary">▶</button>
+                <button id="prevPageSocial"  class="btn btn-sm btn-outline-secondary">◀</button>
+                <button id="nextPageSocial"  class="btn btn-sm btn-outline-secondary">▶</button>
             </div>
         </div>
     </div>
-    <!-- Gráficas Servicios Sociales -->
     <div class="row mt-2">
-        <div class="col-md-6 mb-3">
-            <div class="card p-3"><h5>Estado de servicio social</h5>
-                <div class="chart-container"><canvas id="socialPieChart"></canvas></div></div>
-        </div>
-        <div class="col-md-6 mb-3">
-            <div class="card p-3"><h5>Horas totales por alumno (Top 10)</h5>
-                <div class="chart-container"><canvas id="socialHoursBar"></canvas></div></div>
-        </div>
+        <div class="col-md-6 mb-3"><div class="card p-3"><h5>Estado de servicio social</h5><div class="chart-container"><canvas id="socialPieChart"></canvas></div></div></div>
+        <div class="col-md-6 mb-3"><div class="card p-3"><h5>Asistencias por alumno (Top 10)</h5><div class="chart-container"><canvas id="socialHoursBar"></canvas></div></div></div>
     </div>
     <div class="row">
-        <div class="col-md-6 mb-3">
-            <div class="card p-3"><h5>Asistencia promedio por grupo</h5>
-                <div class="chart-container"><canvas id="socialAttendanceBar"></canvas></div></div>
-        </div>
-        <div class="col-md-6 mb-3">
-            <div class="card p-3"><h5>Horas prácticas vs. servicio social</h5>
-                <div class="chart-container"><canvas id="socialHoursStacked"></canvas></div></div>
-        </div>
+        <div class="col-md-6 mb-3"><div class="card p-3"><h5>Asistencia promedio por grupo</h5><div class="chart-container"><canvas id="socialAttendanceBar"></canvas></div></div></div>
+        <div class="col-md-6 mb-3"><div class="card p-3"><h5>Presentes vs. Ausencias por grupo</h5><div class="chart-container"><canvas id="socialHoursStacked"></canvas></div></div></div>
     </div>
 </div>
 
-<!-- ══════════════════════════════════════════════
+<!-- ══════════════════════════════════════
      VIEW: TRÁMITES
-══════════════════════════════════════════════ -->
+══════════════════════════════════════ -->
 <div id="viewProcedures" class="d-none">
     <div class="table-responsive mb-2">
         <table id="proceduresTable" class="table table-striped table-hover">
@@ -378,9 +358,7 @@
                     <th class="excel-header" data-table="proceduresTable" data-col="7">Días transcurridos <span class="excel-icon">▼</span></th>
                 </tr>
             </thead>
-            <tbody>
-                <tr><td colspan="8" class="text-center text-muted py-4">Cargando datos...</td></tr>
-            </tbody>
+            <tbody><tr><td colspan="8" class="text-center text-muted py-4">Cargando datos...</td></tr></tbody>
         </table>
     </div>
     <div class="row mb-3">
@@ -388,30 +366,111 @@
             <small id="pageInfoTramites">Mostrando resultados</small>
             <div class="btn-group">
                 <button id="firstPageTramites" class="btn btn-sm btn-outline-secondary">🏠</button>
-                <button id="prevPageTramites" class="btn btn-sm btn-outline-secondary">◀</button>
-                <button id="nextPageTramites" class="btn btn-sm btn-outline-secondary">▶</button>
+                <button id="prevPageTramites"  class="btn btn-sm btn-outline-secondary">◀</button>
+                <button id="nextPageTramites"  class="btn btn-sm btn-outline-secondary">▶</button>
             </div>
         </div>
     </div>
-    <!-- Gráficas Trámites -->
     <div class="row mt-2">
-        <div class="col-md-6 mb-3">
-            <div class="card p-3"><h5>Distribución por estado</h5>
-                <div class="chart-container"><canvas id="tramitesPieChart"></canvas></div></div>
-        </div>
-        <div class="col-md-6 mb-3">
-            <div class="card p-3"><h5>Trámites por área</h5>
-                <div class="chart-container"><canvas id="tramitesAreaBar"></canvas></div></div>
-        </div>
+        <div class="col-md-6 mb-3"><div class="card p-3"><h5>Distribución por estado</h5><div class="chart-container"><canvas id="tramitesPieChart"></canvas></div></div></div>
+        <div class="col-md-6 mb-3"><div class="card p-3"><h5>Trámites por área</h5><div class="chart-container"><canvas id="tramitesAreaBar"></canvas></div></div></div>
     </div>
     <div class="row">
-        <div class="col-md-6 mb-3">
-            <div class="card p-3"><h5>Tipos de trámite más solicitados</h5>
-                <div class="chart-container"><canvas id="tramitesTipoBar"></canvas></div></div>
+        <div class="col-md-6 mb-3"><div class="card p-3"><h5>Tipos de trámite más solicitados</h5><div class="chart-container"><canvas id="tramitesTipoBar"></canvas></div></div></div>
+        <div class="col-md-6 mb-3"><div class="card p-3"><h5>Días promedio de resolución por área</h5><div class="chart-container"><canvas id="tramitesDiasBar"></canvas></div></div></div>
+    </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     VIEW: BITÁCORAS
+══════════════════════════════════════ -->
+<div id="viewBitacoras" class="d-none">
+    <div class="row mb-3">
+        <div class="col-12">
+            <div class="btn-group" role="group">
+                <button id="btnSubPsicologia" class="btn btn-sm btn-primary">Psicología</button>
+                <button id="btnSubEnfermeria" class="btn btn-sm btn-outline-primary">Enfermería</button>
+            </div>
         </div>
-        <div class="col-md-6 mb-3">
-            <div class="card p-3"><h5>Días promedio de resolución por área</h5>
-                <div class="chart-container"><canvas id="tramitesDiasBar"></canvas></div></div>
+    </div>
+
+    <!-- Sub-vista: Psicología -->
+    <div id="subViewPsicologia">
+        <div class="table-responsive mb-2">
+            <table id="psychologyTable" class="table table-striped table-hover">
+                <thead class="table-light">
+                    <tr>
+                        <th class="excel-header" data-table="psychologyTable" data-col="0">Folio <span class="excel-icon">▼</span></th>
+                        <th class="excel-header" data-table="psychologyTable" data-col="1">Alumno <span class="excel-icon">▼</span></th>
+                        <th class="excel-header" data-table="psychologyTable" data-col="2">Matrícula <span class="excel-icon">▼</span></th>
+                        <th class="excel-header" data-table="psychologyTable" data-col="3">Fecha cita <span class="excel-icon">▼</span></th>
+                        <th class="excel-header" data-table="psychologyTable" data-col="4">Asistencia <span class="excel-icon">▼</span></th>
+                        <th class="excel-header" data-table="psychologyTable" data-col="5">Observaciones <span class="excel-icon">▼</span></th>
+                        <th class="excel-header" data-table="psychologyTable" data-col="6">Fecha creación <span class="excel-icon">▼</span></th>
+                    </tr>
+                </thead>
+                <tbody><tr><td colspan="7" class="text-center text-muted py-4">Cargando datos de Psicología...</td></tr></tbody>
+            </table>
+        </div>
+        <div class="row mb-3">
+            <div class="col-12 d-flex justify-content-between align-items-center">
+                <small id="pageInfoPsy">Mostrando resultados</small>
+                <div class="btn-group">
+                    <button id="firstPagePsy" class="btn btn-sm btn-outline-secondary">🏠</button>
+                    <button id="prevPagePsy"  class="btn btn-sm btn-outline-secondary">◀</button>
+                    <button id="nextPagePsy"  class="btn btn-sm btn-outline-secondary">▶</button>
+                </div>
+            </div>
+        </div>
+        <!-- Gráficas Psicología -->
+        <div class="row mt-2">
+            <div class="col-md-6 mb-3"><div class="card p-3"><h5>Distribución de asistencia</h5><div class="chart-container"><canvas id="psyPieChart"></canvas></div></div></div>
+            <div class="col-md-6 mb-3"><div class="card p-3"><h5>Citas por alumno (Top 10)</h5><div class="chart-container"><canvas id="psyStudentBar"></canvas></div></div></div>
+        </div>
+        <div class="row">
+            <div class="col-md-6 mb-3"><div class="card p-3"><h5>Citas registradas por mes</h5><div class="chart-container"><canvas id="psyMonthBar"></canvas></div></div></div>
+            <div class="col-md-6 mb-3"><div class="card p-3"><h5>Asistencia vs. Ausencia acumulada</h5><div class="chart-container"><canvas id="psyAttendanceStacked"></canvas></div></div></div>
+        </div>
+    </div>
+
+    <!-- Sub-vista: Enfermería -->
+    <div id="subViewEnfermeria" class="d-none">
+        <div class="table-responsive mb-2">
+            <table id="medicalTable" class="table table-striped table-hover">
+                <thead class="table-light">
+                    <tr>
+                        <th class="excel-header" data-table="medicalTable" data-col="0">Folio <span class="excel-icon">▼</span></th>
+                        <th class="excel-header" data-table="medicalTable" data-col="1">Alumno <span class="excel-icon">▼</span></th>
+                        <th class="excel-header" data-table="medicalTable" data-col="2">Matrícula <span class="excel-icon">▼</span></th>
+                        <th class="excel-header" data-table="medicalTable" data-col="3">Fecha registro <span class="excel-icon">▼</span></th>
+                        <th class="excel-header" data-table="medicalTable" data-col="4">Motivo de consulta <span class="excel-icon">▼</span></th>
+                        <th class="excel-header" data-table="medicalTable" data-col="5">Signos vitales <span class="excel-icon">▼</span></th>
+                        <th class="excel-header" data-table="medicalTable" data-col="6">Observaciones <span class="excel-icon">▼</span></th>
+                        <th class="excel-header" data-table="medicalTable" data-col="7">Acción tomada <span class="excel-icon">▼</span></th>
+                        <th class="excel-header" data-table="medicalTable" data-col="8">Estado <span class="excel-icon">▼</span></th>
+                    </tr>
+                </thead>
+                <tbody><tr><td colspan="9" class="text-center text-muted py-4">Cargando datos de Enfermería...</td></tr></tbody>
+            </table>
+        </div>
+        <div class="row mb-3">
+            <div class="col-12 d-flex justify-content-between align-items-center">
+                <small id="pageInfoMed">Mostrando resultados</small>
+                <div class="btn-group">
+                    <button id="firstPageMed" class="btn btn-sm btn-outline-secondary">🏠</button>
+                    <button id="prevPageMed"  class="btn btn-sm btn-outline-secondary">◀</button>
+                    <button id="nextPageMed"  class="btn btn-sm btn-outline-secondary">▶</button>
+                </div>
+            </div>
+        </div>
+        <!-- Gráficas Enfermería -->
+        <div class="row mt-2">
+            <div class="col-md-6 mb-3"><div class="card p-3"><h5>Distribución por estado</h5><div class="chart-container"><canvas id="medPieChart"></canvas></div></div></div>
+            <div class="col-md-6 mb-3"><div class="card p-3"><h5>Motivos de consulta más frecuentes</h5><div class="chart-container"><canvas id="medReasonBar"></canvas></div></div></div>
+        </div>
+        <div class="row">
+            <div class="col-md-6 mb-3"><div class="card p-3"><h5>Consultas registradas por mes</h5><div class="chart-container"><canvas id="medMonthBar"></canvas></div></div></div>
+            <div class="col-md-6 mb-3"><div class="card p-3"><h5>Alumnos con más consultas (Top 10)</h5><div class="chart-container"><canvas id="medStudentBar"></canvas></div></div></div>
         </div>
     </div>
 </div>
@@ -421,10 +480,14 @@
         window.__estadisticasData = {
             students:       @Html.Raw(Model.JsonStudents),
             socialServices: @Html.Raw(Model.JsonSocialServiceStats),
-            procedures:     @Html.Raw(Model.JsonProcedureStats)
+            procedures:     @Html.Raw(Model.JsonProcedureStats),
+            psychologyLogs: @Html.Raw(Model.JsonPsychologyLogs),
+            medicalLogs:    @Html.Raw(Model.JsonMedicalLogs)
         };
     </script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
     <script src="~/js/estadisticas.js" asp-append-version="true"></script>
 
     <script>
@@ -432,26 +495,39 @@
         const btnCalificaciones     = document.getElementById('btnCalificaciones');
         const btnServicios          = document.getElementById('btnServicios');
         const btnTramites           = document.getElementById('btnTramites');
+        const btnBitacoras          = document.getElementById('btnBitacoras');
         const viewStudents          = document.getElementById('viewStudents');
         const viewSocialServices    = document.getElementById('viewSocialServices');
         const viewProcedures        = document.getElementById('viewProcedures');
+        const viewBitacoras         = document.getElementById('viewBitacoras');
         const studentStats          = document.getElementById('studentStats');
         const socialServiceStats    = document.getElementById('socialServiceStats');
         const proceduresStats       = document.getElementById('proceduresStats');
+        const psychologyStats       = document.getElementById('psychologyStats');
+        const medicalStats          = document.getElementById('medicalStats');
         const filtersStudents       = document.getElementById('filtersStudents');
         const filtersSocialServices = document.getElementById('filtersSocialServices');
         const filtersTramites       = document.getElementById('filtersTramites');
+        const filtersBitacorasPsy   = document.getElementById('filtersBitacorasPsy');
+        const filtersBitacorasMed   = document.getElementById('filtersBitacorasMed');
         const filtersArea           = document.getElementById('filtersArea');
 
+        const allMainBtns = [btnCalificaciones, btnServicios, btnTramites, btnBitacoras];
+        const allViews    = [viewStudents, viewSocialServices, viewProcedures, viewBitacoras];
+        const allStats    = [studentStats, socialServiceStats, proceduresStats, psychologyStats, medicalStats];
+        const allFilters  = [filtersStudents, filtersSocialServices, filtersTramites, filtersBitacorasPsy, filtersBitacorasMed];
+
         function setActiveBtn(active) {
-            [btnCalificaciones, btnServicios, btnTramites].forEach(b => {
-                b.classList.toggle('btn-primary', b === active);
+            allMainBtns.forEach(b => { if (!b) return;
+                b.classList.toggle('btn-primary',         b === active);
                 b.classList.toggle('btn-outline-primary', b !== active);
+                b.classList.toggle('active',              b === active);
             });
         }
-        function hideAllFilters() {
-            [filtersStudents, filtersSocialServices, filtersTramites]
-                .forEach(f => f && f.classList.add('d-none'));
+        function hideAll() {
+            allViews.forEach(v => v && v.classList.add('d-none'));
+            allStats.forEach(s => s && s.classList.add('d-none'));
+            allFilters.forEach(f => f && f.classList.add('d-none'));
         }
         function collapseFilters() {
             if (filtersArea) {
@@ -461,51 +537,70 @@
         }
 
         function showCalificaciones() {
-            setActiveBtn(btnCalificaciones);
+            hideAll(); setActiveBtn(btnCalificaciones);
             viewStudents.classList.remove('d-none');
-            viewSocialServices.classList.add('d-none');
-            viewProcedures.classList.add('d-none');
             studentStats.classList.remove('d-none');
-            socialServiceStats.classList.add('d-none');
-            proceduresStats.classList.add('d-none');
-            hideAllFilters();
             filtersStudents.classList.remove('d-none');
             collapseFilters();
             document.getElementById('pageTitle').textContent = 'Estadísticas de alumnos';
             document.getElementById('pageSubtitle').textContent = 'Control y seguimiento: inscritos, cursando, aprobados y reprobados.';
         }
         function showServicios() {
-            setActiveBtn(btnServicios);
-            viewStudents.classList.add('d-none');
+            hideAll(); setActiveBtn(btnServicios);
             viewSocialServices.classList.remove('d-none');
-            viewProcedures.classList.add('d-none');
-            studentStats.classList.add('d-none');
             socialServiceStats.classList.remove('d-none');
-            proceduresStats.classList.add('d-none');
-            hideAllFilters();
             filtersSocialServices.classList.remove('d-none');
             collapseFilters();
             document.getElementById('pageTitle').textContent = 'Estadísticas de Servicios Sociales';
-            document.getElementById('pageSubtitle').textContent = 'Seguimiento de horas, asistencia y bitácoras de estudiantes.';
+            document.getElementById('pageSubtitle').textContent = 'Seguimiento de asistencia y bitácoras de estudiantes.';
         }
         function showTramites() {
-            setActiveBtn(btnTramites);
-            viewStudents.classList.add('d-none');
-            viewSocialServices.classList.add('d-none');
+            hideAll(); setActiveBtn(btnTramites);
             viewProcedures.classList.remove('d-none');
-            studentStats.classList.add('d-none');
-            socialServiceStats.classList.add('d-none');
             proceduresStats.classList.remove('d-none');
-            hideAllFilters();
             filtersTramites.classList.remove('d-none');
             collapseFilters();
             document.getElementById('pageTitle').textContent = 'Estadísticas de Trámites';
             document.getElementById('pageSubtitle').textContent = 'Seguimiento y control de solicitudes administrativas.';
         }
+        function showBitacoras(sub) {
+            hideAll(); setActiveBtn(btnBitacoras);
+            viewBitacoras.classList.remove('d-none');
+            collapseFilters();
+            document.getElementById('pageTitle').textContent = 'Bitácoras';
+            document.getElementById('pageSubtitle').textContent = 'Registros de atención psicológica y de enfermería.';
+            switchSubBitacora(sub || 'psicologia');
+        }
+
+        function switchSubBitacora(sub) {
+            const subPsy = document.getElementById('subViewPsicologia');
+            const subEnf = document.getElementById('subViewEnfermeria');
+            const btnPsy = document.getElementById('btnSubPsicologia');
+            const btnEnf = document.getElementById('btnSubEnfermeria');
+            if (sub === 'psicologia') {
+                subPsy.classList.remove('d-none'); subEnf.classList.add('d-none');
+                psychologyStats.classList.remove('d-none'); medicalStats.classList.add('d-none');
+                filtersBitacorasPsy.classList.remove('d-none'); filtersBitacorasMed.classList.add('d-none');
+                btnPsy.classList.replace('btn-outline-primary','btn-primary');
+                btnEnf.classList.replace('btn-primary','btn-outline-primary');
+            } else {
+                subPsy.classList.add('d-none'); subEnf.classList.remove('d-none');
+                psychologyStats.classList.add('d-none'); medicalStats.classList.remove('d-none');
+                filtersBitacorasPsy.classList.add('d-none'); filtersBitacorasMed.classList.remove('d-none');
+                btnEnf.classList.replace('btn-outline-primary','btn-primary');
+                btnPsy.classList.replace('btn-primary','btn-outline-primary');
+            }
+        }
 
         btnCalificaciones.addEventListener('click', showCalificaciones);
         btnServicios.addEventListener('click', showServicios);
         btnTramites.addEventListener('click', showTramites);
+        if (btnBitacoras) btnBitacoras.addEventListener('click', () => showBitacoras('psicologia'));
+
+        const btnSubPsy = document.getElementById('btnSubPsicologia');
+        const btnSubEnf = document.getElementById('btnSubEnfermeria');
+        if (btnSubPsy) btnSubPsy.addEventListener('click', () => switchSubBitacora('psicologia'));
+        if (btnSubEnf) btnSubEnf.addEventListener('click', () => switchSubBitacora('enfermeria'));
 
         document.getElementById('toggleFilters').addEventListener('click', function () {
             const open = filtersArea.classList.toggle('show');

@@ -77,6 +77,10 @@ namespace SchoolManager.Data
         public DbSet<social_service_log> SocialServiceLogs { get; set; } = default!;
         public DbSet<social_service_rejection> SocialServiceRejections { get; set; } = default!;
 
+        // Medical (Bitácoras médicas)
+        public DbSet<medical_psychology_appointment> MedicalPsychologyAppointments { get; set; } = default!;
+        public DbSet<medical_record> MedicalRecords { get; set; } = default!;
+
         // Foro (Noticias y Publicaciones)
         public DbSet<ForoPublicacion> ForoPublicaciones { get; set; }
         public DbSet<ForoImagen> ForoImagenes { get; set; }
@@ -595,6 +599,30 @@ namespace SchoolManager.Data
             modelBuilder.Entity<social_service_log>()
                 .HasIndex(l => new { l.StudentId, l.Week })
                 .IsUnique();
+
+            #endregion
+
+            #region 8. Medical Configuration
+
+            modelBuilder.Entity<medical_psychology_appointment>()
+                .ToTable("medical_psychology_appointments")
+                .HasKey(a => a.AppointmentId);
+
+            modelBuilder.Entity<medical_psychology_appointment>()
+                .HasOne(a => a.PreenrollmentGeneral)
+                .WithMany()
+                .HasForeignKey(a => a.PreenrollmentId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<medical_record>()
+                .ToTable("medical_records")
+                .HasKey(r => r.RecordId);
+
+            modelBuilder.Entity<medical_record>()
+                .HasOne(r => r.Student)
+                .WithMany()
+                .HasForeignKey(r => r.StudentId)
+                .OnDelete(DeleteBehavior.Restrict);
 
             #endregion
 
