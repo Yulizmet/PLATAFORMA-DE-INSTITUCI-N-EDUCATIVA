@@ -1,0 +1,71 @@
+﻿@model SchoolManager.Models.medical_pychology
+@{
+    Layout = "~/Areas/Medical/Views/Shared/_LayoutDashboard.cshtml";
+    ViewData["Title"] = "Editar Registro Psicológico";
+}
+<div class="dashboard-header">
+    <div class="header-content">
+        <h2 class="text-white">EDITAR REGISTRO PSICOLÓGICO</h2>
+        <p class="mb-0">Sistema Médico - Bitácoras Psicológicas</p>
+    </div>
+</div>
+<div class="container mt-4">
+    <div class="card p-4 shadow-sm">
+        <form asp-action="Edit" method="post">
+            <input type="hidden" asp-for="Id" />
+            <input type="hidden" asp-for="PreenrollmentId" />
+            <input type="hidden" asp-for="AppointmentDatetime" />
+            <input type="hidden" asp-for="Fol" />
+            <input type="hidden" asp-for="CreatedAt" />
+            <input type="hidden" asp-for="StaffId" />
+            <h5 class="section-title">DATOS DEL REGISTRO</h5>
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <div class="info-block">
+                        <label class="fw-bold text-uppercase">Folio</label>
+                        <div class="info-box fw-bold">@Model.Fol</div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="info-block">
+                        <label class="fw-bold text-uppercase">Fecha</label>
+                        <div class="info-box">@Model.AppointmentDatetime.ToString("dd/MM/yyyy hh:mm tt")</div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="info-block">
+                        <label class="fw-bold text-uppercase">Asistencia</label>
+                        <select asp-for="AttendanceStatus" class="form-control" required
+                                oninvalid="this.setCustomValidity('Selecciona una opción de asistencia')"
+                                oninput="this.setCustomValidity('')">
+                            <option value="">Seleccionar</option>
+                            <option value="Asistió">Asistió</option>
+                            <option value="No asistió">No asistió</option>
+                            <option value="Justificado">Justificado</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <hr class="section-divider" />
+            <div class="row g-4">
+                <div class="col-md-12">
+                    <div class="info-block">
+                        <label class="fw-bold text-uppercase">Observaciones Psicológicas</label>
+                        <textarea asp-for="PsychologyObservations" class="form-control" rows="5" required
+                                  oninvalid="this.setCustomValidity('Las observaciones son obligatorias')"
+                                  oninput="this.setCustomValidity('')"></textarea>
+                    </div>
+                </div>
+            </div>
+            <hr class="section-divider" />
+            <div class="d-flex justify-content-between mt-4">
+                <a asp-action="Index" class="btn" style="border: 1.5px solid #6c757d;">
+                    CANCELAR
+                </a>
+                <button type="submit" class="btn" style="border: 1.5px solid #6c757d;">
+                    GUARDAR CAMBIOS
+                </button>
+            </div>
+        </form>
+    </div>
+</div>

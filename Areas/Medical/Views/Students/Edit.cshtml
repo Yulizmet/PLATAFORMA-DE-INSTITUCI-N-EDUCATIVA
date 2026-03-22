@@ -1,0 +1,55 @@
+﻿@model SchoolManager.Models.medical_student
+@{
+    Layout = "~/Areas/Medical/Views/Shared/_LayoutDashboard.cshtml";
+    ViewData["Title"] = "Editar Alumno";
+}
+<div class="dashboard-header">
+    <div class="header-content">
+        <h2 class="text-white">EDITAR REGISTRO MÉDICO</h2>
+        <p class="mb-0">Sistema Médico - Registro de Alumnos</p>
+    </div>
+</div>
+<div class="container mt-4">
+    <div class="card p-4 shadow-sm">
+        <form asp-action="Edit" method="post">
+            <input type="hidden" asp-for="Id" />
+            <input type="hidden" asp-for="PreenrollmentId" />
+            <h5 class="section-title">INFORMACIÓN MÉDICA</h5>
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <div class="info-block">
+                        <label class="fw-bold text-uppercase">Peso (kg)</label>
+                        <input asp-for="Peso" class="form-control" required
+                               oninvalid="this.setCustomValidity('El peso es obligatorio')"
+                               oninput="this.setCustomValidity('')" />
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="info-block">
+                        <label class="fw-bold text-uppercase">Alergias</label>
+                        <input asp-for="Alergias" class="form-control" required
+                               oninvalid="this.setCustomValidity('Las alergias son obligatorias')"
+                               oninput="this.setCustomValidity('')" />
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="info-block">
+                        <label class="fw-bold text-uppercase">Condiciones Crónicas</label>
+                        <input asp-for="CondicionesCronicas" class="form-control" required
+                               oninvalid="this.setCustomValidity('Las condiciones crónicas son obligatorias')"
+                               oninput="this.setCustomValidity('')" />
+                    </div>
+                </div>
+            </div>
+            <hr class="section-divider" />
+            <div class="d-flex justify-content-between mt-4">
+                <a asp-action="Index" class="btn">
+                    CANCELAR
+                </a>
+                <button type="submit" class="btn">
+                    GUARDAR CAMBIOS
+                </button>
+            </div>
+        </form>
+    </div>
+</div>

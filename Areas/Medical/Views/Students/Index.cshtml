@@ -1,0 +1,142 @@
+﻿@model List<SchoolManager.Models.StudentListVM>
+
+@{
+    Layout = "~/Areas/Medical/Views/Shared/_LayoutDashboard.cshtml";
+    ViewData["Title"] = "Registro de Alumnos";
+}
+
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
+
+<div class="dashboard-header">
+    <div class="header-content d-flex align-items-start justify-content-between flex-wrap">
+
+        <div>
+            <h2 class="text-white">REGISTRO DE ALUMNOS</h2>
+
+            <div class="buttons-left mt-3">
+                <a asp-action="Create" class="btn-header ">
+                    <i class="bi bi-person-plus"></i> Registrar Alumno
+                </a>
+
+                <a asp-action="Index" class="btn-header ">
+                    <i class="bi bi-people"></i> Ver Alumnos
+                </a>
+            </div>
+        </div>
+
+        <div class="buttons-right">
+            <a asp-controller="Dashboard"
+               asp-action="Index"
+               class="btn-header">
+                <i class="bi bi-arrow-left-circle"></i> Regresar al inicio
+            </a>
+        </div>
+
+    </div>
+</div>
+
+<div class="container mt-4">
+
+    <div class="card shadow-sm">
+
+        <div class="card-body">
+
+            <table id="tablaAlumnos" class="table table-hover align-middle">
+
+                <thead class="table-light">
+                    <tr>
+                        <th>MATRÍCULA</th>
+                        <th>ALUMNO</th>
+                        <th>FECHA REGISTRO</th>
+                        <th>ACCIONES</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+
+                            <td>@item.Matricula</td>
+
+                            <td>@item.NombreCompleto</td>
+
+                            <td data-sort="@item.FechaCreacion.ToString("yyyyMMddHHmmss")">
+                                @item.FechaCreacion.ToString("dd/MM/yyyy hh:mm tt")
+                            </td>
+
+                            <td>
+                                <div class="d-flex gap-2">
+
+                                    <a asp-action="Details"
+                                       asp-route-id="@item.Id"
+                                       class="btn btn-sm"
+                                       style="background:#0d6efd;color:white;border:none;"
+                                       title="Ver">
+                                        <i class="bi bi-eye-fill"></i>
+                                    </a>
+
+                                    <a asp-action="Edit"
+                                       asp-route-id="@item.Id"
+                                       class="btn btn-sm"
+                                       style="background:#ffc107;color:white;border:none;"
+                                       title="Editar">
+                                        <i class="bi bi-pencil-square"></i>
+                                    </a>
+
+                                    <a asp-action="Delete"
+                                       asp-route-id="@item.Id"
+                                       class="btn btn-sm"
+                                       style="background:#620900;color:white;border:none;"
+                                       title="Eliminar">
+                                        <i class="bi bi-trash-fill"></i>
+                                    </a>
+
+                                </div>
+                            </td>
+
+                        </tr>
+                    }
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+</div>
+
+@section Scripts {
+
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+
+    <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+
+    <script>
+
+        var $jq = jQuery.noConflict(true);
+
+        $jq(document).ready(function () {
+
+            $jq('#tablaAlumnos').DataTable({
+
+                language: {
+                    url: "https://cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json"
+                },
+
+                order: [[2, "desc"]],
+
+                columnDefs: [
+                    { orderable: false, targets: 3 }
+                ]
+
+            });
+
+        });
+
+    </script>
+
+}

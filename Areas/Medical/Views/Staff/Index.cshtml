@@ -1,0 +1,121 @@
+﻿@model IEnumerable<SchoolManager.ViewModels.StaffListVM>
+
+@{
+    Layout = "~/Areas/Medical/Views/Shared/_LayoutDashboard.cshtml";
+    ViewData["Title"] = "Personal Médico";
+}
+
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
+
+<div class="dashboard-header">
+    <div class="header-content d-flex align-items-start justify-content-between flex-wrap">
+        <div>
+            <h2 class="text-white">GESTIÓN DE PERSONAL MÉDICO</h2>
+            <div class="buttons-left">
+                <a asp-action="Create" class="btn-header">
+                    <i class="bi bi-person-plus"></i> Crear Personal
+                </a>
+                <a asp-action="Index" class="btn-header">
+                    <i class="bi bi-person-badge"></i> Ver Personal
+                </a>
+                <a asp-action="Graficas" class="btn-header">
+                    <i class="bi bi-bar-chart-line"></i> Ver Gráficas
+                </a>
+            </div>
+        </div>
+        <div class="buttons-right">
+            <a asp-controller="Dashboard" asp-action="Index" class="btn-header">
+                <i class="bi bi-arrow-left-circle"></i> Regresar al inicio
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="container mt-5">
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <table id="tablaStaff" class="table table-hover align-middle w-100">
+                <thead class="table-light">
+                    <tr>
+                        <th>Nombre</th>
+                        <th>Rol</th>
+                        <th>CURP</th>
+                        <th>Correo</th>
+                        <th>Turno</th>
+                        <th>Fecha Registro</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td>@item.NombreCompleto</td>
+                            <td>
+                                <strong>
+                                    @switch (item.Rol)
+                                    {
+                                        case "Nurse":
+                                            <span>Enfermero</span>
+                                            break;
+                                        case "Psychologist":
+                                            <span>Psicólogo</span>
+                                            break;
+                                        default:
+                                            <span>@item.Rol</span>
+                                            break;
+                                    }
+                                </strong>
+                            </td>
+                            <td>@item.Curp</td>
+                            <td>@item.Correo</td>
+                            <td>@item.Turno</td>
+                            <td data-sort="@item.FechaCreacion.ToString("yyyyMMddHHmmss")">
+                                @item.FechaCreacion.ToString("dd/MM/yyyy")
+                            </td>
+                            <td>
+                                <div class="d-flex gap-2">
+                                    <a asp-action="Details"
+                                       asp-route-id="@item.Id"
+                                       class="btn btn-sm"
+                                       style="background:#0d6efd;color:white;border:none;"
+                                       title="Ver">
+                                        <i class="bi bi-eye-fill"></i>
+                                    </a>
+                                    <a asp-action="Delete"
+                                       asp-route-id="@item.Id"
+                                       class="btn btn-sm"
+                                       style="background:#620900;color:white;border:none;"
+                                       title="Eliminar">
+                                        <i class="bi bi-trash-fill"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+    <script>
+        var $jq = jQuery.noConflict(true);
+        $jq(document).ready(function () {
+            $jq('#tablaStaff').DataTable({
+                language: {
+                    url: "https://cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json"
+                },
+                order: [[5, "desc"]],
+                autoWidth: false,
+                columnDefs: [
+                    { orderable: false, targets: 6 }
+                ]
+            });
+        });
+    </script>
+}
