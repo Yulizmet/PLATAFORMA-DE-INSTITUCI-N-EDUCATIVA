@@ -956,48 +956,23 @@ function updatePagination() {
 // Estado de ordenamiento por tabla/columna
 const sortState = {};
 
-// Clic en la FLECHA ▼ — ordena A→Z / Z→A alternando
+// Clic en la FLECHA ▼ — abre el popup de filtros
 $(document).on('click', '.excel-icon', function (e) {
     e.stopPropagation();
-    $('.excel-filter-popup').remove();
 
     const $th = $(this).closest('.excel-header');
     const col = $th.data('col');
     const tableId = $th.data('table');
-    const key = tableId + '_' + col;
+    const offset = $th.offset();
 
-    // Alternar dirección
-    const asc = !(sortState[key] === true);
-    sortState[key] = asc;
-
-    // Actualizar icono en este encabezado y resetear los demás de la misma tabla
-    $(this).text(asc ? '▲' : '▼');
-    $('[data-table="' + tableId + '"].excel-header').not($th).find('.excel-icon').text('▼');
-
-    sortGeneric(tableId, col, asc);
-});
-
-// Clic en el TEXTO del encabezado (no en la flecha) — abre el popup de filtros
-$(document).on('click', '.excel-header', function (e) {
-    // Si el clic fue exactamente en la flecha, no hacer nada aquí
-    if ($(e.target).hasClass('excel-icon')) return;
-    e.stopPropagation();
-
-    const col = $(this).data('col');
-    const tableId = $(this).data('table');
-    const offset = $(this).offset();
-
-    // Toggle: si ya está abierto este popup, cerrarlo
     const existing = $('.excel-filter-popup');
     if (existing.length && existing.data('origin-col') == col && existing.data('origin-table') === tableId) {
-        existing.remove();
-        return;
+        existing.remove(); return;
     }
     $('.excel-filter-popup').remove();
 
     const $table = $('#' + tableId);
     const curFilters = getExcelFilters(tableId);
-
     const values = new Set();
     $table.find('tbody tr').each(function () {
         const txt = $(this).find('td').eq(col).text().trim();
@@ -1016,41 +991,50 @@ $(document).on('click', '.excel-header', function (e) {
             </div>
         </div>
     `);
-
     popup.css({
-        top: Math.min(offset.top + $(this).outerHeight() + 4 - $(window).scrollTop(), window.innerHeight - 280),
+        top: Math.min(offset.top + $th.outerHeight() + 4 - $(window).scrollTop(), window.innerHeight - 280),
         left: Math.min(offset.left, window.innerWidth - 260)
     });
-
     const container = popup.find('.filter-values');
     const active = curFilters[col] || null;
     values.forEach(v => {
         const checked = (!active || active.includes(v)) ? 'checked' : '';
         container.append(`<label><input type="checkbox" value="${v.replace(/"/g, '&quot;')}" ${checked}> ${v}</label>`);
     });
-
     $('body').append(popup);
-    popup.data('origin-col', col);
-    popup.data('origin-table', tableId);
+    popup.data('origin-col', col).data('origin-table', tableId);
     popup.on('click', ev => ev.stopPropagation());
-
     popup.find('.select-all').click(() => container.find('input[type=checkbox]').prop('checked', true));
     popup.find('.deselect-all').click(() => container.find('input[type=checkbox]').prop('checked', false));
-
     popup.find('.apply-filter').click(function () {
         const selected = [];
         popup.find('input[type=checkbox]:checked').each(function () { selected.push($(this).val()); });
-        const f = getExcelFilters(tableId);
-        f[col] = selected;
-        setExcelFilters(tableId, f);
-        applyExcelFor(tableId);
-        popup.remove();
+        const f = getExcelFilters(tableId); f[col] = selected; setExcelFilters(tableId, f);
+        applyExcelFor(tableId); popup.remove();
     });
-
     popup.find('.search-filter').on('input', function () {
         const txt = $(this).val().toLowerCase();
         container.find('label').each(function () { $(this).toggle($(this).text().toLowerCase().includes(txt)); });
     });
+});
+
+// Clic en el TEXTO del encabezado (no en la flecha) — ordena A→Z / Z→A alternando
+$(document).on('click', '.excel-header', function (e) {
+    if ($(e.target).hasClass('excel-icon')) return;
+    e.stopPropagation();
+    $('.excel-filter-popup').remove();
+
+    const col = $(this).data('col');
+    const tableId = $(this).data('table');
+    const key = tableId + '_' + col;
+
+    const asc = !(sortState[key] === true);
+    sortState[key] = asc;
+
+    $(this).find('.excel-icon').text(asc ? '▲' : '▼');
+    $('[data-table="' + tableId + '"].excel-header').not(this).find('.excel-icon').text('▼');
+
+    sortGeneric(tableId, col, asc);
 });
 
 function applyExcelFor(tableId) {
