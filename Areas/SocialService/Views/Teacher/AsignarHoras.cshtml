@@ -40,10 +40,10 @@
     <a href="/SocialService/Teacher/Dashboard" class="btn btn-secondary">
         <i class="bi bi-arrow-left"></i> Regresar al Dashboard
     </a>
-    <a href="/SocialService/Teacher/ExportAvanceExcel" class="btn btn-success">
+    <a href="/SocialService/Teacher/ExportAvanceExcel?searchName=@Uri.EscapeDataString(searchName)" class="btn btn-success">
         <i class="bi bi-file-earmark-excel me-1"></i> Exportar a Excel
     </a>
-    <a href="/SocialService/Teacher/ExportAvancePdf" class="btn btn-danger">
+    <a href="/SocialService/Teacher/ExportAvancePdf?searchName=@Uri.EscapeDataString(searchName)" class="btn btn-danger">
         <i class="bi bi-file-earmark-pdf me-1"></i> Exportar en PDF
     </a>
 </div>

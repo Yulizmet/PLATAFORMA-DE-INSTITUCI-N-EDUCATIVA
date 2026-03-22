@@ -961,7 +961,7 @@ namespace SchoolManager.Areas.SocialService.Controllers
             return RedirectToAction("Asistencia", new { sortOrder, groupFilter, searchName, page, pageSize });
         }
 
-        private async Task<List<AsignarHorasViewModel>> GetAvanceData(int teacherId)
+        private async Task<List<AsignarHorasViewModel>> GetAvanceData(int teacherId, string searchName = "")
         {
             var assignments = await _context.SocialServiceAssignments
                 .Include(a => a.Student)
@@ -1013,15 +1013,23 @@ namespace SchoolManager.Areas.SocialService.Controllers
                 });
             }
 
+            if (!string.IsNullOrWhiteSpace(searchName))
+            {
+                string searchNormalized = RemoveAccents(searchName.ToLower());
+                result = result
+                    .Where(v => RemoveAccents(v.StudentName.ToLower()).Contains(searchNormalized))
+                    .ToList();
+            }
+
             return result;
         }
 
-        public async Task<IActionResult> ExportAvanceExcel()
+        public async Task<IActionResult> ExportAvanceExcel(string searchName = "")
         {
             int currentTeacherId = GetCurrentTeacherId();
             if (currentTeacherId == 0) return RedirectToAction("Login", "Account", new { area = "UserMng" });
 
-            var data = await GetAvanceData(currentTeacherId);
+            var data = await GetAvanceData(currentTeacherId, searchName);
 
             using var workbook = new XLWorkbook();
             var ws = workbook.Worksheets.Add("Avance del Alumno");
@@ -1071,12 +1079,12 @@ namespace SchoolManager.Areas.SocialService.Controllers
                 $"Avance_Alumnos_{DateTime.Now:yyyyMMdd}.xlsx");
         }
 
-        public async Task<IActionResult> ExportAvancePdf()
+        public async Task<IActionResult> ExportAvancePdf(string searchName = "")
         {
             int currentTeacherId = GetCurrentTeacherId();
             if (currentTeacherId == 0) return RedirectToAction("Login", "Account", new { area = "UserMng" });
 
-            var data = await GetAvanceData(currentTeacherId);
+            var data = await GetAvanceData(currentTeacherId, searchName);
 
             string htmlContent = await this.RenderViewAsync("_AvancePdf", data, true);
 
