@@ -3,6 +3,9 @@
 @{
     ViewData["Title"] = "Gestión de Estados";
     ViewBag.EntityName = "estados";
+
+    bool HasPermission(string buttonName) =>
+        ViewBag.UserPermissions != null && ((List<string>)ViewBag.UserPermissions).Contains(buttonName);
 }
 
 @section Scripts {
@@ -27,7 +30,7 @@
                 initColorPreview();
 
             } catch (error) {
-                Swal.fire('Error', 'No se pudo cargar la ventana.', 'error');
+                showToast('error', 'No se pudo cargar la ventana.');
             }
         };
 
@@ -44,12 +47,17 @@
                 const result = await response.json();
 
                 if (result.success) {
-                    location.reload();
+                    const modalElement = form.closest('.modal');
+                    const modalInstance = bootstrap.Modal.getInstance(modalElement);
+                    if (modalInstance) modalInstance.hide();
+
+                    showToast('success', result.message || '¡Estado guardado con éxito!');
+                    setTimeout(() => { location.reload(); }, 1500);
                 } else {
-                    Swal.fire('Atención', result.errors ? result.errors.join("\n") : "Error al procesar", 'warning');
+                    Swal.fire('Atención', result.errors ? result.errors.join("\n") : (result.message || "Error al procesar"), 'warning');
                 }
             } catch (error) {
-                Swal.fire('Error', 'Error crítico en la solicitud', 'error');
+                showToast('error', 'Error crítico en la solicitud');
             }
         });
 
@@ -84,10 +92,12 @@
             </h2>
             <p class="text-muted small mb-0">Configura las etiquetas y lógica de control para los trámites.</p>
         </div>
-
-        <button class="btn btn-burgundy shadow-sm" onclick="loadModal('/Procedures/ProcedureStatus/Create')">
+        <button class="btn btn-burgundy shadow-sm"
+                onclick="@(HasPermission("btn-agregar") ? "loadModal('/Procedures/ProcedureStatus/Create')" : "")"
+                @(HasPermission("btn-agregar") ? "" : "disabled")
+                title="@(HasPermission("btn-agregar") ? "Agregar estado" : "Sin permiso para agregar")">
             <i class="bi bi-plus-circle me-2"></i> Agregar estado
-        </button>
+        </button>        
     </div>
 
     <partial name="_TableTools" />
@@ -97,9 +107,6 @@
             <table id="mainTable" class="table table-hover align-middle mb-0">
                 <thead class="burgundy-header text-white">
                     <tr>
-                        <th class="no-sort text-center" style="width: 5%;">
-                            <input type="checkbox" id="checkAll" class="form-check-input">
-                        </th>
                         <th class="ps-4" style="width: 15%;">Código Interno</th>
                         <th style="width: 30%;">Nombre y Previsualización</th>
                         <th class="text-center" style="width: 20%;">Propiedades</th>
@@ -111,9 +118,6 @@
                     @foreach (var item in Model)
                     {
                         <tr>
-                            <td class="text-center">
-                                <input type="checkbox" class="form-check-input row-checkbox" value="@item.Id" />
-                            </td>
                             <td class="ps-4">
                                 <code class="fw-bold text-primary">@item.InternalCode</code>
                             </td>
@@ -155,14 +159,16 @@
                                 <div class="btn-group">
                                     <button class="btn btn-sm btn-light border shadow-sm me-2"
                                             style="width:32px; height:32px; padding:0;"
-                                            onclick="loadModal('/Procedures/ProcedureStatus/Edit/@item.Id')"
-                                            title="Editar">
+                                            onclick="@(HasPermission("btn-editar") ? $"loadModal('/Procedures/ProcedureStatus/Edit/{item.Id}')" : "")"
+                                            @(HasPermission("btn-editar") ? "" : "disabled")
+                                            title="@(HasPermission("btn-editar") ? "Editar" : "Sin permiso para editar")">
                                         <i class="bi bi-pencil-square text-warning"></i>
                                     </button>
                                     <button class="btn btn-sm btn-light border shadow-sm"
                                             style="width:32px; height:32px; padding:0;"
-                                            onclick="loadModal('/Procedures/ProcedureStatus/Delete/@item.Id')"
-                                            title="Eliminar">
+                                            onclick="@(HasPermission("btn-eliminar") ? $"loadModal('/Procedures/ProcedureStatus/Delete/{item.Id}')" : "")"
+                                            @(HasPermission("btn-eliminar") ? "" : "disabled")
+                                            title="@(HasPermission("btn-eliminar") ? "Eliminar" : "Sin permiso para eliminar")">
                                         <i class="bi bi-trash3-fill text-danger"></i>
                                     </button>
                                 </div>

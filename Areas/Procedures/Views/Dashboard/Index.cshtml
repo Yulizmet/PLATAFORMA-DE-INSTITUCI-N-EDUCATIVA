@@ -8,7 +8,6 @@
 }
 
 <div class="container-fluid px-4 py-4">
-    @* --- ENCABEZADO --- *@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h2 class="fw-bold mb-0 text-dark">Panel de Control Institucional</h2>
@@ -22,16 +21,33 @@
             </p>
         </div>
 
-        <div class="d-flex align-items-center gap-2">
-            <span class="fw-bold small text-uppercase text-muted">Periodo:</span>
-            <form method="get" class="bg-white px-2 py-1 rounded-3 shadow-sm border">
-                <select name="year" onchange="this.form.submit()" class="form-select form-select-sm border-0 fw-bold" style="width:100px; cursor:pointer;">
-                    @for (int i = DateTime.Now.Year; i >= 2023; i--)
-                    {
-                        <option value="@i" selected="@(i == Model.SelectedYear)">@i</option>
-                    }
-                </select>
-            </form>
+        <div class="d-flex align-items-center gap-3">
+            <div class="d-flex align-items-center gap-2">
+                <span class="fw-bold small text-uppercase text-muted">Área:</span>
+                <form method="get" class="bg-white px-2 py-1 rounded-3 shadow-sm border">
+                    <input type="hidden" name="year" value="@Model.SelectedYear" />
+                    <select name="areaId" onchange="this.form.submit()" class="form-select form-select-sm border-0 fw-bold" style="min-width:150px; cursor:pointer;">
+                        <option value="">Todas las Áreas</option>
+                        @foreach (var area in ViewBag.Areas)
+                        {
+                            <option value="@area.Id" selected="@(area.Id == ViewBag.SelectedArea)">@area.Name</option>
+                        }
+                    </select>
+                </form>
+            </div>
+
+            <div class="d-flex align-items-center gap-2">
+                <span class="fw-bold small text-uppercase text-muted">Periodo:</span>
+                <form method="get" class="bg-white px-2 py-1 rounded-3 shadow-sm border">
+                    <input type="hidden" name="areaId" value="@ViewBag.SelectedArea" />
+                    <select name="year" onchange="this.form.submit()" class="form-select form-select-sm border-0 fw-bold" style="width:100px; cursor:pointer;">
+                        @for (int i = DateTime.Now.Year; i >= 2023; i--)
+                        {
+                            <option value="@i" selected="@(i == Model.SelectedYear)">@i</option>
+                        }
+                    </select>
+                </form>
+            </div>
         </div>
     </div>
 
@@ -119,7 +135,6 @@
 </div>
 
 <script>
-    // 1. Configuraciones Globales y Paleta de Colores
     const commonOptions = {
         responsive: true,
         maintainAspectRatio: false,
@@ -136,20 +151,19 @@
         }
     };
 
-    // Paleta variada y profesional para gráficas de barras
     const variedBarColors = [
-        '#620900', // Burgundy Base
-        '#8C1B1B', // Burgundy Claro
-        '#B1A596', // Taupe/Beige
-        '#A67C52', // Café Suave
-        '#6c757d', // Gris Admin
-        '#556B2F', // Verde Oliva
-        '#4682B4'  // Azul Acero
+        '#620900',
+        '#8C1B1B',
+        '#B1A596',
+        '#A67C52',
+        '#6c757d',
+        '#556B2F',
+        '#4682B4'
     ];
 
     // --- GENERACIÓN DE GRÁFICAS ---
 
-    // 1. Tendencia Mensual (Línea) - FUNCIONANDO
+    // 1. Tendencia Mensual (Línea)
     new Chart(document.getElementById('monthChart'), {
         type: 'line',
         data: {
@@ -174,7 +188,7 @@
         }
     });
 
-    // 2. Estatus (Doughnut) - FUNCIONANDO
+    // 2. Estatus (Doughnut)
     new Chart(document.getElementById('statusChart'), {
         type: 'doughnut',
         data: {
@@ -187,7 +201,7 @@
         options: commonOptions
     });
 
-    // 3. Eficiencia (Barra comparativa) - FUNCIONANDO
+    // 3. Eficiencia (Barra comparativa)
     new Chart(document.getElementById('efficiencyChart'), {
         type: 'bar',
         data: {
@@ -208,7 +222,7 @@
         }
     });
 
-    // 4. Por Área (Barra Horizontal) - ¡CORREGIDA!
+    // 4. Por Área (Barra Horizontal)
     new Chart(document.getElementById('areaChart'), {
         type: 'bar',
         data: {
@@ -216,20 +230,20 @@
             datasets: [{
                 label: 'Solicitudes',
                 data: @Html.Raw(Json.Serialize(Model.RequestsByArea.Values)),
-                backgroundColor: variedBarColors[0], // Usamos el color base
+                backgroundColor: variedBarColors[0],
                 borderRadius: 5
             }]
         },
         options: {
             ...commonOptions,
-            indexAxis: 'y', // Barra horizontal
+            indexAxis: 'y',
             plugins: { ...commonOptions.plugins, legend: { display: false } },
             scales: {
                 x: {
                     beginAtZero: true,
                     grid: { display: false },
                     ticks: {
-                        stepSize: 1, // Mantenemos stepSize aquí porque es el eje de datos
+                        stepSize: 1,
                         precision: 0
                     }
                 },
@@ -241,7 +255,7 @@
         }
     });
 
-    // 5. Top 5 Trámites (Barra Vertical) - ¡COLORES VARIADOS!
+    // 5. Top 5 Trámites (Barra Vertical)
     new Chart(document.getElementById('typeChart'), {
         type: 'bar',
         data: {
@@ -249,7 +263,6 @@
             datasets: [{
                 label: 'Cantidad',
                 data: @Html.Raw(Json.Serialize(Model.RequestsByType.Values)),
-                // Usamos la paleta variada definida arriba
                 backgroundColor: variedBarColors,
                 borderRadius: 6
             }]
@@ -264,7 +277,7 @@
         }
     });
 
-    // 6. Flujo Acumulado (Stacked) - FUNCIONANDO
+    // 6. Flujo Acumulado (Stacked)
     new Chart(document.getElementById('flowChart'), {
         type: 'bar',
         data: {

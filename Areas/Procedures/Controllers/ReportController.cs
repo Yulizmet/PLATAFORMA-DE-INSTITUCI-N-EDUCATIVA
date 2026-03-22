@@ -1,16 +1,18 @@
 ﻿using ClosedXML.Excel;
+using DinkToPdf;
+using DinkToPdf.Contracts;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SchoolManager.Data;
 using SchoolManager.Helpers;
-using DinkToPdf;
-using DinkToPdf.Contracts;
-using System.Reflection;
 using System.ComponentModel.DataAnnotations;
+using System.Reflection;
 
 namespace SchoolManager.Areas.Procedures.Controllers
 {
     [Area("Procedures")]
+    [Authorize(Roles = "Administrator")]
     public class ReportController : Controller
     {
         private readonly AppDbContext _context;

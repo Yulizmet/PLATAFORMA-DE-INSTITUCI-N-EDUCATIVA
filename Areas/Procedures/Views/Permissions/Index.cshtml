@@ -3,9 +3,16 @@
 @{
     ViewData["Title"] = "Gestión de Permisos";
     Layout = "_ProceduresLayout";
+
+    bool HasPermission(string buttonName) =>
+        ViewBag.UserPermissions != null && ((List<string>)ViewBag.UserPermissions).Contains(buttonName);
 }
 
 @section Scripts {
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+    <partial name="_DataTableConfig" />
+
     <script>
         $(document).ready(function() {
             let activeTab = localStorage.getItem('activeGestorTab');
@@ -29,14 +36,12 @@
             });
 
             $("#jobsTableContainer").load(jobsUrl, function(response, status, xhr) {
-                if (status === "error") console.error("Error cargando Puestos:", xhr.status, xhr.statusText);
+                if (status === "success") {
+                    initGlobalDataTable('#mainTable');
+                } else {
+                    console.error("Error cargando Puestos:", xhr.status, xhr.statusText);
+                }
             });
-        }
-
-        function filterByArea(idArea) {
-            if (idArea) {
-                window.location.href = '@Url.Action("Index", "Permissions")?idArea=' + idArea;
-            }
         }
 
         function loadModuleModal(id = 0, moduleName = '') {
@@ -45,7 +50,7 @@
 
             $("#modalContainer").load(url, function (response, status, xhr) {
                 if (status === "error") {
-                    Swal.fire('Error 500', 'El servidor no pudo procesar la solicitud del modal.', 'error');
+                    Swal.fire('Error', 'No se pudo cargar el modal de módulo.', 'error');
                 } else {
                     $("#modalModule").modal('show');
                 }
@@ -57,7 +62,7 @@
 
             $("#modalContainer").load(url, function (response, status, xhr) {
                 if (status === "error") {
-                    Swal.fire('Error', 'No se encontró el recurso del puesto.', 'error');
+                    Swal.fire('Error', 'No se pudo cargar el modal del puesto.', 'error');
                 } else {
                     $("#modalJob").modal('show');
                 }
@@ -82,6 +87,71 @@
             });
         }
 
+        function openDeleteModal(id, type, groupName = '') {
+            const url = '@Url.Action("GetDeleteModal", "Permissions")';
+            const encodedGroupName = encodeURIComponent(groupName);
+
+            $("#modalContainer").load(`${url}?id=${id}&type=${type}&groupName=${encodedGroupName}`, function (response, status, xhr) {
+                if (status === "error") {
+                    Swal.fire('Error', 'No se pudo cargar el modal de eliminación.', 'error');
+                } else {
+                    $("#deleteModal").modal('show');
+                }
+            });
+        }
+
+        function filterByArea(idArea) {
+            if (idArea) {
+                window.location.href = '@Url.Action("Index", "Permissions")?idArea=' + idArea;
+            }
+        }
+
+        function initModules(idArea) {
+            if (!idArea) {
+                Swal.fire('Error', 'ID de área no válido.', 'error');
+                return;
+            }
+
+            Swal.fire({
+                title: '¿Generar matriz base?',
+                text: "Se crearán reglas de acceso para todos los módulos en esta área.",
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#620900',
+                confirmButtonText: 'Sí, generar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    Swal.fire({ title: 'Procesando...', didOpen: () => { Swal.showLoading(); } });
+
+                    $.post('@Url.Action("InitModules", "Permissions")', { idArea: idArea }, function (r) {
+                        if (r.success) {
+                            Swal.fire('¡Listo!', r.message, 'success').then(() => {
+                                window.location.reload();
+                            });
+                        } else {
+                            Swal.fire('Atención', r.message, 'warning');
+                        }
+                    });
+                }
+            });
+        }
+
+        $(document).on('submit', '#formModuleCatalog, #formJobPosition', function (e) {
+            e.preventDefault();
+            const form = $(this);
+            const modalId = form.closest('.modal').attr('id');
+
+            $.post(form.attr('action'), form.serialize(), function (r) {
+                if (r.success) {
+                    $(`#${modalId}`).modal('hide');
+                    Swal.fire({ icon: 'success', title: '¡Guardado!', timer: 1500, showConfirmButton: false });
+                    refreshTables();
+                } else {
+                    Swal.fire('Error', r.message, 'error');
+                }
+            });
+        });
+
         $(document).on('submit', '#formPermissions', function (e) {
             e.preventDefault();
             const form = $(this);
@@ -95,51 +165,11 @@
 
             $.post(form.attr('action'), form.serialize(), function (r) {
                 if (r.success) {
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Matriz Actualizada',
-                        confirmButtonColor: '#620900'
-                    });
+                    Swal.fire({ icon: 'success', title: 'Matriz Actualizada', confirmButtonColor: '#620900' });
                 } else {
-                    Swal.fire('Error', r.message || 'Error desconocido', 'error');
+                    Swal.fire('Error', r.message || 'Error al guardar.', 'error');
                 }
-            }).fail(function() {
-                Swal.fire('Error Crítico', 'No se pudo conectar con el servidor.', 'error');
-            });
-        });
-
-        function openDeleteModal(id, type) {
-            const url = '@Url.Action("GetDeleteModal", "Permissions")';
-
-            $("#modalContainer").load(`${url}?id=${id}&type=${type}`, function (response, status, xhr) {
-                if (status === "error") {
-                    Swal.fire('Error', 'No se pudo cargar el modal de eliminación', 'error');
-                } else {
-                    $("#deleteModal").modal('show');
-                }
-            });
-        }
-
-        $(document).on('submit', '#formModuleCatalog, #formJobPosition', function (e) {
-            e.preventDefault();
-            const form = $(this);
-            const modalId = form.closest('.modal').attr('id');
-
-            $.post(form.attr('action'), form.serialize(), function (r) {
-                if (r.success) {
-                    $(`#${modalId}`).modal('hide');
-                    Swal.fire({
-                        icon: 'success',
-                        title: '¡Guardado!',
-                        text: r.message,
-                        timer: 1500,
-                        showConfirmButton: false
-                    });
-                    refreshTables();
-                } else {
-                    Swal.fire('Error', r.message, 'error');
-                }
-            });
+            }).fail(() => Swal.fire('Error', 'Fallo de conexión.', 'error'));
         });
 
         $(document).on('submit', '#formDeleteGeneric', function (e) {
@@ -148,84 +178,25 @@
 
             $.post(form.attr('action'), form.serialize(), function (r) {
                 $("#deleteModal").modal('hide');
-
                 if (r.success) {
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Eliminado',
-                        text: r.message || 'El registro ha sido removido.',
-                        timer: 2000,
-                        showConfirmButton: false
-                    });
+                    Swal.fire({ icon: 'success', title: 'Eliminado', timer: 2000, showConfirmButton: false });
                     refreshTables();
                 } else {
-                    Swal.fire('Error', r.message || 'No se pudo eliminar el registro', 'error');
+                    Swal.fire('Error', r.message, 'error');
                 }
-            }).fail(function() {
-                Swal.fire('Error Crítico', 'Comunicación fallida con el servidor', 'error');
             });
         });
-
-        function initModules(idArea) {
-            if (!idArea) {
-                Swal.fire('Error', 'No se ha detectado el ID del área.', 'error');
-                return;
-            }
-
-            Swal.fire({
-                title: '¿Generar matriz base?',
-                text: "Se crearán reglas de acceso para todos los módulos del catálogo en esta área.",
-                icon: 'question',
-                showCancelButton: true,
-                confirmButtonColor: '#620900',
-                cancelButtonColor: '#6c757d',
-                confirmButtonText: 'Sí, generar',
-                cancelButtonText: 'Cancelar'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    Swal.fire({ title: 'Procesando...', didOpen: () => { Swal.showLoading(); } });
-
-                    $.post('@Url.Action("InitModules", "Permissions")', { idArea: idArea }, function (r) {
-                        if (r.success) {
-                            Swal.fire({
-                                icon: 'success',
-                                title: '¡Listo!',
-                                text: r.message,
-                                confirmButtonColor: '#620900'
-                            }).then(() => {
-                                window.location.reload();
-                            });
-                        } else {
-                            Swal.fire('Atención', r.message, 'warning');
-                        }
-                    }).fail(function() {
-                        Swal.fire('Error', 'No se pudo completar la operación.', 'error');
-                    });
-                }
-            });
-        }
 
         $(document).on('submit', '#formAssignJob', function (e) {
             e.preventDefault();
             const form = $(this);
 
-            Swal.fire({
-                title: 'Generando matriz...',
-                text: 'Esto puede tardar unos segundos',
-                didOpen: () => { Swal.showLoading(); }
-            });
+            Swal.fire({ title: 'Asignando...', didOpen: () => { Swal.showLoading(); } });
 
             $.post(form.attr('action'), form.serialize(), function (r) {
                 if (r.success) {
                     $("#modalAssignJob").modal('hide');
-                    Swal.fire({
-                        icon: 'success',
-                        title: '¡Éxito!',
-                        text: r.message,
-                        confirmButtonColor: '#620900'
-                    }).then(() => {
-                        window.location.reload();
-                    });
+                    Swal.fire('Éxito', r.message, 'success').then(() => window.location.reload());
                 } else {
                     Swal.fire('Error', r.message, 'error');
                 }
@@ -235,15 +206,12 @@
         $(document).on('change', '.master-check', function () {
             const isChecked = $(this).is(':checked');
             const targetGroup = $(this).data('target-group');
-
-            $(`.child-check-${targetGroup}`).each(function () {
-                $(this).prop('checked', isChecked);
-            });
+            $(`.child-check-${targetGroup}`).prop('checked', isChecked);
         });
 
         $(document).on('change', '[class^="child-check-"]', function () {
             if ($(this).is(':checked')) {
-                const modId = $(this).attr('class').split('child-check-')[1];
+                const modId = $(this).attr('class').split('child-check-')[1].split(' ')[0];
                 $(`.master-check[data-target-group="${modId}"]`).prop('checked', true);
             }
         });
@@ -286,12 +254,15 @@
                     <div class="row align-items-center">
                         <div class="col-md-7">
                             <h5 class="mb-0 fw-bold text-dark">
-                                <i class="bi bi-collection-play me-2 text-burgundy"></i> Catálogo Global de Módulos
+                                <i class="bi bi-collection-play me-2 text-burgundy"></i> Catálogo Global de Apartados
                             </h5>
                             <p class="text-muted small mb-0">Gestiona los elementos base que aparecerán en las matrices.</p>
                         </div>
                         <div class="col-md-5 text-end">
-                            <button class="btn btn-burgundy btn-sm px-4 shadow-sm" onclick="loadModuleModal(0)">
+                            <button class="btn btn-burgundy btn-sm px-4 shadow-sm"
+                                    onclick="@(HasPermission("btn-agregar-modulo") ? "loadModuleModal(0)" : "")"
+                                    @(HasPermission("btn-agregar-modulo") ? "" : "disabled")
+                                    title="@(HasPermission("btn-agregar-modulo") ? "Agregar Módulo" : "Sin permiso para crear módulos")">
                                 <i class="bi bi-plus-circle me-1"></i> Agregar Módulo
                             </button>
                         </div>
@@ -306,6 +277,7 @@
         </div>
 
         @* PESTAÑA 2 *@
+        <partial name="_TableTools" />
         <div class="tab-pane fade" id="jobs-pane" role="tabpanel">
             <div class="card border-0 shadow-sm mb-4 rounded-4 overflow-hidden border-start border-4 border-burgundy">
                 <div class="card-body bg-light" style="padding: 1.5rem !important">
@@ -317,7 +289,10 @@
                             <p class="text-muted small mb-0">Define los perfiles laborales para la asignación de accesos.</p>
                         </div>
                         <div class="col-md-5 text-end">
-                            <button class="btn btn-burgundy btn-sm px-4 shadow-sm" onclick="loadJobModal()">
+                            <button class="btn btn-burgundy btn-sm px-4 shadow-sm"
+                                    onclick="@(HasPermission("btn-agregar-puesto") ? "loadJobModal()" : "")"
+                                    @(HasPermission("btn-agregar-puesto") ? "" : "disabled")
+                                    title="@(HasPermission("btn-agregar-puesto") ? "Nuevo Puesto" : "Sin permiso para crear puestos")">
                                 <i class="bi bi-person-plus me-1"></i> Nuevo Puesto
                             </button>
                         </div>
@@ -325,7 +300,7 @@
                 </div>
             </div>
 
-            <div class="border-0 shadow-sm overflow-hidden">
+            <div class="border-0 overflow-hidden">
                 <div class="card-body p-0" id="jobsTableContainer">
                 </div>
             </div>
@@ -347,10 +322,16 @@
                         <div class="col-md-5 text-end">
                             @if (ViewBag.SelectedAreaId != null)
                             {
-                                <button type="button" class="btn btn-burgundy btn-sm me-2" onclick="loadAssignJobModal()">
+                                <button type="button" class="btn btn-burgundy btn-sm me-2"
+                                        onclick="@(HasPermission("btn-asignar-puesto") ? "loadAssignJobModal()" : "")"
+                                        @(HasPermission("btn-asignar-puesto") ? "" : "disabled")
+                                        title="@(HasPermission("btn-asignar-puesto") ? "Asignar Puesto" : "Sin permiso para asignar puestos")">
                                     <i class="bi bi-person-add me-1"></i> Asignar Puesto
                                 </button>
-                                <button type="submit" form="formPermissions" class="btn btn-burgundy btn-sm shadow-sm">
+                                <button type="submit" form="formPermissions"
+                                        class="btn btn-burgundy btn-sm shadow-sm"
+                                        @(HasPermission("btn-guardar-permisos") ? "" : "disabled")
+                                        title="@(HasPermission("btn-guardar-permisos") ? "Guardar Todo" : "Sin permiso para guardar cambios")">
                                     <i class="bi bi-save2"></i> Guardar Todo
                                 </button>
                             }
@@ -415,8 +396,10 @@
                                                                         <span class="text-muted fw-bold" style="font-size: 0.65rem;">ACCESO</span><br />
                                                                         <input type="checkbox" name="permissions[@idx].CanView" value="true"
                                                                                @(mainModule.CanView ? "checked" : "")
+                                                                               @(HasPermission("chk-acceso-modulos") ? "" : "disabled")
                                                                                data-target-group="@modId"
-                                                                               class="form-check-input custom-check master-check mt-1" />
+                                                                               class="form-check-input custom-check master-check mt-1"
+                                                                               title="@(HasPermission("chk-acceso-modulos") ? "" : "No tienes permiso para modificar este acceso")" />
                                                                         <input type="hidden" name="permissions[@idx].CanView" value="false" />
                                                                     </div>
                                                                 </div>
@@ -438,9 +421,11 @@
                                                                             </div>
 
                                                                             <div class="form-check form-switch">
-                                                                                <input type="checkbox" name="permissions[@bIdx].CanView"
-                                                                                       value="true" @(btn.CanView ? "checked" : "")
-                                                                                       class="form-check-input child-check-@modId" />
+                                                                                <input type="checkbox" name="permissions[@bIdx].CanView" value="true"
+                                                                                       @(btn.CanView ? "checked" : "")
+                                                                                       @(HasPermission("chk-acceso-botones") ? "" : "disabled")
+                                                                                       class="form-check-input child-check-@modId"
+                                                                                       title="@(HasPermission("chk-acceso-botones") ? "" : "Sin permiso para cambiar permisos de botones")" />
 
                                                                                 <input type="hidden" name="permissions[@bIdx].CanView" value="false" />
                                                                             </div>
@@ -474,8 +459,16 @@
                     <h4 class="mt-3 fw-bold">Sin configuración de acceso</h4>
                     <p class="text-muted">El área seleccionada no tiene reglas de acceso definidas.</p>
                     <button class="btn btn-burgundy mt-2" onclick="initModules(@ViewBag.SelectedAreaId)">
+
                         <i class="bi bi-plus-circle me-1"></i> Crear matriz base para esta área
+
                     </button>
+                    @* <button class="btn btn-burgundy mt-2"
+                            onclick="@(HasPermission("btn-crear-matriz") ? $"initModules({ViewBag.SelectedAreaId})" : "")"
+                            @(HasPermission("btn-crear-matriz") ? "" : "disabled")
+                            title="@(HasPermission("btn-crear-matriz") ? "Crear matriz admin" : "Sin permiso para inicializar matrices")">
+                        <i class="bi bi-plus-circle me-1"></i> Crear matriz admin para esta área
+                    </button> *@
                 </div>
             }
 

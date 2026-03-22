@@ -132,7 +132,7 @@ namespace SchoolManager.Areas.UserMng.Controllers
         {
             if (principal.IsInRole("Administrator"))
             {
-                return RedirectToAction("Index", "Teachers", new { area = "MainScreen" });
+                return RedirectToAction("Index", "MainScreen", new { area = "MainScreen" });
             }
 
             if (principal.IsInRole("Teacher"))

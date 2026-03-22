@@ -1,8 +1,6 @@
 ﻿@model SchoolManager.Models.procedure_types
 @{
     Layout = null;
-    // int indexReq = 0;
-    // int indexFlow = 0;
 }
 
 <div class="modal fade" id="createModal" tabindex="-1">
@@ -99,3 +97,11 @@
         </div>
     </div>
 </div>
+<script>
+    (function() {
+        const data = @Html.Raw(Json.Serialize(ViewData["StatusData"]));
+        if (window.updateStatusColors) {
+            window.updateStatusColors(data);
+        }
+    })();
+</script>

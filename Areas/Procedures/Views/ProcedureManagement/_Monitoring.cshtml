@@ -1,5 +1,13 @@
 ﻿@model SchoolManager.Areas.Procedures.ViewModels.ExtraInfoViewModel
 
+@{
+    bool HasPermission(string buttonKey)
+    {
+        var permissions = ViewBag.UserPermissions as List<string>;
+        return permissions != null && permissions.Contains(buttonKey);
+    }
+}
+
 <style>
     :root {
         --burgundy: #620900;
@@ -179,26 +187,71 @@
                 }
             </div>
 
-            @* Formulario de Actualización *@
             <div class="card burgundy-border rounded-4 overflow-hidden shadow-sm">
                 <div class="card-header text-white py-2 fw-bold bg-burgundy text-uppercase">
                     <i class="bi bi-arrow-repeat me-2"></i>Actualizar Estatus
                 </div>
                 <div class="card-body p-4 bg-white">
-                    <form id="formUpdateStatus">
-                        <input type="hidden" name="requestId" value="@Model.RequestId" />
-                        <div class="mb-3">
-                            <label class="form-label small fw-bold">Nuevo Estado:</label>
-                            <select name="newFlowId" class="form-select shadow-sm" asp-items="ViewBag.Statuses"></select>
+                    @if (Model.ProcedureFlow?.ProcedureStatus?.IsTerminalState == true && !Model.ProcedureFlow.ProcedureStatus.Name.Contains("Rechazado"))
+                    {
+                        <div class="alert alert-success border-0 shadow-sm text-center">
+                            <i class="bi bi-check-all fs-4"></i><br>
+                            <strong>¡Trámite Concluido!</strong><br>
+                            Este registro se encuentra en un estado terminal de éxito.
                         </div>
-                        <div class="mb-3">
-                            <label class="form-label small fw-bold">Comentario:</label>
-                            <textarea name="adminComment" class="form-control" rows="3" required placeholder="Escriba el motivo del cambio o instrucciones..."></textarea>
-                        </div>
-                        <button type="button" onclick="submitStep()" class="btn-burgundy w-100 fw-bold shadow-sm">
-                            <i class="bi bi-save me-1"></i> Guardar Cambios
-                        </button>
-                    </form>
+                    }
+                    else
+                    {
+                        @if (ViewBag.Statuses != null && ((SelectList)ViewBag.Statuses).Any())
+                        {
+                            <form id="formUpdateStatus">
+                                <input type="hidden" name="requestId" value="@Model.RequestId" />
+
+                                <div class="mb-3">
+                                    <label class="form-label small fw-bold">Nuevo Estado:</label>
+                                    <select name="newFlowId" class="form-select shadow-sm" asp-items="ViewBag.Statuses"></select>
+                                </div>
+
+                                <div class="mb-3">
+                                    <div class="d-flex align-items-center gap-2 mb-2">
+                                        <label class="form-label small fw-bold mb-0">Comentario:</label>
+                                        <span class="badge rounded-pill bg-warning text-dark" style="font-size: 0.65rem;">
+                                            <i class="bi bi-info-circle-fill"></i> Se requiere registrar un motivo
+                                        </span>
+                                    </div>
+
+                                    <div id="commentSuggestions" class="mb-2">
+                                        <span class="badge bg-light text-dark border p-1 px-2" style="cursor:pointer; font-size: 0.75rem;" onclick="setComment('Trámite revisado y aprobado.')">✅ Aprobado</span>
+                                        <span class="badge bg-light text-dark border p-1 px-2" style="cursor:pointer; font-size: 0.75rem;" onclick="setComment('Documentación completa, en espera de validación.')">📄 Documentos OK</span>
+                                        <span class="badge bg-light text-dark border p-1 px-2" style="cursor:pointer; font-size: 0.75rem;" onclick="setComment('Se ha avanzado al siguiente paso del proceso.')">🚀 Continuar</span>
+                                    </div>
+
+                                    <textarea id="adminComment" name="adminComment" class="form-control shadow-sm" rows="3"
+                                      placeholder="Escriba instrucciones para el alumno..."></textarea>
+                                </div>
+                                <div class="mt-3">
+                                    @if (HasPermission("btn-guardar"))
+                                    {
+                                        <button type="button" onclick="submitStep()" class="btn btn-burgundy w-100 fw-bold shadow-sm text-white">
+                                            <i class="bi bi-save me-1"></i> Guardar Cambios
+                                        </button>
+                                    }
+                                    else
+                                    {
+                                        <div class="alert alert-warning py-2 small text-center">
+                                            <i class="bi bi-exclamation-triangle me-2"></i> No tienes permiso para realizar cambios.
+                                        </div>
+                                    }
+                                </div>
+                            </form>
+                        }
+                        else
+                        {
+                            <div class="alert alert-light border shadow-sm text-center text-muted">
+                                <i class="bi bi-info-circle me-2"></i> No hay más acciones disponibles para este trámite.
+                            </div>
+                        }
+                    }
                 </div>
             </div>
         </div>

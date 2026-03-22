@@ -1,8 +1,10 @@
 ﻿@model IEnumerable<SchoolManager.Models.procedure_request>
 @{
     ViewData["Title"] = "Historial de Solicitudes";
-}
 
+    bool HasPermission(string buttonName) =>
+        ViewBag.UserPermissions != null && ((List<string>)ViewBag.UserPermissions).Contains(buttonName);
+}
 
 @section Scripts {
     <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
@@ -10,7 +12,7 @@
     <partial name="_DataTableConfig" />
 
     <script>
-            function openMonitoring(id) {
+        function openMonitoring(id) {
                 $('#dynamicModalContent').html('');
 
                 Swal.fire({
@@ -36,6 +38,7 @@
                     Swal.fire('Error', 'No se pudo cargar el seguimiento. Verifique que la ruta sea correcta.', 'error');
                 });
             }
+
         function submitStep() {
                 const formData = $('#formUpdateStatus').serialize();
 
@@ -49,6 +52,109 @@
                     }
                 });
             }
+
+        function setComment(text) {
+            const textarea = document.getElementById('adminComment');
+            textarea.value = text;
+            textarea.classList.add('is-valid');
+            setTimeout(() => textarea.classList.remove('is-valid'), 1000);
+        }
+
+        $(document).on('change', 'select[name="newFlowId"]', function() {
+            const selectedText = $(this).find("option:selected").text().toLowerCase();
+            let autoComment = "";
+
+            if (selectedText.includes("aprobado")) {
+                autoComment = "Su solicitud ha sido aprobada satisfactoriamente.";
+            } else if (selectedText.includes("finalizado")) {
+                autoComment = "El trámite ha concluido con éxito.";
+            } else if (selectedText.includes("validación")) {
+                autoComment = "Estamos validando la información proporcionada.";
+            } else if (selectedText.includes("pago")) {
+                autoComment = "En espera de la confirmación de pago institucional.";
+            } else {
+                autoComment = "Se ha actualizado el estatus del trámite.";
+            }
+
+            $('#adminComment').val(autoComment);
+        });
+
+        $(document).ready(function () {
+            $(document).on('change', '#checkAll', function () {
+                const isChecked = $(this).is(':checked');
+                $('.row-checkbox').prop('checked', isChecked);
+                $('.row-checkbox').closest('tr').toggleClass('table-active', isChecked);
+                updateBulkBar();
+            });
+
+            $(document).on('change', '.row-checkbox', function () {
+                const total = $('.row-checkbox').length;
+                const selected = $('.row-checkbox:checked').length;
+                $('#checkAll').prop('checked', total === selected);
+                $(this).closest('tr').toggleClass('table-active', $(this).is(':checked'));
+                updateBulkBar();
+            });
+        });
+
+        function updateBulkBar() {
+            const count = $('.row-checkbox:checked').length;
+            const bar = $('#bulkActionsBar');
+
+            if (count > 0) {
+                const text = count === 1 ? '1 seleccionado' : count + ' seleccionados';
+                $('#selectedCount').text(text);
+
+                bar.removeClass('d-none').fadeIn('fast');
+            } else {
+                bar.fadeOut('fast', function() {
+                    $(this).addClass('d-none');
+                });
+                $('#checkAll').prop('checked', false);
+            }
+        }
+
+        function deselectAll() {
+            $('.row-checkbox, #checkAll').prop('checked', false).closest('tr').removeClass('table-active');
+            updateBulkBar();
+        }
+
+        function bulkDeleteRequests() {
+            const selectedIds = $('.row-checkbox:checked').map(function() {
+                return parseInt($(this).val());
+            }).get();
+
+            Swal.fire({
+                title: '¿Eliminar trámites?',
+                html: `Se eliminarán <b>${selectedIds.length}</b> solicitudes permanentemente.<br>
+                       <span class="text-danger small fw-bold">Esto borrará historial de seguimiento y documentos adjuntos.</span>`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#620900',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Sí, eliminar todo',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    Swal.fire({ title: 'Procesando...', didOpen: () => { Swal.showLoading(); } });
+
+                    $.ajax({
+                        url: '/Procedures/ProcedureManagement/BulkDelete',
+                        type: 'POST',
+                        data: {
+                            ids: selectedIds,
+                            __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val()
+                        },
+                        success: function (r) {
+                            if (r.success) {
+                                Swal.fire('¡Éxito!', r.message, 'success').then(() => location.reload());
+                            } else {
+                                Swal.fire('Error', r.message, 'error');
+                            }
+                        }
+                    });
+                }
+            });
+        }
     </script>
 }
 
@@ -175,16 +281,21 @@
                                         @item.ProcedureFlow?.ProcedureStatus?.Name
                                     </span>
                                 </td>
-
                                 <td class="text-center">
                                     <div class="btn-group">
-                                        <button class="btn btn-sm btn-light border text-dark shadow-sm px-3 shadow-sm rounded-pill"
-                                                onclick="openMonitoring(@item.Id)"
-                                                title="@(isCancelled ? "No se puede gestionar un trámite cancelado" : "Gestionar Trámite")"
-                                                @(isCancelled ? "disabled" : "")>
-                                            <i class="text-dark bi bi-gear-fill me-1 @(isCancelled ? "text-muted" : "text-primary")"></i>Gestionar
-                                        </button>
-
+                                        @if (HasPermission("btn-gestionar"))
+                                        {
+                                            <button class="btn btn-sm btn-light border text-dark shadow-sm px-3 rounded-pill"
+                                                    onclick="openMonitoring(@item.Id)"
+                                                    title="@(isCancelled ? "No se puede gestionar" : "Gestionar Trámite")"
+                                                    @(isCancelled ? "disabled" : "")>
+                                                <i class="bi bi-gear-fill me-1 @(isCancelled ? "text-muted" : "text-dark")"></i>Gestionar
+                                            </button>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted small"><i>Sin acceso</i></span>
+                                        }
                                     </div>
                                 </td>
                             </tr>
@@ -192,6 +303,21 @@
                     </tbody>
                 </table>
             </div>
+        </div>
+    </div>
+
+    <div id="bulkActionsBar" class="position-fixed bottom-0 start-50 translate-middle-x mb-4 shadow-lg bg-dark text-white p-3 rounded-pill d-none animate__animated animate__fadeInUp" style="z-index: 1050; min-width: 300px;">
+        <div class="d-flex align-items-center justify-content-between px-3">
+            <span id="selectedCount" class="fw-bold me-4">0 seleccionados</span>
+            <div class="btn-group">
+                @if (HasPermission("btn-multiple-eliminar"))
+                {
+                    <button class="btn btn-danger btn-sm rounded-pill" onclick="bulkDeleteRequests()">
+                        <i class="bi bi-trash-fill me-1"></i> Eliminar
+                    </button>
+                }
+            </div>
+            <button type="button" class="btn-close btn-close-white ms-3" onclick="deselectAll()"></button>
         </div>
     </div>
 </div>

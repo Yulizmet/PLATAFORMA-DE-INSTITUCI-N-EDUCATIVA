@@ -35,7 +35,7 @@ namespace SchoolManager.Models
         [Required]
         public string city { get; set; } = null!;
 
-        [Required]
-        public string phone { get; set; } = null!;
+        //[Required]
+        //public string phone { get; set; } = null!;
     }
 }

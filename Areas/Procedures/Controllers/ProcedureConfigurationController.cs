@@ -1,28 +1,25 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using SchoolManager.Areas.Procedures.ViewModels;
 using SchoolManager.Data;
 using SchoolManager.Models;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace SchoolManager.Areas.Procedures.Controllers
 {
     [Area("Procedures")]
-    public class ProcedureConfigurationController : Controller
+    public class ProcedureConfigurationController : _ProceduresBaseController
     {
-        private readonly AppDbContext _context;
-
-        public ProcedureConfigurationController(AppDbContext context)
-        {
-            _context = context;
-        }
+        public ProcedureConfigurationController(AppDbContext context) : base(context) { }
 
         public async Task<IActionResult> Index()
         {
+            await LoadPermissions("Trámites");
             var data = await _context.ProcedureTypes
                 .Include(p => p.ProcedureArea)
                 .Include(p => p.Requirements).ThenInclude(r => r.ProcedureTypeDocument)
@@ -41,6 +38,15 @@ namespace SchoolManager.Areas.Procedures.Controllers
                 .Where(s => s.Name != "Rechazado" && s.Name != "Cancelado")
                 .OrderBy(s => s.Id)
                 .ToListAsync();
+
+            var statusData = filteredStatus.Select(s => new {
+                Id = s.Id,
+                Name = s.Name,
+                Bg = s.BackgroundColor,
+                Txt = s.TextColor
+            }).ToList();
+
+            ViewData["StatusData"] = statusData;
             ViewData["IdStatus"] = new SelectList(filteredStatus, "Id", "Name");
         }
 
@@ -86,6 +92,7 @@ namespace SchoolManager.Areas.Procedures.Controllers
         [HttpGet]
         public async Task<IActionResult> Create()
         {
+            await LoadPermissions("Trámites");
             await PrepareDropdowns();
             return PartialView("_CreateModal");
         }
@@ -93,6 +100,7 @@ namespace SchoolManager.Areas.Procedures.Controllers
         [HttpGet]
         public async Task<IActionResult> Edit(int? id)
         {
+            await LoadPermissions("Trámites");
             if (id == null) return NotFound();
 
             var procedureType = await _context.ProcedureTypes
@@ -112,6 +120,7 @@ namespace SchoolManager.Areas.Procedures.Controllers
         [HttpGet]
         public async Task<IActionResult> Delete(int? id)
         {
+            await LoadPermissions("Trámites");
             if (id == null) return NotFound();
 
             var procedureType = await _context.ProcedureTypes
@@ -127,6 +136,7 @@ namespace SchoolManager.Areas.Procedures.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
+            await LoadPermissions("Trámites");
             var procedureType = await _context.ProcedureTypes
                 .Include(p => p.Requirements)
                 .Include(p => p.ProcedureFlow)
@@ -148,6 +158,7 @@ namespace SchoolManager.Areas.Procedures.Controllers
         [HttpGet]
         public async Task<IActionResult> BulkEdit()
         {
+            await LoadPermissions("Trámites");
             await PrepareDropdowns();
             return PartialView("_BulkEditModal");
         }
@@ -158,20 +169,14 @@ namespace SchoolManager.Areas.Procedures.Controllers
             List<procedure_type_requirements> requirementsList,
             List<procedure_flow> flowList)
         {
+            await LoadPermissions("Trámites");
+
             ModelState.Remove("ProcedureArea");
             ModelState.Remove("Requirements");
             ModelState.Remove("ProcedureFlow");
             ModelState.Remove("DateUpdated");
-
-            var navigationKeys = ModelState.Keys
-                .Where(k => k.Contains("ProcedureTypeDocument") || k.Contains("ProcedureStatus") || k.Contains("ProcedureType"))
-                .ToList();
+            var navigationKeys = ModelState.Keys.Where(k => k.Contains("ProcedureTypeDocument") || k.Contains("ProcedureStatus") || k.Contains("ProcedureType")).ToList();
             foreach (var key in navigationKeys) ModelState.Remove(key);
-
-            if (flowList != null && flowList.Any(f => f.StepOrder >= 90))
-            {
-                return Json(new { success = false, errors = new[] { "El orden de los pasos debe ser menor a 90 (reservados)." } });
-            }
 
             if (ModelState.IsValid)
             {
@@ -186,9 +191,11 @@ namespace SchoolManager.Areas.Procedures.Controllers
                         ptTarget.DateUpdated = DateTime.Now;
                         ptTarget.Requirements = new List<procedure_type_requirements>();
                         ptTarget.ProcedureFlow = new List<procedure_flow>();
-
                         _context.ProcedureTypes.Add(ptTarget);
                         await _context.SaveChangesAsync();
+
+                        if (requirementsList != null) foreach (var r in requirementsList) { r.IdTypeProcedure = ptTarget.Id; _context.ProcedureTypeRequirements.Add(r); }
+                        if (flowList != null) foreach (var f in flowList) { f.IdTypeProcedure = ptTarget.Id; _context.ProcedureFlow.Add(f); }
                     }
                     else
                     {
@@ -197,41 +204,65 @@ namespace SchoolManager.Areas.Procedures.Controllers
                             .Include(p => p.ProcedureFlow)
                             .FirstOrDefaultAsync(p => p.Id == procedureType.Id);
 
-                        if (ptTarget == null) return Json(new { success = false, errors = new[] { "No encontrado" } });
+                        if (ptTarget == null) return Json(new { success = false, errors = new[] { "Trámite no encontrado." } });
 
                         ptTarget.Name = procedureType.Name;
                         ptTarget.IdArea = procedureType.IdArea;
                         ptTarget.DateUpdated = DateTime.Now;
 
-                        _context.ProcedureTypeRequirements.RemoveRange(ptTarget.Requirements);
-                        _context.ProcedureFlow.RemoveRange(ptTarget.ProcedureFlow);
-
-                        ptTarget.Requirements.Clear();
-                        ptTarget.ProcedureFlow.Clear();
-                    }
-
-                    if (requirementsList != null)
-                    {
-                        foreach (var req in requirementsList)
+                        if (requirementsList != null && requirementsList.Any())
                         {
-                            req.Id = 0;
-                            req.IdTypeProcedure = ptTarget.Id;
-                            ptTarget.Requirements.Add(req);
+                            var currentReqIds = ptTarget.Requirements.Select(r => r.IdTypeDocument).ToList();
+                            var newReqIds = requirementsList.Select(r => r.IdTypeDocument).ToList();
+
+                            var reqsParaRemover = ptTarget.Requirements.Where(r => !newReqIds.Contains(r.IdTypeDocument)).ToList();
+                            _context.ProcedureTypeRequirements.RemoveRange(reqsParaRemover);
+
+                            foreach (var req in requirementsList)
+                            {
+                                var existingReq = ptTarget.Requirements.FirstOrDefault(r => r.IdTypeDocument == req.IdTypeDocument);
+                                if (existingReq != null) existingReq.IsRequired = req.IsRequired;
+                                else _context.ProcedureTypeRequirements.Add(new procedure_type_requirements { IdTypeProcedure = ptTarget.Id, IdTypeDocument = req.IdTypeDocument, IsRequired = req.IsRequired });
+                            }
                         }
-                    }
 
-                    if (flowList != null)
-                    {
-                        foreach (var flow in flowList)
+                        if (flowList != null && flowList.Any())
                         {
-                            flow.Id = 0;
-                            flow.IdTypeProcedure = ptTarget.Id;
-                            ptTarget.ProcedureFlow.Add(flow);
+                            var newStatusIds = flowList.Select(f => f.IdStatus).ToList();
+
+                            var stepsToRemove = ptTarget.ProcedureFlow.Where(f => !newStatusIds.Contains(f.IdStatus)).ToList();
+
+                            foreach (var paso in stepsToRemove)
+                            {
+                                bool hasActiveRequests = await _context.ProcedureRequest.AnyAsync(r => r.IdProcedureFlow == paso.Id);
+                                if (hasActiveRequests)
+                                {
+                                    return Json(new { success = false, errors = new[] { $"No se puede eliminar el estado '{paso.IdStatus}' porque hay trámites de alumnos usándolo." } });
+                                }
+                                _context.ProcedureFlow.Remove(paso);
+                            }
+
+                            foreach (var flow in flowList)
+                            {
+                                var existingFlow = ptTarget.ProcedureFlow.FirstOrDefault(f => f.IdStatus == flow.IdStatus);
+                                if (existingFlow != null)
+                                {
+                                    existingFlow.StepOrder = flow.StepOrder;
+                                }
+                                else
+                                {
+                                    _context.ProcedureFlow.Add(new procedure_flow
+                                    {
+                                        IdTypeProcedure = ptTarget.Id,
+                                        IdStatus = flow.IdStatus,
+                                        StepOrder = flow.StepOrder
+                                    });
+                                }
+                            }
                         }
                     }
 
                     await EnsureDefaultFlow(ptTarget.Id);
-
                     await _context.SaveChangesAsync();
                     await transaction.CommitAsync();
 
@@ -240,22 +271,27 @@ namespace SchoolManager.Areas.Procedures.Controllers
                 catch (Exception ex)
                 {
                     await transaction.RollbackAsync();
-                    var dbError = ex.InnerException?.Message ?? ex.Message;
-                    return Json(new { success = false, errors = new[] { "Error de DB: " + dbError } });
+                    string mensajeAmigable = "Ocurrió un error al guardar los cambios.";
+
+                    if (ex.InnerException != null && ex.InnerException.Message.Contains("FK_procedure_request_flow"))
+                    {
+                        mensajeAmigable = "No se puede modificar o eliminar un estado del flujo que ya tiene solicitudes de alumnos en proceso.";
+                    }
+                    else if (ex.InnerException != null)
+                    {
+                        mensajeAmigable = "Error de base de datos: " + ex.InnerException.Message;
+                    }
+
+                    return Json(new { success = false, errors = new[] { mensajeAmigable } });
                 }
             }
-
-            var validationErrors = ModelState.Values
-                .SelectMany(v => v.Errors)
-                .Select(e => e.ErrorMessage)
-                .ToList();
-
-            return Json(new { success = false, errors = validationErrors });
+            return Json(new { success = false, errors = new[] { "Datos inválidos" } });
         }
 
         [HttpPost]
         public async Task<IActionResult> SaveBulkUpdate([FromBody] BulkUpdateViewModel data)
         {
+            await LoadPermissions("Trámites");
             if (data.FlowList != null && data.FlowList.Any(f => f.StepOrder >= 90))
             {
                 return Json(new { success = false, message = "No se pueden usar órdenes >= 90 (reservados para estados automáticos)." });
@@ -311,6 +347,7 @@ namespace SchoolManager.Areas.Procedures.Controllers
         [HttpPost]
         public async Task<IActionResult> BulkDelete([FromBody] List<int> ids)
         {
+            await LoadPermissions("Trámites");
             if (ids == null || !ids.Any()) return Json(new { success = false, message = "No hay selecciones." });
 
             var itemsToDelete = await _context.ProcedureTypes

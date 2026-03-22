@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using SchoolManager.Areas.Procedures.Models;
@@ -7,17 +8,13 @@ using SchoolManager.Data;
 namespace SchoolManager.Areas.Procedures.Controllers
 {
     [Area("Procedures")]
-    public class PermissionsController : Controller
+    public class PermissionsController : _ProceduresBaseController
     {
-        private readonly AppDbContext _context;
-
-        public PermissionsController(AppDbContext context)
-        {
-            _context = context;
-        }
+        public PermissionsController(AppDbContext context) : base(context) { }
 
         public async Task<IActionResult> Index(int? idArea)
         {
+            await LoadPermissions("Permisos");
             var areasList = await _context.ProcedureAreas.OrderBy(a => a.Name).ToListAsync();
             ViewBag.Areas = new SelectList(areasList, "Id", "Name", idArea);
             ViewBag.SelectedAreaId = idArea;
@@ -43,6 +40,7 @@ namespace SchoolManager.Areas.Procedures.Controllers
         [HttpPost]
         public async Task<IActionResult> InitJobPermissions(int idArea, int? idJobPosition = null)
         {
+            await LoadPermissions("Permisos");
             try
             {
                 if (idArea <= 0) return Json(new { success = false, message = "Área no válida." });
@@ -111,6 +109,7 @@ namespace SchoolManager.Areas.Procedures.Controllers
         [HttpPost]
         public async Task<IActionResult> InitModules(int idArea)
         {
+            await LoadPermissions("Permisos");
             try
             {
                 if (idArea <= 0) return Json(new { success = false, message = "Área no válida." });
@@ -174,6 +173,7 @@ namespace SchoolManager.Areas.Procedures.Controllers
         [HttpGet]
         public async Task<IActionResult> GetDeleteModal(int id, string type)
         {
+            await LoadPermissions("Permisos");
             ViewBag.ItemId = id;
             ViewBag.IsModuleGroup = false;
 
@@ -203,6 +203,7 @@ namespace SchoolManager.Areas.Procedures.Controllers
         [HttpGet]
         public async Task<IActionResult> GetModuleModal(int id, string? moduleName = null)
         {
+            await LoadPermissions("Permisos");
             procedure_module_catalog? model;
 
             if (id > 0)
@@ -229,6 +230,7 @@ namespace SchoolManager.Areas.Procedures.Controllers
         [HttpGet]
         public async Task<IActionResult> GetCatalogTable()
         {
+            await LoadPermissions("Permisos");
             var catalog = await _context.ProcedureModuleCatalog
                 .OrderBy(m => m.ModuleName)
                 .ThenBy(m => m.ButtonName)
@@ -239,6 +241,7 @@ namespace SchoolManager.Areas.Procedures.Controllers
         [HttpGet]
         public async Task<IActionResult> GetJobsTable()
         {
+            await LoadPermissions("Permisos");
             var jobs = await _context.ProcedureJobPosition
                 .OrderBy(j => j.Name)
                 .ToListAsync();
@@ -248,6 +251,7 @@ namespace SchoolManager.Areas.Procedures.Controllers
         [HttpGet]
         public async Task<IActionResult> GetJobModal(int id)
         {
+            await LoadPermissions("Permisos");
             var model = id > 0
                 ? await _context.ProcedureJobPosition.FindAsync(id)
                 : new procedure_job_position();
@@ -258,6 +262,7 @@ namespace SchoolManager.Areas.Procedures.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAssignJobModal(int idArea)
         {
+            await LoadPermissions("Permisos");
             ViewBag.IdArea = idArea;
             var existingJobIds = await _context.ProcedurePermissions
                 .Where(p => p.IdArea == idArea)
@@ -276,6 +281,7 @@ namespace SchoolManager.Areas.Procedures.Controllers
         [HttpPost]
         public async Task<IActionResult> SyncCatalog(int idArea)
         {
+            await LoadPermissions("Permisos");
             var currentJobs = await _context.ProcedurePermissions
                 .Where(p => p.IdArea == idArea)
                 .Select(p => p.IdJobPosition)
@@ -293,12 +299,16 @@ namespace SchoolManager.Areas.Procedures.Controllers
         [HttpPost]
         public async Task<IActionResult> SaveModuleToCatalog(procedure_module_catalog model)
         {
+            await LoadPermissions("Permisos");
+            using var transaction = await _context.Database.BeginTransactionAsync();
             try
             {
-                if (model.Id > 0)
+                bool isNew = model.Id == 0;
+
+                if (!isNew)
                 {
                     var dbEntry = await _context.ProcedureModuleCatalog.FindAsync(model.Id);
-                    if (dbEntry == null) return Json(new { success = false, message = "No existe" });
+                    if (dbEntry == null) return Json(new { success = false, message = "No existe el registro." });
 
                     string oldModuleName = dbEntry.ModuleName;
 
@@ -316,11 +326,7 @@ namespace SchoolManager.Areas.Procedures.Controllers
 
                     dbEntry.ModuleName = model.ModuleName;
                     dbEntry.ButtonName = model.ButtonName;
-
-                    if (!string.IsNullOrEmpty(model.Route))
-                    {
-                        dbEntry.Route = model.Route;
-                    }
+                    dbEntry.Route = model.Route;
 
                     _context.ProcedureModuleCatalog.Update(dbEntry);
                 }
@@ -330,17 +336,42 @@ namespace SchoolManager.Areas.Procedures.Controllers
                 }
 
                 await _context.SaveChangesAsync();
-                return Json(new { success = true, message = "Cambios guardados correctamente" });
+
+                if (isNew)
+                {
+                    var existingCombinations = await _context.ProcedurePermissions
+                        .Select(p => new { p.IdArea, p.IdJobPosition })
+                        .Distinct()
+                        .ToListAsync();
+
+                    foreach (var combo in existingCombinations)
+                    {
+                        _context.ProcedurePermissions.Add(new procedure_permission
+                        {
+                            IdArea = combo.IdArea,
+                            IdJobPosition = combo.IdJobPosition,
+                            IdModuleCatalog = model.Id,
+                            CanView = false
+                        });
+                    }
+
+                    await _context.SaveChangesAsync();
+                }
+
+                await transaction.CommitAsync();
+                return Json(new { success = true, message = isNew ? "Módulo inyectado en todos los perfiles correctamente." : "Cambios guardados." });
             }
             catch (Exception ex)
             {
-                return Json(new { success = false, message = "Error: " + ex.InnerException?.Message ?? ex.Message });
+                await transaction.RollbackAsync();
+                return Json(new { success = false, message = "Error: " + (ex.InnerException?.Message ?? ex.Message) });
             }
         }
 
         [HttpPost]
         public async Task<IActionResult> SaveJobPosition(procedure_job_position model)
         {
+            await LoadPermissions("Permisos");
             if (model.Id > 0) _context.Update(model);
             else _context.Add(model);
 
@@ -352,6 +383,7 @@ namespace SchoolManager.Areas.Procedures.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> SavePermissions(List<procedure_permission> permissions)
         {
+            await LoadPermissions("Permisos");
             try
             {
                 foreach (var item in permissions)
@@ -380,6 +412,7 @@ namespace SchoolManager.Areas.Procedures.Controllers
         [HttpPost]
         public async Task<IActionResult> DeleteCatalogItem(int id)
         {
+            await LoadPermissions("Permisos");
             var item = await _context.ProcedureModuleCatalog.FindAsync(id);
             if (item == null) return Json(new { success = false });
 
@@ -391,6 +424,7 @@ namespace SchoolManager.Areas.Procedures.Controllers
         [HttpPost]
         public async Task<IActionResult> DeleteCatalogModule(string moduleName)
         {
+            await LoadPermissions("Permisos");
             var items = await _context.ProcedureModuleCatalog.Where(m => m.ModuleName == moduleName).ToListAsync();
             _context.ProcedureModuleCatalog.RemoveRange(items);
             await _context.SaveChangesAsync();
@@ -400,6 +434,7 @@ namespace SchoolManager.Areas.Procedures.Controllers
         [HttpPost]
         public async Task<IActionResult> DeleteJobPosition(int id)
         {
+            await LoadPermissions("Permisos");
             try
             {
                 var job = await _context.ProcedureJobPosition.FindAsync(id);

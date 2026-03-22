@@ -18,9 +18,8 @@ namespace SchoolManager.Models
 
         public bool IsActive { get; set; }
         public DateTime CreatedDate { get; set; }
-        public ICollection<preenrollment_general> PreEnrollments { get; set; }
 
-        public ICollection<ForoPublicacion> ForoPublicaciones { get; set; }
+        public ICollection<ForoPublicacion> ForoPublicaciones { get; set; } = null!;
         public users_person Person { get; set; } = null!;
 
         public ICollection<procedure_request> ProcedureRequests { get; set; } = new List<procedure_request>();

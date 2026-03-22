@@ -3,8 +3,10 @@
 @{
     ViewData["Title"] = "Expedientes de Alumnos";
     Layout = "_ProceduresLayout";
-}
 
+    bool HasPermission(string buttonName) =>
+        ViewBag.UserPermissions != null && ((List<string>)ViewBag.UserPermissions).Contains(buttonName);
+}
 
 @section Scripts
 {
@@ -137,6 +139,90 @@
         window.editStudent = function(personId) {
             window.location.href = '/Procedures/Proceeding/Edit/' + personId;
         };
+
+        $(document).ready(function () {
+            $('#checkAll').on('change', function () {
+                $('.row-checkbox').prop('checked', $(this).is(':checked'));
+                 updateBulkBar();
+            });
+
+            $(document).on('change', '.row-checkbox', function () {
+                 updateBulkBar();
+                $('#checkAll').prop('checked', $('.row-checkbox:checked').length === $('.row-checkbox').length);
+            });
+        });
+
+
+         function updateBulkBar() {
+             const count = $('.row-checkbox:checked').length;
+             const bar = $('#bulkActionsBar');
+
+             if (count > 0) {
+                 const text = count === 1 ? '1 seleccionado' : count + ' seleccionados';
+                 $('#selectedCount').text(text);
+
+                 bar.removeClass('d-none').fadeIn('fast');
+             } else {
+                 bar.fadeOut('fast', function() {
+                     $(this).addClass('d-none');
+                 });
+                 $('#checkAll').prop('checked', false);
+             }
+         }
+
+        function deselectAll() {
+            $('.row-checkbox, #checkAll').prop('checked', false).closest('tr').removeClass('table-active');
+            updateBulkBar();
+        }
+
+        function uncheckAll() {
+            $('.row-checkbox, #checkAll').prop('checked', false);
+            toggleBulkBar();
+        }
+                
+        function bulkDeleteExpedientes() {
+            const selectedIds = $('.row-checkbox:checked').map(function() {
+                return parseInt($(this).val());
+            }).get();
+
+            Swal.fire({
+                title: '¿Eliminar permanentemente?',
+                html: `<div class="text-danger fw-bold mb-2">¡AVISO CRÍTICO!</div>
+                       Se borrarán <b>${selectedIds.length}</b> expedientes con TODA su información (usuarios, trámites y documentos). Esta acción no se puede deshacer.`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#620900',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Sí, borrar todo',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    Swal.fire({
+                        title: 'Eliminando...',
+                        didOpen: () => { Swal.showLoading(); }
+                    });
+
+                    $.ajax({
+                        url: '/Procedures/Proceeding/BulkDelete',
+                        type: 'POST',
+                        data: {
+                            ids: selectedIds,
+                            __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val()
+                        },
+                        success: function (r) {
+                            if (r.success) {
+                                Swal.fire('¡Logrado!', r.message, 'success').then(() => location.reload());
+                            } else {
+                                Swal.fire('Error', r.message, 'error');
+                            }
+                        },
+                        error: function () {
+                            Swal.fire('Error', 'No se pudo procesar la eliminación masiva.', 'error');
+                        }
+                    });
+                }
+            });
+        }
     </script>
 }
 
@@ -145,7 +231,10 @@
 <div class="container-fluid  px-4 py-4 pt-5">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2 class="fw-bold text-dark"><i class="bi bi-folder2-open me-2"></i>Expedientes Escolares</h2>
-        <button class="btn btn-burgundy shadow-sm" onclick="loadQuickStudentModal()">
+        <button class="btn btn-burgundy shadow-sm"
+                onclick="@(HasPermission("btn-agregar") ? "loadQuickStudentModal()" : "")"
+                @(HasPermission("btn-agregar") ? "" : "disabled")
+                title="@(HasPermission("btn-agregar") ? "Añadir Alumno" : "Sin permiso para añadir alumnos")">
             <i class="bi bi-plus-circle me-1"></i> Añadir Alumno
         </button>
     </div>
@@ -162,10 +251,9 @@
                             <th class="ps-4">Alumno / Contacto</th>
                             <th>Identificador</th>
                             <th>Carrera</th>
-                            @* <th class="text-center">Trámites</th> *@
                             <th>Estado</th>
                             <th>Fecha Registro</th>
-                            <th class="text-center pe-4">Acciones</th>
+                            <th class="no-sort text-center pe-4">Acciones</th>
                         </tr>
                     </thead>
                     <tbody class="table-white">
@@ -199,9 +287,6 @@
                                 <td>
                                     <span class="small fw-bold">@item.CareerName</span>
                                 </td>
-                                @* <td class="text-center">
-                                    <span class="badge rounded-pill bg-info text-white">5</span>
-                                </td> *@
                                 <td>
                                     @if (item.IsActive)
                                     {
@@ -220,43 +305,38 @@
                                     <div class="btn-group">
                                         @if (item.IsActive)
                                         {
-                                            @* Botones habilitados si el alumno está ACTIVO *@
-                                            <a asp-area="Procedures"
-                                               asp-controller="Proceeding"
-                                               asp-action="Details"
-                                               asp-route-id="@item.PersonId"
-                                               class="btn btn-sm btn-light border shadow-sm me-2"
-                                               title="Ver Detalles">
+                                            <a asp-area="Procedures" asp-controller="Proceeding" asp-action="Details" asp-route-id="@item.PersonId"
+                                               class="btn btn-sm btn-light border shadow-sm me-2 @(HasPermission("btn-detalles") ? "" : "disabled")"
+                                               title="@(HasPermission("btn-detalles") ? "Ver Detalles" : "Sin permiso para ver detalles")">
                                                 <i class="bi bi-eye"></i>
                                             </a>
-
                                             <button type="button" class="btn btn-sm btn-light border shadow-sm me-2"
-                                                    title="Editar Alumno"
-                                                    onclick="window.editStudent(@item.PersonId)">
+                                                    onclick="@(HasPermission("btn-editar") ? $"window.editStudent({item.PersonId})" : "")"
+                                                    @(HasPermission("btn-editar") ? "" : "disabled")
+                                                    title="@(HasPermission("btn-editar") ? "Editar Alumno" : "Sin permiso para editar")">
                                                 <i class="bi bi-pencil-square text-warning"></i>
                                             </button>
-
                                             <button class="btn btn-sm btn-light border shadow-sm"
-                                                    title="Dar de Baja"
-                                                    onclick="loadDeactivateModal(@item.PersonId)">
+                                                    onclick="@(HasPermission("btn-desactivar") ? $"loadDeactivateModal({item.PersonId})" : "")"
+                                                    @(HasPermission("btn-desactivar") ? "" : "disabled")
+                                                    title="@(HasPermission("btn-desactivar") ? "Dar de Baja" : "Sin permiso para dar de baja")">
                                                 <i class="bi bi-person-x-fill text-danger"></i>
                                             </button>
                                         }
                                         else
                                         {
-                                            <button class="btn btn-sm btn-light border shadow-sm me-2 opacity-50"
-                                                    disabled title="Activa el expediente para ver detalles">
+                                            <button class="btn btn-sm btn-light border shadow-sm me-2 opacity-50" disabled title="Activa el expediente para ver detalles">
                                                 <i class="bi bi-eye text-muted"></i>
                                             </button>
 
-                                            <button class="btn btn-sm btn-light border shadow-sm me-2 opacity-50"
-                                                    disabled title="Activa el expediente para editar">
+                                            <button class="btn btn-sm btn-light border shadow-sm me-2 opacity-50" disabled title="Activa el expediente para editar">
                                                 <i class="bi bi-pencil-square text-muted"></i>
                                             </button>
 
                                             <button class="btn btn-sm btn-light border shadow-sm"
-                                                    title="Reactivar Expediente"
-                                                    onclick="loadActivateModal(@item.PersonId)">
+                                                    onclick="@(HasPermission("btn-activar") ? $"loadActivateModal({item.PersonId})" : "")"
+                                                    @(HasPermission("btn-activar") ? "" : "disabled")
+                                                    title="@(HasPermission("btn-activar") ? "Reactivar Expediente" : "Sin permiso para reactivar")">
                                                 <i class="bi bi-person-check-fill text-success"></i>
                                             </button>
                                         }
@@ -267,6 +347,21 @@
                     </tbody>
                 </table>
             </div>
+        </div>
+    </div>
+
+    <div id="bulkActionsBar" class="position-fixed bottom-0 start-50 translate-middle-x mb-4 shadow-lg bg-dark text-white p-3 rounded-pill d-none animate__animated animate__fadeInUp" style="z-index: 1050; min-width: 300px;">
+        <div class="d-flex align-items-center justify-content-between px-3">
+            <span id="selectedCount" class="fw-bold me-4">0 seleccionados</span>
+            <div class="btn-group">
+               @if (HasPermission("btn-multiple-eliminar"))
+                    {
+                        <button class="btn btn-sm btn-danger px-3 fw-bold rounded-pill" onclick="bulkDeleteExpedientes()">
+                            <i class="bi bi-trash3-fill me-1"></i> Eliminar
+                        </button>
+                    }
+            </div>
+            <button type="button" class="btn-close btn-close-white ms-3" onclick="deselectAll()"></button>
         </div>
     </div>
 </div>

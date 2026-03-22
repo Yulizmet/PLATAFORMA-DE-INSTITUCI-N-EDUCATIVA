@@ -1,17 +1,23 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using SchoolManager.Areas.Procedures.ViewModels;
 using SchoolManager.Data;
 using SchoolManager.Models;
 using SchoolManager.Services;
+using System.Security.Claims;
 
 namespace SchoolManager.Areas.Procedures.Controllers
 {
     [Area("Procedures")]
+    
     public class RequestController : Controller
     {
         private readonly AppDbContext _context;
         private readonly IStorageService _storageService;
+        private int CurrentUserId => int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ??
+              User.FindFirst("UserId")?.Value ?? "0");
 
         private const string STORAGE_CONNECTION = "AzureStorageProcedures";
 
@@ -21,17 +27,22 @@ namespace SchoolManager.Areas.Procedures.Controllers
             _storageService = storageService;
         }
 
+        [AllowAnonymous]
         public async Task<IActionResult> Index()
         {
+            int currentUserId = CurrentUserId;
+
             var requests = await _context.ProcedureRequest
                 .Include(r => r.ProcedureType)
                 .Include(r => r.ProcedureFlow).ThenInclude(f => f.ProcedureStatus)
                 .Include(r => r.Preenrollments)
+                .Where(r => r.IdUser == currentUserId)
                 .ToListAsync();
 
             return View(requests);
         }
 
+        [Authorize(Roles = "Student")]
         [HttpGet]
         public async Task<IActionResult> Requests()
         {
@@ -44,6 +55,7 @@ namespace SchoolManager.Areas.Procedures.Controllers
             return View();
         }
 
+        [Authorize(Roles = "Student")]
         [HttpGet]
         public async Task<IActionResult> GetRequirements(int procedureId)
         {
@@ -61,6 +73,7 @@ namespace SchoolManager.Areas.Procedures.Controllers
             return Json(results);
         }
 
+        [Authorize(Roles = "Student")]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> CreateRequest(procedure_request request, IFormCollection form)
@@ -75,11 +88,11 @@ namespace SchoolManager.Areas.Procedures.Controllers
                 return Json(new { success = false, errors = new[] { "Flujo de pasos no configurado." } });
             }
 
-            int currentUserId = 1;
+            if (CurrentUserId == 0) return Unauthorized();
 
             request.DateCreated = DateTime.Now;
             request.IdProcedureFlow = initialFlow.Id;
-            request.IdUser = currentUserId;
+            request.IdUser = CurrentUserId;
 
             if (string.IsNullOrEmpty(request.Folio))
             {
@@ -94,7 +107,7 @@ namespace SchoolManager.Areas.Procedures.Controllers
                 _context.ProcedureRequest.Add(request);
                 await _context.SaveChangesAsync();
 
-                var student = await _context.PreenrollmentGenerals.FirstOrDefaultAsync(p => p.UserId == currentUserId);
+                var student = await _context.PreenrollmentGenerals.FirstOrDefaultAsync(p => p.UserId == CurrentUserId);
                 if (student != null)
                 {
                     student.ProcedureRequestId = request.Id;
@@ -126,6 +139,7 @@ namespace SchoolManager.Areas.Procedures.Controllers
             }
         }
 
+        [Authorize(Roles = "Student")]
         public async Task<IActionResult> Tracking()
         {
             var requests = await _context.ProcedureRequest
@@ -133,6 +147,7 @@ namespace SchoolManager.Areas.Procedures.Controllers
                 .Include(r => r.ProcedureFlow)
                     .ThenInclude(f => f.ProcedureStatus)
                 .Include(r => r.ProcedureDocuments)
+                .Where(r => r.IdUser == CurrentUserId)
                 .OrderByDescending(r => r.DateCreated)
                 .ToListAsync();
 
@@ -147,6 +162,7 @@ namespace SchoolManager.Areas.Procedures.Controllers
             return View(requests);
         }
 
+        [Authorize(Roles = "Student")]
         [HttpGet]
         public async Task<IActionResult> TrackingDetails(int id)
         {
@@ -162,28 +178,55 @@ namespace SchoolManager.Areas.Procedures.Controllers
 
             if (request == null) return NotFound();
 
-            var possibleFlows = await _context.ProcedureFlow
-                .Include(f => f.ProcedureStatus)
-                .Where(f => f.IdTypeProcedure == request.IdTypeProcedure)
-                .OrderBy(f => f.StepOrder)
-                .Select(f => new {
-                    IdFlow = f.Id,
-                    StatusName = f.ProcedureStatus.Name,
-                    Order = f.StepOrder,
-                    IsCurrent = f.Id == request.IdProcedureFlow
-                })
-                .ToListAsync();
-
-            ViewBag.PossibleFlows = possibleFlows;
+            if (request.IdUser != CurrentUserId)
+            {
+                return Unauthorized();
+            }
 
             foreach (var doc in request.ProcedureDocuments)
             {
                 doc.FilePath = _storageService.GetSecureUrl(doc.FilePath, doc.Name, STORAGE_CONNECTION);
             }
 
-            return PartialView("_TrackingDetails", request);
+            var viewModel = new ExtraInfoViewModel
+            {
+                RequestId = request.Id,
+                Folio = request.Folio ?? "S/F",
+                ProcedureName = request.ProcedureType?.Name ?? "Trámite",
+                CurrentStatus = request.ProcedureFlow?.ProcedureStatus?.Name ?? "Solicitud",
+                UserMessage = request.Message ?? "Sin mensaje.",
+                CreationDate = request.DateCreated,
+                LastUpdate = request.DateUpdated,
+                TerminatedDate = request.DateTerminated,
+                ProcedureFlow = request.ProcedureFlow,
+
+                Documents = request.ProcedureDocuments.Select(d => new DocumentDetail
+                {
+                    FileName = d.Name,
+                    FilePath = d.FilePath
+                }).ToList(),
+
+                History = request.ProcedureMonitorings.Select(m => new MonitoringStep
+                {
+                    StatusName = m.ProcedureFlow?.ProcedureStatus?.Name ?? "Estatus",
+                    AdminComment = m.Comment ?? "Sin comentario",
+                    Date = m.DateUpdated,
+                    UpdatedBy = "Administración",
+                    BackgroundColor = m.ProcedureFlow?.ProcedureStatus?.BackgroundColor ?? "#6c757d",
+                    TextColor = m.ProcedureFlow?.ProcedureStatus?.TextColor ?? "#ffffff"
+                }).OrderByDescending(h => h.Date).ToList()
+            };
+
+            viewModel.FullProgressSteps = await _context.ProcedureFlow
+                .Include(f => f.ProcedureStatus)
+                .Where(f => f.IdTypeProcedure == request.IdTypeProcedure)
+                .OrderBy(f => f.StepOrder)
+                .ToListAsync();
+
+            return PartialView("_TrackingDetails", viewModel);
         }
 
+        [AllowAnonymous]
         public async Task<IActionResult> PaymentRegistration()
         {
             ViewBag.TramitesPago = await _context.ProcedureTypes
@@ -192,7 +235,7 @@ namespace SchoolManager.Areas.Procedures.Controllers
 
             return View();
         }
-
+        [AllowAnonymous]
         [HttpGet]
         public async Task<IActionResult> GetPaymentRequirements(int procedureTypeId)
         {
@@ -213,6 +256,7 @@ namespace SchoolManager.Areas.Procedures.Controllers
             return Json(results);
         }
 
+        [AllowAnonymous]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> CreatePaymentValidation(string identifier, int procedureTypeId, IFormCollection form)
@@ -281,7 +325,8 @@ namespace SchoolManager.Areas.Procedures.Controllers
                 return Json(new { success = false, errors = new[] { "Error: " + ex.Message } });
             }
         }
-
+        
+        [Authorize(Roles = "Student")]
         [HttpPost]
         public async Task<IActionResult> CancelRequest(int id)
         {

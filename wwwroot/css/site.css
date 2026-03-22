@@ -24,6 +24,21 @@ body {
     /*font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;*/
 }
 
+.colored-toast.swal2-icon-success,
+.colored-toast.swal2-icon-error,
+.colored-toast.swal2-icon-info {
+    color: white !important;
+    border-color: white !important;
+}
+
+.colored-toast .swal2-title {
+    margin: 0.5rem 1rem;
+}
+
+.colored-toast .swal2-timer-progress-bar {
+    background: rgba(255,255,255,0.5);
+}
+
 /* ===== FUENTE INTER PARA SUBTÍTULOS Y TEXTO SECUNDARIO ===== */
 
 .sistema-subtitle,
@@ -65,7 +80,7 @@ p {
 .hero-section {
     background: linear-gradient(135deg, var(--rojo-principal), var(--rojo-claro));
     color: white;
-    padding: 100px 0;
+    padding: 100px 50px;
     border-radius: 28px;
     border-radius: 28px;
 }
@@ -212,7 +227,7 @@ p {
 .footer-custom {
     background-color: #0c1b2a;
     color: #dcdcdc;
-    padding: 60px 0 20px 0;
+    padding: 60px 20px 20px 20px;
     border-bottom-left-radius: 28px;
     border-bottom-right-radius: 28px;
 }
