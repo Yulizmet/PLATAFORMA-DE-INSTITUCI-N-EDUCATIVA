@@ -93,6 +93,16 @@
                     <p class="text-muted mt-3">
                         Accede a tus calificaciones, inscripciones, tutorías y servicios en línea de manera rápida y sencilla.
                     </p>
+
+                    @* <a href="#" class="portal-link"> *@
+                    @*     Ir a Portal → *@
+                    @* </a> *@
+                    
+                    <a class="portal-link"
+                       asp-area="UserMng" asp-controller="Account" asp-action="Login">
+                        <i class="bi bi-briefcase-fill fs-5"></i>
+                        <span>Estudiantes</span>
+                    </a>
                 </div>
             </div>
 
@@ -109,6 +119,12 @@
                     <p class="text-muted mt-3">
                         Gestiona calificaciones, brinda tutorías, organiza servicios sociales y comunícate con estudiantes.
                     </p>
+
+                    <a class="portal-link"
+                       asp-area="UserMng" asp-controller="Account" asp-action="Login">
+                        <i class="bi bi-briefcase-fill fs-5"></i>
+                        <span>Docentes</span>
+                    </a>
                 </div>
             </div>
 
@@ -126,6 +142,15 @@
                         Administra usuarios, procesa trámites y genera reportes de toda la institución.
                     </p>
 
+                    @* <a class="portal-link" *@
+                    @*    asp-area="UserMng" asp-controller="Account" asp-action="Login"> *@
+                    @*     <i class="bi bi-briefcase-fill fs-5"></i> *@
+                    @*     <span>Administrativo</span> *@
+                    @* </a> *@
+                    
+                    <a class="portal-link"
+                       asp-area="UserMng" asp-controller="Account" asp-action="Login">
+                    </a>
                 </div>
             </div>
 
