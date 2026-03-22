@@ -3,84 +3,127 @@
     Layout = "~/Areas/Enrollment/Views/_Layout.cshtml";
 }
 
-<div class="wrapper">
-    <div class="main">
-        <main class="content">
-            <div class="container-fluid p-0">
+<style>
+    .table-custom {
+        border-radius: 10px;
+        overflow: hidden;
+        background: #fff;
+    }
 
-                <h1 class="h3 mb-3">Documentos</h1>
+        .table-custom thead {
+            background: #6B0015;
+            color: #fff;
+        }
 
-                <div class="row">
-                    <div class="col-12">
-                        <div class="card">
+            .table-custom thead th {
+                font-weight: 600;
+                border: none;
+            }
 
-                            <div class="card-header">
-                                <h5 class="card-title mb-0">Documentación</h5>
-                            </div>
+        .table-custom tbody tr {
+            transition: all 0.2s ease;
+        }
 
-                            <div class="card-body">
+            .table-custom tbody tr:hover {
+                background: #ffffff;
+            }
 
-                                <h6 class="mb-3">Entregados</h6>
-                                <div class="table-responsive">
-                                    <table class="table table-bordered table-sm align-middle">
-                                        <thead class="table-light">
-                                            <tr>
-                                                <th>Documento</th>
-                                                <th style="width:140px">Usuario</th>
-                                                <th style="width:140px">Fecha</th>
-                                                <th>Observaciones</th>
-                                                <th style="width:260px">Anexar Documento</th>
-                                                <th style="width:60px" class="text-center">Acción</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody id="tbodyEntregados"></tbody>
-                                    </table>
-                                </div>
+        .table-custom td {
+            vertical-align: middle;
+            border-top: 1px solid #f1f1f1;
+        }
 
-                                <h6 class="mt-4 mb-3">Por Entregar</h6>
-                                <div class="table-responsive">
-                                    <table class="table table-bordered table-sm align-middle">
-                                        <thead class="table-light">
-                                            <tr>
-                                                <th>Documento</th>
-                                                <th style="width:260px">Anexar Documento</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody id="tbodyPorEntregar"></tbody>
-                                    </table>
+    .badge-status {
+        padding: 5px 10px;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
 
+    .badge-ok {
+        background: #198754;
+        color: #fff;
+    }
 
-                                </div>
+    .badge-pendiente {
+        background: #ffc107;
+        color: #000;
+    }
+</style>
 
-                              
+<div class="px-3 px-md-4 mb-4">
+    <div class="mx-auto" style="max-width: 1100px;">
+        <h1 class="h3 mb-3">Documentos</h1>
+        <p class="mb-0 text-secondary">
+            Completa la carga de documentos en cada apartado. Verifica que todos los archivos estén correctos antes de <strong>Continuar</strong>.
+        </p>
 
-                            </div>
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card shadow-sm">
+
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">Documentación</h5>
+                    </div>
+
+                    <div class="card-body">
+
+                        <!-- ALERTA BONITA -->
+                        <div id="alertaDocs" class="alert alert-danger d-none mb-4" role="alert"></div>
+
+                        <!-- ENTREGADOS -->
+                        <h6 class="mb-3">Entregados</h6>
+                        <div class="table-responsive">
+                            <table class="table table-custom table-sm align-middle">
+                                <thead>
+                                    <tr>
+                                        <th>Documento</th>
+                                        <th>Usuario</th>
+                                        <th>Fecha</th>
+                                        <th>Archivo</th>
+                                        <th class="text-center">Acción</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tbodyEntregados"></tbody>
+                            </table>
                         </div>
+
+                        <!-- POR ENTREGAR -->
+                        <h6 class="mt-4 mb-3">Por Entregar</h6>
+                        <div class="table-responsive">
+                            <table class="table table-custom table-sm align-middle">
+                                <thead>
+                                    <tr>
+                                        <th>Documento</th>
+                                        <th>Subir archivo</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tbodyPorEntregar"></tbody>
+                            </table>
+                        </div>
+
                     </div>
                 </div>
-
-                <div class="d-flex justify-content-end">
-                    <button type="button" id="btnContinuar" class="btn btn-primary">
-                        Siguiente
-                    </button>
-                </div>
-
             </div>
-        </main>
+        </div>
+
+        <!-- BOTÓN -->
+        <div class="d-flex justify-content-end mt-4">
+            <button type="button" id="btnContinuar" class="btn btn-primary px-4 py-2">
+                Continuar
+            </button>
+        </div>
     </div>
 </div>
 
-<img id="pdfLogo" src="@Url.Content("~/src/img/icons/ITACE.png")" style="display:none;" alt="logo">
-
 @section Styles {
-    <link href="@Url.Content("~/enrollment/static/css/app.css")" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
 }
 
 @section Scripts {
     <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
-    <script src="@Url.Content("~/enrollment/static/js/app.js")"></script>
+  
 
     <script>
         // URLs de navegación (Razor -> JS) - CON AREA

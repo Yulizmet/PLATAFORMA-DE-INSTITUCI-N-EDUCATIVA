@@ -106,6 +106,8 @@ namespace SchoolManager.Areas.Enrollment.Controllers
         // GET: Enrollment/PreEnrollment/Create
         public IActionResult Create()
         {
+            ViewData["PasoActual"] = 1;
+
             ViewData["IdCareer"] = new SelectList(
                 _context.PreenrollmentCareers, "IdCareer", "name_career");
             ViewData["IdGeneration"] = new SelectList(
@@ -122,6 +124,8 @@ namespace SchoolManager.Areas.Enrollment.Controllers
         {
             if (!ModelState.IsValid)
             {
+                ViewData["PasoActual"] = 1;
+
                 ViewData["IdCareer"] = new SelectList(
                     _context.PreenrollmentCareers, "IdCareer", "name_career", vm.IdCareer);
                 ViewData["IdGeneration"] = new SelectList(
@@ -222,7 +226,7 @@ namespace SchoolManager.Areas.Enrollment.Controllers
             await _context.SaveChangesAsync();
 
             // Redirigir a confirmación mostrando el folio generado
-            return RedirectToAction(nameof(FolioGenerado), new { id = general.IdData });
+            return RedirectToAction(nameof(SubirDocumentos), new { id = general.IdData });
         }
 
         // GET: Enrollment/PreEnrollment/FolioGenerado/5
@@ -408,9 +412,9 @@ namespace SchoolManager.Areas.Enrollment.Controllers
         [HttpGet]
         public IActionResult SubirDocumentos()
         {
+            ViewData["PasoActual"] = 2;
             return View();
         }
-
 
         public class PreenrollmentDocsDto
         {
@@ -433,6 +437,8 @@ namespace SchoolManager.Areas.Enrollment.Controllers
         [HttpGet]
         public IActionResult ConfirmarPreinscripcion()
         {
+            ViewData["PasoActual"] = 3;
+
             ViewData["IdCareer"] = new SelectList(
                 _context.PreenrollmentCareers, "IdCareer", "name_career"
             );
@@ -465,10 +471,12 @@ namespace SchoolManager.Areas.Enrollment.Controllers
                     }
                 }
 
+                ViewData["PasoActual"] = 3;
                 ViewData["IdCareer"] = new SelectList(
                     _context.PreenrollmentCareers, "IdCareer", "name_career", vm?.DatosGenerales?.IdCareer
                 );
                 ViewData["ModoConfirmacion"] = true;
+
                 return View(vm);
             }
 
@@ -481,10 +489,12 @@ namespace SchoolManager.Areas.Enrollment.Controllers
                 Console.WriteLine("=== NO HAY GENERACION ===");
 
                 ModelState.AddModelError("", "No hay generaciones registradas en el sistema.");
+                ViewData["PasoActual"] = 3;
                 ViewData["IdCareer"] = new SelectList(
                     _context.PreenrollmentCareers, "IdCareer", "name_career", vm?.DatosGenerales?.IdCareer
                 );
                 ViewData["ModoConfirmacion"] = true;
+
                 return View(vm);
             }
 
@@ -585,6 +595,7 @@ namespace SchoolManager.Areas.Enrollment.Controllers
                     disease = vm.Otros?.disease ?? false,
                     comment = vm.Otros?.comment
                 };
+                _context.PreenrollmentInfos.Add(info);
 
                 var docs = new preenrollment_docs
                 {
@@ -613,6 +624,12 @@ namespace SchoolManager.Areas.Enrollment.Controllers
                 Console.WriteLine("=== ERROR EN CATCH ===");
                 Console.WriteLine(ex.ToString());
 
+                ViewData["PasoActual"] = 3;
+                ViewData["IdCareer"] = new SelectList(
+                    _context.PreenrollmentCareers, "IdCareer", "name_career", vm?.DatosGenerales?.IdCareer
+                );
+                ViewData["ModoConfirmacion"] = true;
+
                 throw;
             }
         }
@@ -620,6 +637,8 @@ namespace SchoolManager.Areas.Enrollment.Controllers
         [HttpGet]
         public async Task<IActionResult> Finalizar(int id)
         {
+            ViewData["PasoActual"] = 4;
+
             var general = await _context.PreenrollmentGenerals
                 .Include(g => g.Career)
                 .Include(g => g.Person)
