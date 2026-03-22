@@ -29,55 +29,228 @@
     </a>
 </div>
 
+<!-- Filtros de búsqueda -->
+<div class="card mb-3">
+    <div class="card-header">
+        <i class="bi bi-funnel"></i> Filtros de Búsqueda
+    </div>
+    <div class="card-body py-4">
+        <form method="get" action="@Url.Action("Alumnos")" id="filterForm">
+            <div class="row g-3 align-items-end">
+                <!-- Buscar por nombre -->
+                <div class="col-md-4">
+                    <label for="searchName" class="form-label mb-2">Buscar por nombre</label>
+                    <input type="text" 
+                           class="form-control" 
+                           id="searchName" 
+                           name="searchName" 
+                           value="@ViewBag.SearchName"
+                           placeholder="Escribe para buscar...">
+                </div>
+
+                <!-- Filtrar por semestre -->
+                <div class="col-md-3">
+                    <label for="semesterFilter" class="form-label mb-2">Semestre</label>
+                    <select class="form-select" id="semesterFilter" name="semesterFilter">
+                        <option value="">Todos los semestres</option>
+                        @if (ViewBag.Semesters != null)
+                        {
+                            foreach (var semester in ViewBag.Semesters)
+                            {
+                                <option value="@semester" selected="@(ViewBag.SemesterFilter == semester)">@semester</option>
+                            }
+                        }
+                    </select>
+                </div>
+
+                <!-- Filtrar por grupo -->
+                <div class="col-md-3">
+                    <label for="groupFilter" class="form-label mb-2">Grupo</label>
+                    <select class="form-select" id="groupFilter" name="groupFilter">
+                        <option value="">Todos los grupos</option>
+                        @if (ViewBag.Groups != null)
+                        {
+                            foreach (var group in ViewBag.Groups)
+                            {
+                                <option value="@group" selected="@(ViewBag.GroupFilter == group)">@group</option>
+                            }
+                        }
+                    </select>
+                </div>
+
+                <!-- Registros por página -->
+                <div class="col-md-2">
+                    <label for="pageSize" class="form-label mb-2"><i class="bi bi-list-ol"></i> Registros</label>
+                    <select class="form-select" id="pageSize" name="pageSize" onchange="this.form.submit()">
+                        @foreach (var size in new[] { 10, 25, 50, 100 })
+                        {
+                            <option value="@size" selected="@(ViewBag.PageSize == size)">@size</option>
+                        }
+                    </select>
+                </div>
+            </div>
+
+            <div class="row g-3 mt-1">
+                <!-- Botones de acción -->
+                <div class="col-md-12 d-flex gap-2">
+                    <button type="submit" class="btn btn-primary px-4">
+                        <i class="bi bi-search"></i> Buscar
+                    </button>
+                    <a href="@Url.Action("Alumnos")" class="btn btn-secondary px-4">
+                        <i class="bi bi-x-circle"></i> Limpiar
+                    </a>
+                </div>
+            </div>
+
+            <!-- Campos ocultos para preservar el ordenamiento -->
+            <input type="hidden" name="sortBy" value="@ViewBag.CurrentSort" />
+            <input type="hidden" name="sortOrder" value="@ViewBag.CurrentOrder" />
+        </form>
+
+        @if (ViewBag.TotalRecords != null)
+        {
+            <div class="mt-3">
+                <small class="text-muted">
+                    Mostrando @Model.Count() de @ViewBag.TotalRecords alumno(s) asignado(s)
+                </small>
+            </div>
+        }
+    </div>
+</div>
+
 <div class="card">
     <div class="card-body">
         @if (Model.Any())
         {
-            <table class="table">
+            <table class="table ss-table-cards">
                 <thead>
                     <tr>
-                        <th style="width:40%">Nombre</th>
-                        <th class="text-center">Semestre</th>
-                        <th class="text-center">Grupo</th>
-                        <th class="text-center">Fecha de Asignación</th>
-                        <th class="text-center">Bitácoras</th>
-                        <th class="text-center">Acciones</th>
+                        <th style="width:35%">
+                            <a href="@Url.Action("Alumnos", new { 
+                                   sortBy = "name", 
+                                   sortOrder = ViewBag.CurrentSort == "name" ? ViewBag.NextOrder : "asc",
+                                   searchName = ViewBag.SearchName,
+                                   semesterFilter = ViewBag.SemesterFilter,
+                                   groupFilter = ViewBag.GroupFilter,
+                                   page = ViewBag.CurrentPage,
+                                   pageSize = ViewBag.PageSize
+                               })"
+                               class="text-decoration-none text-dark">
+                                NOMBRE
+                                @if (ViewBag.CurrentSort == "name")
+                                {
+                                    <i class="bi bi-@(ViewBag.CurrentOrder == "asc" ? "sort-alpha-down" : "sort-alpha-up")"></i>
+                                }
+                                else
+                                {
+                                    <i class="bi bi-filter text-muted"></i>
+                                }
+                            </a>
+                        </th>
+                        <th class="text-center">
+                            <a href="@Url.Action("Alumnos", new { 
+                                   sortBy = "semester", 
+                                   sortOrder = ViewBag.CurrentSort == "semester" ? ViewBag.NextOrder : "asc",
+                                   searchName = ViewBag.SearchName,
+                                   semesterFilter = ViewBag.SemesterFilter,
+                                   groupFilter = ViewBag.GroupFilter,
+                                   page = ViewBag.CurrentPage,
+                                   pageSize = ViewBag.PageSize
+                               })" 
+                               class="text-decoration-none text-dark">
+                                SEMESTRE
+                                @if (ViewBag.CurrentSort == "semester")
+                                {
+                                    <i class="bi bi-@(ViewBag.CurrentOrder == "asc" ? "sort-down" : "sort-up")"></i>
+                                }
+                                else
+                                {
+                                    <i class="bi bi-filter text-muted"></i>
+                                }
+                            </a>
+                        </th>
+                        <th class="text-center">
+                            <a href="@Url.Action("Alumnos", new { 
+                                   sortBy = "group", 
+                                   sortOrder = ViewBag.CurrentSort == "group" ? ViewBag.NextOrder : "asc",
+                                   searchName = ViewBag.SearchName,
+                                   semesterFilter = ViewBag.SemesterFilter,
+                                   groupFilter = ViewBag.GroupFilter,
+                                   page = ViewBag.CurrentPage,
+                                   pageSize = ViewBag.PageSize
+                               })" 
+                               class="text-decoration-none text-dark">
+                                GRUPO
+                                @if (ViewBag.CurrentSort == "group")
+                                {
+                                    <i class="bi bi-@(ViewBag.CurrentOrder == "asc" ? "sort-down" : "sort-up")"></i>
+                                }
+                                else
+                                {
+                                    <i class="bi bi-filter text-muted"></i>
+                                }
+                            </a>
+                        </th>
+                        <th class="text-center">
+                            <a href="@Url.Action("Alumnos", new { 
+                                   sortBy = "date", 
+                                   sortOrder = ViewBag.CurrentSort == "date" ? ViewBag.NextOrder : "asc",
+                                   searchName = ViewBag.SearchName,
+                                   semesterFilter = ViewBag.SemesterFilter,
+                                   groupFilter = ViewBag.GroupFilter,
+                                   page = ViewBag.CurrentPage,
+                                   pageSize = ViewBag.PageSize
+                               })" 
+                               class="text-decoration-none text-dark">
+                                FECHA DE ASIGNACIÓN
+                                @if (ViewBag.CurrentSort == "date")
+                                {
+                                    <i class="bi bi-@(ViewBag.CurrentOrder == "asc" ? "sort-down" : "sort-up")"></i>
+                                }
+                                else
+                                {
+                                    <i class="bi bi-filter text-muted"></i>
+                                }
+                            </a>
+                        </th>
+                        <th class="text-center">BITÁCORAS</th>
+                        <th class="text-center">ACCIONES</th>
                     </tr>
                 </thead>
                 <tbody>
                     @foreach (var assignment in Model)
                     {
-                        var fullName = $"{assignment.Student.Person.FirstName} {assignment.Student.Person.LastNamePaternal} {assignment.Student.Person.LastNameMaternal}";
+                        var fullName = $"{assignment.Student.Person.LastNamePaternal} {assignment.Student.Person.LastNameMaternal} {assignment.Student.Person.FirstName}";
 
                         <tr>
-                            <td>@fullName</td>
-                            <td class="text-center">
+                            <td data-label="Nombre">@fullName</td>
+                            <td class="text-center" data-label="Semestre">
                                 @if (!string.IsNullOrEmpty(assignment.SemesterName))
                                 {
-                                    <span class="badge bg-primary">@assignment.SemesterName</span>
+                                    @assignment.SemesterName
                                 }
                                 else
                                 {
                                     <span class="text-muted">N/A</span>
                                 }
                             </td>
-                            <td class="text-center">
+                            <td class="text-center" data-label="Grupo">
                                 @if (!string.IsNullOrEmpty(assignment.GroupName))
                                 {
-                                    <span class="badge bg-info">@assignment.GroupName</span>
+                                    @assignment.GroupName
                                 }
                                 else
                                 {
                                     <span class="text-muted">N/A</span>
                                 }
                             </td>
-                            <td class="text-center">@assignment.AssignedDate.ToString("dd/MM/yyyy")</td>
-                            <td class="text-center">
+                            <td class="text-center" data-label="Fecha">@assignment.AssignedDate.ToString("dd/MM/yyyy")</td>
+                            <td class="text-center" data-label="Bitácoras">
                                 <a class="btn btn-sm btn-info" href="/SocialService/Teacher/RevisarBitacorasAlumno/@assignment.StudentId">
                                     <i class="bi bi-journal-text"></i> Revisar
                                 </a>
                             </td>
-                            <td class="text-center">
+                            <td class="text-center" data-label="Acciones">
                                 <form method="post" action="/SocialService/Teacher/DesasignarAlumno" class="desasignar-form" style="display:inline;">
                                     <input type="hidden" name="studentId" value="@assignment.StudentId" />
                                     <input type="hidden" name="studentName" value="@fullName" />
@@ -92,6 +265,118 @@
                     }
                 </tbody>
             </table>
+
+            <!-- Paginación -->
+            @if (ViewBag.TotalPages > 1)
+            {
+                <nav aria-label="Navegación de páginas" class="mt-4">
+                    <ul class="pagination justify-content-center">
+                        <!-- Botón Anterior -->
+                        <li class="page-item @(ViewBag.CurrentPage == 1 ? "disabled" : "")">
+                            <a class="page-link" 
+                               href="@Url.Action("Alumnos", new { 
+                                   page = ViewBag.CurrentPage - 1, 
+                                   sortBy = ViewBag.CurrentSort, 
+                                   sortOrder = ViewBag.CurrentOrder,
+                                   searchName = ViewBag.SearchName,
+                                   semesterFilter = ViewBag.SemesterFilter,
+                                   groupFilter = ViewBag.GroupFilter,
+                                   pageSize = ViewBag.PageSize
+                               })"
+                               aria-label="Anterior">
+                                <span aria-hidden="true">&laquo; Anterior</span>
+                            </a>
+                        </li>
+
+                        @{
+                            int currentPage = ViewBag.CurrentPage;
+                            int totalPages = ViewBag.TotalPages;
+                            int startPage = Math.Max(1, currentPage - 2);
+                            int endPage = Math.Min(totalPages, currentPage + 2);
+
+                            // Mostrar primera página si no está en el rango
+                            if (startPage > 1)
+                            {
+                                <li class="page-item">
+                                    <a class="page-link" 
+                                       href="@Url.Action("Alumnos", new { 
+                                           page = 1, 
+                                           sortBy = ViewBag.CurrentSort, 
+                                           sortOrder = ViewBag.CurrentOrder,
+                                           searchName = ViewBag.SearchName,
+                                           semesterFilter = ViewBag.SemesterFilter,
+                                           groupFilter = ViewBag.GroupFilter,
+                                           pageSize = ViewBag.PageSize
+                                       })">1</a>
+                                </li>
+                                if (startPage > 2)
+                                {
+                                    <li class="page-item disabled">
+                                        <span class="page-link">...</span>
+                                    </li>
+                                }
+                            }
+
+                            // Páginas en el rango
+                            for (int i = startPage; i <= endPage; i++)
+                            {
+                                <li class="page-item @(i == currentPage ? "active" : "")">
+                                    <a class="page-link" 
+                                       href="@Url.Action("Alumnos", new { 
+                                           page = i, 
+                                           sortBy = ViewBag.CurrentSort, 
+                                           sortOrder = ViewBag.CurrentOrder,
+                                           searchName = ViewBag.SearchName,
+                                           semesterFilter = ViewBag.SemesterFilter,
+                                           groupFilter = ViewBag.GroupFilter,
+                                           pageSize = ViewBag.PageSize
+                                       })">@i</a>
+                                </li>
+                            }
+
+                            // Mostrar última página si no está en el rango
+                            if (endPage < totalPages)
+                            {
+                                if (endPage < totalPages - 1)
+                                {
+                                    <li class="page-item disabled">
+                                        <span class="page-link">...</span>
+                                    </li>
+                                }
+                                <li class="page-item">
+                                    <a class="page-link" 
+                                       href="@Url.Action("Alumnos", new { 
+                                           page = totalPages, 
+                                           sortBy = ViewBag.CurrentSort, 
+                                           sortOrder = ViewBag.CurrentOrder,
+                                           searchName = ViewBag.SearchName,
+                                           semesterFilter = ViewBag.SemesterFilter,
+                                           groupFilter = ViewBag.GroupFilter,
+                                           pageSize = ViewBag.PageSize
+                                       })">@totalPages</a>
+                                </li>
+                            }
+                        }
+
+                        <!-- Botón Siguiente -->
+                        <li class="page-item @(ViewBag.CurrentPage >= ViewBag.TotalPages ? "disabled" : "")">
+                            <a class="page-link" 
+                               href="@Url.Action("Alumnos", new { 
+                                   page = ViewBag.CurrentPage + 1, 
+                                   sortBy = ViewBag.CurrentSort, 
+                                   sortOrder = ViewBag.CurrentOrder,
+                                   searchName = ViewBag.SearchName,
+                                   semesterFilter = ViewBag.SemesterFilter,
+                                   groupFilter = ViewBag.GroupFilter,
+                                   pageSize = ViewBag.PageSize
+                               })"
+                               aria-label="Siguiente">
+                                <span aria-hidden="true">Siguiente &raquo;</span>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+            }
         }
         else
         {

@@ -1,149 +1,281 @@
 ﻿@{
-    string currentController = ViewContext.RouteData.Values["controller"]?.ToString() ?? "";
+string ctrl = ViewContext.RouteData.Values["controller"]?.ToString() ?? "";
+string action = ViewContext.RouteData.Values["action"]?.ToString() ?? "";
+string roleParam = ViewContext.HttpContext.Request.Query["role"].ToString();
+
+bool isAdmin = User.IsInRole("Administrator");
+bool isHeadNurse = User.IsInRole("Head Nurse");
+bool isHeadPsych = User.IsInRole("Head of Psychology");
 }
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - SchoolManager</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+    <link rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/SchoolManager.styles.css" asp-append-version="true" />
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
-        body {
-            background-color: #f8f9fa;
-        }
+        body { background-color: #f8f9fa; }
 
         .sidebar {
             background-color: #4D0217 !important;
             min-height: 100vh;
             color: white;
-            padding-top: 2rem;
+            padding-top: 1.5rem;
             z-index: 1000;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
         }
 
-        .burgundy-header {
-            background-color: #4D0217 !important;
+        .sidebar-content { flex: 1; }
+
+        .burgundy-header { background-color: #4D0217 !important; }
+        .burgundy-color  { color: #4D0217 !important; }
+
+        .sidebar .section-title {
+            color: rgba(255,255,255,0.4) !important;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            padding: 0.5rem 1rem 0.25rem;
+            margin-top: 0.5rem;
         }
 
-        .burgundy-color {
-            color: #4D0217 !important;
+        .sidebar .nav-link {
+            color: rgba(255,255,255,0.75) !important;
+            border-left: 4px solid transparent;
+            border-radius: 0;
+            transition: all 0.2s ease;
+            margin-bottom: 2px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 0.6rem 1rem;
+            font-size: 0.9rem;
         }
 
-            .sidebar h5 {
-                color: rgba(255, 255, 255, 0.6) !important;
-                font-size: 0.85rem;
-                text-transform: uppercase;
-                letter-spacing: 1px;
-                padding-left: 1rem;
-            }
-
-            .sidebar .nav-link {
-                color: rgba(255, 255, 255, 0.8) !important;
-                border-left: 4px solid transparent;
-                border-radius: 0;
-                transition: all 0.2s ease;
-                margin-bottom: 5px;
-                display: flex;
-                align-items: center;
-                gap: 10px;
-                padding: 0.75rem 1rem;
-            }
-
-                .sidebar .nav-link:hover {
-                    background-color: rgba(255, 255, 255, 0.1);
-                    color: white !important;
-                }
-
-                .sidebar .nav-link.active-item {
-                    background-color: rgba(255, 255, 255, 0.15) !important;
-                    border-left: 4px solid #ffffff !important;
-                    font-weight: bold;
-                    color: white !important;
-                }
-
-                .sidebar .nav-link i {
-                    font-size: 1.1rem;
-                    width: 25px;
-                }
-
-        .main-content {
-            margin-left: 16.666667%;
+        .sidebar .nav-link:hover {
+            background-color: rgba(255,255,255,0.1);
+            color: white !important;
         }
+
+        .sidebar .nav-link.active-item {
+            background-color: rgba(255,255,255,0.15) !important;
+            border-left: 4px solid #ffffff !important;
+            font-weight: bold;
+            color: white !important;
+        }
+
+        .sidebar .nav-link i { font-size: 1rem; width: 22px; text-align: center; }
+
+        .sidebar .logout-section {
+            border-top: 1px solid rgba(255,255,255,0.15);
+            padding: 0.75rem;
+        }
+
+        .sidebar .btn-logout {
+            color: rgba(255,255,255,0.6) !important;
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 8px;
+            padding: 0.5rem 1rem;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            width: 100%;
+            justify-content: center;
+            background: transparent;
+        }
+
+        .sidebar .btn-logout:hover {
+            background-color: rgba(220, 53, 69, 0.3);
+            border-color: rgba(220, 53, 69, 0.5);
+            color: #ff6b7a !important;
+        }
+
+        .sidebar .user-info {
+            padding: 0.5rem 1rem 0.75rem;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            margin-bottom: 0.5rem;
+        }
+
+        .main-content { margin-left: 16.666667%; }
 
         @@media (max-width: 767.98px) {
-            .sidebar {
-                position: relative;
-                min-height: auto;
-            }
-
-            .main-content {
-                margin-left: 0;
-            }
+            .sidebar { position: relative; min-height: auto; }
+            .main-content { margin-left: 0; }
         }
     </style>
 </head>
 <body>
 
-    <div class="container-fluid">
-        <div class="row">
-            <nav class="col-md-3 col-lg-2 d-md-block sidebar shadow-lg position-fixed">
-                <div class="position-sticky">
-                    <div class="text-center mb-4">
-                        <i class="bi bi-person-fill-gear fs-1 text-white opacity-50"></i>
-                        @* <div class="text-white fw-bold mt-2">Sistema Integral Escolar </div> *@
-                    </div>
+<div class="container-fluid">
+    <div class="row">
 
-                    <h5 class="mb-3">Gestión de Cuentas</h5>
+        <nav class="col-md-3 col-lg-2 d-md-block sidebar shadow-lg position-fixed">
 
-                    <ul class="nav flex-column">
+            <!-- ── Sidebar Content ── -->
+            <div class="sidebar-content">
 
-                        <li class="nav-item">
-                            <a class="nav-link @(currentController == "ProcedureAreas" ? "active-item" : "")"
-                               asp-area="UserMng" asp-controller="Manager" asp-action="StudentCrud">
-                                <i class="bi bi-people-fill fs-5"></i>
-                                <span>Usuarios</span>
-                            </a>
-                        </li>
-
-                        <li class="nav-item">
-                            <a class="nav-link @(currentController == "DocumentsCatalog" ? "active-item" : "")"
-                               asp-area="UserMng" asp-controller="Teachers" asp-action="Index">
-                                <i class="bi bi-briefcase-fill fs-5"></i>
-                                <span>Maestros</span>
-                            </a>
-                        </li>
-                        
-                        <li class="nav-item">
-                            <a class="nav-link @(string.Equals(currentController, "Dashboard", StringComparison.OrdinalIgnoreCase) ? "active-item" : "")"
-                               asp-area="UserMng" asp-controller="Manager" asp-action="Test">
-                                <i class="bi bi-clipboard-data"></i>
-                                <span>Panel de control</span>
-                            </a>
-                        </li>
-
-                    </ul>
+                <!-- Logo -->
+                <div class="text-center mb-2">
+                    <i class="bi bi-person-fill-gear fs-1 text-white opacity-50"></i>
                 </div>
-            </nav>
 
-            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 py-4 main-content">
-                @RenderBody()
+                <!-- User Info -->
+                <div class="user-info text-center">
+                    <small class="text-white-50 d-block">Sesión iniciada como</small>
+                    <span class="text-white fw-bold small">
+                        @User.Identity?.Name
+                    </span>
+                </div>
 
-                @* <footer class="pt-5 pb-4 text-muted small text-center">
-                    &copy; 2026 - SchoolManager - <a asp-area="" asp-page="/Privacy" class="text-decoration-none text-muted">Privacy</a>
-                </footer> *@
-            </main>
-        </div>
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <a class="nav-link @(ctrl == "Manager" && action == "Index" ? "active-item" : "")"
+                           asp-area="UserMng" asp-controller="Manager" asp-action="Index">
+                            <i class="bi bi-clipboard-data"></i>
+                            <span>Panel de Control</span>
+                        </a>
+                    </li>
+
+                    @if (isAdmin)
+                    {
+                    <div class="section-title">Académico</div>
+
+                    <li class="nav-item">
+                        <a class="nav-link @(ctrl == "Students" ? "active-item" : "")"
+                           asp-area="UserMng" asp-controller="Students" asp-action="Index">
+                            <i class="bi bi-mortarboard-fill"></i>
+                            <span>Alumnos</span>
+                        </a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link @(ctrl == "Teachers" ? "active-item" : "")"
+                           asp-area="UserMng" asp-controller="Teachers" asp-action="Index">
+                            <i class="bi bi-briefcase-fill"></i>
+                            <span>Maestros</span>
+                        </a>
+                    </li>
+                    }
+                    
+                    @if (isAdmin || isHeadNurse || isHeadPsych)
+                    {
+                    <div class="section-title">Área Médica</div>
+
+                    @if (isAdmin || isHeadNurse)
+                    {
+                    <li class="nav-item">
+                        <a class="nav-link @(ctrl == "Manager" && roleParam == "Nurse" ? "active-item" : "")"
+                           asp-area="UserMng" asp-controller="Manager" asp-action="Users"
+                           asp-route-role="Nurse">
+                            <i class="bi bi-heart-pulse-fill"></i>
+                            <span>Enfermeras</span>
+                        </a>
+                    </li>
+                    }
+
+                    @if (isAdmin || isHeadPsych)
+                    {
+                    <li class="nav-item">
+                        <a class="nav-link @(ctrl == "Manager" && roleParam == "Psychologist" ? "active-item" : "")"
+                           asp-area="UserMng" asp-controller="Manager" asp-action="Users"
+                           asp-route-role="Psychologist">
+                            <i class="bi bi-brain"></i>
+                            <span>Psicólogos</span>
+                        </a>
+                    </li>
+                    }
+                    }
+
+                    @if (isAdmin)
+                    {
+                    <div class="section-title">Sistema</div>
+
+                    <li class="nav-item">
+                        <a class="nav-link @(ctrl == "Manager" && roleParam == "Head Nurse" ? "active-item" : "")"
+                           asp-area="UserMng" asp-controller="Manager" asp-action="Users"
+                           asp-route-role="Head Nurse">
+                            <i class="bi bi-hospital-fill"></i>
+                            <span>Jefes de Enfermería</span>
+                        </a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link @(ctrl == "Manager" && roleParam == "Head of Psychology" ? "active-item" : "")"
+                           asp-area="UserMng" asp-controller="Manager" asp-action="Users"
+                           asp-route-role="Head of Psychology">
+                            <i class="bi bi-clipboard2-pulse-fill"></i>
+                            <span>Jefes de Psicología</span>
+                        </a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link @(ctrl == "Manager" && roleParam == "Administrator" ? "active-item" : "")"
+                           asp-area="UserMng" asp-controller="Manager" asp-action="Users"
+                           asp-route-role="Administrator">
+                            <i class="bi bi-shield-lock-fill"></i>
+                            <span>Administradores</span>
+                        </a>
+                    </li>
+                    }
+
+                </ul>
+            </div>
+
+            <div class="logout-section">
+                <form asp-area="UserMng" asp-controller="Account" asp-action="Logout" method="post"
+                      id="logoutForm">
+                    @Html.AntiForgeryToken()
+                    <button type="button" class="btn-logout" onclick="confirmLogout()">
+                        <i class="bi bi-box-arrow-left"></i>
+                        <span>Cerrar Sesión</span>
+                    </button>
+                </form>
+            </div>
+
+        </nav>
+
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 py-4 main-content">
+            @RenderBody()
+        </main>
+
     </div>
+</div>
 
-    <script src="~/lib/jquery/dist/jquery.min.js"></script>
-    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script src="~/js/autocomplete.js"></script>
-    <script src="~/js/site.js" asp-append-version="true"></script>
-    @await RenderSectionAsync("Scripts", required: false)
+<script src="~/lib/jquery/dist/jquery.min.js"></script>
+<script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="~/js/autocomplete.js"></script>
+<script src="~/js/site.js" asp-append-version="true"></script>
+
+<script>
+    async function confirmLogout() {
+        const result = await Swal.fire({
+            title: '¿Cerrar sesión?',
+            text: 'Tu sesión actual se cerrará.',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#dc3545',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: '<i class="bi bi-box-arrow-left me-1"></i>Sí, salir',
+            cancelButtonText: 'Cancelar',
+            reverseButtons: true
+        });
+
+        if (result.isConfirmed) {
+            document.getElementById('logoutForm').submit();
+        }
+    }
+</script>
+
+@await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

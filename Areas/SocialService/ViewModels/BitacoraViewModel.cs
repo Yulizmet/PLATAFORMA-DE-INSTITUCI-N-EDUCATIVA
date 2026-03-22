@@ -1,10 +1,12 @@
 using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Http;
 
 namespace SchoolManager.Areas.SocialService.ViewModels
 {
     public class BitacoraViewModel
     {
         [Required(ErrorMessage = "La semana es obligatoria")]
+        [RegularExpression(@"^\d+$", ErrorMessage = "Solo se permiten números")]
         [Display(Name = "Semana")]
         public string Week { get; set; }
 
@@ -24,5 +26,10 @@ namespace SchoolManager.Areas.SocialService.ViewModels
 
         [Display(Name = "Observaciones")]
         public string? Observations { get; set; }
+
+        [Display(Name = "Archivo PDF")]
+        public IFormFile? PdfFile { get; set; }
+
+        public string? ExistingPdfFileName { get; set; }
     }
 }
