@@ -11,15 +11,15 @@
 
     <!-- Prácticas -->
     <div class="col-md-6">
-        <div class="card border-primary mb-3">
-            <div class="card-header bg-primary text-white">
+        <div class="card border-secondary mb-3">
+            <div class="card-header text-white">
                 <h5 class="mb-0"><i class="bi bi-briefcase-fill"></i> Prácticas Profesionales</h5>
             </div>
             <div class="card-body">
                 <div class="row mb-3">
                     <div class="col-6">
                         <p class="mb-1"><strong>Horas requeridas:</strong></p>
-                        <h4 class="text-primary">@ViewBag.RequiredHoursPracticas h</h4>
+                        <h4 class="text-warning">@ViewBag.RequiredHoursPracticas h</h4>
                     </div>
                     <div class="col-6">
                         <p class="mb-1"><strong>Horas realizadas:</strong></p>
@@ -30,7 +30,7 @@
                 <p><strong>Horas faltantes:</strong> <span class="badge bg-warning">@ViewBag.RemainingHoursPracticas h</span></p>
 
                 <div class="progress mb-2" style="height: 25px;">
-                    <div class="progress-bar bg-primary"
+                    <div class="progress-bar bg-success"
                          role="progressbar"
                          style="width: @ViewBag.PercentagePracticas%"
                          aria-valuenow="@ViewBag.PercentagePracticas"
@@ -52,15 +52,15 @@
 
     <!-- Servicio Social -->
     <div class="col-md-6">
-        <div class="card border-success mb-3">
-            <div class="card-header bg-success text-white">
+        <div class="card border-secondary mb-3">
+            <div class="card-header text-white">
                 <h5 class="mb-0"><i class="bi bi-heart-fill"></i> Servicio Social</h5>
             </div>
             <div class="card-body">
                 <div class="row mb-3">
                     <div class="col-6">
                         <p class="mb-1"><strong>Horas requeridas:</strong></p>
-                        <h4 class="text-success">@ViewBag.RequiredHoursServicioSocial h</h4>
+                        <h4 class="text-warning">@ViewBag.RequiredHoursServicioSocial h</h4>
                     </div>
                     <div class="col-6">
                         <p class="mb-1"><strong>Horas realizadas:</strong></p>

@@ -130,22 +130,28 @@ namespace SchoolManager.Areas.UserMng.Controllers
         
         private IActionResult RedirectByRole(ClaimsPrincipal principal)
         {
-            return RedirectToAction("SistemaEscolar", "MainScreen", new { area = "MainScreen" });
+            return RedirectToAction("Index", "MainScreen", new { area = "MainScreen" });
 
             if (principal.IsInRole("Administrator"))
-            {
-                return RedirectToAction("Index", "Teachers", new { area = "MainScreen" });
-            }
+                return RedirectToAction("Index", "Manager", new { area = "UserMng" });
+
+            if (principal.IsInRole("Head Nurse"))
+                return RedirectToAction("Users", "Manager", new { area = "UserMng", role = "Nurse" });
+
+            if (principal.IsInRole("Head of Psychology"))
+                return RedirectToAction("Users", "Manager", new { area = "UserMng", role = "Psychologist" });
 
             if (principal.IsInRole("Teacher"))
-            {
                 return RedirectToAction("Index", "Teachers", new { area = "UserMng" });
-            }
+
+            if (principal.IsInRole("Nurse"))
+                return RedirectToAction("Index", "Home"); // RAMOS actualiza cuando tengas tu vista
+
+            if (principal.IsInRole("Psychologist"))
+                return RedirectToAction("Index", "Home"); // RAMOS actualiza cuando tengas tu vista
 
             if (principal.IsInRole("Student"))
-            {
                 return RedirectToAction("SistemaEscolar", "MainScreen", new { area = "MainScreen" });
-            }
 
             return RedirectToAction("Login", "Account", new { area = "UserMng" });
         }

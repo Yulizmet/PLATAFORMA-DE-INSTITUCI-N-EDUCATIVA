@@ -31,11 +31,13 @@
             <form asp-area="SocialService"
                   asp-controller="Student"
                   asp-action="CrearBitacora"
-                  method="post">
+                  method="post"
+                  enctype="multipart/form-data">
 
                 <div class="mb-4 form-group-inline">
                     <label asp-for="Week" class="form-label">Semana</label>
-                    <input asp-for="Week" class="form-control input-small" />
+                    <input asp-for="Week" type="number" min="1" class="form-control input-small" />
+                    <span asp-validation-for="Week" class="text-danger"></span>
                 </div>
 
                 <div class="mb-4">
@@ -60,6 +62,13 @@
                 <div class="mb-4">
                     <label asp-for="Observations"></label>
                     <textarea asp-for="Observations" class="form-control textarea-large"></textarea>
+                </div>
+
+                <div class="mb-4">
+                    <label asp-for="PdfFile" class="form-label">
+                        <i class="bi bi-file-earmark-pdf me-1"></i> Archivo PDF (opcional, máx. 10 MB)
+                    </label>
+                    <input asp-for="PdfFile" type="file" class="form-control" accept=".pdf" />
                 </div>
 
                 <button type="submit" class="btn-primary">

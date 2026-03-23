@@ -24,7 +24,7 @@ body {
     /*font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;*/
 }
 
-/* ===== FUENTE INTER PARA SUBTÍTULOS Y TEXTO SECUNDARIO ===== */
+/*FUENTE INTER*/
 
 .sistema-subtitle,
 .users-subtitle,
@@ -48,7 +48,7 @@ p {
     font-weight: 300;
 }
 
-/* ====== PALETA ====== */
+/*PALETA DE COLORES*/
 :root {
     --rojo-principal: #8C1B1B;
     --rojo-claro: #D42D2D;
@@ -70,7 +70,7 @@ p {
     border-radius: 28px;
 }
 
-/* ===== BOTONES ===== */
+/* BTNS*/
 .btn-hero-primary {
     background-color: white;
     color: var(--rojo-principal);
@@ -91,7 +91,7 @@ p {
         color: var(--rojo-principal);
     }
 
-/* ===== CARD TRANSPARENTE ===== */
+/* CARD*/
 .hero-card {
     background: rgba(255,255,255,0.1);
     border-radius: 20px;
@@ -99,7 +99,7 @@ p {
     backdrop-filter: blur(10px);
 }
 
-/* ===== SECCI�N USUARIOS ===== */
+/* USUARIOS */
 
 .users-section {
     background-color: #f3f3f3;
@@ -120,7 +120,7 @@ p {
     margin: 0 auto;
 }
 
-/* ===== CARDS ===== */
+/*CARDS 2*/
 
 .user-card {
     background: white;
@@ -135,27 +135,14 @@ p {
         transform: translateY(-5px);
     }
 
-/* Bordes superiores personalizados */
-.border-estudiantes {
-    border-top: 5px solid #8C1B1B;
-}
-
-.border-docentes {
-    border-top: 5px solid #D42D2D;
-}
-
-.border-admin {
-    border-top: 5px solid #B1A596;
-}
-
-/* T�tulos card */
+/* TIT CARDS */
 .user-card h4 {
     font-family: 'Merriweather', serif;
     font-weight: 700;
     margin-top: 15px;
 }
 
-/* Bot�n link */
+/* BTN LINK*/
 .portal-link {
     color: #8C1B1B;
     font-weight: 600;
@@ -176,7 +163,7 @@ p {
     margin-bottom: 15px;
 }
 
-/* Colores suaves de fondo */
+/* COLORES GLASS */
 .icon-estudiantes {
     background-color: rgba(140, 27, 27, 0.1);
     color: #8C1B1B;
@@ -197,7 +184,7 @@ p {
 }
 
 
-/* ===== CTA SECTION ===== */
+/*CTA SECTION  */
 .cta-section {
     background: linear-gradient(135deg, var(--rojo-principal), var(--rojo-oscuro));
     color: white;
@@ -227,7 +214,7 @@ p {
     box-shadow: 0 20px 50px rgba(0,0,0,0.08);
 }
 
-/* ===== SISTEMA ESCOLAR ===== */
+/*SISTEMA ESCOLAR*/
 
 .sistema-section {
     padding: 120px 0;
@@ -248,13 +235,13 @@ p {
     margin: 0 auto;
 }
 
-/* Centrar cards y limitar ancho */
+
 .sistema-section .row {
     max-width: 1100px;
     margin: 0 auto;
 }
 
-/* ===== CARD BASE ===== */
+/*CARD BASE  */
 
 .sistema-card {
     background-color: #ffffff;
@@ -265,17 +252,17 @@ p {
     height: 100%;
 }
 
+
     .sistema-card:hover {
         transform: translateY(-8px);
     }
 
-    /* Quitar focus azul del navegador */
     .sistema-card:focus,
     .sistema-card:active {
         outline: none;
     }
 
-/* ===== BORDES SUPERIORES ===== */
+/* BTN SUP*/
 
 .border-calificaciones {
     border-top: 8px solid #D42D2D;
@@ -285,7 +272,7 @@ p {
     border-top: 8px solid #B1A596;
 }
 
-/* ===== ICONOS ===== */
+/* ICONS */
 
 .sistema-icon {
     width: 70px;
@@ -311,7 +298,7 @@ p {
     font-size: 28px;
 }
 
-/* ===== BOTONES ===== */
+
 
 /* Calificaciones */
 .btn-calificaciones {
@@ -343,7 +330,7 @@ p {
         color: white;
     }
 
-/*============ PROCEDURES ===========*/
+/* PROCEDURES */
 #bulkActionsBar {
     background-color: #4a0700 !important;
     border: 1px solid rgba(255, 255, 255, 0.2);
@@ -375,7 +362,7 @@ p {
     background-color: #8C1B1B !important;
 }
 
-/* ===== ADMIN FORO ===== */
+/*ADMIN FORO */
 
 .admin-section {
     padding: 100px 0;
@@ -409,7 +396,7 @@ p {
     box-shadow: 0 15px 40px rgba(0,0,0,0.07);
 }
 
-/* ===== BOTONES DE DISEÑO ===== */
+/* BTN DIS*/
 
 .design-buttons {
     display: flex;
@@ -438,7 +425,7 @@ p {
         border-color: #8C1B1B;
     }
 
-/* ===== ESTILOS DE VISTA PREVIA ===== */
+/* VISTA PREVIA*/
 
 .preview-card {
     border-radius: 20px;
@@ -477,4 +464,273 @@ p {
     display: flex;
     flex-direction: column;
     border-left: 6px solid #D42D2D;
+}
+
+/* FORO PUBLICO */
+
+.preview-card {
+    height: auto;
+    overflow: hidden;
+}
+
+    .preview-card img {
+        width: 100%;
+        height: auto;
+        border-radius: 12px;
+        margin-bottom: 15px;
+        display: block;
+    }
+
+    .preview-card h3,
+    .preview-card h2,
+    .preview-card h4 {
+        margin-bottom: 10px;
+    }
+
+.foro-post {
+    margin-bottom: 40px;
+}
+
+html {
+    font-size: 14px;
+}
+
+@media (min-width: 768px) {
+    html {
+        font-size: 16px;
+    }
+}
+
+.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
+    box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
+}
+
+html {
+    position: relative;
+    min-height: 100%;
+}
+
+body {
+    background-color: #f3f3f3;
+    margin-bottom: 60px;
+    font-family: 'Merriweather', serif;
+}
+
+/* PALETA MEJORADA GLASS */
+:root {
+    --guindo-principal: #5A0A0A;
+    --guindo-profundo: #3B0505;
+    --rojo-principal: #D42D2D;
+    --rojo-claro: #F04A4A;
+    --beige: #B1A596;
+}
+
+/* TIPOGRAFÍA*/
+
+.sistema-subtitle,
+.users-subtitle,
+.text-muted,
+.user-card p,
+.sistema-card p,
+.footer-custom p,
+.small-text {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+h1 {
+    font-weight: 900;
+}
+
+h2 {
+    font-weight: 700;
+}
+
+p {
+    font-weight: 300;
+}
+
+
+.navbar-custom {
+    background-color: var(--guindo-principal);
+}
+
+
+.hero-section {
+    background: linear-gradient(135deg, var(--guindo-principal), var(--rojo-principal));
+    color: white;
+    padding: 100px 0;
+    border-radius: 28px;
+}
+
+/* BOTONES*/
+
+.btn-hero-primary {
+    background-color: white;
+    color: var(--guindo-principal);
+    font-weight: 600;
+}
+
+    .btn-hero-primary:hover {
+        background-color: #f2f2f2;
+    }
+
+.btn-hero-outline {
+    border: 2px solid white;
+    color: white;
+}
+
+    .btn-hero-outline:hover {
+        background-color: white;
+        color: var(--guindo-principal);
+    }
+
+/* USUARIOS */
+
+.users-section {
+    background-color: #f3f3f3;
+    padding: 120px 0;
+}
+
+.users-title {
+    font-size: 42px;
+    font-weight: 700;
+}
+
+.users-subtitle {
+    font-size: 18px;
+    color: #6b7280;
+}
+
+/* USUARIOS CARD */
+
+.user-card,
+.sistema-card {
+    border-radius: 22px;
+    padding: 35px;
+    box-shadow: 0 15px 40px rgba(0,0,0,0.06);
+    transition: 0.3s ease;
+    height: 100%;
+    border: 1px solid transparent;
+}
+
+    .user-card:hover,
+    .sistema-card:hover {
+        transform: translateY(-6px);
+    }
+
+/*GLASS COLOR PALET CARDS*/
+
+/* GUINDO */
+.border-estudiantes {
+    background-color: rgba(90, 10, 10, 0.15);
+    border: 1px solid rgba(90, 10, 10, 0.4);
+}
+
+/* ROJO */
+.border-docentes,
+.border-calificaciones {
+    background-color: rgba(212, 45, 45, 0.15);
+    border: 1px solid rgba(212, 45, 45, 0.4);
+}
+
+/* BEIGE */
+.border-admin,
+.border-servicio {
+    background-color: rgba(177, 165, 150, 0.25);
+    border: 1px solid rgba(177, 165, 150, 0.45);
+}
+
+.icon-box {
+    width: 60px;
+    height: 60px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 15px;
+}
+
+/* GUINDO */
+.icon-estudiantes {
+    background-color: rgba(255,255,255,0.8);
+    color: var(--guindo-principal);
+}
+
+/* ROJO */
+.icon-docentes,
+.icon-calificaciones {
+    background-color: rgba(255,255,255,0.8);
+    color: var(--rojo-principal);
+}
+
+/* BEIGE */
+.icon-admin,
+.icon-servicio {
+    background-color: rgba(255,255,255,0.8);
+    color: var(--guindo-principal);
+}
+
+
+
+.btn-calificaciones {
+    background-color: var(--rojo-principal);
+    color: white;
+    border-radius: 8px;
+}
+
+    .btn-calificaciones:hover {
+        background-color: var(--guindo-principal);
+    }
+
+.btn-servicio {
+    background-color: var(--beige);
+    color: white;
+}
+
+    .btn-servicio:hover {
+        background-color: var(--guindo-principal);
+    }
+
+/* SISTEMA  */
+
+.sistema-section {
+    padding: 120px 0;
+    background-color: #f3f3f3;
+}
+
+.sistema-title {
+    font-size: 40px;
+    font-weight: 700;
+}
+
+/*ADMIN*/
+
+.admin-section {
+    padding: 100px 0;
+}
+
+.admin-card {
+    background: white;
+    border-radius: 20px;
+    padding: 50px;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.08);
+}
+
+/*FORO*/
+
+.preview-card {
+    background: white;
+    border-radius: 20px;
+    padding: 40px;
+    box-shadow: 0 15px 40px rgba(0,0,0,0.07);
+}
+
+    .preview-card img {
+        width: 100%;
+        border-radius: 12px;
+        margin-bottom: 15px;
+    }
+
+.foro-post {
+    margin-bottom: 40px;
 }
