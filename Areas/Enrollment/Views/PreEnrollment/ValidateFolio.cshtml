@@ -1,0 +1,67 @@
+﻿@{
+    ViewData["Title"] = "Validar folio";
+    Layout = "~/Areas/Enrollment/Views/_LayoutMatricula.cshtml";
+}
+
+<div class="flex items-center min-h-screen p-6 bg-gray-50">
+    <div class="flex-1 h-full max-w-4xl mx-auto overflow-hidden bg-white rounded-lg shadow-xl">
+        <div class="flex flex-col overflow-y-auto md:flex-row">
+
+            <div class="h-32 md:h-auto md:w-1/2">
+                <img aria-hidden="true"
+                     class="object-cover w-full h-full"
+                     src="~/enrollment/user/public/assets/img/login-office.jpeg"
+                     alt="Office" />
+            </div>
+
+            <div class="flex items-center justify-center p-6 sm:p-12 md:w-1/2">
+                <div class="w-full">
+
+                    <h1 class="mb-4 text-xl font-semibold text-gray-700">¡Bienvenido!</h1>
+
+                    <p class="mb-4 text-sm text-gray-600">
+                        Para terminar tu perfil ingresa el <strong>Folio de Preinscripción</strong>
+                        que se te proporcionó al inicio de tu registro.
+                    </p>
+
+                    <!-- FORMULARIO REAL -->
+                    <form asp-action="ValidateFolio"
+                          asp-controller="PreEnrollment"
+                          asp-area="Enrollment"
+                          method="post">
+
+                        @Html.AntiForgeryToken()
+
+                        <div asp-validation-summary="All" class="text-red-600 mb-3"></div>
+
+                        <label class="block text-sm">
+                            <span class="text-gray-700">Folio</span>
+
+                            <input name="folio"
+                                   type="text"
+                                   class="block w-full mt-1 text-sm border-gray-300 bg-white focus:border-purple-400 focus:outline-none focus:shadow-outline-purple text-gray-700 form-input"
+                                   placeholder="Ingresa tu folio" />
+                        </label>
+
+                        <button type="submit"
+                                class="block w-full px-4 py-2 mt-4 text-sm font-medium leading-5 text-center text-white transition-colors duration-150 border border-transparent rounded-lg focus:outline-none"
+                                style="background-color: #4D0218;"
+                                onmouseover="this.style.backgroundColor='#3a0112'"
+                                onmouseout="this.style.backgroundColor='#4D0218'">
+                            Continuar
+                        </button>
+
+                    </form>
+
+                    <hr class="my-8" />
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
+</div>
