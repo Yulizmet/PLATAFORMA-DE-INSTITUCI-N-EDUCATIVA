@@ -1,7 +1,22 @@
 ﻿@model IEnumerable<SchoolManager.Models.users_user>
-
 @{
     ViewData["Title"] = "Directorio de Alumnos";
+    
+    // 1. Obtenemos el rol del usuario (Asegúrate de que tu controlador envíe ViewBag.RoleId = LoggedRoleId;)
+    int roleId = ViewBag.RoleId ?? 0;
+
+    // 2. Lógica para extraer el nombre del grupo si es un maestro
+    var dictGruposCabecera = ViewBag.Grupos as Dictionary<int, string> ?? new Dictionary<int, string>();
+    string nombreMiGrupo = "Cargando grupo...";
+    
+    if (roleId == 2 && Model != null && Model.Any())
+    {
+        int primerId = Model.First().UserId;
+        if (dictGruposCabecera.ContainsKey(primerId))
+        {
+            nombreMiGrupo = dictGruposCabecera[primerId];
+        }
+    }
 }
 
 <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
@@ -129,41 +144,57 @@
 
     <div class="card border-0 shadow-sm mb-5" style="border-left: 6px solid #620900 !important; border-radius: 10px;">
         <div class="card-body p-4">
-            <form class="row g-3 align-items-end" method="get" asp-action="ListaDeAlumnos">
-                <div class="col-md-4">
-                    <label class="form-label fw-bold text-dark">Grado</label>
-                    <select class="form-select shadow-sm" name="grado" style="border-color: #ddd;">
-                        <option value="">Todos los grados...</option>
-                        @if (ViewBag.GradosDisponibles != null)
-                        {
-                            foreach (int gradoDb in ViewBag.GradosDisponibles)
+            
+            @if (roleId == 3)
+            {
+                <form class="row g-3 align-items-end" method="get" asp-action="ListaDeAlumnos">
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold text-dark">Grado</label>
+                        <select class="form-select shadow-sm" name="grado" style="border-color: #ddd;">
+                            <option value="">Todos los grados...</option>
+                            @if (ViewBag.GradosDisponibles != null)
                             {
-                                <option value="@gradoDb" selected="@(ViewBag.GradoSeleccionado == gradoDb)">@gradoDb</option>
+                                foreach (int gradoDb in ViewBag.GradosDisponibles)
+                                {
+                                    <option value="@gradoDb" selected="@(ViewBag.GradoSeleccionado == gradoDb)">@gradoDb</option>
+                                }
                             }
-                        }
-                    </select>
-                </div>
+                        </select>
+                    </div>
 
-                <div class="col-md-5">
-                    <label class="form-label fw-bold text-dark">Grupo</label>
-                    <select class="form-select shadow-sm" name="grupo" style="border-color: #ddd;">
-                        <option value="">Todos los grupos...</option>
-                        @if (ViewBag.GruposDisponibles != null)
-                        {
-                            foreach (string grupoDb in ViewBag.GruposDisponibles)
+                    <div class="col-md-5">
+                        <label class="form-label fw-bold text-dark">Grupo</label>
+                        <select class="form-select shadow-sm" name="grupo" style="border-color: #ddd;">
+                            <option value="">Todos los grupos...</option>
+                            @if (ViewBag.GruposDisponibles != null)
                             {
-                                <option value="@grupoDb" selected="@(ViewBag.GrupoSeleccionado == grupoDb)">@grupoDb</option>
+                                foreach (string grupoDb in ViewBag.GruposDisponibles)
+                                {
+                                    <option value="@grupoDb" selected="@(ViewBag.GrupoSeleccionado == grupoDb)">@grupoDb</option>
+                                }
                             }
-                        }
-                    </select>
-                </div>
+                        </select>
+                    </div>
 
-                <div class="col-md-3">
-                    <button type="submit" class="btn w-100 fw-bold shadow-sm" style="background-color: #A89B8C; color: white;">
-                        <i class="bi bi-funnel-fill"></i> Filtrar Lista
-                    </button>
+                    <div class="col-md-3">
+                        <button type="submit" class="btn w-100 fw-bold shadow-sm" style="background-color: #A89B8C; color: white;">
+                            <i class="bi bi-funnel-fill"></i> Filtrar Lista
+                        </button>
+                    </div>
+                </form>
+            }
+            else if (roleId == 2)
+            {
+                <div class="row g-3 align-items-end">
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold" style="color: #620900;"><i class="bi bi-person-video3 me-2"></i>Mi Grupo Asignado</label>
+                        <input type="text" class="form-control shadow-sm bg-light fw-bold" value="@nombreMiGrupo" readonly disabled style="border-color: #ddd; color: #555;">
+                    </div>
+                    @* <div class="col-md-6 text-muted small pb-2">
+                        <i class="bi bi-info-circle-fill me-1"></i> Visualizando únicamente a los alumnos bajo tu tutoría.
+                    </div> *@
                 </div>
-            </form>
+            }
 
             @if (ViewBag.MensajeFiltro != null)
             {

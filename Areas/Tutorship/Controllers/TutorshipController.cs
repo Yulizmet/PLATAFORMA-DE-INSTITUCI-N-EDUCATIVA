@@ -210,28 +210,57 @@ namespace SchoolManager.Areas.Tutorship.Controllers
 
         public async Task<IActionResult> VerEntrevistaAlumno(int id)
         {
-            if (LoggedRoleId != 2) return RedirectToAction(nameof(AccesoDenegado));
+            if (LoggedRoleId != 2 && LoggedRoleId != 3) return RedirectToAction("AccesoDenegado");
             ViewBag.RoleId = LoggedRoleId;
 
-
-            bool esTutor = await _context.Tutorships.AnyAsync(t => t.StudentId == id && t.TeacherId == LoggedUserId);
-            if (!esTutor)
+            if (LoggedRoleId == 2)
             {
-                TempData["Mensaje"] = "Acceso denegado: Este alumno no pertenece a tu grupo de tutoría.";
-                return RedirectToAction(nameof(ListaDeAlumnos));
+                bool esTutor = await _context.Tutorships.AnyAsync(t => t.StudentId == id && t.TeacherId == LoggedUserId);
+                if (!esTutor)
+                {
+                    TempData["Mensaje"] = "Acceso denegado: Este alumno no pertenece a tu grupo de tutoría.";
+                    return RedirectToAction("ListaDeAlumnos");
+                }
             }
 
+            
             var entrevista = await _context.TutorshipInterviews
                 .Include(e => e.Answers)
-                .Include(e => e.Student)
-                .ThenInclude(s => s.Person)
                 .FirstOrDefaultAsync(e => e.StudentId == id);
 
             if (entrevista == null)
             {
                 TempData["Mensaje"] = "Este alumno aún no ha llenado su entrevista inicial.";
-                return RedirectToAction(nameof(ListaDeAlumnos));
+                return RedirectToAction("ListaDeAlumnos");
             }
+
+            var alumno = await _context.Users
+                .Include(u => u.Person)
+                .FirstOrDefaultAsync(u => u.UserId == id);
+
+            
+            entrevista.Student = alumno;
+
+            
+            ViewBag.FotoPerfil = (entrevista.FilePath != null && entrevista.FilePath != "Sin archivo")
+                                 ? entrevista.FilePath
+                                 : "";
+
+            
+            var matriculaAlumno = await _context.PreenrollmentGenerals
+                .Where(p => p.UserId == id)
+                .Select(p => p.Matricula)
+                .FirstOrDefaultAsync();
+
+            ViewBag.Matricula = matriculaAlumno ?? "";
+
+            var inscripcion = await _context.grades_Enrollments
+                .Include(e => e.Group)
+                .FirstOrDefaultAsync(e => e.StudentId == id);
+
+            ViewBag.Grupo = inscripcion?.Group != null
+                            ? $"Grado {inscripcion.Group.GradeLevelId} Grupo {inscripcion.Group.Name}"
+                            : "";
 
             return View("~/Areas/Tutorship/Views/DetalleEntrevista.cshtml", entrevista);
         }
@@ -381,15 +410,30 @@ namespace SchoolManager.Areas.Tutorship.Controllers
                     .Select(p => new { p.UserId, p.Matricula })
                     .ToDictionaryAsync(p => p.UserId.Value, p => p.Matricula);
 
-                ViewBag.FaltasTotales = await _context.TutorshipAttendances
+                var registrosPeriodo = await _context.TutorshipAttendances
                     .Where(a => a.GroupId == groupId.Value
-                             && !a.IsPresent
                              && userIds.Contains(a.StudentId)
                              && a.Date.Date >= inicioRango.Date
                              && a.Date.Date <= finRango.Date)
+                    .Select(a => new { a.StudentId, a.IsPresent, a.Date })
+                    .ToListAsync();
+
+                ViewBag.DetalleFaltas = registrosPeriodo
+                    .Where(a => !a.IsPresent)
                     .GroupBy(a => a.StudentId)
-                    .Select(g => new { StudentId = g.Key, Faltas = g.Count() })
-                    .ToDictionaryAsync(x => x.StudentId, x => x.Faltas);
+                    .ToDictionary(
+                        g => g.Key,
+                        g => g.Select(a => a.Date.ToString("dd/MMM")).ToList()
+                    );
+
+                ViewBag.DetalleAsistencias = registrosPeriodo
+                    .Where(a => a.IsPresent)
+                    .GroupBy(a => a.StudentId)
+                    .ToDictionary(
+                        g => g.Key,
+                        g => g.Select(a => a.Date.ToString("dd/MMM")).ToList()
+                    );
+
 
                 ViewBag.AsistenciaHoy = await _context.TutorshipAttendances
                     .Where(a => a.GroupId == groupId.Value && a.Date.Date == fechaSeleccionada.Date)

@@ -171,16 +171,20 @@
                         <tr>
                             <th class="py-3">Matrícula</th>
                             <th class="text-start py-3">Nombre del Alumno</th>
-                            <th class="py-3" title="Faltas en el rango de fechas seleccionado">Faltas en Periodo</th>
+                            <th class="py-3" title="Asistencias en el rango seleccionado">Asistencias</th>
+                            <th class="py-3" title="Faltas en el rango seleccionado">Faltas</th>
                             <th class="py-3">Asistencia del Día</th>
                         </tr>
                     </thead>
                     <tbody>
                         @{
                             var dictMatriculas = ViewBag.Matriculas as Dictionary<int, string> ?? new Dictionary<int, string>();
-                            var dictFaltas = ViewBag.FaltasTotales as Dictionary<int, int> ?? new Dictionary<int, int>();
                             var dictAsistenciaHoy = ViewBag.AsistenciaHoy as Dictionary<int, bool> ?? new Dictionary<int, bool>();
-
+                            
+                            // 👇 NUEVO: Traemos los diccionarios con las listas de fechas
+                            var dictDetalleFaltas = ViewBag.DetalleFaltas as Dictionary<int, List<string>> ?? new Dictionary<int, List<string>>();
+                            var dictDetalleAsistencias = ViewBag.DetalleAsistencias as Dictionary<int, List<string>> ?? new Dictionary<int, List<string>>();
+                            
                             int index = 0;
                             bool yaSePasoLista = dictAsistenciaHoy.Any();
                         }
@@ -188,19 +192,34 @@
                         @foreach (var alumno in Model)
                         {
                             string matricula = dictMatriculas.ContainsKey(alumno.UserId) ? dictMatriculas[alumno.UserId] : "S/N";
-                            int faltas = dictFaltas.ContainsKey(alumno.UserId) ? dictFaltas[alumno.UserId] : 0;
                             bool asistio = yaSePasoLista ? (dictAsistenciaHoy.ContainsKey(alumno.UserId) ? dictAsistenciaHoy[alumno.UserId] : false) : true;
+
+                            var listaFaltas = dictDetalleFaltas.ContainsKey(alumno.UserId) ? dictDetalleFaltas[alumno.UserId] : new List<string>();
+                            int totalFaltas = listaFaltas.Count;
+                            string textoFaltas = totalFaltas > 0 ? "Faltó los días: " + string.Join(", ", listaFaltas) : "Sin faltas en el periodo";
+
+                            var listaAsistencias = dictDetalleAsistencias.ContainsKey(alumno.UserId) ? dictDetalleAsistencias[alumno.UserId] : new List<string>();
+                            int totalAsistencias = listaAsistencias.Count;
+                            string textoAsistencias = totalAsistencias > 0 ? "Asistió los días: " + string.Join(", ", listaAsistencias) : "Sin asistencias en el periodo";
 
                             <tr>
                                 <td class="text-center align-middle fw-bold text-muted">@matricula</td>
                                 <td class="align-middle fw-bold text-dark">
                                     @alumno.Person.FirstName @alumno.Person.LastNamePaternal @alumno.Person.LastNameMaternal
                                 </td>
+                                
                                 <td class="text-center align-middle">
-                                    <span class="badge shadow-sm" style="background-color: #A89B8C; color: white; font-size: 0.95rem;">
-                                        @faltas
+                                    <span class="badge shadow-sm" title="@textoAsistencias" style="background-color: #e8f5e9; color: #2e7d32; font-size: 0.95rem; border: 1px solid #2e7d32; cursor: help;">
+                                        @totalAsistencias
                                     </span>
                                 </td>
+
+                                <td class="text-center align-middle">
+                                    <span class="badge shadow-sm" title="@textoFaltas" style="background-color: #A89B8C; color: white; font-size: 0.95rem; cursor: help;">
+                                        @totalFaltas
+                                    </span>
+                                </td>
+                                
                                 <td class="text-center align-middle">
                                     <input type="hidden" name="studentIds[@index]" value="@alumno.UserId" />
                                     <div class="form-check d-flex justify-content-center m-0">
@@ -266,10 +285,10 @@
                     },
                     "lengthMenu": [[10, 25, 50, 100, -1], [10, 25, 50, 100, "Todos"]],
                     "pageLength": 25,
-                    "columnDefs": [
-                        { "orderable": false, "targets": 3 }, 
-                        { "searchable": false, "targets": 3 } 
-                    ],
+        "columnDefs": [
+        { "orderable": false, "targets": 4 }, 
+        { "searchable": false, "targets": 4 } 
+        ],
                     "order": [[1, 'asc']]
                 });
             }
