@@ -1,0 +1,165 @@
+﻿@model SchoolManager.Models.medical_pychology
+
+@{
+    Layout = "~/Areas/Medical/Views/Shared/_LayoutDashboard.cshtml";
+    ViewData["Title"] = "Nueva Bitácora Psicológica";
+}
+
+<div class="dashboard-header">
+    <div class="header-content d-flex align-items-start justify-content-between flex-wrap">
+        <div>
+            <h2 class="text-white">NUEVA BITÁCORA PSICOLÓGICA</h2>
+            <div class="buttons-left">
+                <a asp-action="Create" class="btn-header ">
+                    <i class="bi bi-plus-circle"></i> Crear Registro
+                </a>
+                <a asp-action="Index" class="btn-header ">
+                    <i class="bi bi-journal-medical"></i> Ver Registros
+                </a>
+                <a asp-action="Reporte" class="btn-header">
+                    <i class="bi bi-file-earmark-bar-graph"></i> Reporte
+                </a>
+            </div>
+        </div>
+        <div class="buttons-right">
+            <a asp-controller="Dashboard" asp-action="Index" class="btn-header">
+                <i class="bi bi-arrow-left-circle"></i> Regresar al inicio
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="container mt-4">
+    <div class="card p-4 shadow-sm">
+        <form asp-action="Create" method="post" id="formPsicologia">
+
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <input type="hidden" asp-for="PreenrollmentId" id="preid" />
+
+            <h5 class="section-title">DATOS DEL ALUMNO</h5>
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <div class="info-block">
+                        <label class="fw-bold text-uppercase">Matrícula</label>
+                        <input id="matricula" class="form-control" placeholder="Escribe matrícula" required />
+                    </div>
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
+                    <button type="button" onclick="buscarAlumno()" class="btn btn-dark w-100">
+                        Buscar
+                    </button>
+                </div>
+            </div>
+
+            <div class="row g-4 mt-1">
+                <div class="col-md-4">
+                    <div class="info-block">
+                        <label class="fw-bold text-uppercase">Nombre</label>
+                        <input id="nombre" class="form-control" readonly />
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="info-block">
+                        <label class="fw-bold text-uppercase">Apellido Paterno</label>
+                        <input id="paterno" class="form-control" readonly />
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="info-block">
+                        <label class="fw-bold text-uppercase">Apellido Materno</label>
+                        <input id="materno" class="form-control" readonly />
+                    </div>
+                </div>
+            </div>
+
+            <hr class="section-divider" />
+
+            <h5 class="section-title">DATOS DE LA ATENCIÓN</h5>
+            <div class="row g-4">
+                <div class="col-md-6">
+                    <div class="info-block">
+                        <label class="fw-bold text-uppercase">Asistencia</label>
+                        <select asp-for="AttendanceStatus" class="form-control" required>
+                            <option value="">Seleccionar</option>
+                            <option value="Asistió">Asistió</option>
+                            <option value="No asistió">No asistió</option>
+                            <option value="Justificado">Justificado</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="info-block">
+                        <label class="fw-bold text-uppercase">Fecha de Cita</label>
+                        <div class="info-box">@DateTime.Now.ToString("dd/MM/yyyy HH:mm")</div>
+                    </div>
+                </div>
+                <div class="col-md-12">
+                    <div class="info-block">
+                        <label class="fw-bold text-uppercase">Observaciones Psicológicas</label>
+                        <textarea asp-for="PsychologyObservations" class="form-control" rows="4" required></textarea>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="info-block">
+                        <label class="fw-bold text-uppercase">Folio</label>
+                        <input asp-for="Fol" class="form-control" readonly
+                               placeholder="Se generará automáticamente" />
+                    </div>
+                </div>
+            </div>
+
+            <hr class="section-divider" />
+
+            <div class="d-flex justify-content-between mt-4">
+                <a asp-action="Index" class="btn" style="border: 1.5px solid #6c757d;">
+                    CANCELAR
+                </a>
+                <button type="submit" class="btn" style="border: 1.5px solid #6c757d;">
+                    GUARDAR REGISTRO
+                </button>
+            </div>
+
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function buscarAlumno() {
+            var matricula = document.getElementById("matricula").value;
+
+            if (matricula === "") {
+                alert("Escribe matrícula");
+                return;
+            }
+
+            fetch('@Url.Action("BuscarPorMatricula", "Psychology")?matricula=' + matricula)
+                .then(response => {
+                    if (!response.ok) throw new Error("Error en la ruta");
+                    return response.json();
+                })
+                .then(data => {
+                    if (data == null) {
+                        alert("Alumno no encontrado");
+                        return;
+                    }
+                    document.getElementById("preid").value = data.preId;
+                    document.getElementById("nombre").value = data.nombre;
+                    document.getElementById("paterno").value = data.paterno;
+                    document.getElementById("materno").value = data.materno;
+                })
+                .catch(error => {
+                    console.error(error);
+                    alert("Error al buscar alumno");
+                });
+        }
+
+        document.getElementById("formPsicologia").addEventListener("submit", function (e) {
+            var preid = document.getElementById("preid").value;
+            if (!preid || preid === "0") {
+                e.preventDefault();
+                alert("Debes buscar y seleccionar un alumno antes de guardar.");
+            }
+        });
+    </script>
+}

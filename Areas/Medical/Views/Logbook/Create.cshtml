@@ -1,0 +1,210 @@
+﻿@model SchoolManager.Models.medical_logbook
+
+@{
+    Layout = "~/Areas/Medical/Views/Shared/_LayoutDashboard.cshtml";
+    ViewData["Title"] = "Nueva Bitácora Clínica";
+}
+
+<div class="dashboard-header">
+    <div class="header-content d-flex align-items-center justify-content-between flex-wrap">
+        <div>
+            <h2 class="text-white">NUEVA BITÁCORA CLÍNICA</h2>
+            <div class="buttons-left">
+                <a asp-action="Create" class="btn-header ">
+                    <i class="bi bi-plus-circle"></i> Crear Bitácora
+                </a>
+                <a asp-action="Index" class="btn-header ">
+                    <i class="bi bi-journal-medical"></i> Ver Bitácoras
+                </a>
+                <a asp-action="Reporte" class="btn-header">
+                    <i class="bi bi-file-earmark-bar-graph"></i> Reporte
+                </a>
+            </div>
+        </div>
+        <div class="buttons-right">
+            <a asp-controller="Dashboard" asp-action="Index" class="btn-header">
+                <i class="bi bi-arrow-left-circle"></i> Regresar al inicio
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="container mt-4">
+    <div class="card p-4 shadow-sm">
+        <form asp-action="Create" method="post" id="formBitacora">
+
+            <div asp-validation-summary="All" class="text-danger mb-3"></div>
+
+            <input type="hidden" asp-for="IdAlumno" id="IdAlumno" />
+
+            <h5 class="section-title">DATOS DEL ALUMNO</h5>
+
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <div class="info-block">
+                        <label class="fw-bold text-uppercase">Matrícula</label>
+                        <input id="matricula" class="form-control" placeholder="Escribe matrícula" required />
+                    </div>
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
+                    <button type="button" onclick="buscarAlumno()" class="btn btn-dark w-100">
+                        Buscar
+                    </button>
+                </div>
+            </div>
+
+            <div class="row g-4 mt-1">
+                <div class="col-md-4">
+                    <div class="info-block">
+                        <label class="fw-bold text-uppercase">Nombre</label>
+                        <input id="nombre" class="form-control" readonly />
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="info-block">
+                        <label class="fw-bold text-uppercase">Apellido Paterno</label>
+                        <input id="paterno" class="form-control" readonly />
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="info-block">
+                        <label class="fw-bold text-uppercase">Apellido Materno</label>
+                        <input id="materno" class="form-control" readonly />
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="info-block">
+                        <label class="fw-bold text-uppercase">Tipo de Sangre</label>
+                        <input id="sangre" class="form-control" readonly />
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="info-block">
+                        <label class="fw-bold text-uppercase">Peso</label>
+                        <input id="peso" class="form-control" readonly />
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="info-block">
+                        <label class="fw-bold text-uppercase">Alergias</label>
+                        <input id="alergias" class="form-control" readonly />
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="info-block">
+                        <label class="fw-bold text-uppercase">Condiciones Crónicas</label>
+                        <input id="condiciones" class="form-control" readonly />
+                    </div>
+                </div>
+            </div>
+
+            <hr class="section-divider" />
+
+            <h5 class="section-title">DATOS DE LA ATENCIÓN</h5>
+
+            <div class="row g-4">
+                <div class="col-md-6">
+                    <div class="info-block">
+                        <label class="fw-bold text-uppercase">Motivo de Consulta</label>
+                        <input asp-for="MotivoConsulta" class="form-control" required />
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="info-block">
+                        <label class="fw-bold text-uppercase">Signos Vitales</label>
+                        <input asp-for="SignosVitales" class="form-control" required />
+                    </div>
+                </div>
+                <div class="col-md-12">
+                    <div class="info-block">
+                        <label class="fw-bold text-uppercase">Observaciones</label>
+                        <textarea asp-for="Observaciones" class="form-control" rows="3" required></textarea>
+                    </div>
+                </div>
+                <div class="col-md-12">
+                    <div class="info-block">
+                        <label class="fw-bold text-uppercase">Tratamiento / Acción</label>
+                        <textarea asp-for="Tratamiento" class="form-control" rows="3" required></textarea>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="info-block">
+                        <label class="fw-bold text-uppercase">Estado del Paciente</label>
+                        <select asp-for="Estado" class="form-control" required>
+                            <option value="">Seleccionar estado</option>
+                            <option value="Estable">Estable</option>
+                            <option value="Urgente">Urgente</option>
+                            <option value="Critico">Crítico</option>
+                            <option value="Observacion">Observación</option>
+                            <option value="Alta">Alta</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="info-block">
+                        <label class="fw-bold text-uppercase">Folio</label>
+                        <input asp-for="Folio" class="form-control" readonly
+                               placeholder="Se generará automáticamente" />
+                    </div>
+                </div>
+            </div>
+
+            <hr class="section-divider" />
+
+            <div class="d-flex justify-content-between mt-4">
+                <a asp-action="Index" class="btn" style="border: 1.5px solid #6c757d;">
+                    CANCELAR
+                </a>
+                <button type="submit" class="btn" style="border: 1.5px solid #6c757d;">
+                    GUARDAR BITÁCORA
+                </button>
+            </div>
+
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function buscarAlumno() {
+            var matricula = document.getElementById("matricula").value;
+
+            if (matricula === "") {
+                alert("Escribe una matrícula");
+                return;
+            }
+
+            fetch('@Url.Action("BuscarPorMatricula", "Logbook")?matricula=' + matricula)
+                .then(response => {
+                    if (!response.ok) throw new Error("Error en la petición");
+                    return response.json();
+                })
+                .then(data => {
+                    if (data == null) {
+                        alert("Alumno no encontrado o no tiene registro médico");
+                        return;
+                    }
+                    document.getElementById("IdAlumno").value = data.alumnoId;
+                    document.getElementById("nombre").value = data.nombre;
+                    document.getElementById("paterno").value = data.paterno;
+                    document.getElementById("materno").value = data.materno;
+                    document.getElementById("sangre").value = data.sangre;
+                    document.getElementById("peso").value = data.peso ?? "";
+                    document.getElementById("alergias").value = data.alergias ?? "";
+                    document.getElementById("condiciones").value = data.condiciones ?? "";
+                })
+                .catch(error => {
+                    console.error(error);
+                    alert("Ocurrió un error al buscar el alumno");
+                });
+        }
+
+        document.getElementById("formBitacora").addEventListener("submit", function (e) {
+            var idAlumno = document.getElementById("IdAlumno").value;
+            if (!idAlumno || idAlumno === "0") {
+                e.preventDefault();
+                alert("Debes buscar y seleccionar un alumno antes de guardar.");
+            }
+        });
+    </script>
+}

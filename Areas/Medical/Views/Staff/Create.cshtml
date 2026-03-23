@@ -1,0 +1,139 @@
+﻿@model SchoolManager.Models.medical_staff
+
+@{
+    Layout = "~/Areas/Medical/Views/Shared/_LayoutDashboard.cshtml";
+    ViewData["Title"] = "Registrar Personal Médico";
+}
+<div class="dashboard-header">
+    <div class="header-content d-flex align-items-start justify-content-between flex-wrap">
+        <div>
+            <h2 class="text-white">REGISTRAR PERSONAL MÉDICO</h2>
+            <div class="buttons-left">
+                <a asp-action="Create" class="btn-header ">
+                    <i class="bi bi-person-plus"></i> Crear Personal
+                </a>
+                <a asp-action="Index" class="btn-header ">
+                    <i class="bi bi-person-badge"></i> Ver Personal
+                </a>
+                <a asp-action="Graficas" class="btn-header">
+                    <i class="bi bi-bar-chart-line"></i> Ver Gráficas
+                </a>
+            </div>
+        </div>
+        <div class="buttons-right">
+            <a asp-controller="Dashboard" asp-action="Index" class="btn-header">
+                <i class="bi bi-arrow-left-circle"></i> Regresar al inicio
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="container mt-4">
+    <div class="card p-4 shadow-sm">
+        <form asp-action="Create" method="post" id="formPersonal">
+
+            <div asp-validation-summary="All" class="text-danger mb-3"></div>
+            <input type="hidden" name="PersonId" id="PersonId" />
+
+            <h5 class="section-title">BUSCAR TRABAJADOR</h5>
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <div class="info-block">
+                        <label class="fw-bold text-uppercase">CURP</label>
+                        <input type="text" id="curp" class="form-control"
+                               placeholder="Escribe CURP" required />
+                    </div>
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
+                    <button type="button" onclick="buscarPersona()" class="btn btn-dark w-100">
+                        Buscar
+                    </button>
+                </div>
+            </div>
+
+            <div class="row g-4 mt-1">
+                <div class="col-md-6">
+                    <div class="info-block">
+                        <label class="fw-bold text-uppercase">Nombre</label>
+                        <input type="text" id="nombre" class="form-control" readonly />
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="info-block">
+                        <label class="fw-bold text-uppercase">Correo</label>
+                        <input type="text" id="correo" class="form-control" readonly />
+                    </div>
+                </div>
+            </div>
+
+            <hr class="section-divider" />
+
+            <h5 class="section-title">DATOS DEL PERSONAL</h5>
+            <div class="row g-4">
+                <div class="col-md-6">
+                    <div class="info-block">
+                        <label class="fw-bold text-uppercase">Rol</label>
+                        <select name="RoleId" class="form-control" required>
+                            <option value="">Seleccionar rol</option>
+                            <option value="4">Enfermero</option>
+                            <option value="5">Psicólogo</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="info-block">
+                        <label class="fw-bold text-uppercase">Turno</label>
+                        <select name="Shift" class="form-control" required>
+                            <option value="">Seleccionar turno</option>
+                            <option value="Mañana">Mañana</option>
+                            <option value="Tarde">Tarde</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <hr class="section-divider" />
+
+            <div class="d-flex justify-content-between mt-4">
+                <a asp-action="Index" class="btn" style="border: 1.5px solid #6c757d;">
+                    CANCELAR
+                </a>
+                <button type="submit" class="btn" style="border: 1.5px solid #6c757d;">
+                    GUARDAR PERSONAL
+                </button>
+            </div>
+
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function buscarPersona() {
+            var curp = $("#curp").val();
+
+            if (curp === "") {
+                alert("Escribe una CURP");
+                return;
+            }
+
+            $.get("/Staff/BuscarPorCurp", { curp: curp }, function (data) {
+                if (data == null) {
+                    alert("Persona no encontrada");
+                    return;
+                }
+                $("#PersonId").val(data.personId);
+                $("#nombre").val(data.nombre + " " + data.paterno + " " + data.materno);
+                $("#correo").val(data.correo);
+            });
+        }
+
+        document.getElementById("formPersonal").addEventListener("submit", function (e) {
+            var personId = document.getElementById("PersonId").value;
+            if (!personId || personId === "0") {
+                e.preventDefault();
+                alert("Debes buscar y seleccionar un trabajador antes de guardar.");
+            }
+        });
+    </script>
+}

@@ -1,0 +1,71 @@
+﻿@model SchoolManager.ViewModels.StaffListVM
+@{
+    Layout = "~/Areas/Medical/Views/Shared/_LayoutDashboard.cshtml";
+    ViewData["Title"] = "Eliminar Personal Médico";
+}
+<!-- HEADER -->
+<div class="dashboard-header">
+    <div class="header-content">
+        <h2 class="text-white">ELIMINAR PERSONAL MÉDICO</h2>
+        <p class="mb-0">Sistema Médico - Gestión de Personal</p>
+    </div>
+</div>
+<div class="container mt-4">
+    <div class="card p-4 shadow-sm">
+        <h5 class="section-title">DATOS DEL PERSONAL</h5>
+        <!-- ALERTA -->
+        <div class="alert-delete mb-4">
+            ¿Seguro que deseas eliminar este trabajador del personal médico?
+        </div>
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="info-block">
+                    <label class="fw-bold text-uppercase">CURP</label>
+                    <div class="info-box">@Model.Curp</div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="info-block">
+                    <label class="fw-bold text-uppercase">Nombre Completo</label>
+                    <div class="info-box">@Model.NombreCompleto</div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="info-block">
+                    <label class="fw-bold text-uppercase">Correo</label>
+                    <div class="info-box">@Model.Correo</div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="info-block">
+                    <label class="fw-bold text-uppercase">Rol</label>
+                    <div class="info-box fw-bold">@Model.Rol</div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="info-block">
+                    <label class="fw-bold text-uppercase">Turno</label>
+                    <div class="info-box">@Model.Turno</div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="info-block">
+                    <label class="fw-bold text-uppercase">Fecha de Registro</label>
+                    <div class="info-box">@Model.FechaCreacion.ToString("dd/MM/yyyy")</div>
+                </div>
+            </div>
+        </div>
+        <hr class="section-divider" />
+        <form asp-action="Delete" method="post">
+            <input type="hidden" asp-for="Id" />
+            <div class="d-flex justify-content-between mt-4">
+                <a asp-action="Index" class="btn" style="border: 1.5px solid #6c757d;">
+                    CANCELAR
+                </a>
+                <button type="submit" class="btn px-5" style="border: 1.5px solid #6c757d;">
+                    ELIMINAR DEFINITIVAMENTE
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
