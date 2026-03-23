@@ -15,20 +15,19 @@
     <partial name="_DataTableConfig" />
 
     <script>
-         function loadDeactivateModal(id) {
+        function loadDeactivateModal(id) {
             $('#modalContainer').html('');
 
             $.get('/Procedures/Proceeding/Deactivate/' + id, function (data) {
                 $('#modalContainer').html(data);
-
                 const modalElement = document.getElementById('deactivateModal');
                 const myModal = new bootstrap.Modal(modalElement);
                 myModal.show();
             }).fail(function() {
-                Swal.fire('Error', 'No se pudo cargar el formulario de baja.', 'error');
+                 showToast('error', 'No se pudo cargar el formulario de baja.');
             });
         }
-        
+
         function confirmDeactivateLogic() {
             const form = document.getElementById('formDeleteStudent');
             const formData = new FormData(form);
@@ -40,11 +39,14 @@
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    Swal.fire('¡Baja Exitosa!', data.message, 'success')
-                        .then(() => location.reload());
+                    showToast('success', '¡Baja exitosa!');
+                    setTimeout(() => location.reload(), 1000);
                 } else {
-                    Swal.fire('Error', data.message, 'error');
+                    showToast('error', 'Error: ' + (data.message || 'No se pudo procesar'));
                 }
+            })
+            .catch(error => {
+                showToast('error', 'Fallo de comunicación con el servidor.');
             });
         }
 
@@ -53,12 +55,11 @@
 
             $.get('/Procedures/Proceeding/Activate/' + id, function (data) {
                 $('#modalContainer').html(data);
-
                 const modalElement = document.getElementById('activateModal');
                 const myModal = new bootstrap.Modal(modalElement);
                 myModal.show();
             }).fail(function() {
-                Swal.fire('Error', 'No se pudo cargar el formulario de reactivación.', 'error');
+                showToast('error', 'No se pudo cargar el formulario de reactivación.');
             });
         }
 
@@ -73,14 +74,14 @@
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    Swal.fire('¡Expediente Activo!', data.message, 'success')
-                        .then(() => location.reload());
+                    showToast('success', data.message || '¡Expediente Reactivado!');
+                    setTimeout(() => location.reload(), 1000);
                 } else {
-                    Swal.fire('Error', data.message, 'error');
+                    showToast('error', data.message || 'Error al activar');
                 }
             })
             .catch(error => {
-                Swal.fire('Error', 'Ocurrió un error en la comunicación con el servidor.', 'error');
+                showToast('error', 'Ocurrió un error en la comunicación con el servidor.');
             });
         }
 
@@ -96,9 +97,10 @@
                     $.post($(this).attr('action'), $(this).serialize(), function(r) {
                         if(r.success) {
                             myModal.hide();
-                            Swal.fire('¡Éxito!', r.message, 'success').then(() => location.reload());
+                            showToast('success', r.message || '¡Alumno registrado!');
+                            setTimeout(() => location.reload(), 1000);
                         } else {
-                            Swal.fire('Error', r.message, 'error');
+                            showToast('error', r.message || 'Error al guardar');
                         }
                     });
                 });
@@ -123,7 +125,7 @@
             this.value = this.value.replace(/[^0-9]/g, '').substring(0, 5);
         });
 
-       $(document).ready(function() {
+        $(document).ready(function() {
             const dtToday = new Date();
             let month = dtToday.getMonth() + 1;
             let day = dtToday.getDate();
@@ -143,24 +145,22 @@
         $(document).ready(function () {
             $('#checkAll').on('change', function () {
                 $('.row-checkbox').prop('checked', $(this).is(':checked'));
-                 updateBulkBar();
+                updateBulkBar();
             });
 
             $(document).on('change', '.row-checkbox', function () {
-                 updateBulkBar();
+                updateBulkBar();
                 $('#checkAll').prop('checked', $('.row-checkbox:checked').length === $('.row-checkbox').length);
             });
         });
 
-
-         function updateBulkBar() {
+        function updateBulkBar() {
              const count = $('.row-checkbox:checked').length;
              const bar = $('#bulkActionsBar');
 
              if (count > 0) {
                  const text = count === 1 ? '1 seleccionado' : count + ' seleccionados';
                  $('#selectedCount').text(text);
-
                  bar.removeClass('d-none').fadeIn('fast');
              } else {
                  bar.fadeOut('fast', function() {
@@ -168,7 +168,7 @@
                  });
                  $('#checkAll').prop('checked', false);
              }
-         }
+        }
 
         function deselectAll() {
             $('.row-checkbox, #checkAll').prop('checked', false).closest('tr').removeClass('table-active');
@@ -177,9 +177,9 @@
 
         function uncheckAll() {
             $('.row-checkbox, #checkAll').prop('checked', false);
-            toggleBulkBar();
+            updateBulkBar();
         }
-                
+
         function bulkDeleteExpedientes() {
             const selectedIds = $('.row-checkbox:checked').map(function() {
                 return parseInt($(this).val());
@@ -192,13 +192,13 @@
                 icon: 'warning',
                 showCancelButton: true,
                 confirmButtonColor: '#620900',
-                cancelButtonColor: '#6c757d',
                 confirmButtonText: 'Sí, borrar todo',
                 cancelButtonText: 'Cancelar'
             }).then((result) => {
                 if (result.isConfirmed) {
                     Swal.fire({
                         title: 'Eliminando...',
+                        allowOutsideClick: false,
                         didOpen: () => { Swal.showLoading(); }
                     });
 
@@ -211,13 +211,14 @@
                         },
                         success: function (r) {
                             if (r.success) {
-                                Swal.fire('¡Logrado!', r.message, 'success').then(() => location.reload());
+                                showToast('success', r.message || 'Eliminación masiva exitosa');
+                                setTimeout(() => location.reload(), 1000);
                             } else {
-                                Swal.fire('Error', r.message, 'error');
+                                showToast('error', r.message || 'Error en el proceso');
                             }
                         },
                         error: function () {
-                            Swal.fire('Error', 'No se pudo procesar la eliminación masiva.', 'error');
+                            showToast('error', 'No se pudo procesar la comunicación con el servidor.');
                         }
                     });
                 }
@@ -247,7 +248,7 @@
                 <table id="mainTable" class="table table-hover align-middle mb-0">
                     <thead class="small bg-burgundy text-white">
                         <tr>
-                            <th class="no-sort text-center"> <input type="checkbox" id="checkAll"> </th>
+                            <th class="no-sort text-center"> <input type="checkbox" id="checkAll" class="form-check-input"> </th>
                             <th class="ps-4">Alumno / Contacto</th>
                             <th>Identificador</th>
                             <th>Carrera</th>

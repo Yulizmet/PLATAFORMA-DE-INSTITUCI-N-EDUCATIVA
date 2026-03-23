@@ -390,6 +390,23 @@ p {
     background-color: #8C1B1B !important;
 }
 
+#checkAll:checked,
+.row-checkbox:checked {
+    background-color: #620900 !important;
+    border-color: #620900 !important;
+}
+
+#checkAll:focus,
+.row-checkbox:focus {
+    border-color: #620900 !important;
+    outline: 0;
+    box-shadow: 0 0 0 0.25rem rgba(98, 9, 0, 0.25) !important;
+}
+
+#checkAll:checked {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3e%3cpath fill='none' stroke='%23fff' stroke-linecap='round' stroke-linejoin='round' stroke-width='3' d='m6 10 3 3 6-6'/%3e%3c/svg%3e");
+}
+
 /* ===== ADMIN FORO ===== */
 
 .admin-section {

@@ -450,5 +450,41 @@ namespace SchoolManager.Areas.Procedures.Controllers
                 return Json(new { success = false, message = "No se puede eliminar: el puesto tiene permisos asignados en áreas." });
             }
         }
+
+        [HttpPost]
+        public async Task<IActionResult> BulkDeleteJobs(List<int> ids)
+        {
+            await LoadPermissions("Permisos");
+
+            if (ids == null || !ids.Any())
+            {
+                return Json(new { success = false, message = "No se seleccionaron registros." });
+            }
+
+            try
+            {
+                var jobs = await _context.ProcedureJobPosition
+                    .Where(j => ids.Contains(j.Id))
+                    .ToListAsync();
+
+                if (!jobs.Any())
+                {
+                    return Json(new { success = false, message = "Los puestos ya no existen." });
+                }
+
+                _context.ProcedureJobPosition.RemoveRange(jobs);
+                await _context.SaveChangesAsync();
+
+                return Json(new { success = true, message = $"{jobs.Count} puestos eliminados correctamente." });
+            }
+            catch (Exception)
+            {
+                return Json(new
+                {
+                    success = false,
+                    message = "Uno o más puestos no se pueden eliminar porque tienen permisos asignados o están en uso administrativo."
+                });
+            }
+        }
     }
 }

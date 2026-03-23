@@ -30,6 +30,11 @@ namespace SchoolManager.Areas.Procedures.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> Index()
         {
+            if (User.IsInRole("Administrator"))
+            {
+                return RedirectToAction("Index", "Dashboard");
+            }
+
             int currentUserId = CurrentUserId;
 
             var requests = await _context.ProcedureRequest

@@ -24,6 +24,21 @@
                 localStorage.setItem('activeGestorTab', $(e.target).attr('data-bs-target'));
             });
 
+            $(document).on('change', '#checkAll', function () {
+                const isChecked = $(this).is(':checked');
+                $('.row-checkbox').prop('checked', isChecked);
+                $('.row-checkbox').closest('tr').toggleClass('table-active', isChecked);
+                updateBulkBar();
+            });
+
+            $(document).on('change', '.row-checkbox', function () {
+                const total = $('.row-checkbox').length;
+                const selected = $('.row-checkbox:checked').length;
+                $('#checkAll').prop('checked', total === selected);
+                $(this).closest('tr').toggleClass('table-active', $(this).is(':checked'));
+                updateBulkBar();
+            });
+
             refreshTables();
         });
 
@@ -44,61 +59,72 @@
             });
         }
 
-        function loadModuleModal(id = 0, moduleName = '') {
+        window.loadModal = async function(url) {
+            try {
+                const response = await fetch(url);
+                if (!response.ok) throw new Error(`Error: ${response.status}`);
+                const html = await response.text();
+                const container = document.getElementById('modalContainer');
+                container.innerHTML = html;
+
+                const modalElement = container.querySelector('.modal');
+                if (modalElement) {
+                    const myModal = new bootstrap.Modal(modalElement);
+                    myModal.show();
+                }
+            } catch (error) {
+                showToast('error', 'No se pudo cargar la ventana');
+            }
+        };
+
+        window.loadModuleModal = function(id = 0, moduleName = '') {
             const cleanModuleName = encodeURIComponent(moduleName);
             const url = `@Url.Action("GetModuleModal", "Permissions")?id=${id}&moduleName=${cleanModuleName}`;
+            loadModal(url);
+        };
 
-            $("#modalContainer").load(url, function (response, status, xhr) {
-                if (status === "error") {
-                    Swal.fire('Error', 'No se pudo cargar el modal de módulo.', 'error');
-                } else {
-                    $("#modalModule").modal('show');
-                }
-            });
-        }
-
-        function loadJobModal(id = 0) {
+        window.loadJobModal = function(id = 0) {
             const url = '@Url.Action("GetJobModal", "Permissions")?id=' + id;
+            loadModal(url);
+        };
 
-            $("#modalContainer").load(url, function (response, status, xhr) {
-                if (status === "error") {
-                    Swal.fire('Error', 'No se pudo cargar el modal del puesto.', 'error');
-                } else {
-                    $("#modalJob").modal('show');
-                }
-            });
-        }
-
-        function loadAssignJobModal() {
+        window.loadAssignJobModal = function() {
             const idArea = '@ViewBag.SelectedAreaId';
             if (!idArea || idArea === '0') {
-                Swal.fire('Atención', 'Por favor, selecciona un área administrativa primero.', 'warning');
+                showToast('warning', 'Por favor, selecciona un área administrativa primero.');
                 return;
             }
-
             const url = '@Url.Action("GetAssignJobModal", "Permissions")?idArea=' + idArea;
+            loadModal(url);
+        };
 
-            $("#modalContainer").load(url, function (response, status, xhr) {
-                if (status === "error") {
-                    Swal.fire('Error', 'No se pudo cargar el selector de puestos.', 'error');
-                } else {
-                    $("#modalAssignJob").modal('show');
-                }
-            });
-        }
-
-        function openDeleteModal(id, type, groupName = '') {
+        window.openDeleteModal = function(id, type, groupName = '') {
             const url = '@Url.Action("GetDeleteModal", "Permissions")';
             const encodedGroupName = encodeURIComponent(groupName);
+            loadModal(`${url}?id=${id}&type=${type}&groupName=${encodedGroupName}`);
+        };
 
-            $("#modalContainer").load(`${url}?id=${id}&type=${type}&groupName=${encodedGroupName}`, function (response, status, xhr) {
-                if (status === "error") {
-                    Swal.fire('Error', 'No se pudo cargar el modal de eliminación.', 'error');
+        $(document).off("submit", ".modal form").on("submit", ".modal form", async function (e) {
+            e.preventDefault();
+            const form = e.target;
+            try {
+                const response = await fetch(form.action, {
+                    method: form.method,
+                    body: new FormData(form)
+                });
+                const result = await response.json();
+                if (result.success) {
+                    const modalInstance = bootstrap.Modal.getInstance(form.closest('.modal'));
+                    if(modalInstance) modalInstance.hide();
+                    showToast('success', result.message || '¡Cambios guardados!');
+                    setTimeout(() => { location.reload(); }, 1500);
                 } else {
-                    $("#deleteModal").modal('show');
+                    showToast('warning', result.message || 'No se puede procesar la solicitud.');
                 }
-            });
-        }
+            } catch (error) {
+                showToast('error', 'Error en el servidor');
+            }
+        });
 
         function filterByArea(idArea) {
             if (idArea) {
@@ -108,10 +134,9 @@
 
         function initModules(idArea) {
             if (!idArea) {
-                Swal.fire('Error', 'ID de área no válido.', 'error');
+                showToast('error', 'ID de área no válido.');
                 return;
             }
-
             Swal.fire({
                 title: '¿Generar matriz base?',
                 text: "Se crearán reglas de acceso para todos los módulos en esta área.",
@@ -121,87 +146,70 @@
                 confirmButtonText: 'Sí, generar'
             }).then((result) => {
                 if (result.isConfirmed) {
-                    Swal.fire({ title: 'Procesando...', didOpen: () => { Swal.showLoading(); } });
-
                     $.post('@Url.Action("InitModules", "Permissions")', { idArea: idArea }, function (r) {
                         if (r.success) {
-                            Swal.fire('¡Listo!', r.message, 'success').then(() => {
-                                window.location.reload();
-                            });
+                            showToast('success', r.message);
+                            setTimeout(() => { location.reload(); }, 1500);
                         } else {
-                            Swal.fire('Atención', r.message, 'warning');
+                            showToast('warning', r.message);
                         }
                     });
                 }
             });
         }
 
-        $(document).on('submit', '#formModuleCatalog, #formJobPosition', function (e) {
-            e.preventDefault();
-            const form = $(this);
-            const modalId = form.closest('.modal').attr('id');
+        function updateBulkBar() {
+            const count = $('.row-checkbox:checked').length;
+            const bar = $('#bulkActionsBar');
+            if (count > 0) {
+                const text = count === 1 ? '1 seleccionado' : count + ' seleccionados';
+                $('#selectedCount').text(text);
+                bar.removeClass('d-none').fadeIn('fast');
+            } else {
+                bar.fadeOut('fast', function() { $(this).addClass('d-none'); });
+                $('#checkAll').prop('checked', false);
+            }
+        }
 
-            $.post(form.attr('action'), form.serialize(), function (r) {
-                if (r.success) {
-                    $(`#${modalId}`).modal('hide');
-                    Swal.fire({ icon: 'success', title: '¡Guardado!', timer: 1500, showConfirmButton: false });
-                    refreshTables();
-                } else {
-                    Swal.fire('Error', r.message, 'error');
-                }
-            });
-        });
+        function deselectAll() {
+            $('.row-checkbox, #checkAll').prop('checked', false).closest('tr').removeClass('table-active');
+            updateBulkBar();
+        }
 
-        $(document).on('submit', '#formPermissions', function (e) {
-            e.preventDefault();
-            const form = $(this);
-
+        function bulkDelete() {
+            const selectedIds = $('.row-checkbox:checked').map(function() {
+                return parseInt($(this).val());
+            }).get();
+            if (selectedIds.length === 0) return;
             Swal.fire({
-                title: 'Guardando...',
-                text: 'Actualizando privilegios',
-                allowOutsideClick: false,
-                didOpen: () => { Swal.showLoading(); }
-            });
-
-            $.post(form.attr('action'), form.serialize(), function (r) {
-                if (r.success) {
-                    Swal.fire({ icon: 'success', title: 'Matriz Actualizada', confirmButtonColor: '#620900' });
-                } else {
-                    Swal.fire('Error', r.message || 'Error al guardar.', 'error');
-                }
-            }).fail(() => Swal.fire('Error', 'Fallo de conexión.', 'error'));
-        });
-
-        $(document).on('submit', '#formDeleteGeneric', function (e) {
-            e.preventDefault();
-            const form = $(this);
-
-            $.post(form.attr('action'), form.serialize(), function (r) {
-                $("#deleteModal").modal('hide');
-                if (r.success) {
-                    Swal.fire({ icon: 'success', title: 'Eliminado', timer: 2000, showConfirmButton: false });
-                    refreshTables();
-                } else {
-                    Swal.fire('Error', r.message, 'error');
-                }
-            });
-        });
-
-        $(document).on('submit', '#formAssignJob', function (e) {
-            e.preventDefault();
-            const form = $(this);
-
-            Swal.fire({ title: 'Asignando...', didOpen: () => { Swal.showLoading(); } });
-
-            $.post(form.attr('action'), form.serialize(), function (r) {
-                if (r.success) {
-                    $("#modalAssignJob").modal('hide');
-                    Swal.fire('Éxito', r.message, 'success').then(() => window.location.reload());
-                } else {
-                    Swal.fire('Error', r.message, 'error');
+                title: '¿Eliminar puestos seleccionados?',
+                html: `Estás por eliminar <b>${selectedIds.length}</b> registros de forma permanente.`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#620900',
+                confirmButtonText: 'Sí, eliminar',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.ajax({
+                        url: '@Url.Action("BulkDeleteJobs", "Permissions")',
+                        type: 'POST',
+                        data: {
+                            ids: selectedIds,
+                            __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val()
+                        },
+                        success: function (r) {
+                            if (r.success) {
+                                showToast('success', r.message);
+                                setTimeout(() => { location.reload(); }, 1500);
+                            } else {
+                                showToast('error', r.message);
+                            }
+                        }
+                    });
                 }
             });
-        });
+        }
 
         $(document).on('change', '.master-check', function () {
             const isChecked = $(this).is(':checked');
@@ -484,4 +492,19 @@
             }
         </div>
         </div>
+
+    <div id="bulkActionsBar" class="position-fixed bottom-0 start-50 translate-middle-x mb-4 shadow-lg bg-dark text-white p-3 rounded-pill d-none animate__animated animate__fadeInUp" style="z-index: 1050; min-width: 300px;">
+        <div class="d-flex align-items-center justify-content-between px-3">
+            <span id="selectedCount" class="fw-bold me-4">0 seleccionados</span>
+            <div class="btn-group">
+                @* @if (HasPermission("btn-multiple-eliminar"))
+                { *@
+                    <button class="btn btn-sm btn-danger px-3 fw-bold rounded-pill" onclick="bulkDelete()">
+                        <i class="bi bi-trash3-fill me-1"></i> Eliminar
+                    </button>
+                @* } *@
+            </div>
+            <button type="button" class="btn-close btn-close-white ms-3" onclick="deselectAll()"></button>
+        </div>
     </div>
+</div>

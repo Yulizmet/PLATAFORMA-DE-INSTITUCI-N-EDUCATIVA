@@ -62,19 +62,15 @@
 
                             <div class="alert alert-info py-1 px-2 mb-3 border-0 shadow-xs" style="font-size: 0.7rem;">
                                 <i class="bi bi-info-circle me-1"></i>
-                                <strong>Tip:</strong> Usa 10-80 para pasos secuenciales. Usa 90-99 para estados finales (Rechazado/Cancelado).
+                                <strong>Tip:</strong> Acomoda los pasos arrastrándolos en el orden deseado.
                             </div>
 
                             <div class="row g-2 align-items-end mb-3">
-                                <div class="col-md-7">
+                                <div class="col-md-9">
                                     <label class="small text-muted fw-bold">Estado:</label>
                                     <select id="tempStatus" class="form-select form-select-sm border-0 shadow-sm" asp-items="ViewBag.IdStatus">
                                         <option value="">-- Seleccionar estado --</option>
                                     </select>
-                                </div>
-                                <div class="col-md-2">
-                                    <label class="small text-muted fw-bold">Orden:</label>
-                                    <input type="number" id="tempOrder" class="form-control form-select-sm border-0 shadow-sm" placeholder="1" />
                                 </div>
                                 <div class="col-md-3">
                                     <button type="button" id="btnAddStatus" class="btn bg-success text-white btn-sm w-100 fw-bold shadow-sm">
@@ -97,11 +93,6 @@
         </div>
     </div>
 </div>
-<script>
-    (function() {
-        const data = @Html.Raw(Json.Serialize(ViewData["StatusData"]));
-        if (window.updateStatusColors) {
-            window.updateStatusColors(data);
-        }
-    })();
+<script id="statusDataJson" type="application/json">
+    @Html.Raw(Json.Serialize(ViewData["StatusData"]))
 </script>

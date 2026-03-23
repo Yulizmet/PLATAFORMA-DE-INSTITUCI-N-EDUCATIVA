@@ -15,49 +15,48 @@
     <partial name="_DataTableConfig" />
 
     <script>
-        // Data de colores para estados (desde C#) con validación inicial
         let statusColors = [];
 
-        // Agrega esta función global
         window.updateStatusColors = function(data) {
+            if (!data) return;
             statusColors = data;
-            console.log("Colores actualizados:", statusColors);
+            console.log("Sincronización de colores:", statusColors);
         };
 
-        // --- 1. GESTIÓN DE MODALES ---
         window.loadModal = async function(url) {
             try {
                 const response = await fetch(url);
                 const html = await response.text();
                 const container = document.getElementById('modalContainer');
                 if (!container) return;
-                
+
                 container.innerHTML = html;
 
                 const dataElement = container.querySelector('#statusDataJson');
-
                 if (dataElement) {
                     const data = JSON.parse(dataElement.textContent);
                     window.updateStatusColors(data);
                 }
+
                 const modalElement = container.querySelector('.modal');
 
                 if (modalElement) {
                     const myModal = new bootstrap.Modal(modalElement);
                     myModal.show();
-                    
-                    // Inicializar índices con validación
+
                     const pills = document.getElementById('pillsContainer');
                     reqIndex = pills ? $(pills).find('.badge').length : 0;
-                    
-                    setTimeout(initSortable, 300); 
+
+                    setTimeout(() => {
+                        initSortable();
+                        updateStatusDropdown();
+                    }, 300);
                 }
             } catch (error) {
                 showToast('error', 'Fallo en la carga: ' + error.message);
             }
         };
 
-        // --- 2. DRAG & DROP (SORTABLE) ---
         function initSortable() {
             const el = document.getElementById('flowContainer');
             if (!el) return;
@@ -69,17 +68,30 @@
                 animation: 150,
                 ghostClass: 'bg-light',
                 onEnd: function () {
-                    reorderAll(); 
+                    reorderAll();
                 }
             });
         }
 
-        // --- 3. REORDENAMIENTO UNIVERSAL (Con validaciones de existencia) ---
+        function updateStatusDropdown() {
+            const flowContainer = $('#flowContainer');
+            if (flowContainer.length === 0) return;
+
+            const selectedIds = flowContainer.find('input[type="hidden"]')
+                .map((_, el) => parseInt(el.value))
+                .get();
+
+            $('#tempStatus option').each(function () {
+                const val = parseInt($(this).val());
+                if (!val) return;
+                $(this).prop('disabled', selectedIds.includes(val));
+            });
+        }
+
         function reorderAll() {
             const pillsCont = $('#pillsContainer');
             const flowCont = $('#flowContainer');
 
-            // Solo reordenar pills si el contenedor existe
             if (pillsCont.length > 0) {
                 pillsCont.find('.badge').each(function(i) {
                     $(this).find('input[name*="IdTypeDocument"]').attr('name', `requirementsList[${i}].IdTypeDocument`);
@@ -88,10 +100,9 @@
                 reqIndex = pillsCont.find('.badge').length;
             }
 
-            // Solo reordenar flujo si el contenedor existe
             if (flowCont.length > 0) {
                 flowCont.find('.flow-item').each(function(i) {
-                    const newOrder = (i + 1) * 10;
+                    const newOrder = i + 1;
                     $(this).find('.step-order-input').val(newOrder);
                     $(this).find('input.step-order-input').attr('name', `flowList[${i}].StepOrder`);
                     $(this).find('input[type="hidden"]').attr('name', `flowList[${i}].IdStatus`);
@@ -99,9 +110,6 @@
             }
         }
 
-        // --- 4. ACCIONES DEL FORMULARIO ---
-        
-        // Agregar Documento (Pill)
         $(document).off('click', '#btnAddReq').on('click', '#btnAddReq', function (e) {
             e.preventDefault();
             const docId = $('#tempDocument').val();
@@ -120,7 +128,6 @@
             reorderAll();
         });
 
-        // Agregar Estado (Flujo con Color corregido)
         $(document).off('click', '#btnAddStatus').on('click', '#btnAddStatus', function (e) {
             e.preventDefault();
             const statusId = parseInt($('#tempStatus').val());
@@ -131,31 +138,27 @@
             }
 
             const exists = $('#flowContainer input[value="' + statusId + '"]').length > 0;
-
             if (exists) {
                 showToast('info', 'Ese estado ya está agregado.');
                 return;
             }
 
-            // Buscamos usando el nombre de propiedad exacto que definiste en el controlador (Id, Bg, Txt, Name)
-            const data = statusColors.find(x => x.Id == statusId);
+            const data = statusColors.find(x => (x.Id || x.id) == statusId);
 
             if (!data) {
-                // Si entra aquí, es que statusColors sigue vacío
-                console.error("Error: La lista statusColors está vacía o el ID no existe.", statusColors);
                 showToast('error', 'No se pudieron cargar los estilos. Cierra y abre el modal de nuevo.');
                 return;
             }
 
             const flowRow = `
                 <div class="flow-item d-flex align-items-center bg-light border rounded-3 p-2 mb-2 shadow-sm"
-                     style="border-left: 5px solid ${data.Bg} !important;">
+                     style="border-left: 5px solid ${data.Bg || data.bg} !important;">
                     <div class="me-3 text-muted handle" style="cursor:grab"><i class="bi bi-grip-vertical fs-5"></i></div>
                     <div class="me-2" style="width: 50px;">
                         <input type="number" class="form-control form-control-sm step-order-input bg-white border-0 text-center fw-bold" readonly />
                     </div>
                     <div class="flex-grow-1">
-                        <span class="badge" style="background-color:${data.Bg}; color:${data.Txt}">${data.Name}</span>
+                        <span class="badge" style="background-color:${data.Bg || data.bg}; color:${data.Txt || data.txt}">${data.Name || data.name}</span>
                     </div>
                     <button type="button" class="btn btn-sm btn-outline-danger btn-remove-flow border-0"><i class="bi bi-trash"></i></button>
                     <input type="hidden" value="${statusId}" />
@@ -163,18 +166,41 @@
 
             $('#flowContainer').append(flowRow);
             reorderAll();
+            updateStatusDropdown();
             $('#tempStatus').val("");
         });
 
         $(document).on('click', '.btn-remove-pill', function() { $(this).closest('.badge').remove(); reorderAll(); });
-        $(document).on('click', '.btn-remove-flow', function() { $(this).closest('.flow-item').remove(); reorderAll(); });
+        $(document).on('click', '.btn-remove-flow', function() { $(this).closest('.flow-item').remove(); reorderAll(); updateStatusDropdown(); });
 
-        // --- 5. ENVÍO DE DATOS (SUBMIT) ---
         $(document).off("submit", "#formProcedureMaster, #formBulkProcedure")
                    .on("submit", "#formProcedureMaster, #formBulkProcedure", async function (e) {
             e.preventDefault();
             const form = e.target;
-            reorderAll(); 
+            reorderAll();
+
+            const flows = [];
+            $('#flowContainer .flow-item').each(function() {
+                flows.push({
+                    IdStatus: parseInt($(this).find('input[type="hidden"]').val()),
+                    StepOrder: parseInt($(this).find('.step-order-input').val())
+                });
+            });
+
+            if (flows.length > 0) {
+                const lastStep = flows[flows.length - 1];
+                const statusInfo = statusColors.find(x => (x.Id || x.id) == lastStep.IdStatus);
+
+                const isTerminal = statusInfo ? (statusInfo.IsTerminal || statusInfo.isTerminal || statusInfo.IsTerminalState || statusInfo.isTerminalState) : false;
+
+                if (isTerminal !== true && isTerminal !== 1) {
+                    showToast('warning', 'El último estado de la ruta debe ser un estado Final/Terminal.');
+                    return;
+                }
+            } else {
+                showToast('warning', 'Debes añadir al menos un estado al flujo.');
+                return;
+            }
 
             let bodyData;
             let headers = {};
@@ -186,13 +212,6 @@
                     reqs.push({
                         IdTypeDocument: parseInt($(this).find('input[type="hidden"]').eq(0).val()),
                         IsRequired: $(this).find('input[type="hidden"]').eq(1).val() === "true"
-                    });
-                });
-                const flows = [];
-                $('#flowContainer .flow-item').each(function() {
-                    flows.push({
-                        IdStatus: parseInt($(this).find('input[type="hidden"]').val()),
-                        StepOrder: parseInt($(this).find('.step-order-input').val())
                     });
                 });
 
@@ -217,10 +236,26 @@
                 } else {
                     showToast('error', result.errors ? result.errors.join(" | ") : "Error al guardar");
                 }
-            } catch (e) { showToast('error', 'Error en el servidor'); }
+            } catch (e) { showToast('error', 'Error de conexión con el servidor'); }
         });
 
-        // --- 6. ACCIONES MASIVAS (BULK) ---
+        $(document).on("submit", "#formDeleteProcedure", async function (e) {
+            e.preventDefault();
+            const form = e.target;
+            try {
+                const response = await fetch(form.action, { method: 'POST', body: new FormData(form) });
+                const result = await response.json();
+                if (result.success) {
+                    showToast('success', 'Registro eliminado correctamente');
+                    setTimeout(() => { location.reload(); }, 1000);
+                } else {
+                    showToast('error', result.message || 'No se pudo eliminar el registro.');
+                }
+            } catch (error) {
+                showToast('error', 'Error en el servidor.');
+            }
+        });
+
         window.bulkEdit = () => {
             const count = $('.row-checkbox:checked').length;
             if(count === 0) return showToast('info', 'Selecciona trámites');
@@ -230,7 +265,6 @@
         window.bulkDelete = async () => {
             const ids = $('.row-checkbox:checked').map((_, el) => parseInt(el.value)).get();
             if(ids.length === 0) return;
-
             const result = await Swal.fire({
                 title: '¿Eliminar seleccionados?',
                 text: `Borrarás ${ids.length} trámites.`,
@@ -239,7 +273,6 @@
                 confirmButtonColor: '#620900',
                 confirmButtonText: 'Sí, borrar'
             });
-
             if (result.isConfirmed) {
                 const res = await fetch('/Procedures/ProcedureConfiguration/BulkDelete', {
                     method: 'POST',
@@ -254,7 +287,6 @@
             }
         };
 
-        // --- 7. CHECKBOX LOGIC ---
         $(document).on('change', '#checkAll', function () {
             const isChecked = $(this).is(':checked');
             $('.row-checkbox').prop('checked', isChecked).closest('tr').toggleClass('table-active', isChecked);
@@ -334,7 +366,7 @@
             <table id="mainTable" class="table table-hover">
                 <thead class="burgundy-header text-white">
                     <tr>
-                        <th class="no-sort text-center"> <input type="checkbox" id="checkAll"> </th>
+                        <th class="no-sort text-center"> <input type="checkbox" id="checkAll" class="form-check-input"> </th>
                         <th style="width: 20%;">Nombre del Trámite</th>
                         <th style="width: 17%;">Documentos</th>
                         <th style="width: 13%;">Área</th>

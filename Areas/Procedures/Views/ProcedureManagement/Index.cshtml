@@ -34,8 +34,7 @@
 
                 }).fail(function(xhr) {
                     Swal.close();
-                    console.error("Error al cargar:", xhr.responseText);
-                    Swal.fire('Error', 'No se pudo cargar el seguimiento. Verifique que la ruta sea correcta.', 'error');
+                    showToast('error', 'No se pudo cargar el seguimiento. Verifique la conexión.');
                 });
             }
 
@@ -44,12 +43,14 @@
 
                 $.post('/Procedures/ProcedureManagement/UpdateStatus', formData, function (response) {
                     if (response.success) {
-                        Swal.fire('¡Éxito!', response.message, 'success').then(() => {
-                            location.reload();
-                        });
+                        showToast('success', '¡Estatus actualizado!');
+                    
+                        setTimeout(() => location.reload(), 1000);
                     } else {
-                        Swal.fire('Error', response.message, 'error');
+                        showToast('error', response.message || 'Fallo en la actualización');
                     }
+                }).fail(function() {
+                    showToast('error', 'Error de red al actualizar');
                 });
             }
 
@@ -146,10 +147,14 @@
                         },
                         success: function (r) {
                             if (r.success) {
-                                Swal.fire('¡Éxito!', r.message, 'success').then(() => location.reload());
+                                showToast('success', 'Trámites eliminados correctamente');
+                                setTimeout(() => location.reload(), 1000);
                             } else {
-                                Swal.fire('Error', r.message, 'error');
+                                showToast('error', r.message || 'Error al eliminar');
                             }
+                        },
+                        error: function() {
+                            showToast('error', 'Error de comunicación con el servidor');
                         }
                     });
                 }
@@ -180,7 +185,7 @@
                 <table id="mainTable" class="table table-hover align-middle mb-0">
                     <thead class="small burgundy-header text-white">
                         <tr>
-                            <th class="no-sort text-center"> <input type="checkbox" id="checkAll"> </th>
+                            <th class="no-sort text-center"> <input type="checkbox" id="checkAll" class="form-check-input"> </th>
                             <th class="ps-4">Folio / Fecha</th>
                             <th>Alumno / Remitente</th>
                             <th>Trámite / Asunto</th>

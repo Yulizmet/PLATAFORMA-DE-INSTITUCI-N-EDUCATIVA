@@ -43,7 +43,8 @@ namespace SchoolManager.Areas.Procedures.Controllers
                 Id = s.Id,
                 Name = s.Name,
                 Bg = s.BackgroundColor,
-                Txt = s.TextColor
+                Txt = s.TextColor,
+                IsTerminal = s.IsTerminalState
             }).ToList();
 
             ViewData["StatusData"] = statusData;
@@ -210,11 +211,9 @@ namespace SchoolManager.Areas.Procedures.Controllers
                         ptTarget.IdArea = procedureType.IdArea;
                         ptTarget.DateUpdated = DateTime.Now;
 
-                        if (requirementsList != null && requirementsList.Any())
+                        if (requirementsList != null)
                         {
-                            var currentReqIds = ptTarget.Requirements.Select(r => r.IdTypeDocument).ToList();
                             var newReqIds = requirementsList.Select(r => r.IdTypeDocument).ToList();
-
                             var reqsParaRemover = ptTarget.Requirements.Where(r => !newReqIds.Contains(r.IdTypeDocument)).ToList();
                             _context.ProcedureTypeRequirements.RemoveRange(reqsParaRemover);
 
@@ -228,28 +227,23 @@ namespace SchoolManager.Areas.Procedures.Controllers
 
                         if (flowList != null && flowList.Any())
                         {
-                            var newStatusIds = flowList.Select(f => f.IdStatus).ToList();
+                            var currentFlow = ptTarget.ProcedureFlow.OrderBy(f => f.StepOrder).Select(f => new { f.IdStatus, f.StepOrder }).ToList();
+                            var newFlow = flowList.OrderBy(f => f.StepOrder).Select(f => new { f.IdStatus, f.StepOrder }).ToList();
 
-                            var stepsToRemove = ptTarget.ProcedureFlow.Where(f => !newStatusIds.Contains(f.IdStatus)).ToList();
+                            bool flowsAreDifferent = !currentFlow.SequenceEqual(newFlow);
 
-                            foreach (var paso in stepsToRemove)
+                            if (flowsAreDifferent)
                             {
-                                bool hasActiveRequests = await _context.ProcedureRequest.AnyAsync(r => r.IdProcedureFlow == paso.Id);
+                                var stepIds = ptTarget.ProcedureFlow.Select(f => f.Id).ToList();
+                                bool hasActiveRequests = await _context.ProcedureRequest.AnyAsync(r => stepIds.Contains(r.IdProcedureFlow));
+
                                 if (hasActiveRequests)
                                 {
-                                    return Json(new { success = false, errors = new[] { $"No se puede eliminar el estado '{paso.IdStatus}' porque hay trámites de alumnos usándolo." } });
+                                    return Json(new { success = false, errors = new[] { "Se actualizaron los datos básicos, pero el flujo de estados NO se puede modificar porque hay trámites de alumnos en proceso." } });
                                 }
-                                _context.ProcedureFlow.Remove(paso);
-                            }
 
-                            foreach (var flow in flowList)
-                            {
-                                var existingFlow = ptTarget.ProcedureFlow.FirstOrDefault(f => f.IdStatus == flow.IdStatus);
-                                if (existingFlow != null)
-                                {
-                                    existingFlow.StepOrder = flow.StepOrder;
-                                }
-                                else
+                                _context.ProcedureFlow.RemoveRange(ptTarget.ProcedureFlow);
+                                foreach (var flow in flowList)
                                 {
                                     _context.ProcedureFlow.Add(new procedure_flow
                                     {
@@ -258,6 +252,16 @@ namespace SchoolManager.Areas.Procedures.Controllers
                                         StepOrder = flow.StepOrder
                                     });
                                 }
+                            }
+                        }
+
+                        var lastStep = flowList?.OrderByDescending(f => f.StepOrder).FirstOrDefault();
+                        if (lastStep != null)
+                        {
+                            var lastStatus = await _context.ProcedureStatus.FirstOrDefaultAsync(s => s.Id == lastStep.IdStatus);
+                            if (lastStatus == null || !lastStatus.IsTerminalState)
+                            {
+                                return Json(new { success = false, errors = new[] { "El último estado debe ser terminal." } });
                             }
                         }
                     }
@@ -271,18 +275,7 @@ namespace SchoolManager.Areas.Procedures.Controllers
                 catch (Exception ex)
                 {
                     await transaction.RollbackAsync();
-                    string mensajeAmigable = "Ocurrió un error al guardar los cambios.";
-
-                    if (ex.InnerException != null && ex.InnerException.Message.Contains("FK_procedure_request_flow"))
-                    {
-                        mensajeAmigable = "No se puede modificar o eliminar un estado del flujo que ya tiene solicitudes de alumnos en proceso.";
-                    }
-                    else if (ex.InnerException != null)
-                    {
-                        mensajeAmigable = "Error de base de datos: " + ex.InnerException.Message;
-                    }
-
-                    return Json(new { success = false, errors = new[] { mensajeAmigable } });
+                    return Json(new { success = false, errors = new[] { "Error: " + (ex.InnerException?.Message ?? ex.Message) } });
                 }
             }
             return Json(new { success = false, errors = new[] { "Datos inválidos" } });
