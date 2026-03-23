@@ -133,6 +133,38 @@
         @if (roleId == 3)
         {
             <div class="col-md-6 col-lg-4">
+                <a asp-area="Gestion" asp-controller="Tutorship" asp-action="ListaDeAlumnos" class="text-decoration-none">
+                    <div class="card dashboard-card shadow-sm p-4 text-center h-100">
+                        <div class="card-icon-box" style="background-color: var(--utt-beige); color: var(--utt-dark-red);">
+                            <i class="bi bi-people-fill"></i>
+                        </div>
+                        <h5 class="fw-bold mt-3" style="color: var(--utt-red);">LISTA DE ALUMNOS</h5>
+                        <p class="text-muted small">Directorio general de la escuela</p>
+                        <hr class="my-3" style="border-color: var(--utt-beige);">
+                        <span class="status-badge">
+                            VER LISTA <i class="bi bi-arrow-right-short"></i>
+                        </span>
+                    </div>
+                </a>
+            </div>
+
+            <div class="col-md-6 col-lg-4">
+                <a asp-area="Gestion" asp-controller="Tutorship" asp-action="Asistencia" class="text-decoration-none">
+                    <div class="card dashboard-card shadow-sm p-4 text-center h-100">
+                        <div class="card-icon-box" style="background-color: var(--utt-beige); color: var(--utt-dark-red);">
+                            <i class="bi bi-calendar-check-fill"></i>
+                        </div>
+                        <h5 class="fw-bold mt-3" style="color: var(--utt-red);">CONTROL ASISTENCIA</h5>
+                        <p class="text-muted small">Revisar asistencia por grupos</p>
+                        <hr class="my-3" style="border-color: var(--utt-beige);">
+                        <span class="status-badge">
+                            VER ASISTENCIA <i class="bi bi-arrow-right-short"></i>
+                        </span>
+                    </div>
+                </a>
+            </div>
+
+            <div class="col-md-6 col-lg-4">
                 <a asp-area="Gestion" asp-controller="Tutorship" asp-action="AsignarTutores" class="text-decoration-none">
                     <div class="card dashboard-card shadow-sm p-4 text-center h-100">
                         <div class="card-icon-box" style="background-color: var(--utt-beige); color: var(--utt-dark-red);">
@@ -148,7 +180,7 @@
                 </a>
             </div>
 
-            <div class="col-md-6 col-lg-4">
+            <div class="col-md-6 col-lg-4 mt-3">
                 <a asp-area="Gestion" asp-controller="Tutorship" asp-action="ReporteEntrevistas" class="text-decoration-none">
                     <div class="card dashboard-card shadow-sm p-4 text-center h-100">
                         <div class="card-icon-box" style="background-color: var(--utt-beige); color: var(--utt-dark-red);">
@@ -164,7 +196,7 @@
                 </a>
             </div>
 
-            <div class="col-md-6 col-lg-4">
+            <div class="col-md-6 col-lg-4 mt-3">
                 <div class="card dashboard-card shadow-sm p-4 text-center h-100">
                     <div class="card-icon-box" style="background-color: var(--utt-beige); color: var(--utt-dark-red);">
                         <i class="bi bi-arrow-clockwise"></i>
@@ -185,6 +217,7 @@
 
     </div>
 </div>
+
 <div class="modal fade" id="modalNuevoCiclo" tabindex="-1" aria-labelledby="modalNuevoCicloLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 shadow-lg">
