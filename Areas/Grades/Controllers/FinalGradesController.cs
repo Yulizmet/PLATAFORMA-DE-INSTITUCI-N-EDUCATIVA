@@ -1,8 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using SchoolManager.Data;
-using SchoolManager.Models;
 using SchoolManager.Areas.Grades.ViewModels.FinalGrades;
+using SchoolManager.Data;
+using SchoolManager.Helpers;
+using SchoolManager.Models;
 
 namespace SchoolManager.Areas.Grades.Controllers
 {
@@ -17,9 +18,9 @@ namespace SchoolManager.Areas.Grades.Controllers
         }
 
         // GET: FinalGrades/Index
-        public async Task<IActionResult> Index(int? groupId, int? subjectId)
+        public async Task<IActionResult> Index()
         {
-            var teacherId = 4; // Temporal, igual que en GradeCapture
+            var teacherId = User.GetUserId();
 
             var classes = await _context.grades_TeacherSubjectGroups
                 .Include(tsg => tsg.TeacherSubject)
@@ -29,6 +30,7 @@ namespace SchoolManager.Areas.Grades.Controllers
                 .Where(tsg => tsg.TeacherSubject.TeacherId == teacherId)
                 .Select(tsg => new
                 {
+                    tsg.TeacherSubjectGroupId,
                     tsg.GroupId,
                     GroupName = tsg.Group.Name,
                     tsg.TeacherSubject.SubjectId,
@@ -37,18 +39,8 @@ namespace SchoolManager.Areas.Grades.Controllers
                 })
                 .ToListAsync();
 
-            ViewBag.Classes = classes;
-            ViewBag.SelectedGroupId = groupId;
-            ViewBag.SelectedSubjectId = subjectId;
-
-            if (groupId.HasValue && subjectId.HasValue)
-            {
-                return RedirectToAction(nameof(Details), new { groupId, subjectId });
-            }
-
-            return View();
+            return View(classes);
         }
-
         // GET: FinalGrades/Details/5
         public async Task<IActionResult> Details(int groupId, int subjectId)
         {

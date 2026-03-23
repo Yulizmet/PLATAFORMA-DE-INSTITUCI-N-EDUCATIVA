@@ -31,11 +31,10 @@
 
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto align-items-center flex-nowrap" style="gap: 0.25rem;">
+
                     <li class="nav-item">
                         <a class="nav-link px-2" style="font-size: 0.875rem; white-space: nowrap;"
-                           asp-area="MainScreen"
-                           asp-controller="MainScreen"
-                           asp-action="Index">
+                           asp-area="MainScreen" asp-controller="MainScreen" asp-action="Index">
                             <i class="bi bi-house-fill me-1"></i> Inicio
                         </a>
                     </li>
@@ -70,78 +69,74 @@
                         </li>
                     }
 
-                    <li class="nav-item">
-                        <a class="nav-link px-2" style="font-size: 0.875rem; white-space: nowrap;"
-                           asp-area="MainScreen"
-                           asp-controller="MainScreen"
-                           asp-action="SistemaEscolar">
-                            Sistema Escolar
-                        </a>
-                    </li>
+                    @* Solo Student *@
+                    @if (User.IsInRole("Student"))
+                    {
+                        <li class="nav-item">
+                            <a class="nav-link px-2" style="font-size: 0.875rem; white-space: nowrap;"
+                               asp-area="MainScreen" asp-controller="MainScreen" asp-action="SistemaEscolar">
+                                Sistema Escolar
+                            </a>
+                        </li>
+                    }
 
+                    @* Solo Administrator *@
+                    @if (User.IsInRole("Administrator"))
+                    {
+                        <li class="nav-item">
+                            <a class="nav-link px-2" style="font-size: 0.875rem; white-space: nowrap;"
+                               asp-area="MainScreen" asp-controller="MainScreen" asp-action="PanelAdministrativo">
+                                Panel Administrativo
+                            </a>
+                        </li>
+                    }
 
-                    <li class="nav-item">
-                        <a class="nav-link px-2" style="font-size: 0.875rem; white-space: nowrap;"
-                           asp-area="MainScreen"
-                           asp-controller="MainScreen"
-                           asp-action="PanelAdministrativo">
-                            Panel Administrativo
-                        </a>
-                    </li>
+                    @* Solo Teacher *@
+                    @if (User.IsInRole("Teacher") || User.IsInRole("Administrator"))
+                    {
+                        <li class="nav-item">
+                            <a class="nav-link px-2" style="font-size: 0.875rem; white-space: nowrap;"
+                               asp-area="MainScreen" asp-controller="MainScreen" asp-action="CalificacionesDocente">
+                                Calificaciones
+                            </a>
+                        </li>
+                    }
 
-                    <li class="nav-item">
-                        <a class="nav-link px-2" style="font-size: 0.875rem; white-space: nowrap;"
-                           asp-area="MainScreen"
-                           asp-controller="MainScreen"
-                           asp-action="CalificacionesDocente">
-                            Calificaciones
-                        </a>
-                    </li>
+                    @* Solo Student *@
+                    @if (User.IsInRole("Student"))
+                    {
+                        <li class="nav-item">
+                            <a class="nav-link px-2" style="font-size: 0.875rem; white-space: nowrap;"
+                               asp-area="MainScreen" asp-controller="MainScreen" asp-action="CalificacionesEstudiante">
+                                Mis Calificaciones
+                            </a>
+                        </li>
+                    }
 
-                    <li class="nav-item">
-                        <a class="nav-link px-2" style="font-size: 0.875rem; white-space: nowrap;"
-                           asp-area="MainScreen"
-                           asp-controller="MainScreen"
-                           asp-action="CalificacionesEstudiante">
-                            Mis Calificaciones
-                        </a>
-                    </li>
+                    @* Todos los autenticados *@
+                    @if (User.Identity?.IsAuthenticated == true)
+                    {
+                        <li class="nav-item">
+                            <a asp-area="MainScreen" asp-controller="MainScreen" asp-action="Extension"
+                            class="nav-link px-2" style="font-size: 0.875rem; white-space: nowrap;">
+                                Extensión
+                            </a>
+                        </li>
 
-                    <li class="nav-item">
-                        <a asp-area="MainScreen"
-                           asp-controller="MainScreen"
-                           asp-action="Extension"
-                           class="nav-link px-2" style="font-size: 0.875rem; white-space: nowrap;">
-                            Extensión
-                        </a>
-                    </li>
+                        <li class="nav-item">
+                            <a asp-area="MainScreen" asp-controller="MainScreen" asp-action="Tramites"
+                            class="nav-link px-2" style="font-size: 0.875rem; white-space: nowrap;">
+                                Trámites
+                            </a>
+                        </li>
+                    }
 
-                    <li class="nav-item">
-                        <a asp-area="MainScreen"
-                           asp-controller="MainScreen"
-                           asp-action="Tramites"
-                           class="nav-link px-2" style="font-size: 0.875rem; white-space: nowrap;">
-                            Trámites
-                        </a>
-                    </li>
-
-                    
 
                     <li class="nav-item">
                         <a class="nav-link px-2" href="#" style="font-size: 0.875rem; white-space: nowrap;">Sobre Nosotros</a>
                     </li>
 
-                    @if (User.Identity?.IsAuthenticated == true)
-                    {
-                        <li class="nav-item">
-                            <form asp-area="UserMng" asp-controller="Account" asp-action="Logout" method="post" class="d-inline">
-                                @Html.AntiForgeryToken()
-                                <button type="submit" class="nav-link btn btn-link text-decoration-none px-2" style="font-size: 0.875rem; white-space: nowrap;">
-                                    <i class="bi bi-box-arrow-right me-1"></i> Cerrar Sesión
-                                </button>
-                            </form>
-                        </li>
-                    }
+
                     <a asp-area="MainScreen"
                        asp-controller="MainScreen"
                        asp-action="Tramites"
@@ -174,6 +169,18 @@
                     <li class="nav-item">
                         <a class="nav-link" href="#">Sobre Nosotros</a>
                     </li>
+
+                    @if (User.Identity?.IsAuthenticated == true)
+                    {
+                        <li class="nav-item">
+                            <form asp-area="UserMng" asp-controller="Account" asp-action="Logout" method="post" class="d-inline">
+                                @Html.AntiForgeryToken()
+                                <button type="submit" class="nav-link btn btn-link text-decoration-none px-2" style="font-size: 0.875rem; white-space: nowrap;">
+                                    <i class="bi bi-box-arrow-right me-1"></i> Cerrar Sesión
+                                </button>
+                            </form>
+                        </li>
+                    }
                 </ul>
             </div>
         </div>

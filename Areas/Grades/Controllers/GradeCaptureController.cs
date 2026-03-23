@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using MiniExcelLibs;
 using SchoolManager.Areas.Grades.ViewModels.GradeCapture;
 using SchoolManager.Data;
+using SchoolManager.Helpers;
 using SchoolManager.Models;
 using System.Globalization;
 using System.Security.Claims;
@@ -33,7 +34,8 @@ namespace SchoolManager.Areas.Grades.Controllers
                     .ThenInclude(ts => ts.Subject)
                         .ThenInclude(s => s.GradeLevel)
                 .Include(tsg => tsg.Group)
-                .Where(tsg => tsg.TeacherSubject.TeacherId == teacherId)
+                .Where(tsg => tsg.TeacherSubject.TeacherId == teacherId
+                    && tsg.TeacherSubject.Subject.GradeLevel.IsOpen)
                 .Select(tsg => new TeacherClassViewModel
                 {
                     TeacherSubjectGroupId = tsg.TeacherSubjectGroupId,
@@ -188,7 +190,7 @@ namespace SchoolManager.Areas.Grades.Controllers
 
             await _context.SaveChangesAsync();
             TempData["Success"] = "Calificaciones guardadas exitosamente";
-
+            await TryAutoCalculateFinalGrades(viewModel.GroupId, unit.SubjectId, viewModel.UnitId);
             return RedirectToAction(nameof(Capture), new
             {
                 teacherSubjectGroupId = viewModel.TeacherSubjectGroupId,
@@ -407,12 +409,107 @@ namespace SchoolManager.Areas.Grades.Controllers
         }
         private int GetCurrentTeacherId()
         {
-            //Propuesta para obtener el ID del profesor logueado usando claims
-            // var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            // return int.Parse(userId);
+            return User.GetUserId();
+        }
+        private async Task TryAutoCalculateFinalGrades(int groupId, int subjectId, int savedUnitId)
+        {
+            // 1. Obtener todas las unidades de la materia
+            var allUnits = await _context.grades_SubjectUnits
+                .Where(u => u.SubjectId == subjectId)
+                .ToListAsync();
 
-            // TEMPORAL PARA PRUEBAS ESTATICO CON VALOR 4
-            return 4; 
+            if (!allUnits.Any()) return;
+
+            // 2. Verificar que todas las unidades tienen calificaciones para todos los estudiantes del grupo
+            var enrolledStudentIds = await _context.grades_Enrollments
+                .Where(e => e.GroupId == groupId)
+                .Select(e => e.StudentId)
+                .ToListAsync();
+
+            if (!enrolledStudentIds.Any()) return;
+
+            var unitIds = allUnits.Select(u => u.UnitId).ToList();
+
+            var gradedCombinations = await _context.grades_Grades
+                .Where(g => g.GroupId == groupId && unitIds.Contains(g.SubjectUnitId))
+                .Select(g => new { g.StudentId, g.SubjectUnitId })
+                .ToListAsync();
+
+            // Verificar que cada alumno tiene calificación en cada unidad
+            bool allGraded = enrolledStudentIds.All(studentId =>
+                unitIds.All(unitId =>
+                    gradedCombinations.Any(g => g.StudentId == studentId && g.SubjectUnitId == unitId)
+                )
+            );
+
+            if (!allGraded) return;
+
+            // 3. Obtener nivel para calificación mínima
+            var subject = await _context.grades_Subjects
+                .Include(s => s.GradeLevel)
+                .FirstOrDefaultAsync(s => s.SubjectId == subjectId);
+
+            if (subject == null) return;
+
+            var minPassingGrade = subject.MinPassingGrade ?? subject.GradeLevel.MinPassingGrade;
+            if (minPassingGrade == 0) minPassingGrade = 6.0m;
+
+            // 4. Obtener todas las calificaciones con sus recuperaciones
+            var allGrades = await _context.grades_Grades
+                .Include(g => g.Recoveries)
+                .Where(g => g.GroupId == groupId && unitIds.Contains(g.SubjectUnitId))
+                .ToListAsync();
+
+            var existingFinals = await _context.grades_FinalGrades
+                .Where(f => f.GroupId == groupId && f.SubjectId == subjectId)
+                .ToDictionaryAsync(f => f.StudentId);
+
+            // 5. Calcular y guardar para cada alumno
+            foreach (var studentId in enrolledStudentIds)
+            {
+                var studentGrades = allGrades.Where(g => g.StudentId == studentId).ToList();
+                var gradeValues = studentGrades.Select(g =>
+                    g.Recoveries != null && g.Recoveries.Any()
+                        ? Math.Max(g.Value, g.Recoveries.First().Value)
+                        : g.Value
+                ).ToList();
+
+                while (gradeValues.Count < allUnits.Count) gradeValues.Add(0);
+
+                var finalValue = gradeValues.Average();
+
+                if (existingFinals.TryGetValue(studentId, out var existing) && existing.ExtraordinaryGrade != null)
+                {
+                    // No sobreescribir si ya tiene extraordinario asignado
+                    existing.Value = finalValue;
+                    existing.Passed = existing.ExtraordinaryGrade.Value >= minPassingGrade;
+                }
+                else if (existing != null)
+                {
+                    existing.Value = finalValue;
+                    existing.Passed = finalValue >= minPassingGrade;
+                    existing.MinPassingGradeUsed = minPassingGrade;
+                    existing.CreatedAt = DateTime.Now;
+                }
+                else
+                {
+                    _context.grades_FinalGrades.Add(new grades_final_grades
+                    {
+                        StudentId = studentId,
+                        SubjectId = subjectId,
+                        GroupId = groupId,
+                        Value = finalValue,
+                        Passed = finalValue >= minPassingGrade,
+                        MinPassingGradeUsed = minPassingGrade,
+                        CalculationMethod = "Automático al completar unidades",
+                        ConsideredRecoveries = true,
+                        CreatedAt = DateTime.Now
+                    });
+                }
+            }
+
+            await _context.SaveChangesAsync();
+            TempData["Success"] = "Calificaciones guardadas. ¡Se calcularon las finales automáticamente al completar todas las unidades!";
         }
     }
 }   

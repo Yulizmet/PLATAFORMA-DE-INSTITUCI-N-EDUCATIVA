@@ -19,7 +19,7 @@ namespace SchoolManager.Areas.UserMng.Controllers
         {
             _context = context;
         }
-        
+
         [HttpGet]
         public IActionResult Login(string? returnUrl = null)
         {
@@ -40,7 +40,7 @@ namespace SchoolManager.Areas.UserMng.Controllers
             var usuario = _context.Users
                 .FirstOrDefault(u => u.Email == model.Email && u.IsActive == true);
 
-            if (usuario == null && !BCrypt.Net.BCrypt.Verify(model.Password, usuario.PasswordHash))
+            if (usuario == null || !BCrypt.Net.BCrypt.Verify(model.Password, usuario.PasswordHash))
             {
                 ModelState.AddModelError(string.Empty, "Correo o contraseña incorrectos.");
                 return View(model);

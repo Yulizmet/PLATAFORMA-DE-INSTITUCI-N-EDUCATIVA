@@ -1,76 +1,128 @@
-﻿@{
+﻿@using SchoolManager.Areas.Grades.ViewModels.Breadcrumbs;
+@{
     ViewData["Title"] = "Calificaciones Finales";
     Layout = "~/Areas/MainScreen/Views/Shared/_Layout.cshtml";
+    var breadcrumbs = new BreadcrumbViewModel();
+    breadcrumbs.AddItem("Calificaciones", "/CalificacionesDocente");
+    breadcrumbs.AddItem("Calificaciones Finales");
 }
+<partial name="_Breadcrumb" model="breadcrumbs" />
 
 <div class="container-fluid py-4">
-    <h1 class="users-title mb-4">
-        <i class="bi bi-clipboard-data me-2"></i>Calificaciones Finales
-    </h1>
-
-    <div class="row justify-content-center">
-        <div class="col-md-6">
-            <div class="sistema-card">
-                <h5 class="fw-bold mb-4">Selecciona un grupo y materia</h5>
-
-                <form method="get" asp-action="Details">
-                    <div class="mb-3">
-                        <label class="form-label fw-semibold">Grupo</label>
-                        <select name="groupId" class="form-select" required>
-                            <option value="">-- Selecciona un grupo --</option>
-                            @foreach (var item in ViewBag.Classes)
-                            {
-                                <option value="@item.GroupId" selected="@(item.GroupId == ViewBag.SelectedGroupId)">
-                                    @item.GroupName - @item.GradeLevelName
-                                </option>
-                            }
-                        </select>
-                    </div>
-
-                    <div class="mb-4">
-                        <label class="form-label fw-semibold">Materia</label>
-                        <select name="subjectId" class="form-select" required>
-                            <option value="">-- Selecciona una materia --</option>
-                            @foreach (var item in ViewBag.Classes)
-                            {
-                                <option value="@item.SubjectId"
-                                        data-group="@item.GroupId"
-                                        selected="@(item.SubjectId == ViewBag.SelectedSubjectId && item.GroupId == ViewBag.SelectedGroupId)">
-                                    @item.SubjectName
-                                </option>
-                            }
-                        </select>
-                    </div>
-
-                    <button type="submit" class="btn btn-calificaciones w-100">
-                        <i class="bi bi-eye me-2"></i>Ver Calificaciones
-                    </button>
-                </form>
-            </div>
-        </div>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="users-title">
+            <i class="bi bi-clipboard-data me-2"></i>Calificaciones Finales
+        </h1>
     </div>
+
+    @{
+        var classes = Model as IEnumerable<dynamic>;
+        var list = classes?.ToList() ?? new List<dynamic>();
+    }
+
+    @if (!list.Any())
+    {
+        <div class="text-center py-5">
+            <i class="bi bi-clipboard-data" style="font-size: 4rem; color: #B1A596;"></i>
+            <h5 class="text-muted mt-3">No tienes clases asignadas</h5>
+        </div>
+    }
+    else
+    {
+        <div class="d-flex flex-wrap gap-3 mb-4 align-items-center">
+            <div style="min-width: 200px;">
+                <select id="filterGradeLevel" class="form-select">
+                    <option value="">Todos los niveles</option>
+                    @foreach (var level in ((IEnumerable<dynamic>)list).Select(c => (string)c.GradeLevelName).Distinct().OrderBy(x => x))
+                    {
+                        <option value="@level">@level</option>
+                    }
+                </select>
+            </div>
+            <div style="min-width: 200px;">
+                <select id="filterGroup" class="form-select">
+                    <option value="">Todos los grupos</option>
+                    @foreach (var group in ((IEnumerable<dynamic>)list).Select(c => (string)c.GroupName).Distinct().OrderBy(x => x))
+                    {
+                        <option value="@group">@group</option>
+                    }
+                </select>
+            </div>
+            <span id="filterCount" class="text-muted small"></span>
+            <button type="button" id="btnClearFilters" class="btn btn-outline-secondary btn-sm d-none">
+                <i class="bi bi-x-circle me-1"></i>Limpiar filtros
+            </button>
+        </div>
+
+        <div class="row" id="classesGrid">
+            @foreach (var item in list)
+            {
+                <div class="col-md-6 col-lg-4 mb-4 class-card"
+                     data-gradelevel="@item.GradeLevelName"
+                     data-group="@item.GroupName">
+                    <div class="sistema-card border-calificaciones h-100">
+                        <div class="sistema-icon icon-calificaciones mb-4">
+                            <i class="bi bi-clipboard-check"></i>
+                        </div>
+                        <h4 class="fw-bold mb-2" style="color: #1f2937;">@item.SubjectName</h4>
+                        <p class="text-muted mb-1">
+                            <i class="bi bi-people me-1"></i>Grupo: @item.GroupName
+                        </p>
+                        <p class="text-muted mb-3">
+                            <i class="bi bi-layers me-1"></i>@item.GradeLevelName
+                        </p>
+                        <div class="mt-3">
+                            <a asp-action="Details"
+                               asp-route-groupId="@item.GroupId"
+                               asp-route-subjectId="@item.SubjectId"
+                               class="btn btn-calificaciones w-100">
+                                <i class="bi bi-eye me-2"></i>Ver Calificaciones Finales
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+
+        <div id="noResults" class="text-center py-5 d-none">
+            <i class="bi bi-search" style="font-size: 3rem; color: #B1A596;"></i>
+            <h5 class="text-muted mt-3">Sin resultados</h5>
+        </div>
+    }
 </div>
 
-<script>
-    // Filtrar materias por grupo seleccionado
-    document.querySelector('select[name="groupId"]').addEventListener('change', function() {
-        var groupId = this.value;
-        var subjectSelect = document.querySelector('select[name="subjectId"]');
-        var options = subjectSelect.querySelectorAll('option');
+@section Scripts {
+    <script>
+        const cards     = document.querySelectorAll('.class-card');
+        const selLevel  = document.getElementById('filterGradeLevel');
+        const selGroup  = document.getElementById('filterGroup');
+        const count     = document.getElementById('filterCount');
+        const noResults = document.getElementById('noResults');
+        const btnClear  = document.getElementById('btnClearFilters');
 
-        options.forEach(opt => {
-            if (opt.value === "") return;
-            var optGroup = opt.getAttribute('data-group');
-            if (optGroup === groupId) {
-                opt.style.display = "";
-            } else {
-                opt.style.display = "none";
-            }
+        function applyFilters() {
+            const level = selLevel.value;
+            const group = selGroup.value;
+            let visible = 0;
+
+            cards.forEach(card => {
+                const match = (!level || card.dataset.gradelevel === level)
+                           && (!group || card.dataset.group === group);
+                card.classList.toggle('d-none', !match);
+                if (match) visible++;
+            });
+
+            count.textContent = visible < cards.length ? `${visible} de ${cards.length} clases` : '';
+            noResults.classList.toggle('d-none', visible > 0);
+            btnClear.classList.toggle('d-none', !level && !group);
+        }
+
+        selLevel.addEventListener('change', applyFilters);
+        selGroup.addEventListener('change', applyFilters);
+        btnClear.addEventListener('click', () => {
+            selLevel.value = '';
+            selGroup.value = '';
+            applyFilters();
         });
-
-        subjectSelect.value = "";
-    });
-
-    // Trigger inicial
-    document.querySelector('select[name="groupId"]').dispatchEvent(new Event('change'));
-</script>
+    </script>
+}
