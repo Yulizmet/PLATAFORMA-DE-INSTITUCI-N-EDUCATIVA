@@ -412,7 +412,7 @@ namespace SchoolManager.Pages.Estadisticas
             {
                 // Step 0 — verify table is reachable
                 step = 0;
-                int tableCount = _context.MedicalPsychologyAppointments.Count();
+                int tableCount = _context.MedicalPsychology.Count();
                 debug.AppendLine($"[OK] Paso 0 — filas en BD: {tableCount}");
 
                 if (tableCount == 0)
@@ -425,12 +425,12 @@ namespace SchoolManager.Pages.Estadisticas
 
                 // Step 1 — fetch every appointment row; no joins so no rows are dropped
                 step = 1;
-                var appts = _context.MedicalPsychologyAppointments
+                var appts = _context.MedicalPsychology
                     .OrderByDescending(a => a.CreatedAt)
                     .Select(a => new
                     {
-                        a.AppointmentId,
-                        a.Folio,
+                        Id = a.Id,          
+                        Folio = a.Fol,      
                         a.PreenrollmentId,
                         a.AttendanceStatus,
                         a.PsychologyObservations,
@@ -443,8 +443,7 @@ namespace SchoolManager.Pages.Estadisticas
                 // Step 2 — fetch preenrollment records only for the IDs that exist
                 step = 2;
                 var preIds = appts
-                    .Where(a => a.PreenrollmentId.HasValue)
-                    .Select(a => a.PreenrollmentId!.Value)
+                    .Select(a => a.PreenrollmentId)
                     .Distinct().ToList();
                 debug.AppendLine($"[OK] Paso 2 — preenrollment IDs únicos: {preIds.Count}");
 
@@ -474,8 +473,7 @@ namespace SchoolManager.Pages.Estadisticas
                 PsychologyLogs = appts.Select(a =>
                 {
                     string? firstName = null, lastName = null, matricula = null;
-                    if (a.PreenrollmentId.HasValue &&
-                        preDict.TryGetValue(a.PreenrollmentId.Value, out var pre))
+                    if (preDict.TryGetValue(a.PreenrollmentId, out var pre))
                     {
                         matricula = pre.Matricula;
                         if (pre.UserId.HasValue &&
@@ -488,13 +486,13 @@ namespace SchoolManager.Pages.Estadisticas
                     var name = $"{firstName ?? ""} {lastName ?? ""}".Trim();
                     return new PsychologyLogStatisticsVM
                     {
-                        Id                    = a.AppointmentId,
+                        Id = a.Id,
                         Folio                 = string.IsNullOrWhiteSpace(a.Folio) ? "Sin folio" : a.Folio,
                         StudentName           = string.IsNullOrWhiteSpace(name) ? "Sin nombre" : name,
                         EnrollmentOrMatricula = string.IsNullOrWhiteSpace(matricula) ? "Sin matrícula" : matricula,
                         AttendanceStatus      = string.IsNullOrWhiteSpace(a.AttendanceStatus) ? "Sin estado" : a.AttendanceStatus,
                         Observations          = string.IsNullOrWhiteSpace(a.PsychologyObservations) ? "" : a.PsychologyObservations,
-                        AppointmentDate       = a.AppointmentDatetime ?? a.CreatedAt,
+                        AppointmentDate       = a.AppointmentDatetime,
                         CreatedAt             = a.CreatedAt
                     };
                 }).ToList();
@@ -517,19 +515,19 @@ namespace SchoolManager.Pages.Estadisticas
             try
             {
                 // Step 1 — fetch every medical record row; no joins so no rows are dropped
-                var records = _context.MedicalRecords
+                var records = _context.MedicalLogbooks
                     .OrderByDescending(r => r.CreatedAt)
                     .Select(r => new
                     {
-                        r.RecordId,
+                        Id = r.Id,                          
                         r.Folio,
-                        r.StudentId,
-                        r.ConsultationReason,
-                        r.VitalSigns,
-                        r.Observations,
-                        r.TreatmentAction,
-                        r.Status,
-                        r.RecordDatetime,
+                        StudentId = (int?)r.IdAlumno,       
+                        ConsultationReason = r.MotivoConsulta,
+                        VitalSigns = r.SignosVitales,
+                        Observations = r.Observaciones,
+                        TreatmentAction = r.Tratamiento,
+                        Status = r.Estado,
+                        RecordDatetime = (DateTime?)r.FechaHora,
                         r.CreatedAt
                     })
                     .ToList();
@@ -549,7 +547,7 @@ namespace SchoolManager.Pages.Estadisticas
                 // Step 3 — fetch matricula from preenrollment (one per student)
                 var matriculaDict = _context.PreenrollmentGenerals
                     .Where(p => p.UserId.HasValue && studentIds.Contains(p.UserId.Value))
-                    .Select(p => new { UserId = p.UserId!.Value, Matricula = (string?)p.Matricula })
+                    .Select(p => new { UserId = p.UserId.Value, Matricula = (string?)p.Matricula })
                     .ToList()
                     .GroupBy(p => p.UserId)
                     .ToDictionary(g => g.Key, g => g.First().Matricula);
@@ -568,7 +566,7 @@ namespace SchoolManager.Pages.Estadisticas
                     var name = $"{firstName ?? ""} {lastName ?? ""}".Trim();
                     return new MedicalLogStatisticsVM
                     {
-                        Id                    = r.RecordId,
+                        Id = r.Id,
                         Folio                 = string.IsNullOrWhiteSpace(r.Folio) ? "Sin folio" : r.Folio,
                         StudentName           = string.IsNullOrWhiteSpace(name) ? "Sin nombre" : name,
                         EnrollmentOrMatricula = string.IsNullOrWhiteSpace(matricula) ? "Sin matrícula" : matricula,

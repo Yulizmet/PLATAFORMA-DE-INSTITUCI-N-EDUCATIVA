@@ -31,7 +31,7 @@ namespace SchoolManager.Areas.Medical.Controllers
 
             var query = from b in _context.MedicalLogbooks
                         join a in _context.MedicalStudents on b.IdAlumno equals a.Id
-                        join pre in _context.MedicalPreenrollmentGenerals on a.PreenrollmentId equals pre.IdData
+                        join pre in _context.PreenrollmentGenerals on a.PreenrollmentId equals pre.IdData
                         join per in _context.Persons on pre.UserId equals per.PersonId
                         select new LogBookListVM
                         {
@@ -61,7 +61,7 @@ namespace SchoolManager.Areas.Medical.Controllers
             var datos = await (
                 from b in _context.MedicalLogbooks
                 join a in _context.MedicalStudents on b.IdAlumno equals a.Id
-                join pre in _context.MedicalPreenrollmentGenerals on a.PreenrollmentId equals pre.IdData
+                join pre in _context.PreenrollmentGenerals on a.PreenrollmentId equals pre.IdData
                 join per in _context.Persons on pre.UserId equals per.PersonId
                 where b.FechaHora >= desde && b.FechaHora < hasta
                 select new LogBookListVM
@@ -93,7 +93,7 @@ namespace SchoolManager.Areas.Medical.Controllers
             var datos = await (
                 from b in _context.MedicalLogbooks
                 join a in _context.MedicalStudents on b.IdAlumno equals a.Id
-                join pre in _context.MedicalPreenrollmentGenerals on a.PreenrollmentId equals pre.IdData
+                join pre in _context.PreenrollmentGenerals on a.PreenrollmentId equals pre.IdData
                 join per in _context.Persons on pre.UserId equals per.PersonId
                 where b.FechaHora >= desde && b.FechaHora < hasta
                 select new
@@ -124,7 +124,7 @@ namespace SchoolManager.Areas.Medical.Controllers
             var datos = await (
                 from b in _context.MedicalLogbooks
                 join a in _context.MedicalStudents on b.IdAlumno equals a.Id
-                join pre in _context.MedicalPreenrollmentGenerals on a.PreenrollmentId equals pre.IdData
+                join pre in _context.PreenrollmentGenerals on a.PreenrollmentId equals pre.IdData
                 join per in _context.Persons on pre.UserId equals per.PersonId
                 where b.FechaHora >= desde && b.FechaHora < hasta
                 select new
@@ -204,7 +204,7 @@ namespace SchoolManager.Areas.Medical.Controllers
             var bitacora = await (
                 from b in _context.MedicalLogbooks
                 join a in _context.MedicalStudents on b.IdAlumno equals a.Id
-                join pre in _context.MedicalPreenrollmentGenerals on a.PreenrollmentId equals pre.IdData
+                join pre in _context.PreenrollmentGenerals on a.PreenrollmentId equals pre.IdData
                 join per in _context.Persons on pre.UserId equals per.PersonId
                 where b.Id == id
                 select new medical_logbook
@@ -282,7 +282,7 @@ namespace SchoolManager.Areas.Medical.Controllers
             var bitacora = await (
                 from b in _context.MedicalLogbooks
                 join a in _context.MedicalStudents on b.IdAlumno equals a.Id
-                join pre in _context.MedicalPreenrollmentGenerals on a.PreenrollmentId equals pre.IdData
+                join pre in _context.PreenrollmentGenerals on a.PreenrollmentId equals pre.IdData
                 join per in _context.Persons on pre.UserId equals per.PersonId
                 where b.Id == id
                 select new medical_logbook
@@ -321,7 +321,7 @@ namespace SchoolManager.Areas.Medical.Controllers
 
             var data = await (
                 from alumno in _context.MedicalStudents
-                join pre in _context.MedicalPreenrollmentGenerals on alumno.PreenrollmentId equals pre.IdData
+                join pre in _context.PreenrollmentGenerals on alumno.PreenrollmentId equals pre.IdData
                 join per in _context.Persons on pre.UserId equals per.PersonId
                 where pre.Matricula == matricula
                 select new

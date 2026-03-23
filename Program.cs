@@ -66,6 +66,11 @@ app.MapAreaControllerRoute(
     areaName: "Procedures",
     pattern: "Procedures/{controller=Dashboard}/{action=Index}/{id?}");
 
+app.MapAreaControllerRoute(   
+    name: "medical",
+    areaName: "Medical",
+    pattern: "Medical/{controller=Dashboard}/{action=Index}/{id?}");
+
 app.MapControllerRoute(
     name: "default",
     pattern: "{area=MainScreen}/{controller=MainScreen}/{action=Index}/{id?}");

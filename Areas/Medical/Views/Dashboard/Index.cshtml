@@ -1,5 +1,5 @@
 ﻿@{
-    Layout = "_LayoutDashboard";
+    Layout = "~/Areas/Medical/Views/Shared/_LayoutDashboard.cshtml";
     ViewData["Title"] = "Panel de Control";
 }
 
@@ -12,7 +12,7 @@
             <small>Sistema Médico - Panel de Control</small>
         </div>
 
-        <a asp-controller="Home" asp-action="Index" class="home-btn">
+        <a asp-area="MainScreen" asp-controller="MainScreen" asp-action="Index" class="home-btn">
             <i class="bi bi-house-door-fill"></i> Inicio
         </a>
 

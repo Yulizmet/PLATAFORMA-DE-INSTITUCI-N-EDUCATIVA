@@ -29,7 +29,7 @@ namespace SchoolManager.Areas.Medical.Controllers
         {
             var lista = await (
                 from p in _context.MedicalPsychology
-                join pre in _context.MedicalPreenrollmentGenerals on p.PreenrollmentId equals pre.IdData
+                join pre in _context.PreenrollmentGenerals on p.PreenrollmentId equals pre.IdData
                 join per in _context.Persons on pre.UserId equals per.PersonId
                 orderby p.AppointmentDatetime descending
                 select new PsychologyListVM
@@ -55,7 +55,7 @@ namespace SchoolManager.Areas.Medical.Controllers
 
             var datos = await (
                 from p in _context.MedicalPsychology
-                join pre in _context.MedicalPreenrollmentGenerals on p.PreenrollmentId equals pre.IdData
+                join pre in _context.PreenrollmentGenerals on p.PreenrollmentId equals pre.IdData
                 join per in _context.Persons on pre.UserId equals per.PersonId
                 where p.AppointmentDatetime >= desde && p.AppointmentDatetime < hasta
                 select new PsychologyListVM
@@ -86,7 +86,7 @@ namespace SchoolManager.Areas.Medical.Controllers
 
             var datos = await (
                 from p in _context.MedicalPsychology
-                join pre in _context.MedicalPreenrollmentGenerals on p.PreenrollmentId equals pre.IdData
+                join pre in _context.PreenrollmentGenerals on p.PreenrollmentId equals pre.IdData
                 join per in _context.Persons on pre.UserId equals per.PersonId
                 where p.AppointmentDatetime >= desde && p.AppointmentDatetime < hasta
                 select new
@@ -115,7 +115,7 @@ namespace SchoolManager.Areas.Medical.Controllers
 
             var datos = await (
                 from p in _context.MedicalPsychology
-                join pre in _context.MedicalPreenrollmentGenerals on p.PreenrollmentId equals pre.IdData
+                join pre in _context.PreenrollmentGenerals on p.PreenrollmentId equals pre.IdData
                 join per in _context.Persons on pre.UserId equals per.PersonId
                 where p.AppointmentDatetime >= desde && p.AppointmentDatetime < hasta
                 select new
@@ -191,7 +191,7 @@ namespace SchoolManager.Areas.Medical.Controllers
         {
             var data = await (
                 from p in _context.MedicalPsychology
-                join pre in _context.MedicalPreenrollmentGenerals on p.PreenrollmentId equals pre.IdData
+                join pre in _context.PreenrollmentGenerals on p.PreenrollmentId equals pre.IdData
                 join per in _context.Persons on pre.UserId equals per.PersonId
                 where p.Id == id
                 select new medical_pychology
@@ -266,7 +266,7 @@ namespace SchoolManager.Areas.Medical.Controllers
         {
             var data = await (
                 from p in _context.MedicalPsychology
-                join pre in _context.MedicalPreenrollmentGenerals on p.PreenrollmentId equals pre.IdData
+                join pre in _context.PreenrollmentGenerals on p.PreenrollmentId equals pre.IdData
                 join per in _context.Persons on pre.UserId equals per.PersonId
                 where p.Id == id
                 select new medical_pychology
@@ -304,7 +304,7 @@ namespace SchoolManager.Areas.Medical.Controllers
         public async Task<IActionResult> BuscarPorMatricula(string matricula)
         {
             var data = await (
-                from pre in _context.MedicalPreenrollmentGenerals
+                from pre in _context.PreenrollmentGenerals
                 join per in _context.Persons on pre.UserId equals per.PersonId
                 where pre.Matricula == matricula
                 select new
