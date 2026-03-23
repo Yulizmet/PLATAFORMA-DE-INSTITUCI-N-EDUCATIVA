@@ -270,33 +270,4 @@
     Mostrando @Model?.Count de @ViewBag.TotalRecords registros
 </p>
 
-<!-- Resumen del asesor -->
-@if ((int)(ViewBag.TotalAlumnos ?? 0) > 0)
-{
-    <div class="row mt-4">
-        <div class="col-md-3">
-            <div class="stat-card">
-                <h2>@ViewBag.TotalAlumnos</h2>
-                <p>Total Alumnos</p>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="stat-card">
-                <h2>@ViewBag.TotalBitacoras</h2>
-                <p>Total Bitácoras</p>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="stat-card">
-                <h2 class="text-warning">@ViewBag.TotalPendientes</h2>
-                <p>Pendientes</p>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="stat-card">
-                <h2 class="text-success">@ViewBag.TotalHorasAprobadas</h2>
-                <p>Total Horas Aprobadas</p>
-            </div>
-        </div>
-    </div>
-}
+

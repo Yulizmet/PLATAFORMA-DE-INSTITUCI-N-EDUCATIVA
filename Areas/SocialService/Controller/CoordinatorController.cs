@@ -406,12 +406,21 @@ namespace SchoolManager.Areas.SocialService.Controllers
             };
 
             ViewBag.TeacherId = teacherId;
+            ViewBag.EsCoordinador = User.IsInRole("Coordinator");
+            ViewBag.EsMaster = User.IsInRole("Master");
             return View(viewModel);
         }
 
         [HttpPost]
         public async Task<IActionResult> EditarAsistencia(int attendanceId, bool isPresent, int studentId)
         {
+            // Solo permitir a Coordinador editar
+            if (!User.IsInRole("Coordinator"))
+            {
+                TempData["Error"] = "Solo el coordinador puede modificar la asistencia.";
+                return RedirectToAction("VerAsistenciasAlumno", new { id = studentId });
+            }
+
             var attendance = await _context.SocialServiceAttendances
                 .FirstOrDefaultAsync(a => a.AttendanceId == attendanceId);
 
@@ -591,7 +600,7 @@ namespace SchoolManager.Areas.SocialService.Controllers
             return View(paginated);
         }
 
-        private async Task<List<CoordinatorStudentViewModel>> GetAllStudentsData(string searchName = "", string teacherFilter = "", string semesterFilter = "", string groupFilter = "")
+        private async Task<List<CoordinatorStudentViewModel>> GetAllStudentsData(String searchName = "", string teacherFilter = "", string semesterFilter = "", string groupFilter = "")
         {
             var assignments = await _context.SocialServiceAssignments
                 .Include(a => a.Student)
@@ -747,6 +756,18 @@ namespace SchoolManager.Areas.SocialService.Controllers
 
             var file = _converter.Convert(pdf);
             return File(file, "application/pdf", $"Alumnos_Master_{DateTime.Now:yyyyMMdd}.pdf");
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> DescargarBitacoraPdf(int bitacoraId)
+        {
+            var bitacora = await _context.SocialServiceLogs.FirstOrDefaultAsync(b => b.LogId == bitacoraId);
+            if (bitacora == null || bitacora.PdfFileData == null)
+                return NotFound();
+
+            var contentType = !string.IsNullOrEmpty(bitacora.PdfContentType) ? bitacora.PdfContentType : "application/pdf";
+            // No se especifica fileDownloadName para que el navegador intente mostrar el PDF en el visor
+            return File(bitacora.PdfFileData, contentType);
         }
 
         private string RemoveAccents(string text)

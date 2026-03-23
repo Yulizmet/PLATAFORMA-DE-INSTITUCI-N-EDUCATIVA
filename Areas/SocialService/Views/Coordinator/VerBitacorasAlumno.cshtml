@@ -99,15 +99,15 @@
 
                     @if (!string.IsNullOrEmpty(bitacora.PdfFileName))
                     {
-                        var pdfUrl = Url.Content($"~/uploads/socialservice/{bitacora.PdfFileName}");
+                        var pdfUrl = Url.Action("DescargarBitacoraPdf", "Coordinator", new { area = "SocialService", bitacoraId = bitacora.LogId });
                         <div class="mt-2">
-                            <button type="button" class="btn btn-outline-secondary btn-sm d-block w-100 text-truncate"
+                            <button type="button" class="btn btn-outline-danger btn-sm d-block w-100 text-truncate"
                                     data-bs-toggle="modal"
                                     data-bs-target="#bitacoraPdfModal"
                                     data-pdf-url="@pdfUrl"
                                     data-pdf-filename="@bitacora.PdfFileName"
                                     data-semana="@bitacora.Week">
-                                <i class="bi bi-file-earmark-pdf me-1"></i>@bitacora.PdfFileName
+                                <i class="bi bi-file-earmark-pdf me-1"></i>Ver PDF adjunto
                             </button>
                         </div>
                     }
@@ -126,4 +126,32 @@ else
         <i class="bi bi-info-circle me-2"></i>
         Este alumno no tiene bitácoras registradas.
     </div>
+}
+
+@await Html.PartialAsync("_BitacoraPdfModal")
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var pdfModal = document.getElementById('bitacoraPdfModal');
+            if (pdfModal) {
+                pdfModal.addEventListener('show.bs.modal', function (event) {
+                    var button = event.relatedTarget;
+                    var pdfUrl = button.getAttribute('data-pdf-url');
+                    var semana = button.getAttribute('data-semana');
+                    var filename = button.getAttribute('data-pdf-filename');
+                    var iframe = document.getElementById('bitacoraPdfIframe');
+                    var download = document.getElementById('bitacoraPdfDownload');
+                    var semanaLabel = document.getElementById('bitacoraPdfModalSemana');
+                    if (iframe && pdfUrl) iframe.src = pdfUrl;
+                    if (download && pdfUrl) download.href = pdfUrl;
+                    if (semanaLabel && semana) semanaLabel.textContent = 'Semana ' + semana;
+                });
+                pdfModal.addEventListener('hidden.bs.modal', function () {
+                    var iframe = document.getElementById('bitacoraPdfIframe');
+                    if (iframe) iframe.src = '';
+                });
+            }
+        });
+    </script>
 }

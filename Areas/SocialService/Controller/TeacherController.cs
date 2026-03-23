@@ -621,7 +621,7 @@ namespace SchoolManager.Areas.SocialService.Controllers
             return RedirectToAction("RevisarBitacorasAlumno", new { id = studentId });
         }
 
-        public async Task<IActionResult> AsignarHoras(string searchName = "", string sortBy = "name", string sortOrder = "asc", int page = 1, int pageSize = 10)
+        public async Task<IActionResult> AsignarHoras(string searchName = "", string sortBy = "name", string sortOrder = "asc", int page = 1, int pageSize = 10, string semesterFilter = "", string groupFilter = "")
         {
             int currentTeacherId = GetCurrentTeacherId();
             int[] allowedPageSizes = { 10, 25, 50, 100 };
@@ -691,6 +691,10 @@ namespace SchoolManager.Areas.SocialService.Controllers
                 });
             }
 
+            // Obtener todos los semestres y grupos posibles ANTES de filtrar
+            var allSemesters = allViewModel.Select(x => x.SemesterName).Where(x => !string.IsNullOrEmpty(x)).Distinct().OrderBy(x => x).ToList();
+            var allGroups = allViewModel.Select(x => x.GroupName).Where(x => !string.IsNullOrEmpty(x)).Distinct().OrderBy(x => x).ToList();
+
             // Filtrar por nombre
             if (!string.IsNullOrWhiteSpace(searchName))
             {
@@ -698,6 +702,18 @@ namespace SchoolManager.Areas.SocialService.Controllers
                 allViewModel = allViewModel
                     .Where(v => RemoveAccents(v.StudentName.ToLower()).Contains(searchNormalized))
                     .ToList();
+            }
+
+            // Filtrar por semestre
+            if (!string.IsNullOrWhiteSpace(semesterFilter))
+            {
+                allViewModel = allViewModel.Where(v => v.SemesterName == semesterFilter).ToList();
+            }
+
+            // Filtrar por grupo
+            if (!string.IsNullOrWhiteSpace(groupFilter))
+            {
+                allViewModel = allViewModel.Where(v => v.GroupName == groupFilter).ToList();
             }
 
             // Aplicar ordenamiento
@@ -747,6 +763,11 @@ namespace SchoolManager.Areas.SocialService.Controllers
                 .Take(pageSize)
                 .ToList();
 
+            // Para los selects de filtro (usar todos los posibles, no solo los filtrados)
+            ViewBag.Semesters = allSemesters;
+            ViewBag.Groups = allGroups;
+            ViewBag.SemesterFilter = semesterFilter;
+            ViewBag.GroupFilter = groupFilter;
             ViewBag.SearchName = searchName;
             ViewBag.CurrentPage = page;
             ViewBag.TotalPages = totalPages;

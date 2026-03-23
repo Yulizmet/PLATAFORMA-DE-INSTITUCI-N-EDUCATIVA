@@ -56,8 +56,53 @@
                 </div>
             </div>
 
+            <!-- SERVICIO SOCIAL -->
+            <div class="col-lg-5 col-md-6">
+                <div class="sistema-card border-servicio text-start">
+
+                    <div class="sistema-icon icon-servicio">
+                        <i class="bi bi-briefcase-fill"></i>
+                    </div>
+
+                    <h4>Servicio Social</h4>
+
+                    <p class="text-muted mt-3">
+                        Gestiona tu proceso de servicio social, horas acumuladas y seguimiento institucional.
+                    </p>
+
+                    <a href="#" id="btnServicioSocial" class="btn btn-servicio mt-4">
+                        Ir a Servicio Social →
+                    </a>
                 </div>
             </div>
 
+                </div>
+            </div>
+
+
 </section>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var btnServicioSocial = document.getElementById('btnServicioSocial');
+        if (btnServicioSocial) {
+            btnServicioSocial.addEventListener('click', function(e) {
+                e.preventDefault();
+                var isAssigned = true; // Cambia esto si necesitas lógica de asignación
+
+                if (!isAssigned) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Acceso Restringido',
+                        text: 'No has sido asignado a ningún maestro para entrar a este apartado.',
+                        confirmButtonText: 'Entendido',
+                        confirmButtonColor: '#b23b3b'
+                    });
+                } else {
+                    window.location.href = '/SocialService/Account/Index';
+                }
+            });
+        }
+    });
+</script>
 

@@ -95,15 +95,18 @@
                         </td>
                         <td>@(attendance.Notes ?? "-")</td>
                         <td class="text-center">
-                            <button type="button" class="btn btn-warning btn-sm" 
-                                    data-bs-toggle="modal" 
-                                    data-bs-target="#editarAsistenciaModal"
-                                    data-attendance-id="@attendance.AttendanceId"
-                                    data-student-id="@Model.StudentId"
-                                    data-is-present="@attendance.IsPresent.ToString().ToLower()"
-                                    data-fecha="@attendance.Date.ToString("dd/MM/yyyy")">
-                                <i class="bi bi-pencil-square"></i> Editar
-                            </button>
+                            @if (ViewBag.EsCoordinador == true)
+                            {
+                                <button type="button" class="btn btn-warning btn-sm" 
+                                        data-bs-toggle="modal" 
+                                        data-bs-target="#editarAsistenciaModal"
+                                        data-attendance-id="@attendance.AttendanceId"
+                                        data-student-id="@Model.StudentId"
+                                        data-is-present="@attendance.IsPresent.ToString().ToLower()"
+                                        data-fecha="@attendance.Date.ToString("dd/MM/yyyy")">
+                                    <i class="bi bi-pencil-square"></i> Editar
+                                </button>
+                            }
                         </td>
                     </tr>
                 }

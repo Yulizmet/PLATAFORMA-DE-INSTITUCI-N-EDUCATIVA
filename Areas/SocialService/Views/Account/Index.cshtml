@@ -51,7 +51,7 @@
 
             <div class="row g-4 justify-content-center">
                 <!-- Student Card -->
-                @if (User.IsInRole("Student"))
+                @if (User.IsInRole("Student") && !User.IsInRole("Coordinator") && !User.IsInRole("Master"))
                 {
                     <div class="col-md-8">
                         <a asp-area="SocialService" asp-controller="Student" asp-action="Dashboard" class="ss-role-card">
@@ -110,13 +110,13 @@
                     </div>
                 }
 
-                <!-- Master Card (también visible para Teacher en pruebas) -->
-                @if (User.IsInRole("Master") || User.IsInRole("Teacher"))
+                <!-- Master Card (visible para Master y Coordinador) -->
+                @if (User.IsInRole("Master") || User.IsInRole("Coordinator"))
                 {
                     <div class="col-md-6">
                         <a asp-area="SocialService" asp-controller="Coordinator" asp-action="Dashboard" class="ss-role-card">
                             <div class="ss-role-card-inner">
-                                <h3 class="ss-role-title">Master</h3>
+                                <h3 class="ss-role-title">Administrador</h3>
                                 <p class="ss-role-description">Supervisa maestros, alumnos, bitácoras, asistencias y grupos de asesores</p>
                                 <div class="ss-role-features">
                                     <div class="ss-feature-item">
@@ -145,7 +145,7 @@
                 }
 
                 <!-- Show both cards if user is not authenticated or has no specific role -->
-                @if (!User.IsInRole("Student") && !User.IsInRole("Teacher") && !User.IsInRole("Master"))
+                @if (!User.IsInRole("Student") && !User.IsInRole("Teacher") && !User.IsInRole("Master") && !User.IsInRole("Coordinator"))
                 {
                     <div class="col-md-6">
                         <a asp-area="SocialService" asp-controller="Student" asp-action="Dashboard" class="ss-role-card">
