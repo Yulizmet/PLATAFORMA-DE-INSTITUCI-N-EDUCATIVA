@@ -758,12 +758,17 @@ namespace SchoolManager.Areas.SocialService.Controllers
             return View(paginatedViewModel);
         }
 
-        public async Task<IActionResult> Asistencia(string sortBy = "name", string sortOrder = "asc", string groupFilter = "", string searchName = "", int page = 1, int pageSize = 10)
+        public async Task<IActionResult> Asistencia(string sortBy = "name", string sortOrder = "asc", string groupFilter = "", string searchName = "", int page = 1, int pageSize = 10, string dateFrom = "", string dateTo = "")
         {
             int currentTeacherId = GetCurrentTeacherId();
             DateTime today = DateTime.Today;
             int[] allowedPageSizes = { 10, 25, 50, 100 };
             if (!allowedPageSizes.Contains(pageSize)) pageSize = 10;
+
+            DateTime? filterDateFrom = null;
+            DateTime? filterDateTo = null;
+            if (DateTime.TryParse(dateFrom, out var parsedFrom)) filterDateFrom = parsedFrom.Date;
+            if (DateTime.TryParse(dateTo, out var parsedTo)) filterDateTo = parsedTo.Date;
 
             var assignments = await _context.SocialServiceAssignments
                 .Include(a => a.Student)
@@ -874,8 +879,15 @@ namespace SchoolManager.Areas.SocialService.Controllers
                 .Where(att => studentIds.Contains(att.StudentId) && att.Date.Date == today)
                 .ToListAsync();
 
-            var allAttendances = await _context.SocialServiceAttendances
-                .Where(att => paginatedStudentIds.Contains(att.StudentId))
+            var allAttendancesQuery = _context.SocialServiceAttendances
+                .Where(att => paginatedStudentIds.Contains(att.StudentId));
+
+            if (filterDateFrom.HasValue)
+                allAttendancesQuery = allAttendancesQuery.Where(att => att.Date.Date >= filterDateFrom.Value);
+            if (filterDateTo.HasValue)
+                allAttendancesQuery = allAttendancesQuery.Where(att => att.Date.Date <= filterDateTo.Value);
+
+            var allAttendances = await allAttendancesQuery
                 .OrderByDescending(att => att.Date)
                 .ToListAsync();
 
@@ -913,12 +925,14 @@ namespace SchoolManager.Areas.SocialService.Controllers
             ViewBag.TotalPages = totalPages;
             ViewBag.TotalRecords = totalRecords;
             ViewBag.PageSize = pageSize;
+            ViewBag.DateFrom = dateFrom;
+            ViewBag.DateTo = dateTo;
 
             return View(viewModel);
         }
 
         [HttpPost]
-        public async Task<IActionResult> GuardarAsistencia(List<int> presentStudents, List<int> allStudentsOnPage, string sortOrder = "asc", string groupFilter = "", string searchName = "", int page = 1, int pageSize = 10)
+        public async Task<IActionResult> GuardarAsistencia(List<int> presentStudents, List<int> allStudentsOnPage, string sortOrder = "asc", string groupFilter = "", string searchName = "", int page = 1, int pageSize = 10, string dateFrom = "", string dateTo = "")
         {
             int currentTeacherId = GetCurrentTeacherId();
             DateTime today = DateTime.Today;
@@ -958,7 +972,7 @@ namespace SchoolManager.Areas.SocialService.Controllers
 
             await _context.SaveChangesAsync();
             TempData["Success"] = "Asistencia guardada exitosamente.";
-            return RedirectToAction("Asistencia", new { sortOrder, groupFilter, searchName, page, pageSize });
+            return RedirectToAction("Asistencia", new { sortOrder, groupFilter, searchName, page, pageSize, dateFrom, dateTo });
         }
 
         private async Task<List<AsignarHorasViewModel>> GetAvanceData(int teacherId, string searchName = "")

@@ -345,6 +345,7 @@ namespace SchoolManager.Areas.SocialService.Controllers
                 .Include(u => u.Person)
                 .FirstOrDefaultAsync(u => u.UserId == id);
 
+            int? teacherId = null;
             if (student != null)
             {
                 ViewBag.StudentName = $"{student.Person.LastNamePaternal} {student.Person.LastNameMaternal} {student.Person.FirstName}";
@@ -360,13 +361,26 @@ namespace SchoolManager.Areas.SocialService.Controllers
             if (assignment?.Teacher != null)
             {
                 ViewBag.TeacherName = $"{assignment.Teacher.Person.LastNamePaternal} {assignment.Teacher.Person.LastNameMaternal} {assignment.Teacher.Person.FirstName}";
+                teacherId = assignment.TeacherId;
             }
 
+            ViewBag.TeacherId = teacherId;
             return View(bitacoras);
         }
 
         public async Task<IActionResult> VerAsistenciasAlumno(int id)
         {
+            // Recibe el id del alumno y opcionalmente el id del maestro
+            int? teacherId = null;
+            // Buscar el assignment activo para obtener el TeacherId
+            var assignment = await _context.SocialServiceAssignments
+                .FirstOrDefaultAsync(a => a.StudentId == id && a.IsActive);
+
+            if (assignment != null)
+            {
+                teacherId = assignment.TeacherId;
+            }
+
             var student = await _context.Users
                 .Include(u => u.Person)
                 .FirstOrDefaultAsync(u => u.UserId == id);
@@ -391,7 +405,30 @@ namespace SchoolManager.Areas.SocialService.Controllers
                 TotalAbsent = attendances.Count(a => !a.IsPresent)
             };
 
+            ViewBag.TeacherId = teacherId;
             return View(viewModel);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> EditarAsistencia(int attendanceId, bool isPresent, int studentId)
+        {
+            var attendance = await _context.SocialServiceAttendances
+                .FirstOrDefaultAsync(a => a.AttendanceId == attendanceId);
+
+            if (attendance == null)
+            {
+                TempData["Error"] = "Registro de asistencia no encontrado.";
+                return RedirectToAction("VerAsistenciasAlumno", new { id = studentId });
+            }
+
+            attendance.IsPresent = isPresent;
+            attendance.Notes = $"Editado el {DateTime.Now:dd/MM/yyyy HH:mm}";
+
+            _context.SocialServiceAttendances.Update(attendance);
+            await _context.SaveChangesAsync();
+
+            TempData["Success"] = "Asistencia actualizada correctamente.";
+            return RedirectToAction("VerAsistenciasAlumno", new { id = studentId });
         }
 
         public async Task<IActionResult> VerAlumnosAsesor(int id, string searchName = "", string searchEmail = "", string semesterFilter = "", string groupFilter = "", string sortBy = "name", string sortOrder = "asc", int page = 1, int pageSize = 10)

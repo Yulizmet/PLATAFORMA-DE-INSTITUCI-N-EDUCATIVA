@@ -113,7 +113,7 @@
 <!-- Tabla de alumnos del asesor -->
 <div class="table-responsive">
     <table class="table table-hover align-middle">
-        <thead class="thead-rojo">
+        <thead>
             <tr>
                 <th>#</th>
                 <th>
@@ -187,12 +187,12 @@
                         <td class="text-center">
                             <div class="btn-group btn-group-sm">
                                 <a asp-area="SocialService" asp-controller="Coordinator"
-                                   asp-action="VerBitacorasAlumno" asp-route-id="@student.StudentId"
+                                   asp-action="VerBitacorasAlumno" asp-route-id="@student.StudentId" asp-route-teacherId="@teacherId"
                                    class="btn btn-outline-primary" title="Ver bitácoras">
                                     <i class="bi bi-journal-text"></i>
                                 </a>
                                 <a asp-area="SocialService" asp-controller="Coordinator"
-                                   asp-action="VerAsistenciasAlumno" asp-route-id="@student.StudentId"
+                                   asp-action="VerAsistenciasAlumno" asp-route-id="@student.StudentId" asp-route-teacherId="@teacherId"
                                    class="btn btn-outline-info" title="Ver asistencias">
                                     <i class="bi bi-calendar-check"></i>
                                 </a>
