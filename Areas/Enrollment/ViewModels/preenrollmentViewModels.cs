@@ -1,7 +1,7 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
 
-namespace SchoolManager.Models.ViewModels
+namespace SchoolManager.Areas.Enrollment.ViewModels
 {
     // =====================================================================
     // VIEWMODEL - FLUJO 1: Registro inicial + generación de folio

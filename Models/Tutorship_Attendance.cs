@@ -22,6 +22,7 @@ namespace SchoolManager.Models
         public bool IsPresent { get; set; }
 
         [Required]
+        [NotMapped]
         public string GroupName { get; set; } = null!;
 
         [ForeignKey("StudentId")]

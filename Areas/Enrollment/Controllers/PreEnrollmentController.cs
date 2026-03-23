@@ -5,7 +5,6 @@ using Microsoft.EntityFrameworkCore;
 using SchoolManager.Areas.Enrollment.ViewModels;
 using SchoolManager.Data;
 using SchoolManager.Models;
-using SchoolManager.Models.ViewModels;
 
 
 namespace SchoolManager.Areas.Enrollment.Controllers
