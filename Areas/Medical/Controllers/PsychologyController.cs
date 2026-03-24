@@ -1,21 +1,23 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using iText.IO.Font.Constants;
+using iText.Kernel.Colors;
+using iText.Kernel.Font;
+using iText.Kernel.Pdf;
+using iText.Layout;
+using iText.Layout.Element;
+using iText.Layout.Properties;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SchoolManager.Data;
 using SchoolManager.Models;
 using SchoolManager.ViewModels;
 using System.Text;
-using iText.Kernel.Pdf;
-using iText.Layout;
-using iText.Layout.Element;
-using iText.Layout.Properties;
-using iText.Kernel.Colors;
-using iText.Kernel.Font;
-using iText.IO.Font.Constants;
 #nullable disable
 
 namespace SchoolManager.Areas.Medical.Controllers
 {
     [Area("Medical")]
+    [Authorize(Roles = "Nurse,Psychologist,Head Nurse,Head of Psychology,Coordinator,Master")]
     public class PsychologyController : Controller
     {
         private readonly AppDbContext _context;

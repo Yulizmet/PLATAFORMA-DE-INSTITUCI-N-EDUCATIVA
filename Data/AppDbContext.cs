@@ -82,6 +82,7 @@ namespace SchoolManager.Data
         public DbSet<medical_logbook> MedicalLogbooks { get; set; }
         public DbSet<medical_pychology> MedicalPsychology { get; set; }
         public DbSet<medical_staff> MedicalStaff { get; set; }
+        public DbSet<medical_permissions> MedicalPermissions { get; set; }
 
         // Foro (Noticias y Publicaciones)
         public DbSet<ForoPublicacion> ForoPublicaciones { get; set; }

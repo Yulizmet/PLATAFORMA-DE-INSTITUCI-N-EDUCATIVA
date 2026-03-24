@@ -82,6 +82,15 @@ namespace SchoolManager.Areas.UserMng.Controllers
                 claims.Add(new Claim(ClaimTypes.Role, role.Name));
             }
 
+            var staffMedico = await _context.MedicalStaff
+                .FirstOrDefaultAsync(s => s.PersonId == usuario.PersonId);
+
+            if (staffMedico != null)
+            {
+                claims.Add(new Claim("StaffId", staffMedico.Id.ToString()));
+                claims.Add(new Claim("StaffRoleId", staffMedico.RoleId.ToString()));
+            }
+
             var identity  = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
             var principal = new ClaimsPrincipal(identity);
             var authProps = new AuthenticationProperties

@@ -82,6 +82,13 @@
                                        title="Ver">
                                         <i class="bi bi-eye-fill"></i>
                                     </a>
+                                    <a asp-action="Edit"
+                                       asp-route-id="@item.Id"
+                                       class="btn btn-sm"
+                                       style="background:#ffc107;color:white;border:none;"
+                                       title="Editar">
+                                        <i class="bi bi-pencil-fill"></i>
+                                    </a>
                                     <a asp-action="Delete"
                                        asp-route-id="@item.Id"
                                        class="btn btn-sm"

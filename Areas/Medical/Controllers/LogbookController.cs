@@ -5,16 +5,18 @@ using iText.Kernel.Pdf;
 using iText.Layout;
 using iText.Layout.Element;
 using iText.Layout.Properties;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using SchoolManager.Models;
 using SchoolManager.Data;
+using SchoolManager.Models;
 using System.Text;
 #nullable disable
 
 namespace SchoolManager.Areas.Medical.Controllers
 {
     [Area("Medical")]
+    [Authorize(Roles = "Nurse,Psychologist,Head Nurse,Head of Psychology,Coordinator,Master")]
     public class LogbookController : Controller
     {
         private readonly AppDbContext _context;
