@@ -72,6 +72,15 @@
                         <p class="text-muted activity-text" style="text-align: left !important; margin: 0;"><span style="display: block; text-align: left !important;">N/A</span></p>
                     }
 
+                    @if (!string.IsNullOrEmpty(bitacora.PdfFileName))
+                    {
+                        <div class="mt-3">
+                            <button type="button" class="btn btn-outline-danger btn-sm w-100" onclick="openPdfModal('/SocialService/Student/DescargarBitacoraPdf?logId=@bitacora.LogId', 'Semana @bitacora.Week')">
+                                <i class="bi bi-file-earmark-pdf me-1"></i> Ver PDF adjunto
+                            </button>
+                        </div>
+                    }
+
                     <div class="mt-3">
                         <button type="button" class="btn btn-primary btn-sm w-100" data-bs-toggle="modal" data-bs-target="#bitacoraDetailModal@(bitacora.LogId)">
                             <i class="bi bi-eye me-1"></i> Ver Detalles Completos
@@ -134,6 +143,16 @@
                                     <p style="text-align: left !important; margin: 0;"><span class="text-muted" style="display: block; text-align: left !important;">N/A</span></p>
                                 }
                             </div>
+
+                            @if (!string.IsNullOrEmpty(bitacora.PdfFileName))
+                            {
+                                <div class="detail-section">
+                                    <h6><i class="bi bi-file-earmark-pdf me-2 text-danger"></i>Documento PDF Adjunto</h6>
+                                    <button type="button" class="btn btn-outline-danger" onclick="openPdfModal('/SocialService/Student/DescargarBitacoraPdf?logId=@bitacora.LogId', 'Semana @bitacora.Week')">
+                                        <i class="bi bi-file-earmark-pdf me-1"></i> Ver PDF
+                                    </button>
+                                </div>
+                            }
 
                             <div class="creation-date">
                                 <p>
@@ -206,9 +225,31 @@
                                                       placeholder="Agrega comentarios o retroalimentación..."></textarea>
                                         </div>
 
-                                        <div class="text-end">
+                                        <div class="d-flex justify-content-end gap-2">
                                             <button type="submit" class="btn btn-success btn-lg">
                                                 <i class="bi bi-check-circle me-1"></i> Aprobar y Sumar Horas
+                                            </button>
+                                        </div>
+                                    </form>
+
+                                    <hr>
+
+                                    <h6 class="mb-3"><i class="bi bi-x-circle me-2 text-danger"></i>Rechazar Bitácora</h6>
+                                    <form method="post" action="/SocialService/Teacher/RechazarBitacora">
+                                        <input type="hidden" name="logId" value="@bitacora.LogId" />
+
+                                        <div class="mb-3">
+                                            <label class="form-label">Motivo del rechazo:</label>
+                                            <textarea name="rejectionReason"
+                                                      class="form-control"
+                                                      rows="3"
+                                                      placeholder="Indica el motivo del rechazo..."
+                                                      required></textarea>
+                                        </div>
+
+                                        <div class="d-flex justify-content-end">
+                                            <button type="submit" class="btn btn-danger btn-lg" onclick="return confirm('¿Estás seguro de rechazar esta bitácora? El alumno deberá crear una nueva.')">
+                                                <i class="bi bi-x-circle me-1"></i> Rechazar Bitácora
                                             </button>
                                         </div>
                                     </form>
@@ -231,4 +272,46 @@ else
     <div class="alert alert-info">
         <i class="bi bi-info-circle"></i> Este alumno no ha registrado bitácoras aún.
     </div>
+}
+
+<!-- Modal para visualizar PDF -->
+<div class="modal fade" id="pdfViewerModal" tabindex="-1" aria-labelledby="pdfViewerModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered" style="max-width: 90%;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="pdfViewerModalLabel">
+                    <i class="bi bi-file-earmark-pdf text-danger me-2"></i>PDF Adjunto
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-0">
+                <iframe id="pdfViewerFrame" src="" style="width: 100%; height: 75vh; border: none;"></iframe>
+            </div>
+            <div class="modal-footer">
+                <a id="pdfDownloadLink" href="#" target="_blank" class="btn btn-outline-danger">
+                    <i class="bi bi-download me-1"></i> Descargar PDF
+                </a>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="bi bi-x-circle me-1"></i> Cerrar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function openPdfModal(pdfUrl, weekLabel) {
+            document.getElementById('pdfViewerFrame').src = pdfUrl;
+            document.getElementById('pdfDownloadLink').href = pdfUrl.replace('DescargarBitacoraPdf', 'DescargarBitacoraPdfArchivo');
+            document.getElementById('pdfViewerModalLabel').innerHTML =
+                '<i class="bi bi-file-earmark-pdf text-danger me-2"></i>PDF Adjunto - ' + weekLabel;
+            var modal = new bootstrap.Modal(document.getElementById('pdfViewerModal'));
+            modal.show();
+        }
+
+        document.getElementById('pdfViewerModal').addEventListener('hidden.bs.modal', function () {
+            document.getElementById('pdfViewerFrame').src = '';
+        });
+    </script>
 }
