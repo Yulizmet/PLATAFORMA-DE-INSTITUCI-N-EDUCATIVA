@@ -1,4 +1,5 @@
-﻿using System.Security.Cryptography;
+﻿using Microsoft.AspNetCore.Identity;
+using System.Security.Cryptography;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -249,13 +250,13 @@ namespace SchoolManager.Areas.Enrollment.Controllers
         // =====================================================================
 
         // GET: Enrollment/PreEnrollment/ValidateFolio
+        [HttpGet]
         public IActionResult ValidateFolio()
         {
             return View();
         }
 
         // POST: Enrollment/PreEnrollment/ValidateFolio
-        // El usuario escribe su folio. Se verifica que exista y esté aprobado.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ValidateFolio(string folio)
@@ -290,23 +291,21 @@ namespace SchoolManager.Areas.Enrollment.Controllers
                 return View();
             }
 
-            // Si ya tiene cuenta creada, no permitir duplicar
             if (pre.UserId != null)
             {
                 ModelState.AddModelError("", "Este folio ya tiene una cuenta asociada.");
                 return View();
             }
 
-            // Todo bien: redirigir a completar cuenta
-            return RedirectToAction(nameof(CreateAccount), new { id = pre.IdData });
+            return RedirectToAction(nameof(CrearUsuarioAlumno), new { id = pre.IdData });
         }
 
-        // GET: Enrollment/PreEnrollment/CreateAccount/5
-        // Muestra el formulario para que el usuario establezca su contraseña
-        // y confirme sus datos. Se pre-llenan con los datos del preenrollment.
-        public async Task<IActionResult> CreateAccount(int id)
+        [HttpGet]
+        public async Task<IActionResult> CrearUsuarioAlumno(int id)
         {
             var pre = await _context.PreenrollmentGenerals
+                .Include(p => p.Person)
+                .Include(p => p.Career)
                 .Include(p => p.ProcedureRequest)
                     .ThenInclude(pr => pr.ProcedureFlow)
                         .ThenInclude(pf => pf.ProcedureStatus)
@@ -315,35 +314,43 @@ namespace SchoolManager.Areas.Enrollment.Controllers
             if (pre == null)
                 return NotFound();
 
-            // Doble verificación: no se puede acceder directo por URL sin aprobación
             if (pre.ProcedureRequest?.ProcedureFlow?.ProcedureStatus?.InternalCode != "APPROVED")
                 return RedirectToAction(nameof(ValidateFolio));
 
             if (pre.UserId != null)
                 return RedirectToAction(nameof(ValidateFolio));
 
-            // Pasar los datos precargados a la vista para mostrarlos al usuario
-            var vm = new CompleteRegistrationViewModel
+            if (pre.Person == null)
+            {
+                ModelState.AddModelError("", "No existe una persona asociada a esta preinscripción.");
+                return RedirectToAction(nameof(ValidateFolio));
+            }
+
+            var vm = new CreateStudentUserViewModel
             {
                 IdData = pre.IdData,
-                Matricula = pre.Matricula,
-                Folio = pre.Folio
+                PersonId = pre.PersonId,
+                Folio = pre.Folio ?? "",
+                Matricula = pre.Matricula ?? "",
+                Username = pre.Matricula ?? "",
+                Carrera = pre.Career?.name_career ?? "",
+                NombreCompleto = $"{pre.Person.FirstName} {pre.Person.LastNamePaternal} {pre.Person.LastNameMaternal}",
+                Email = pre.Person.Email ?? ""
             };
 
             return View(vm);
         }
 
-        // POST: Enrollment/PreEnrollment/CreateAccount
-        // Crea el users_person y users_user con los datos del preenrollment.
-        // El usuario solo elige su contraseña en este paso.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> CreateAccount(CompleteRegistrationViewModel vm)
+        public async Task<IActionResult> CrearUsuarioAlumno(CreateStudentUserViewModel vm)
         {
             if (!ModelState.IsValid)
                 return View(vm);
 
             var pre = await _context.PreenrollmentGenerals
+                .Include(p => p.Person)
+                .Include(p => p.Career)
                 .Include(p => p.ProcedureRequest)
                     .ThenInclude(pr => pr.ProcedureFlow)
                         .ThenInclude(pf => pf.ProcedureStatus)
@@ -352,44 +359,76 @@ namespace SchoolManager.Areas.Enrollment.Controllers
             if (pre == null)
                 return NotFound();
 
-            // Triple verificación de seguridad
             if (pre.ProcedureRequest?.ProcedureFlow?.ProcedureStatus?.InternalCode != "APPROVED")
-                return RedirectToAction(nameof(ValidateFolio));
+            {
+                ModelState.AddModelError("", "Tu pago aún no ha sido aprobado.");
+                return View(vm);
+            }
 
             if (pre.UserId != null)
-                return RedirectToAction(nameof(ValidateFolio));
-
-            // Crear users_person (los datos de nombre/apellidos
-            // vienen del ViewModel que el usuario confirmó)
-            var person = new users_person
             {
-                // Llenar con los campos que users_person tenga definidos
-                // según el modelo de tu compañero
-            };
+                ModelState.AddModelError("", "Este folio ya tiene una cuenta asociada.");
+                return View(vm);
+            }
 
-            _context.Persons.Add(person);
-            await _context.SaveChangesAsync();
-
-            // Crear users_user
-            var user = new users_user
+            if (pre.Person == null)
             {
-                PersonId = person.PersonId,
-                Username = pre.Matricula,
-                Email = vm.Email,
-                IsActive = true,
-                CreatedDate = DateTime.Now,
-                // Aquí aplica el hash de la contraseña que defina tu compañero
-                // PasswordHash = HashPassword(vm.Password)
-            };
+                ModelState.AddModelError("", "No existe la persona asociada a esta preinscripción.");
+                return View(vm);
+            }
 
-            _context.Users.Add(user);
-            await _context.SaveChangesAsync();
+            bool existeUsername = await _context.Users.AnyAsync(u => u.Username == vm.Username);
+            if (existeUsername)
+            {
+                ModelState.AddModelError("", "La matrícula ya está registrada como usuario.");
+                return View(vm);
+            }
 
-            // Ligar el usuario creado al preenrollment
-            pre.UserId = user.UserId;
-            await _context.SaveChangesAsync();
+            bool existeCorreo = await _context.Users.AnyAsync(u => u.Email == vm.Email);
+            if (existeCorreo)
+            {
+                ModelState.AddModelError("Email", "Ese correo ya está registrado.");
+                return View(vm);
+            }
 
-            return RedirectToAction(nameof(Success));
+            using var transaction = await _context.Database.BeginTransactionAsync();
+
+            try
+            {
+                pre.Person.Email = vm.Email;
+
+                var user = new users_user
+                {
+                    PersonId = pre.Person.PersonId,
+                    Username = pre.Matricula ?? vm.Username,
+                    Email = vm.Email,
+                    IsLocked = false,
+                    LockReason = "",
+                    LastLoginDate = null,
+                    IsActive = true,
+                    CreatedDate = DateTime.Now
+                };
+
+                var passwordHasher = new PasswordHasher<users_user>();
+                user.PasswordHash = passwordHasher.HashPassword(user, vm.Password);
+
+                _context.Users.Add(user);
+                await _context.SaveChangesAsync();
+
+                pre.UserId = user.UserId;
+                pre.PersonId = pre.Person.PersonId;
+
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+
+                return RedirectToAction(nameof(Success));
+            }
+            catch
+            {
+                await transaction.RollbackAsync();
+                ModelState.AddModelError("", "Ocurrió un error al crear el usuario.");
+                return View(vm);
+            }
         }
 
         // GET: Enrollment/PreEnrollment/Success

@@ -1,0 +1,128 @@
+﻿@model SchoolManager.Areas.Enrollment.ViewModels.CreateStudentUserViewModel
+
+@{
+    ViewData["Title"] = "Crear usuario";
+}
+
+<div class="login-container">
+    <div class="login-card">
+
+        <div class="login-form">
+            <h2>Crear cuenta</h2>
+            <p class="text-muted mb-4">
+                Completa los datos para generar tu usuario.
+            </p>
+
+            <form asp-action="CrearUsuarioAlumno" method="post">
+                <input type="hidden" asp-for="IdData" />
+                <input type="hidden" asp-for="PersonId" />
+                <input type="hidden" asp-for="Folio" />
+                <input type="hidden" asp-for="Matricula" />
+                <input type="hidden" asp-for="NombreCompleto" />
+                <input type="hidden" asp-for="Carrera" />
+
+                <div class="form-group">
+                    <label>Matrícula</label>
+                    <input class="form-control" value="@Model.Matricula" readonly />
+                </div>
+
+                <div class="form-group">
+                    <label>Nombre</label>
+                    <input class="form-control" value="@Model.NombreCompleto" readonly />
+                </div>
+
+                <div class="form-group">
+                    <label>Carrera</label>
+                    <input class="form-control" value="@Model.Carrera" readonly />
+                </div>
+
+                <div class="form-group">
+                    <label>Usuario</label>
+                    <input asp-for="Username" class="form-control" readonly />
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="Email">Correo</label>
+                    <input asp-for="Email" class="form-control" />
+                    <span asp-validation-for="Email" class="text-danger"></span>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="Password">Contraseña</label>
+                    <input asp-for="Password" type="password" class="form-control" />
+                    <span asp-validation-for="Password" class="text-danger"></span>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="ConfirmPassword">Confirmar contraseña</label>
+                    <input asp-for="ConfirmPassword" type="password" class="form-control" />
+                    <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
+                </div>
+
+                <button type="submit" class="btn-main w-100 mt-3">
+                    Crear usuario
+                </button>
+            </form>
+        </div>
+
+
+    </div>
+
+    <style>
+        /* Fondo general */
+        .login-container {
+            min-height: 100vh;
+            background: #f5f6fa;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Card principal */
+        .login-card {
+            background: #fff;
+            padding: 40px;
+            border-radius: 12px;
+            width: 100%;
+            max-width: 500px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Títulos */
+        .login-form h2 {
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        /* Inputs */
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-control {
+            border-radius: 8px;
+            height: 45px;
+        }
+
+        /* Botón principal (tipo vino como el tuyo) */
+        .btn-main {
+            background-color: #6a0d25;
+            color: white;
+            border: none;
+            height: 45px;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: 0.3s;
+        }
+
+            .btn-main:hover {
+                background-color: #4e091c;
+            }
+    </style>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}
