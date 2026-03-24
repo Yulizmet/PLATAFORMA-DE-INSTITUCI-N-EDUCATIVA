@@ -1,0 +1,202 @@
+@model List<SchoolManager.Areas.SocialService.ViewModels.CoordinatorTeacherViewModel>
+
+@{
+    ViewData["Title"] = "Maestros / Asesores";
+    string currentSort = ViewBag.CurrentSort ?? "name";
+    string currentOrder = ViewBag.CurrentOrder ?? "asc";
+    string searchName = ViewBag.SearchName ?? "";
+    string searchEmail = ViewBag.SearchEmail ?? "";
+    int pageSizeVal = ViewBag.PageSize ?? 10;
+
+    string SortUrl(string column)
+    {
+        string newOrder = (currentSort == column && currentOrder == "asc") ? "desc" : "asc";
+        return $"?searchName={searchName}&searchEmail={searchEmail}&sortBy={column}&sortOrder={newOrder}&page=1&pageSize={pageSizeVal}";
+    }
+
+    string SortIcon(string column)
+    {
+        if (currentSort != column) return "bi-arrow-down-up";
+        return currentOrder == "asc" ? "bi-sort-up" : "bi-sort-down";
+    }
+}
+
+<h3><i class="bi bi-person-badge-fill me-2"></i>Maestros / Asesores</h3>
+
+<div class="mb-3">
+    <a asp-area="SocialService" asp-controller="Coordinator" asp-action="Dashboard" class="btn btn-secondary">
+        <i class="bi bi-arrow-left"></i> Regresar al Dashboard
+    </a>
+</div>
+
+<!-- Filtros -->
+<div class="card mb-3">
+    <div class="card-header">
+        <i class="bi bi-funnel"></i> Filtros de Búsqueda
+    </div>
+    <div class="card-body py-4">
+        <form method="get" asp-action="Maestros" id="filterForm">
+            <input type="hidden" name="sortBy" value="@currentSort" />
+            <input type="hidden" name="sortOrder" value="@currentOrder" />
+            <div class="row g-3 align-items-end">
+                <div class="col-md-3">
+                    <label for="searchName" class="form-label mb-2">Buscar por nombre</label>
+                    <input type="text" class="form-control" id="searchName" name="searchName"
+                           value="@searchName" placeholder="Nombre del maestro...">
+                </div>
+
+                <div class="col-md-3">
+                    <label for="searchEmail" class="form-label mb-2">Buscar por email</label>
+                    <input type="text" class="form-control" id="searchEmail" name="searchEmail"
+                           value="@searchEmail" placeholder="Email del maestro...">
+                </div>
+
+                <div class="col-md-2">
+                    <label for="pageSize" class="form-label mb-2"><i class="bi bi-list-ol"></i> Registros</label>
+                    <select class="form-select" id="pageSize" name="pageSize" onchange="this.form.submit()">
+                        @foreach (var size in new[] { 10, 25, 50, 100 })
+                        {
+                            <option value="@size" selected="@(pageSizeVal == size)">@size</option>
+                        }
+                    </select>
+                </div>
+
+                <div class="col-md-4 d-flex gap-2">
+                    <button type="submit" class="btn btn-primary px-4">
+                        <i class="bi bi-search"></i> Buscar
+                    </button>
+                    <a asp-action="Maestros" class="btn btn-secondary px-4">
+                        <i class="bi bi-x-circle"></i> Limpiar
+                    </a>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Tabla de maestros -->
+<div class="table-responsive">
+    <table class="table table-hover align-middle">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>
+                    <a href="@SortUrl("name")" class="text-decoration-none">
+                        Nombre del Maestro <i class="bi @SortIcon("name")"></i>
+                    </a>
+                </th>
+                <th>
+                    <a href="@SortUrl("email")" class="text-decoration-none">
+                        Email <i class="bi @SortIcon("email")"></i>
+                    </a>
+                </th>
+                <th class="text-center">
+                    <a href="@SortUrl("alumnos")" class="text-decoration-none">
+                        Alumnos Asignados <i class="bi @SortIcon("alumnos")"></i>
+                    </a>
+                </th>
+                <th class="text-center">
+                    <a href="@SortUrl("bitacoras")" class="text-decoration-none">
+                        Total Bitácoras <i class="bi @SortIcon("bitacoras")"></i>
+                    </a>
+                </th>
+                <th class="text-center">
+                    <a href="@SortUrl("pendientes")" class="text-decoration-none">
+                        Bitácoras Pendientes <i class="bi @SortIcon("pendientes")"></i>
+                    </a>
+                </th>
+                <th class="text-center">Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model != null && Model.Count > 0)
+            {
+                int rowNum = ((int)(ViewBag.CurrentPage ?? 1) - 1) * (int)(ViewBag.PageSize ?? 10) + 1;
+                @foreach (var teacher in Model)
+                {
+                    <tr>
+                        <td>@(rowNum++)</td>
+                        <td><strong>@teacher.TeacherName</strong></td>
+                        <td>@teacher.Email</td>
+                        <td class="text-center">
+                            <span class="badge bg-primary">@teacher.AlumnosAsignados</span>
+                        </td>
+                        <td class="text-center">@teacher.TotalBitacoras</td>
+                        <td class="text-center">
+                            @if (teacher.BitacorasPendientes > 0)
+                            {
+                                <span class="badge bg-warning text-dark">@teacher.BitacorasPendientes</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-success">0</span>
+                            }
+                        </td>
+                        <td class="text-center">
+                            <a asp-action="VerAlumnosAsesor" asp-route-id="@teacher.TeacherId"
+                               class="btn btn-sm btn-outline-primary" title="Ver alumnos del asesor">
+                                <i class="bi bi-people-fill me-1"></i> Ver Alumnos
+                            </a>
+                        </td>
+                    </tr>
+                }
+            }
+            else
+            {
+                <tr>
+                    <td colspan="7" class="text-center text-muted py-4">
+                        <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+                        No se encontraron maestros.
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+<!-- Paginación -->
+@if ((int)(ViewBag.TotalPages ?? 0) > 1)
+{
+    <nav aria-label="Paginación">
+        <ul class="pagination justify-content-center">
+            <li class="page-item @((int)(ViewBag.CurrentPage ?? 1) <= 1 ? "disabled" : "")">
+                <a class="page-link" asp-action="Maestros"
+                   asp-route-searchName="@searchName"
+                   asp-route-searchEmail="@searchEmail"
+                   asp-route-sortBy="@currentSort"
+                   asp-route-sortOrder="@currentOrder"
+                   asp-route-page="@((int)(ViewBag.CurrentPage ?? 1) - 1)"
+                   asp-route-pageSize="@pageSizeVal">
+                    <i class="bi bi-chevron-left"></i>
+                </a>
+            </li>
+            @for (int i = 1; i <= (int)(ViewBag.TotalPages ?? 0); i++)
+            {
+                <li class="page-item @(i == (int)(ViewBag.CurrentPage ?? 1) ? "active" : "")">
+                    <a class="page-link" asp-action="Maestros"
+                       asp-route-searchName="@searchName"
+                       asp-route-searchEmail="@searchEmail"
+                       asp-route-sortBy="@currentSort"
+                       asp-route-sortOrder="@currentOrder"
+                       asp-route-page="@i"
+                       asp-route-pageSize="@pageSizeVal">@i</a>
+                </li>
+            }
+            <li class="page-item @((int)(ViewBag.CurrentPage ?? 1) >= (int)(ViewBag.TotalPages ?? 0) ? "disabled" : "")">
+                <a class="page-link" asp-action="Maestros"
+                   asp-route-searchName="@searchName"
+                   asp-route-searchEmail="@searchEmail"
+                   asp-route-sortBy="@currentSort"
+                   asp-route-sortOrder="@currentOrder"
+                   asp-route-page="@((int)(ViewBag.CurrentPage ?? 1) + 1)"
+                   asp-route-pageSize="@pageSizeVal">
+                    <i class="bi bi-chevron-right"></i>
+                </a>
+            </li>
+        </ul>
+    </nav>
+}
+
+<p class="text-muted text-center">
+    Mostrando @Model?.Count de @ViewBag.TotalRecords registros
+</p>

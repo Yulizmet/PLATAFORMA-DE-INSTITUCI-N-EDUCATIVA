@@ -1,0 +1,93 @@
+﻿@model SchoolManager.Areas.Enrollment.ViewModels.PreEnrollmentViewModel
+
+@{
+    var modoConfirmacion = (ViewData["ModoConfirmacion"] as bool?) ?? false;
+}
+
+<div class="card mb-4" data-section="Tutor">
+    <div class="card-header fw-bold text-uppercase d-flex justify-content-between align-items-center">
+        Datos del tutor o responsable legal
+
+        @if (modoConfirmacion)
+        {
+            <button type="button"
+                    class="btn btn-outline-secondary btn-sm btn-editar"
+                    data-target="Tutor">
+                Editar
+            </button>
+        }
+    </div>
+
+    <div class="card-body row g-3">
+
+        <div class="col-12 col-md-4">
+            <label asp-for="Tutor.relationship" class="form-label">Parentesco</label>
+            <select asp-for="Tutor.relationship"
+                    class="form-select"
+                    required
+                    data-required="true">
+                <option value="">Sin selección</option>
+                <option value="Padre">Padre</option>
+                <option value="Madre">Madre</option>
+                <option value="Tutor">Tutor</option>
+                <option value="Abuelo(a)">Abuelo(a)</option>
+                <option value="Hermano(a)">Hermano(a)</option>
+                <option value="Otro">Otro</option>
+            </select>
+        </div>
+
+        <div class="col-12 col-md-4">
+            <label asp-for="Tutor.paternal_last_name" class="form-label">Apellido paterno</label>
+            <input asp-for="Tutor.paternal_last_name"
+                   class="form-control"
+                   required
+                   data-required="true" />
+       
+        </div>
+
+        <div class="col-12 col-md-4">
+            <label asp-for="Tutor.maternal_last_name" class="form-label">Apellido materno</label>
+            <input asp-for="Tutor.maternal_last_name"
+                   class="form-control"
+                   required
+                   data-required="true" />
+            
+        </div>
+
+        <div class="col-12 col-md-6">
+            <label asp-for="Tutor.name" class="form-label">Nombre(s)</label>
+            <input asp-for="Tutor.name"
+                   class="form-control"
+                   required
+                   data-required="true" />
+          
+        </div>
+
+        <div class="col-12 col-sm-6 col-md-3">
+            <label asp-for="Tutor.home_phone" class="form-label">Teléfono de casa</label>
+            <input asp-for="Tutor.home_phone"
+                   type="tel"
+                   class="form-control"
+                   inputmode="numeric"
+                   pattern="[0-9]{10}"
+                   maxlength="10"
+                   placeholder="10 dígitos"
+                   required
+                   data-required="true" />
+          
+        </div>
+
+        <div class="col-12 col-sm-6 col-md-3">
+            <label asp-for="Tutor.work_phone" class="form-label">Teléfono de trabajo </label>
+            <input asp-for="Tutor.work_phone"
+                   type="tel"
+                   class="form-control"
+                   inputmode="numeric"
+                   pattern="[0-9]{10}"
+                   maxlength="10"
+                   placeholder="10 dígitos" />
+           
+        </div>
+
+    </div>
+</div>

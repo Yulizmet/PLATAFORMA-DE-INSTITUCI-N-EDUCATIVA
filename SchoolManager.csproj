@@ -18,7 +18,6 @@
     <Content Remove="Areas\Procedures\Templates\**" />
     <EmbeddedResource Remove="Areas\Procedures\Templates\**" />
     <None Remove="Areas\Procedures\Templates\**" />
-    <None Remove="Migrations\**" />
   </ItemGroup>
 
 
@@ -52,7 +51,6 @@
     <Folder Include="Areas\Procedures\Controllers\" />
     <Folder Include="Areas\Procedures\Views\" />
     <Folder Include="Areas\Procedures\Templates\" />
-    <Folder Include="Migrations\" />
     <Folder Include="Areas\Tutorship\Controllers\" />
     <Folder Include="wwwroot\uploads\interview\" />
     <Folder Include="wwwroot\uploads\seguimiento\" />

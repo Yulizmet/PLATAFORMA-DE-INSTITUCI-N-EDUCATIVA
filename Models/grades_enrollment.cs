@@ -5,10 +5,12 @@ namespace SchoolManager.Models
     {
         public int EnrollmentId { get; set; }
 
-        public int StudentId { get; set; } // FK a users_user
-        public int GroupId { get; set; }    // FK a grades_group
+        public int StudentId { get; set; }
+        public int GroupId { get; set; }
 
-        // Navigation properties
+        public bool IsActive { get; set; } = true;
+        public DateTime EnrolledAt { get; set; } = DateTime.Now;
+
         public users_user Student { get; set; } = null!;
         public grades_group Group { get; set; } = null!;
     }

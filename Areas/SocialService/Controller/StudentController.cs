@@ -134,7 +134,26 @@ namespace SchoolManager.Areas.SocialService.Controllers
                 .OrderByDescending(x => ExtractWeekNumber(x.Week))
                 .ToList();
 
+            var rejections = _context.SocialServiceRejections
+                .Where(r => r.StudentId == currentStudentId && !r.IsRead)
+                .OrderByDescending(r => r.RejectedAt)
+                .ToList();
+
+            ViewBag.Rejections = rejections;
+
             return View(bitacoras);
+        }
+
+        [HttpPost]
+        public IActionResult MarcarRechazoLeido(int rejectionId)
+        {
+            var rejection = _context.SocialServiceRejections.FirstOrDefault(r => r.RejectionId == rejectionId);
+            if (rejection != null)
+            {
+                rejection.IsRead = true;
+                _context.SaveChanges();
+            }
+            return RedirectToAction("Bitacoras");
         }
 
         public IActionResult CrearBitacora()
@@ -226,7 +245,7 @@ namespace SchoolManager.Areas.SocialService.Controllers
 
                 if (existingLog != null)
                 {
-                    TempData["Error"] = $"Ya tienes una bitácora registrada para la {vm.Week}. No puedes crear más de una bitácora por semana.";
+                    TempData["Error"] = $"Ya tienes una bitácora registrada para la Semana {vm.Week}. No puedes crear más de una bitácora por semana.";
                     return View(vm);
                 }
 
@@ -240,6 +259,21 @@ namespace SchoolManager.Areas.SocialService.Controllers
                     Observations = vm.Observations,
                     CreatedAt = DateTime.Now
                 };
+
+                // Guardar archivo PDF si se proporcionó
+                if (vm.PdfFile != null && vm.PdfFile.Length > 0)
+                {
+                    var pdfData = ValidateAndReadPdfFile(vm.PdfFile);
+                    if (pdfData == null)
+                    {
+                        TempData["Error"] = "Solo se permiten archivos PDF de máximo 10 MB.";
+                        return View(vm);
+                    }
+                    log.PdfFileName = vm.PdfFile.FileName;
+                    log.PdfFileData = pdfData;
+                    log.PdfContentType = "application/pdf";
+                }
+
                 _context.SocialServiceLogs.Add(log);
                 _context.SaveChanges();
                 TempData["Success"] = "Bitácora registrada exitosamente.";
@@ -280,7 +314,8 @@ namespace SchoolManager.Areas.SocialService.Controllers
                 Activities = bitacora.Activities,
                 HoursPracticas = bitacora.HoursPracticas,
                 HoursServicioSocial = bitacora.HoursServicioSocial,
-                Observations = bitacora.Observations
+                Observations = bitacora.Observations,
+                ExistingPdfFileName = bitacora.PdfFileName
             };
 
             ViewBag.LogId = bitacora.LogId;
@@ -333,6 +368,21 @@ namespace SchoolManager.Areas.SocialService.Controllers
                 bitacora.HoursPracticas = vm.HoursPracticas;
                 bitacora.HoursServicioSocial = vm.HoursServicioSocial;
                 bitacora.Observations = vm.Observations;
+
+                // Guardar archivo PDF si se proporcionó uno nuevo
+                if (vm.PdfFile != null && vm.PdfFile.Length > 0)
+                {
+                    var pdfData = ValidateAndReadPdfFile(vm.PdfFile);
+                    if (pdfData == null)
+                    {
+                        TempData["Error"] = "Solo se permiten archivos PDF de máximo 10 MB.";
+                        ViewBag.LogId = id;
+                        return View(vm);
+                    }
+                    bitacora.PdfFileName = vm.PdfFile.FileName;
+                    bitacora.PdfFileData = pdfData;
+                    bitacora.PdfContentType = "application/pdf";
+                }
 
                 _context.SaveChanges();
                 TempData["Success"] = "Bitácora actualizada exitosamente.";
@@ -405,6 +455,94 @@ namespace SchoolManager.Areas.SocialService.Controllers
             }
 
             return 0;
+        }
+
+        private byte[]? ValidateAndReadPdfFile(IFormFile pdfFile)
+        {
+            if (pdfFile == null || pdfFile.Length == 0)
+                return null;
+
+            // Validar que sea PDF
+            var extension = Path.GetExtension(pdfFile.FileName).ToLowerInvariant();
+            if (extension != ".pdf")
+                return null;
+
+            // Validar tamaño máximo de 10 MB
+            if (pdfFile.Length > 10 * 1024 * 1024)
+                return null;
+
+            using var ms = new MemoryStream();
+            pdfFile.CopyTo(ms);
+            return ms.ToArray();
+        }
+
+        [HttpGet]
+        public IActionResult DescargarBitacoraPdf(int logId)
+        {
+            var bitacora = _context.SocialServiceLogs.FirstOrDefault(b => b.LogId == logId);
+
+            if (bitacora == null || string.IsNullOrEmpty(bitacora.PdfFileName))
+                return NotFound();
+
+            int currentStudentId = int.Parse(User.FindFirst("UserId")?.Value ?? "0");
+
+            // Permitir al estudiante dueño de la bitácora
+            bool isOwner = bitacora.StudentId == currentStudentId;
+
+            // Permitir al maestro asignado
+            bool isTeacher = _context.SocialServiceAssignments
+                .Any(a => a.TeacherId == currentStudentId && a.StudentId == bitacora.StudentId && a.IsActive);
+
+            if (!isOwner && !isTeacher)
+                return Forbid();
+
+            // Servir desde la base de datos (sin fileDownloadName para mostrar inline)
+            if (bitacora.PdfFileData != null && bitacora.PdfFileData.Length > 0)
+            {
+                return File(bitacora.PdfFileData, bitacora.PdfContentType ?? "application/pdf");
+            }
+
+            // Fallback: intentar leer del filesystem para archivos anteriores
+            var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "bitacoras", bitacora.PdfFileName);
+            if (System.IO.File.Exists(filePath))
+            {
+                var stream = System.IO.File.OpenRead(filePath);
+                return File(stream, "application/pdf");
+            }
+
+            return NotFound();
+        }
+
+        [HttpGet]
+        public IActionResult DescargarBitacoraPdfArchivo(int logId)
+        {
+            var bitacora = _context.SocialServiceLogs.FirstOrDefault(b => b.LogId == logId);
+
+            if (bitacora == null || string.IsNullOrEmpty(bitacora.PdfFileName))
+                return NotFound();
+
+            int currentUserId = int.Parse(User.FindFirst("UserId")?.Value ?? "0");
+
+            bool isOwner = bitacora.StudentId == currentUserId;
+            bool isTeacher = _context.SocialServiceAssignments
+                .Any(a => a.TeacherId == currentUserId && a.StudentId == bitacora.StudentId && a.IsActive);
+
+            if (!isOwner && !isTeacher)
+                return Forbid();
+
+            if (bitacora.PdfFileData != null && bitacora.PdfFileData.Length > 0)
+            {
+                return File(bitacora.PdfFileData, bitacora.PdfContentType ?? "application/pdf", bitacora.PdfFileName);
+            }
+
+            var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "bitacoras", bitacora.PdfFileName);
+            if (System.IO.File.Exists(filePath))
+            {
+                var stream = System.IO.File.OpenRead(filePath);
+                return File(stream, "application/pdf", bitacora.PdfFileName);
+            }
+
+            return NotFound();
         }
     }
 }

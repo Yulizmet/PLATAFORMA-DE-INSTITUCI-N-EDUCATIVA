@@ -23,6 +23,8 @@ namespace SchoolManager.Models
 
         [Required]
         public int GroupId { get; set; }
+        [NotMapped]
+        public string GroupName { get; set; } = null!;
 
         [ForeignKey("StudentId")]
         public virtual users_user Student { get; set; } = null!;

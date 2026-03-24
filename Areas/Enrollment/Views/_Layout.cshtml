@@ -1,0 +1,417 @@
+﻿@{
+    var pasoActual = ViewData["PasoActual"] as int? ?? 1;
+}
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+
+    <title>@ViewData["Title"] - SchoolManager</title>
+
+    <!-- Preconnect Google Fonts -->
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+
+    <!-- Favicon -->
+    <link rel="shortcut icon" href="~/enrollment/static/img/icons/icono-Itace.png" />
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+
+    <!-- AdminKit CSS -->
+    <link rel="stylesheet" href="~/enrollment/static/css/app.css" />
+
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet" />
+
+    <!-- ===== ESTILOS DEL WIZARD ===== -->
+    <style>
+        .steps-vertical {
+            position: relative;
+            padding: 12px 14px 12px 18px;
+            margin: 8px 10px;
+        }
+
+            .steps-vertical::before {
+                content: "";
+                position: absolute;
+                left: 12px;
+                top: 18px;
+                bottom: 18px;
+                width: 3px;
+                background: rgba(255,255,255,.18);
+                border-radius: 10px;
+            }
+
+            .steps-vertical::after {
+                content: "";
+                position: absolute;
+                left: 12px;
+                top: 18px;
+                width: 3px;
+                background: #ffffff;
+                border-radius: 10px;
+                transition: height .3s ease;
+                height: 0%;
+            }
+
+        .progress-1::after {
+            height: 0%;
+        }
+
+        .progress-2::after {
+            height: 33%;
+        }
+
+        .progress-3::after {
+            height: 66%;
+        }
+
+        .progress-4::after {
+            height: 100%;
+        }
+
+        .step-vertical {
+            position: relative;
+            display: flex;
+            gap: 12px;
+            padding: 10px;
+            margin-bottom: 12px;
+            border-radius: .4rem;
+            text-decoration: none;
+            color: rgba(255,255,255,.9);
+            opacity: .55;
+            transition: all .2s ease;
+        }
+
+            .step-vertical:hover {
+                background: rgba(255,255,255,.05);
+                opacity: .85;
+            }
+
+            .step-vertical::before {
+                content: "";
+                position: absolute;
+                left: -11px;
+                top: 18px;
+                width: 12px;
+                height: 12px;
+                border-radius: 50%;
+                background: rgba(255,255,255,.3);
+                z-index: 2;
+            }
+
+        .step-vertical-icon {
+            width: 34px;
+            height: 34px;
+            display: grid;
+            place-items: center;
+            border-radius: .5rem;
+            background: rgba(255,255,255,.1);
+            flex: 0 0 34px;
+        }
+
+            .step-vertical-icon i {
+                font-size: 15px;
+                color: rgba(255,255,255,.95);
+            }
+
+        .step-vertical-title {
+            font-size: .95rem;
+            font-weight: 600;
+        }
+
+        .step-vertical-desc {
+            font-size: .78rem;
+            opacity: .8;
+            margin-top: 2px;
+        }
+
+        .step-vertical.active {
+            opacity: 1;
+            background: rgba(255,255,255,.06);
+            border: 1px solid rgba(255,255,255,.12);
+        }
+
+            .step-vertical.active::before {
+                background: #4D0218;
+                box-shadow: 0 0 0 4px rgba(77,2,24,.2);
+            }
+
+        .step-vertical.complete {
+            opacity: 1;
+        }
+
+            .step-vertical.complete::before {
+                background: #ffffff;
+                box-shadow: 0 0 0 4px rgba(255,255,255,.20);
+            }
+
+            .step-vertical.complete .step-vertical-icon {
+                background: rgba(255,255,255,.15);
+            }
+
+                .step-vertical.complete .step-vertical-icon i {
+                    color: #ffffff;
+                }
+
+        .step-vertical.locked {
+            opacity: .55;
+            cursor: default;
+        }
+
+            .step-vertical.locked:hover {
+                background: rgba(255,255,255,.05);
+                opacity: .85;
+            }
+
+        @@media (max-width: 991.98px) {
+            .sidebar
+
+        {
+            width: 260px;
+        }
+
+        .sidebar-brand {
+            height: 160px !important;
+        }
+
+        }
+
+        .main {
+            min-width: 0;
+            width: 100%;
+        }
+
+        .content {
+            min-width: 0;
+            overflow-x: hidden;
+        }
+
+        .container-fluid {
+            min-width: 0;
+        }
+
+        .card,
+        .card-body,
+        form {
+            min-width: 0;
+        }
+
+        input,
+        select,
+        textarea {
+            max-width: 100%;
+        }
+
+        .sidebar-brand .user-box {
+            width: 100px;
+            height: 100px;
+            border-radius: 20%;
+            background: rgba(255,255,255,.1);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 4px 10px rgba(0,0,0,.3);
+        }
+
+            .sidebar-brand .user-box i {
+                font-size: 70px;
+                color: white;
+            }
+
+        @@media (max-width: 991.98px) {
+            .sidebar {
+                width: 260px;
+            }
+
+            .sidebar-brand {
+                height: 160px !important;
+            }
+
+                .sidebar-brand .user-box {
+                    width: 75px;
+                    height: 75px;
+                }
+
+                    .sidebar-brand .user-box i {
+                        font-size: 48px;
+                    }
+
+            .step-vertical-title {
+                font-size: .88rem;
+            }
+
+            .step-vertical-desc {
+                font-size: .72rem;
+            }
+
+            .container-fluid.p-4 {
+                padding: 1rem !important;
+            }
+        }
+
+        @@media (max-width: 767.98px) {
+            .sidebar-brand {
+                height: 130px !important;
+            }
+
+                .sidebar-brand .user-box {
+                    width: 65px;
+                    height: 65px;
+                }
+
+                    .sidebar-brand .user-box i {
+                        font-size: 40px;
+                    }
+
+            .step-vertical {
+                gap: 10px;
+                padding: 8px;
+            }
+
+            .step-vertical-icon {
+                width: 30px;
+                height: 30px;
+                flex: 0 0 30px;
+            }
+
+                .step-vertical-icon i {
+                    font-size: 13px;
+                }
+
+            .container-fluid.p-4 {
+                padding: .75rem !important;
+            }
+        }
+    </style>
+
+    @RenderSection("Styles", required: false)
+
+</head>
+
+<body>
+    <div class="wrapper">
+
+        <!-- SIDEBAR -->
+        <nav id="sidebar" class="sidebar js-sidebar">
+            <div class="sidebar-content js-simplebar">
+
+                <!-- LOGO -->
+                <a class="sidebar-brand d-flex justify-content-center align-items-center"
+                   href="@Url.Action("Create", "PreEnrollment", new { area = "Enrollment" })"
+                   style="height:230px;">
+
+                    <div style="
+                        width:100px;
+                        height:100px;
+                        border-radius:20%;
+                        background: rgba(255,255,255,.1);
+                        display:flex;
+                        justify-content:center;
+                        align-items:center;
+                        box-shadow: 0 4px 10px rgba(0,0,0,.3);
+">
+                        <i class="fa-solid fa-user" style="font-size:70px; color:white;"></i>
+                    </div>
+
+                </a>
+
+                <ul class="sidebar-nav">
+                    <li class="sidebar-item">
+                        <div class="steps-vertical progress-@pasoActual">
+
+                            <!-- PREINSCRIPCIÓN -->
+                            <div class="step-vertical @(pasoActual == 1 ? "active" : pasoActual > 1 ? "complete" : "")">
+                                <div class="step-vertical-icon">
+                                    <i class="fa-solid fa-user-plus"></i>
+                                </div>
+                                <div>
+                                    <div class="step-vertical-title">Preinscripción</div>
+                                    <div class="step-vertical-desc">Datos iniciales</div>
+                                </div>
+                            </div>
+
+                            <!-- DOCUMENTOS -->
+                            <div class="step-vertical @(pasoActual == 2 ? "active" : pasoActual > 2 ? "complete" : "")">
+                                <div class="step-vertical-icon">
+                                    <i class="fa-solid fa-file-lines"></i>
+                                </div>
+                                <div>
+                                    <div class="step-vertical-title">Documentos</div>
+                                    <div class="step-vertical-desc">Carga de archivos</div>
+                                </div>
+                            </div>
+
+                            <!-- CONFIRMAR -->
+                            <div class="step-vertical @(pasoActual == 3 ? "active" : pasoActual > 3 ? "complete" : "")">
+                                <div class="step-vertical-icon">
+                                    <i class="fa-solid fa-user-check"></i>
+                                </div>
+                                <div>
+                                    <div class="step-vertical-title">Confirmar datos</div>
+                                    <div class="step-vertical-desc">Verifica tu información</div>
+                                </div>
+                            </div>
+
+                            <!-- FINALIZAR -->
+                            <div class="step-vertical @(pasoActual == 4 ? "active" : "") @(pasoActual < 4 ? "locked" : "")">
+                                <div class="step-vertical-icon">
+                                    <i class="fa-solid fa-flag-checkered"></i>
+                                </div>
+                                <div>
+                                    <div class="step-vertical-title">Finalizar</div>
+                                    <div class="step-vertical-desc">Enviar solicitud</div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+
+        <div class="main">
+
+            <nav class="navbar navbar-expand navbar-light navbar-bg">
+                <a class="sidebar-toggle js-sidebar-toggle">
+                    <i class="hamburger align-self-center"></i>
+                </a>
+            </nav>
+
+            <main class="content">
+                <div class="container-fluid p-4">
+                    @RenderBody()
+                </div>
+            </main>
+
+        </div>
+    </div>
+
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
+    <!-- Bootstrap -->
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Validación -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.5/jquery.validate.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validation-unobtrusive/4.0.0/jquery.validate.unobtrusive.min.js"></script>
+
+    <!-- AdminKit -->
+    <script src="~/enrollment/static/js/app.js"></script>
+
+    <!-- Scripts globales -->
+    <script src="~/enrollment/src/js/modules/storage.js"></script>
+    <script src="~/enrollment/src/js/modules/preinscripcion.js"></script>
+
+    <!-- 👇 IMPORTANTE: Renderiza scripts por vista -->
+    @RenderSection("Scripts", required: false)
+
+</body>
+</html>

@@ -8,7 +8,7 @@ namespace SchoolManager.Models
     {
         public int UserId { get; set; }
         public int PersonId { get; set; }
-        public string Username { get; set; } = null!;
+        public string Username { get; set; } = null!;   
         public string Email { get; set; } = null!;
         public string PasswordHash { get; set; } = null!;
         public bool IsLocked { get; set; }
@@ -18,7 +18,6 @@ namespace SchoolManager.Models
 
         public bool IsActive { get; set; }
         public DateTime CreatedDate { get; set; }
-        public ICollection<preenrollment_general> PreEnrollments { get; set; }
 
         public ICollection<ForoPublicacion> ForoPublicaciones { get; set; }
         public users_person Person { get; set; } = null!;

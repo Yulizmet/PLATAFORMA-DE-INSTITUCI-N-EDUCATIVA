@@ -1,0 +1,93 @@
+﻿@model SchoolManager.Areas.Enrollment.ViewModels.PreEnrollmentViewModel
+
+@{
+    var modoConfirmacion = (ViewData["ModoConfirmacion"] as bool?) ?? false;
+}
+
+<div class="card mb-4" data-section="Domicilio">
+    <div class="card-header fw-bold text-uppercase d-flex justify-content-between align-items-center">
+        Domicilio
+
+        @if (modoConfirmacion)
+        {
+            <button type="button"
+                    class="btn btn-outline-secondary btn-sm btn-editar"
+                    data-target="Domicilio">
+                Editar
+            </button>
+        }
+    </div>
+
+    <div class="card-body row g-3">
+
+        <div class="col-12 col-md-6">
+            <label asp-for="Domicilio.street" class="form-label">Calle</label>
+            <input asp-for="Domicilio.street" id="domCalle" class="form-control" type="text"
+                   required data-required="true" />
+           
+        </div>
+
+        <div class="col-12 col-sm-6 col-md-3">
+            <label asp-for="Domicilio.exterior_number" class="form-label">Número exterior</label>
+            <input asp-for="Domicilio.exterior_number" id="domExterior" class="form-control" type="number" min="0"
+                   oninput="this.value=this.value.replace(/[^0-9]/g,'');"
+                   required data-required="true" />
+  
+        </div>
+
+        <div class="col-12 col-sm-6 col-md-3">
+            <label asp-for="Domicilio.interior_number" class="form-label">Número interior</label>
+            <input asp-for="Domicilio.interior_number" id="domInterior" class="form-control" type="number" min="0"
+                   oninput="this.value=this.value.replace(/[^0-9]/g,'');"
+                   required data-required="true" />
+            
+        </div>
+
+        <div class="col-12 col-sm-6 col-md-4">
+            <label asp-for="Domicilio.postal_code" class="form-label">Código Postal</label>
+            <input asp-for="Domicilio.postal_code" id="domCP" class="form-control" type="number" min="0" max="99999"
+                   maxlength="5" placeholder="5 dígitos"
+                   oninput="this.value=this.value.replace(/[^0-9]/g,'');"
+                   required data-required="true" />
+            
+        </div>
+
+        <div class="col-12 col-sm-6 col-md-4">
+            <label asp-for="Domicilio.neighborhood" class="form-label">Colonia</label>
+            <select asp-for="Domicilio.neighborhood" id="domColonia" class="form-select"
+                    required data-required="true">
+                <option value="">Sin selección</option>
+            </select>
+           
+            <small class="text-danger d-none" id="domCPError">No se encontraron colonias para ese CP.</small>
+        </div>
+
+        <div class="col-12 col-sm-6 col-md-4">
+            <label asp-for="Domicilio.state" class="form-label">Estado</label>
+            <select asp-for="Domicilio.state" id="domEstado" class="form-select"
+                    required data-required="true">
+                <option value="">Sin selección</option>
+            </select>
+     
+        </div>
+
+        <div class="col-12 col-sm-6 col-md-4">
+            <label asp-for="Domicilio.city" class="form-label">Municipio</label>
+            <select asp-for="Domicilio.city" id="domMunicipio" class="form-select"
+                    required data-required="true">
+                <option value="">Sin selección</option>
+            </select>
+          
+        </div>
+
+        <div class="col-12 col-md-6">
+            <label asp-for="Persona.Phone" class="form-label">Teléfono</label>
+            <input asp-for="Persona.Phone" id="domTelefono" class="form-control"
+                   type="tel" pattern="[0-9]{10}" maxlength="10"
+                   oninput="this.value=this.value.replace(/[^0-9]/g,'');"
+                   required data-required="true" />
+            
+        </div>
+
+    </div>
+</div>

@@ -20,16 +20,16 @@
         }
 
         :root {
-            --vino: #6B1A2A;
-            --vino-dark: #4A1020;
-            --vino-deep: #380C1A;
-            --vino-light: #8C2D3F;
-            --vino-dim: rgba(107, 26, 42, 0.12);
+            --vino: #8C1B1B;
+            --vino-dark: #620900;
+            --vino-deep: #620900;
+            --vino-light: #D42D2D;
+            --vino-dim: #FFFFFF;
             --white: #FFFFFF;
-            --off-white: #F7F3F0;
-            --cream: #EDE8E3;
-            --muted: #9C8B85;
-            --text-dark: #2C1A1E;
+            --off-white: #FFFFFF;
+            --cream: #B1A596;
+            --muted: #7A6F66;
+            --text-dark: #000000;
         }
 
         html, body {
@@ -45,6 +45,7 @@
             overflow: hidden;
         }
 
+
         .panel-left {
             width: 420px;
             flex-shrink: 0;
@@ -56,6 +57,7 @@
             padding: 56px 52px;
             overflow: hidden;
         }
+
 
             .panel-left::before {
                 content: '';
@@ -93,7 +95,6 @@
             animation: slideIn 0.8s cubic-bezier(0.22,1,0.36,1) both;
         }
 
-        /* School crest / logo mark */
         .crest {
             width: 72px;
             height: 72px;
@@ -121,7 +122,7 @@
         }
 
         .school-name {
-            font-family: 'Cormorant Garamond', serif;
+            font-family: 'TAHOMA', serif;
             font-size: 2.6rem;
             font-weight: 600;
             line-height: 1.15;
@@ -198,7 +199,7 @@
         }
 
         .form-title {
-            font-family: 'Cormorant Garamond', serif;
+            font-family: 'Outfit', sans serif;
             font-size: 2.2rem;
             font-weight: 600;
             color: var(--text-dark);
@@ -212,7 +213,7 @@
         }
 
         .validation-box {
-            background: rgba(107,26,42,0.07);
+            background: #FFFFFF;
             border-left: 3px solid var(--vino);
             border-radius: 6px;
             padding: 12px 16px;
@@ -275,7 +276,7 @@
         }
 
         input::placeholder {
-            color: #C5B8B3;
+            color: #FFFFFF;
         }
 
         .field-error {
@@ -318,6 +319,7 @@
             .forgot-link:hover {
                 opacity: 1;
             }
+
         .btn-login {
             width: 100%;
             padding: 14px;
@@ -331,13 +333,13 @@
             border-radius: 10px;
             cursor: pointer;
             transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
-            box-shadow: 0 4px 16px rgba(107,26,42,0.25);
+            box-shadow: 0 4px 16px rgba(255,255,255,0.65);
         }
 
             .btn-login:hover {
                 background: var(--vino-light);
                 transform: translateY(-1px);
-                box-shadow: 0 6px 20px rgba(107,26,42,0.35);
+                box-shadow: 0 6px 20px rgba(255,255,255,0.65);
             }
 
             .btn-login:active {
@@ -360,6 +362,7 @@
                 .register-row a:hover {
                     text-decoration: underline;
                 }
+
 
         @@keyframes slideIn {
             from {
@@ -385,6 +388,7 @@
             }
         }
 
+      
         @@media (max-width: 700px) {
             .panel-left {
                 display: none;
@@ -398,11 +402,13 @@
 </head>
 <body>
 
+
     <div class="panel-left">
         <div class="diamond-grid"></div>
 
         <div class="brand">
             <div class="crest">
+
                 <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path d="M12 3L2 8L12 13L22 8L12 3Z" stroke="white" stroke-width="1.5" stroke-linejoin="round" />
                     <path d="M6 10.5V16C6 16 8.5 18 12 18C15.5 18 18 16 18 16V10.5" stroke="white" stroke-width="1.5" stroke-linecap="round" />
@@ -411,17 +417,15 @@
             </div>
 
             <p class="school-label">Sistema Escolar</p>
-            <h1 class="school-name">
-                School<br><em>Manager</em>
-            </h1>
             <div class="divider-line"></div>
             <p class="school-tagline">
                 Plataforma de gestión académica para docentes y administradores.
             </p>
         </div>
 
-        <p class="panel-footer">&copy; @DateTime.Now.Year </p>
+        <p class="panel-footer"> @DateTime.Now.Year </p>
     </div>
+
 
     <div class="panel-right">
         <div class="form-card">
@@ -451,7 +455,7 @@
                             <path d="m2 7 10 7 10-7" />
                         </svg>
                         @Html.TextBoxFor(m => m.Email, new {
-                        placeholder = "correo@uttn.mx",
+                        placeholder = "correo@escuela.edu.mx",
                                         type = "email",
                                         autocomplete = "email"
                                         })
@@ -475,11 +479,8 @@
             </div>
 
             <div class="row-options">
-                <label class="checkbox-label">
-                    @Html.CheckBoxFor(m => m.RememberMe)
-                    Recordarme
-                </label>
-                @Html.ActionLink("¿Olvidaste tu contraseña?", "ForgotPassword", "Account", null, new { @class = "forgot-link" })
+                
+                
             </div>
 
             <button type="submit" class="btn-login">Ingresar al sistema</button>

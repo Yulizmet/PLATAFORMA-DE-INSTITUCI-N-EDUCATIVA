@@ -1,0 +1,157 @@
+@model List<SchoolManager.Models.social_service_log>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h3 class="mb-0">Bitácoras de @ViewBag.StudentName</h3>
+        @if (ViewBag.TeacherName != null)
+        {
+            <small class="text-muted">Asesor: @ViewBag.TeacherName</small>
+        }
+    </div>
+    @if (ViewBag.TeacherId != null)
+    {
+        <a asp-area="SocialService" asp-controller="Coordinator" asp-action="VerAlumnosAsesor" asp-route-id="@ViewBag.TeacherId" class="btn btn-secondary">
+            <i class="bi bi-arrow-left me-1"></i> Volver a Alumnos del Asesor
+        </a>
+    }
+    else
+    {
+        <a asp-area="SocialService" asp-controller="Coordinator" asp-action="Alumnos" class="btn btn-secondary">
+            <i class="bi bi-arrow-left me-1"></i> Volver
+        </a>
+    }
+</div>
+
+@if (Model != null && Model.Count > 0)
+{
+    <div class="teacher-bitacora-grid">
+        @foreach (var bitacora in Model)
+        {
+            <div class="teacher-bitacora-card @(bitacora.IsApproved ? "approved" : "pending")">
+                <div class="teacher-card-header @(bitacora.IsApproved ? "approved" : "")">
+                    <h6>
+                        Semana @bitacora.Week
+                        @if (bitacora.IsApproved)
+                        {
+                            <span class="badge bg-light text-success float-end">
+                                <i class="bi bi-check-circle-fill"></i> Aprobada
+                            </span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-warning float-end">
+                                <i class="bi bi-clock"></i> Pendiente
+                            </span>
+                        }
+                    </h6>
+                </div>
+
+                <div class="teacher-card-body">
+                    <div class="mb-2">
+                        <strong>Actividades:</strong>
+                        <p class="mb-1">@bitacora.Activities</p>
+                    </div>
+
+                    @if (!string.IsNullOrEmpty(bitacora.Observations))
+                    {
+                        <div class="mb-2">
+                            <strong>Observaciones:</strong>
+                            <p class="mb-1">@bitacora.Observations</p>
+                        </div>
+                    }
+
+                    <div class="row mb-2">
+                        <div class="col-6">
+                            <small class="text-muted">Hrs. Prácticas solicitadas:</small>
+                            <div><strong>@bitacora.HoursPracticas h</strong></div>
+                        </div>
+                        <div class="col-6">
+                            <small class="text-muted">Hrs. Servicio Social solicitadas:</small>
+                            <div><strong>@bitacora.HoursServicioSocial h</strong></div>
+                        </div>
+                    </div>
+
+                    @if (bitacora.IsApproved)
+                    {
+                        <div class="row mb-2">
+                            <div class="col-6">
+                                <small class="text-muted">Hrs. Prácticas aprobadas:</small>
+                                <div class="text-success"><strong>@bitacora.ApprovedHoursPracticas h</strong></div>
+                            </div>
+                            <div class="col-6">
+                                <small class="text-muted">Hrs. Servicio Social aprobadas:</small>
+                                <div class="text-success"><strong>@bitacora.ApprovedHoursServicioSocial h</strong></div>
+                            </div>
+                        </div>
+
+                        @if (!string.IsNullOrEmpty(bitacora.TeacherComments))
+                        {
+                            <div class="mb-2">
+                                <strong>Comentarios del asesor:</strong>
+                                <p class="mb-1 text-info">@bitacora.TeacherComments</p>
+                            </div>
+                        }
+
+                        <small class="text-muted">
+                            Aprobada el @bitacora.ApprovedAt?.ToString("dd/MM/yyyy HH:mm")
+                        </small>
+                    }
+
+                    @if (!string.IsNullOrEmpty(bitacora.PdfFileName))
+                    {
+                        var pdfUrl = Url.Action("DescargarBitacoraPdf", "Coordinator", new { area = "SocialService", bitacoraId = bitacora.LogId });
+                        <div class="mt-2">
+                            <button type="button" class="btn btn-outline-danger btn-sm d-block w-100 text-truncate"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#bitacoraPdfModal"
+                                    data-pdf-url="@pdfUrl"
+                                    data-pdf-filename="@bitacora.PdfFileName"
+                                    data-semana="@bitacora.Week">
+                                <i class="bi bi-file-earmark-pdf me-1"></i>Ver PDF adjunto
+                            </button>
+                        </div>
+                    }
+
+                    <div class="mt-2">
+                        <small class="text-muted">Creada el @bitacora.CreatedAt.ToString("dd/MM/yyyy HH:mm")</small>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
+else
+{
+    <div class="alert alert-info text-center">
+        <i class="bi bi-info-circle me-2"></i>
+        Este alumno no tiene bitácoras registradas.
+    </div>
+}
+
+@await Html.PartialAsync("_BitacoraPdfModal")
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var pdfModal = document.getElementById('bitacoraPdfModal');
+            if (pdfModal) {
+                pdfModal.addEventListener('show.bs.modal', function (event) {
+                    var button = event.relatedTarget;
+                    var pdfUrl = button.getAttribute('data-pdf-url');
+                    var semana = button.getAttribute('data-semana');
+                    var filename = button.getAttribute('data-pdf-filename');
+                    var iframe = document.getElementById('bitacoraPdfIframe');
+                    var download = document.getElementById('bitacoraPdfDownload');
+                    var semanaLabel = document.getElementById('bitacoraPdfModalSemana');
+                    if (iframe && pdfUrl) iframe.src = pdfUrl;
+                    if (download && pdfUrl) download.href = pdfUrl;
+                    if (semanaLabel && semana) semanaLabel.textContent = 'Semana ' + semana;
+                });
+                pdfModal.addEventListener('hidden.bs.modal', function () {
+                    var iframe = document.getElementById('bitacoraPdfIframe');
+                    if (iframe) iframe.src = '';
+                });
+            }
+        });
+    </script>
+}
