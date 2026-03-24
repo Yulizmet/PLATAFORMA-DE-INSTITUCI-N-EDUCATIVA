@@ -40,10 +40,10 @@
     <a href="/SocialService/Teacher/Dashboard" class="btn btn-secondary">
         <i class="bi bi-arrow-left"></i> Regresar al Dashboard
     </a>
-    <a href="/SocialService/Teacher/ExportAvanceExcel" class="btn btn-success">
+    <a href="/SocialService/Teacher/ExportAvanceExcel?searchName=@Uri.EscapeDataString(searchName)" class="btn btn-success">
         <i class="bi bi-file-earmark-excel me-1"></i> Exportar a Excel
     </a>
-    <a href="/SocialService/Teacher/ExportAvancePdf" class="btn btn-danger">
+    <a href="/SocialService/Teacher/ExportAvancePdf?searchName=@Uri.EscapeDataString(searchName)" class="btn btn-danger">
         <i class="bi bi-file-earmark-pdf me-1"></i> Exportar en PDF
     </a>
 </div>
@@ -53,7 +53,7 @@
     <div class="card-body py-3">
         <form method="get" action="/SocialService/Teacher/AsignarHoras" id="filterForm">
             <div class="row g-3 align-items-end">
-                <div class="col-md-4">
+                <div class="col-md-3">
                     <label for="searchName" class="form-label">
                         <i class="bi bi-search"></i> Buscar Alumno
                     </label>
@@ -61,7 +61,35 @@
                            value="@ViewBag.SearchName" placeholder="Escribe para buscar...">
                 </div>
 
-                <div class="col-md-3">
+                <div class="col-md-2">
+                    <label for="semesterFilter" class="form-label mb-2">Semestre</label>
+                    <select class="form-select" id="semesterFilter" name="semesterFilter" onchange="this.form.submit()">
+                        <option value="">Todos los semestres</option>
+                        @if (ViewBag.Semesters != null)
+                        {
+                            foreach (var semester in ViewBag.Semesters)
+                            {
+                                <option value="@semester" selected="@(ViewBag.SemesterFilter == semester)">@semester</option>
+                            }
+                        }
+                    </select>
+                </div>
+
+                <div class="col-md-2">
+                    <label for="groupFilter" class="form-label mb-2">Grupo</label>
+                    <select class="form-select" id="groupFilter" name="groupFilter" onchange="this.form.submit()">
+                        <option value="">Todos los grupos</option>
+                        @if (ViewBag.Groups != null)
+                        {
+                            foreach (var group in ViewBag.Groups)
+                            {
+                                <option value="@group" selected="@(ViewBag.GroupFilter == group)">@group</option>
+                            }
+                        }
+                    </select>
+                </div>
+
+                <div class="col-md-2">
                     <label for="pageSize" class="form-label">
                         <i class="bi bi-list-ol"></i> Registros por página
                     </label>
@@ -73,14 +101,14 @@
                     </select>
                 </div>
 
-                <div class="col-md-3">
+                <div class="col-md-2">
                     <button type="submit" class="btn btn-primary w-100">
                         <i class="bi bi-search"></i> Buscar
                     </button>
                 </div>
 
-                <div class="col-md-2">
-                    @if (!string.IsNullOrWhiteSpace(ViewBag.SearchName as string))
+                <div class="col-md-1">
+                    @if (!string.IsNullOrWhiteSpace(ViewBag.SearchName as string) || !string.IsNullOrWhiteSpace(ViewBag.SemesterFilter as string) || !string.IsNullOrWhiteSpace(ViewBag.GroupFilter as string))
                     {
                         <a href="/SocialService/Teacher/AsignarHoras" class="btn btn-secondary w-100">
                             <i class="bi bi-x-circle"></i> Limpiar

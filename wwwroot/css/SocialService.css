@@ -180,6 +180,24 @@ body {
     opacity: 0.5;
 }
 
+/* Red header for Coordinator tables */
+.table thead.thead-rojo th {
+    background-color: #8C1B1B !important;
+    color: white !important;
+    border-bottom-color: #6b1515 !important;
+    box-shadow: none !important;
+    --bs-table-bg: #8C1B1B;
+    --bs-table-accent-bg: #8C1B1B;
+}
+
+.table thead.thead-rojo th a {
+    color: white !important;
+}
+
+.table thead.thead-rojo th a:hover {
+    color: #ffcccc !important;
+}
+
 /* ====== COMPACT TABLE (ss-table-cards) ====== */
 .ss-table-cards {
     width: 100%;
