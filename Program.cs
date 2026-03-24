@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 var builder = WebApplication.CreateBuilder(args);
 
 // --- SERVICES ---
-builder.Services.AddScoped<ISearchService, SearchService > ();
+builder.Services.AddScoped<ISearchService, SearchService>();
 builder.Services.AddScoped<IStorageService, AzureStorageService>();
 builder.Services.AddTransient<IEmailSender, OutlookEmailSender>();
 builder.Services.AddScoped<EmailService>();
@@ -31,13 +31,26 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
         options.Cookie.SameSite = SameSiteMode.Strict;
     });
 
-// -- PROCEDURE REPORTS ---
+// --- CORS ---
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAdmin", policy =>
+    {
+        policy.WithOrigins(
+            "http://127.0.0.1:5500",
+            "http://localhost:5500"
+        )
+        .AllowAnyHeader()
+        .AllowAnyMethod();
+    });
+});
+
+// --- PROCEDURE REPORTS ---
 builder.Services.AddSingleton(typeof(IConverter), new SynchronizedConverter(new PdfTools()));
 
 var app = builder.Build();
 
 // --- MIDDLEWARE ---
-
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Error");
@@ -47,6 +60,7 @@ if (!app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseRouting();
+app.UseCors("AllowAdmin");
 app.UseAuthentication();
 app.UseAuthorization();
 
@@ -70,14 +84,5 @@ app.MapControllerRoute(
     name: "default",
     pattern: "{area=MainScreen}/{controller=MainScreen}/{action=Index}/{id?}");
 
-//app.MapControllerRoute(
-//    name: "areas",
-//    pattern: "{area:exists}/{controller=Home}/{action=Index}/{id?}");
-
-//app.MapControllerRoute(
-//    name: "default",
-//    pattern: "{controller=Home}/{action=Index}/{id?}");
-
 app.MapRazorPages();
-
 app.Run();

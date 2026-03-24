@@ -6,6 +6,7 @@ using SchoolManager.Areas.Enrollment.ViewModels;
 using SchoolManager.Data;
 using SchoolManager.Models;
 using SchoolManager.Models.ViewModels;
+using Microsoft.AspNetCore.Cors;
 
 
 namespace SchoolManager.Areas.Enrollment.Controllers
@@ -802,6 +803,283 @@ namespace SchoolManager.Areas.Enrollment.Controllers
                 await _context.SaveChangesAsync();
             }
             return RedirectToAction(nameof(Index));
+        }
+
+        [HttpGet]
+        [EnableCors("AllowAdmin")]
+        public async Task<IActionResult> GetGeneraciones()
+        {
+            var generaciones = await _context.PreenrollmentGenerations
+                .OrderByDescending(g => g.Year)
+                .Select(g => new
+                {
+                    g.IdGeneration,
+                    g.Year
+                })
+                .ToListAsync();
+
+            return Json(generaciones);
+        }
+
+        // GET: Enrollment/PreEnrollment/GetAspirantesPorGeneracion?idGeneration=4
+        [HttpGet]
+        [EnableCors("AllowAdmin")]
+        public async Task<IActionResult> GetAspirantesPorGeneracion(int idGeneration)
+        {
+            var generation = await _context.PreenrollmentGenerations
+                .FirstOrDefaultAsync(g => g.IdGeneration == idGeneration);
+
+            if (generation == null)
+                return NotFound(new { message = "Generación no encontrada." });
+
+            string yearShort = generation.Year.ToString().Substring(2, 2);
+
+            var aspirantes = await _context.PreenrollmentGenerals
+                .Include(g => g.Person)
+                .Where(g => g.IdGeneration == idGeneration
+                         && g.Matricula.StartsWith(yearShort)
+                         && g.PersonId != null)   // <- solo los que tienen persona
+                .Select(g => new
+                {
+                    g.IdData,
+                    g.Folio,
+                    g.Matricula,
+                    NombreCompleto = $"{g.Person.FirstName} {g.Person.LastNamePaternal} {g.Person.LastNameMaternal}",
+                    Email = g.Person.Email,
+                    g.IdGeneration
+                })
+                .ToListAsync();
+
+            return Json(aspirantes);
+        }
+
+        // GET: Enrollment/PreEnrollment/GetAspiranteDetalle?idData=5
+        [HttpGet]
+        [EnableCors("AllowAdmin")]
+        public async Task<IActionResult> GetAspiranteDetalle(int idData)
+        {
+            var general = await _context.PreenrollmentGenerals
+                .Include(g => g.Person)
+                .Include(g => g.Career)
+                .Include(g => g.Generation)
+                .Include(g => g.Addresses)
+                .Include(g => g.Schools)
+                .Include(g => g.Tutors)
+                .Include(g => g.Infos)
+                .FirstOrDefaultAsync(g => g.IdData == idData);
+
+            if (general == null)
+                return NotFound(new { message = "Aspirante no encontrado." });
+
+            var address = general.Addresses.FirstOrDefault();
+            var school = general.Schools.FirstOrDefault();
+            var tutor = general.Tutors.FirstOrDefault();
+            var info = general.Infos.FirstOrDefault();
+
+            var result = new
+            {
+                // --- Persona ---
+                nombre = general.Person?.FirstName ?? "",
+                apellidoPaterno = general.Person?.LastNamePaternal ?? "",
+                apellidoMaterno = general.Person?.LastNameMaternal ?? "",
+                email = general.Person?.Email ?? "",
+                telefono = general.Person?.Phone ?? "",
+                genero = general.Person?.Gender ?? "",
+                fechaNacimiento = general.Person?.BirthDate,
+                curp = general.Person?.Curp ?? "",
+
+                // --- General ---
+                folio = general.Folio,
+                matricula = general.Matricula,
+                carrera = general.Career?.name_career ?? "",
+                generacion = general.Generation?.Year.ToString() ?? "",
+                tipoSangre = general.BloodType ?? "",
+                estadoCivil = general.MaritalStatus,
+                nacionalidad = general.Nationality,
+                ocupacion = general.Occupation ?? "",
+                trabaja = general.Work,
+                domicilioTrabajo = general.WorkAddress ?? "",
+                telefonoTrabajo = general.WorkPhone ?? "",
+
+                // --- Domicilio ---
+                calle = address?.street ?? "",
+                numExterior = address?.exterior_number ?? "",
+                numInterior = address?.interior_number ?? "",
+                colonia = address?.neighborhood ?? "",
+                codigoPostal = address?.postal_code ?? "",
+                ciudad = address?.city ?? "",
+                estado = address?.state ?? "",
+
+                // --- Escuela ---
+                escuela = school?.school ?? "",
+                grado = school?.degree ?? "",
+                escuelaEstado = school?.state ?? "",
+                escuelaCiudad = school?.city ?? "",
+                promedio = school?.average,
+                fechaInicioEsc = school?.start_date,
+                fechaFinEsc = school?.end_date,
+                sistemaEstudio = school?.study_system ?? "",
+                tipoBachillerato = school?.high_school_type ?? "",
+
+                // --- Info adicional ---
+                beca = info?.beca ?? "",
+                comunidadIndi = info?.comu_indi ?? false,
+                lenguaIndi = info?.lengu_indi ?? false,
+                discapacidad = info?.incapa ?? false,
+                enfermedad = info?.disease ?? false,
+                comentario = info?.comment ?? ""
+            };
+
+            return Json(result);
+        }
+
+        // GET: Enrollment/PreEnrollment/GetMatriculas
+        [HttpGet]
+        [EnableCors("AllowAdmin")]
+        public async Task<IActionResult> GetMatriculas()
+        {
+            var matriculas = await _context.PreenrollmentGenerals
+                .Include(g => g.Person)
+                .Where(g => !string.IsNullOrEmpty(g.Matricula))
+                .Select(g => new
+                {
+                    g.IdData,
+                    g.Folio,
+                    g.Matricula,
+                    NombreCompleto = g.Person != null
+                        ? $"{g.Person.FirstName} {g.Person.LastNamePaternal} {g.Person.LastNameMaternal}"
+                        : "Sin nombre",
+                    Email = g.Person != null ? g.Person.Email : "",
+                    IsActive = g.Person != null ? g.Person.IsActive : false
+                })
+                .OrderBy(g => g.Matricula)
+                .ToListAsync();
+
+            return Json(matriculas);
+        }
+
+        [HttpPut]
+        [EnableCors("AllowAdmin")]
+        public async Task<IActionResult> UpdateAspirante([FromBody] UpdateAspiranteDto dto)
+        {
+            var general = await _context.PreenrollmentGenerals
+                .Include(g => g.Person)
+                .Include(g => g.Addresses)
+                .Include(g => g.Schools)
+                .Include(g => g.Infos)
+                .FirstOrDefaultAsync(g => g.IdData == dto.IdData);
+
+            if (general == null)
+                return NotFound(new { message = "Aspirante no encontrado" });
+
+            var address = general.Addresses.FirstOrDefault();
+            var school = general.Schools.FirstOrDefault();
+            var info = general.Infos.FirstOrDefault();
+
+            // ========================
+            // PERSON
+            // ========================
+            if (general.Person != null)
+            {
+                general.Person.FirstName = dto.Nombre;
+                general.Person.LastNamePaternal = dto.ApellidoPaterno;
+                general.Person.LastNameMaternal = dto.ApellidoMaterno;
+                general.Person.Email = dto.Email;
+                general.Person.Phone = dto.Telefono;
+                general.Person.Gender = dto.Genero;
+                general.Person.Curp = dto.Curp;
+            }
+
+            // ========================
+            // GENERAL
+            // ========================
+            general.Nationality = dto.Nacionalidad;
+            general.MaritalStatus = dto.EstadoCivil;
+            general.BloodType = dto.TipoSangre;
+
+            // ========================
+            // ADDRESS
+            // ========================
+            if (address != null)
+            {
+                address.street = dto.Calle;
+                address.exterior_number = dto.NumExt;
+                address.interior_number = dto.NumInt;
+                address.neighborhood = dto.Colonia;
+                address.city = dto.Ciudad;
+                address.state = dto.Estado;
+                address.postal_code = dto.CP;
+            }
+
+            // ========================
+            // SCHOOL
+            // ========================
+            if (school != null)
+            {
+                school.school = dto.Escuela;
+                school.average = dto.Promedio;
+                school.city = dto.EscuelaCiudad;
+                school.state = dto.EscuelaEstado;
+            }
+
+            // ========================
+            // INFO
+            // ========================
+            if (info != null)
+            {
+                info.beca = dto.Beca;
+                info.comu_indi = dto.ComunidadIndi;
+                info.lengu_indi = dto.LenguaIndi;
+                info.incapa = dto.Discapacidad;
+                info.disease = dto.Enfermedad;
+                info.comment = dto.Comentario;
+            }
+
+            await _context.SaveChangesAsync();
+
+            return Ok(new { success = true });
+        }
+
+        public class UpdateAspiranteDto
+        {
+            public int IdData { get; set; }
+
+            // PERSON
+            public string Nombre { get; set; }
+            public string ApellidoPaterno { get; set; }
+            public string ApellidoMaterno { get; set; }
+            public string Email { get; set; }
+            public string Telefono { get; set; }
+            public string Genero { get; set; }
+            public string Curp { get; set; }
+
+            // GENERAL
+            public string Nacionalidad { get; set; }
+            public string EstadoCivil { get; set; }
+            public string TipoSangre { get; set; }
+
+            // ADDRESS
+            public string Calle { get; set; }
+            public string NumExt { get; set; }
+            public string NumInt { get; set; }
+            public string Colonia { get; set; }
+            public string Ciudad { get; set; }
+            public string Estado { get; set; }
+            public string CP { get; set; }
+
+            // SCHOOL
+            public string Escuela { get; set; }
+            public decimal? Promedio { get; set; }
+            public string EscuelaCiudad { get; set; }
+            public string EscuelaEstado { get; set; }
+
+            // INFO
+            public string Beca { get; set; }
+            public bool ComunidadIndi { get; set; }
+            public bool LenguaIndi { get; set; }
+            public bool Discapacidad { get; set; }
+            public bool Enfermedad { get; set; }
+            public string Comentario { get; set; }
         }
     }
 }
