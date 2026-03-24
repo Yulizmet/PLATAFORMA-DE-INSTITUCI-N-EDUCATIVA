@@ -52,7 +52,8 @@
     <Folder Include="Areas\Procedures\Views\" />
     <Folder Include="Areas\Procedures\Templates\" />
     <Folder Include="Areas\Tutorship\Controllers\" />
-    <Folder Include="Areas\Tutorship\Views\" />
+    <Folder Include="wwwroot\uploads\interview\" />
+    <Folder Include="wwwroot\uploads\seguimiento\" />
 
 	  <None Update="libwkhtmltox.dll">
 		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>

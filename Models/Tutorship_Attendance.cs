@@ -22,6 +22,7 @@ namespace SchoolManager.Models
         public bool IsPresent { get; set; }
 
         [Required]
+        public int GroupId { get; set; }
         [NotMapped]
         public string GroupName { get; set; } = null!;
 
