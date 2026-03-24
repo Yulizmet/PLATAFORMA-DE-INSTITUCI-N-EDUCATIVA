@@ -26,7 +26,6 @@ namespace SchoolManager.Areas.UserMng.Controllers
             return View();
         }
 
-        // POST /devtools/quickuser
         [HttpPost]
         public async Task<IActionResult> QuickUser(string firstName, string roleName, string password = "Test1234!")
         {
@@ -78,6 +77,39 @@ namespace SchoolManager.Areas.UserMng.Controllers
             await _context.SaveChangesAsync();
 
             TempData["Result"] = $"Usuario creado — Email: {user.Email} | Password: {password} | Rol: {roleName}";
+            return RedirectToAction("Index");
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> CreateRole(string name, string description)
+        {
+            if (string.IsNullOrWhiteSpace(name))
+            {
+                TempData["RoleError"] = "El nombre del rol es obligatorio.";
+                return RedirectToAction("Index");
+            }
+
+            var exists = await _context.Roles
+                .AnyAsync(r => r.Name.ToLower() == name.Trim().ToLower());
+
+            if (exists)
+            {
+                TempData["RoleError"] = $"Ya existe un rol con el nombre '{name}'.";
+                return RedirectToAction("Index");
+            }
+
+            var role = new users_role
+            {
+                Name = name.Trim(),
+                Description = description?.Trim() ?? "",
+                CreatedDate = DateTime.Now,
+                IsActive = true
+            };
+
+            _context.Roles.Add(role);
+            await _context.SaveChangesAsync();
+
+            TempData["RoleResult"] = $"Rol creado — Nombre: {role.Name} | ID: {role.RoleId}";
             return RedirectToAction("Index");
         }
     }
