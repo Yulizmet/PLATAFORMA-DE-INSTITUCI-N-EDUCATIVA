@@ -1,16 +1,19 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using SchoolManager.Data;
 using SchoolManager.Models;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace SchoolManager.Areas.Grades.Controllers
 {
     [Area("Grades")]
+    [Authorize(Roles = "Teacher,Administrator")]
+
     public class grades_subjectsController : Controller
     {
         private readonly AppDbContext _context;
