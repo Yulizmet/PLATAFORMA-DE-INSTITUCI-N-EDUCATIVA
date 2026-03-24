@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using SchoolManager.Data;
 using SchoolManager.ViewModels;
@@ -43,8 +44,13 @@ namespace SchoolManager.Pages.Estadisticas
 
         public int EmployeesTotal => Employees.Count;
 
-        public void OnGet()
+        public IActionResult OnGet()
         {
+            if (!User.IsInRole("Teacher"))
+            {
+                return Redirect("/CalificacionesDocente");
+            }
+
             LoadStudents();
             LoadEmployees();
             LoadSocialServiceStatistics();
@@ -58,6 +64,8 @@ namespace SchoolManager.Pages.Estadisticas
             JsonProcedureStats = JsonSerializer.Serialize(ProcedureStats);
             JsonPsychologyLogs = JsonSerializer.Serialize(PsychologyLogs);
             JsonMedicalLogs = JsonSerializer.Serialize(MedicalLogs);
+
+            return Page();
         }
 
         private void LoadStudents()
