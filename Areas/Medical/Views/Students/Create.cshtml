@@ -120,7 +120,7 @@
                 return;
             }
 
-            let res = await fetch('/Students/BuscarPorMatricula?matricula=' + matricula);
+            let res = await fetch('/Medical/Students/BuscarPorMatricula?matricula=' + matricula);
             let data = await res.json();
 
             if (data == null) {
