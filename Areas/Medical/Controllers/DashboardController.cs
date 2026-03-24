@@ -9,14 +9,6 @@ namespace SchoolManager.Areas.Medical.Controllers
     {
         public IActionResult Index()
         {
-            // TEMPORAL - quitar después
-            var roles = User.Claims
-                .Where(c => c.Type == System.Security.Claims.ClaimTypes.Role)
-                .Select(c => c.Value)
-                .ToList();
-
-            ViewBag.Roles = string.Join(", ", roles);
-
             return View();
         }
     }
