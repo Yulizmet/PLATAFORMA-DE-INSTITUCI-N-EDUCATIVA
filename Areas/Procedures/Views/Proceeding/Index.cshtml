@@ -231,7 +231,7 @@
 
 <div class="container-fluid  px-4 py-4 pt-5">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="fw-bold text-dark"><i class="bi bi-folder2-open me-2"></i>Expedientes Escolares</h2>
+        <h2 class="fw-bold text-dark merriweather-font"><i class="bi bi-folder2-open me-2"></i>Expedientes Escolares</h2>
         <button class="btn btn-burgundy shadow-sm"
                 onclick="@(HasPermission("btn-agregar") ? "loadQuickStudentModal()" : "")"
                 @(HasPermission("btn-agregar") ? "" : "disabled")
@@ -245,7 +245,7 @@
     <div class="border-0 overflow-hidden">
         <div class="card-body p-0">
             <div class="table-responsive">
-                <table id="mainTable" class="table table-hover align-middle mb-0">
+                <table id="mainTable" class="table table-hover align-middle mb-0 table-container-rounded">
                     <thead class="small bg-burgundy text-white">
                         <tr>
                             <th class="no-sort text-center"> <input type="checkbox" id="checkAll" class="form-check-input"> </th>
@@ -291,11 +291,11 @@
                                 <td>
                                     @if (item.IsActive)
                                     {
-                                        <span class="badge bg-success-subtle text-success rounded-pill border border-success">Activo</span>
+                                        <span class="badge status-badge bg-active text-success border border-sucess">Activo</span>
                                     }
                                     else
                                     {
-                                        <span class="badge bg-danger-subtle text-danger rounded-pill border border-danger">Inactivo</span>
+                                        <span class="badge status-badge bg-inactive text-danger border border-danger">Inactivo</span>
                                     }
                                 </td>
                                 <td>

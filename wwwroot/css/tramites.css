@@ -95,6 +95,42 @@ body {
     background-color: var(--red-danger) !important;
 }
 
+.btn-info {
+    background-color: var(--blue-info) !important;
+    border-color: var(--blue-info) !important;
+}
+
+.btn-success {
+    background-color: var(--green-success) !important;
+    border-color: var(--green-success) !important;
+}
+
+.btn-warning {
+    background-color: var(--yellow-warning) !important;
+    border-color: var(--yellow-warning) !important;
+}
+
+.btn-danger {
+    background-color: var(--red-danger) !important;
+    border-color: var(--red-danger) !important;
+}
+
+.border-info {
+    border-color: var(--blue-info) !important;
+}
+
+.border-success {
+    border-color: var(--green-success) !important;
+}
+
+.border-warning {
+    border-color: var(--yellow-warning) !important;
+}
+
+.border-danger {
+    border-color: var(--red-danger) !important;
+}
+
 .text-info {
     color: var(--blue-info) !important;
 }
@@ -161,7 +197,7 @@ body {
 }
 
 .accent-total {
-    border-left: 6px solid #8C1B1B !important;
+    border-left: 5px solid #8C1B1B !important;
 }
 
 .accent-action {
@@ -1085,6 +1121,13 @@ table.dataTable thead th.sorting:hover::after {
     background-color: #620900 !important;
     color: #ffffff !important;
     border-color: #620900 !important;
+}
+
+.table-container-rounded {
+    border-radius: 15px;
+    overflow: hidden;
+    border: 1px solid #dee2e6;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
 }
 
 /*============================================================================

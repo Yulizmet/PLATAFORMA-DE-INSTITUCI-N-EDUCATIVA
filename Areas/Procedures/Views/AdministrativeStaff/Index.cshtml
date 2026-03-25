@@ -240,7 +240,7 @@
 <div class="container-fluid px-4 py-4 pt-5">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h2 class="fw-bold text-dark mb-0">
+            <h2 class="fw-bold text-dark mb-0 merriweather-font">
                 <i class="bi bi-people"></i> Gestión de Personal
             </h2>
             <p class="text-muted mb-0">Administra a los responsables de cada área y sus permisos.</p>
@@ -267,7 +267,7 @@
     <div class="border-0 overflow-hidden">
         <div class="card-body p-0">
             <div class="table-responsive">
-                <table id="mainTable" class="table table-hover align-middle mb-0">
+                <table id="mainTable" class="table table-hover align-middle mb-0 table-container-rounded">
                     <thead class="bg-burgundy text-white">
                         <tr>
                             <th class="no-sort text-center"> <input type="checkbox" id="checkAll" class="form-check-input"> </th>
@@ -276,7 +276,7 @@
                             <th>Puesto</th>
                             <th>Roles</th>
                             <th class="text-center">Estatus</th>
-                            <th class="text-end pe-4">Acciones</th>
+                            <th class="no-sort text-end pe-4">Acciones</th>
                         </tr>
                     </thead>
                     <tbody class="table-white">
@@ -324,7 +324,7 @@
                                     }
                                     else if (item.IsActive)
                                     {
-                                        <span class="status-badge bg-active text-primary border border-primary">
+                                        <span class="status-badge bg-active text-success border border-sucess">
                                             Activo
                                         </span>
                                     }

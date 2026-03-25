@@ -22,10 +22,10 @@ const Toast = Swal.mixin({
 
         const icon = Swal.getIcon();
         if (icon) {
-            if (icon.classList.contains('swal2-success')) toast.style.backgroundColor = '#28a745'; // Verde
-            if (icon.classList.contains('swal2-error')) toast.style.backgroundColor = '#dc3545';   // Rojo
-            if (icon.classList.contains('swal2-warning')) toast.style.backgroundColor = '#ffc107'; // Amarillo
-            if (icon.classList.contains('swal2-info')) toast.style.backgroundColor = '#17a2b8';    // Azul
+            if (icon.classList.contains('swal2-success')) toast.style.backgroundColor = '#7ed957'; // Verde
+            if (icon.classList.contains('swal2-error')) toast.style.backgroundColor = 'ff3131';    // Rojo
+            if (icon.classList.contains('swal2-warning')) toast.style.backgroundColor = '#ffde59'; // Amarillo
+            if (icon.classList.contains('swal2-info')) toast.style.backgroundColor = '#38b6ff';    // Azul
         }
 
         const circles = toast.querySelectorAll('[class^="swal2-success-circular-line"], .swal2-success-fix');
