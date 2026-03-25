@@ -1,99 +1,112 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="all">
+    <meta name="author" content="David">
+    <meta name="description" content="Mis Horas">
 
-<h3>Mis Horas</h3>
+    <title>Mis Horas</title>
+</head>
+<body>
+    <div class="mb-3 text-start">
+        <a href="/SocialService/Student/Dashboard" class="btn btn-secondary btn-responsive-sm">
+            <i class="bi bi-arrow-left"></i> Regresar al Dashboard
+        </a>
+    </div>
+    <h3 class="text-center">Mis Horas</h3>
 
-<div class="mb-3">
-    <a href="/SocialService/Student/Dashboard" class="btn btn-secondary">
-        <i class="bi bi-arrow-left"></i> Regresar al Dashboard
-    </a>
-</div>
+    <div class="row mt-4">
 
-<div class="row mt-4">
-
-    <!-- Prácticas -->
-    <div class="col-md-6">
-        <div class="card border-secondary mb-3">
-            <div class="card-header text-white">
-                <h5 class="mb-0"><i class="bi bi-briefcase-fill"></i> Prácticas Profesionales</h5>
-            </div>
-            <div class="card-body">
-                <div class="row mb-3">
-                    <div class="col-6">
-                        <p class="mb-1"><strong>Horas requeridas:</strong></p>
-                        <h4 class="text-warning">@ViewBag.RequiredHoursPracticas h</h4>
-                    </div>
-                    <div class="col-6">
-                        <p class="mb-1"><strong>Horas realizadas:</strong></p>
-                        <h4 class="text-success">@ViewBag.TotalHoursPracticas h</h4>
-                    </div>
+        <!-- Prácticas -->
+        <div class="col-md-6">
+            <div class="card border-secondary mb-3">
+                <div class="card-header text-white">
+                    <h5 class="mb-0"><i class="bi bi-briefcase-fill"></i> Prácticas Profesionales</h5>
                 </div>
-
-                <p><strong>Horas faltantes:</strong> <span class="badge bg-warning">@ViewBag.RemainingHoursPracticas h</span></p>
-
-                <div class="progress mb-2" style="height: 25px;">
-                    <div class="progress-bar bg-success"
-                         role="progressbar"
-                         style="width: @ViewBag.PercentagePracticas%"
-                         aria-valuenow="@ViewBag.PercentagePracticas"
-                         aria-valuemin="0"
-                         aria-valuemax="100">
-                        @ViewBag.PercentagePracticas%
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-6">
+                            <p class="mb-1"><strong>Horas requeridas:</strong></p>
+                            <h4 class="text-warning">@ViewBag.RequiredHoursPracticas h</h4>
+                        </div>
+                        <div class="col-6">
+                            <p class="mb-1"><strong>Horas realizadas:</strong></p>
+                            <h4 class="text-success">@ViewBag.TotalHoursPracticas h</h4>
+                        </div>
                     </div>
+
+                    <p><strong>Horas faltantes:</strong> <span class="badge bg-warning">@ViewBag.RemainingHoursPracticas h</span></p>
+
+                    <div class="progress mb-2" style="height: 25px;">
+                        <div class="progress-bar bg-success"
+                             role="progressbar"
+                             style="width: @ViewBag.PercentagePracticas%"
+                             aria-valuenow="@ViewBag.PercentagePracticas"
+                             aria-valuemin="0"
+                             aria-valuemax="100">
+                            @ViewBag.PercentagePracticas%
+                        </div>
+                    </div>
+
+                    @if (ViewBag.TotalHoursPracticas >= ViewBag.RequiredHoursPracticas)
+                    {
+                        <div class="alert alert-success mb-0">
+                            <i class="bi bi-check-circle-fill"></i> ¡Completaste todas tus horas de prácticas!
+                        </div>
+                    }
                 </div>
-
-                @if (ViewBag.TotalHoursPracticas >= ViewBag.RequiredHoursPracticas)
-                {
-                    <div class="alert alert-success mb-0">
-                        <i class="bi bi-check-circle-fill"></i> ¡Completaste todas tus horas de prácticas!
-                    </div>
-                }
             </div>
         </div>
-    </div>
 
-    <!-- Servicio Social -->
-    <div class="col-md-6">
-        <div class="card border-secondary mb-3">
-            <div class="card-header text-white">
-                <h5 class="mb-0"><i class="bi bi-heart-fill"></i> Servicio Social</h5>
-            </div>
-            <div class="card-body">
-                <div class="row mb-3">
-                    <div class="col-6">
-                        <p class="mb-1"><strong>Horas requeridas:</strong></p>
-                        <h4 class="text-warning">@ViewBag.RequiredHoursServicioSocial h</h4>
-                    </div>
-                    <div class="col-6">
-                        <p class="mb-1"><strong>Horas realizadas:</strong></p>
-                        <h4 class="text-success">@ViewBag.TotalHoursServicioSocial h</h4>
-                    </div>
+        <!-- Servicio Social -->
+        <div class="col-md-6">
+            <div class="card border-secondary mb-3">
+                <div class="card-header text-white">
+                    <h5 class="mb-0"><i class="bi bi-heart-fill"></i> Servicio Social</h5>
                 </div>
-
-                <p><strong>Horas faltantes:</strong> <span class="badge bg-warning">@ViewBag.RemainingHoursServicioSocial h</span></p>
-
-                <div class="progress mb-2" style="height: 25px;">
-                    <div class="progress-bar bg-success"
-                         role="progressbar"
-                         style="width: @ViewBag.PercentageServicioSocial%"
-                         aria-valuenow="@ViewBag.PercentageServicioSocial"
-                         aria-valuemin="0"
-                         aria-valuemax="100">
-                        @ViewBag.PercentageServicioSocial%
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-6">
+                            <p class="mb-1"><strong>Horas requeridas:</strong></p>
+                            <h4 class="text-warning">@ViewBag.RequiredHoursServicioSocial h</h4>
+                        </div>
+                        <div class="col-6">
+                            <p class="mb-1"><strong>Horas realizadas:</strong></p>
+                            <h4 class="text-success">@ViewBag.TotalHoursServicioSocial h</h4>
+                        </div>
                     </div>
+
+                    <p><strong>Horas faltantes:</strong> <span class="badge bg-warning">@ViewBag.RemainingHoursServicioSocial h</span></p>
+
+                    <div class="progress mb-2" style="height: 25px;">
+                        <div class="progress-bar bg-success"
+                             role="progressbar"
+                             style="width: @ViewBag.PercentageServicioSocial%"
+                             aria-valuenow="@ViewBag.PercentageServicioSocial"
+                             aria-valuemin="0"
+                             aria-valuemax="100">
+                            @ViewBag.PercentageServicioSocial%
+                        </div>
+                    </div>
+
+                    @if (ViewBag.TotalHoursServicioSocial >= ViewBag.RequiredHoursServicioSocial)
+                    {
+                        <div class="alert alert-success mb-0">
+                            <i class="bi bi-check-circle-fill"></i> ¡Completaste todas tus horas de servicio social!
+                        </div>
+                    }
                 </div>
-
-                @if (ViewBag.TotalHoursServicioSocial >= ViewBag.RequiredHoursServicioSocial)
-                {
-                    <div class="alert alert-success mb-0">
-                        <i class="bi bi-check-circle-fill"></i> ¡Completaste todas tus horas de servicio social!
-                    </div>
-                }
             </div>
         </div>
+
     </div>
 
-</div>
+    <div class="alert alert-info mt-4">
+        <i class="bi bi-info-circle-fill"></i>
+        <strong>Nota:</strong> Solo se contabilizan las horas de bitácoras aprobadas por tu maestro.
+    </div>
 
-<div class="alert alert-info mt-4">
-    <i class="bi bi-info-circle-fill"></i>
-    <strong>Nota:</strong> Solo se contabilizan las horas de bitácoras aprobadas por tu maestro.
-</div>
+</body>
+</html>

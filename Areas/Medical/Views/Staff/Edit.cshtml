@@ -1,0 +1,173 @@
+﻿@model SchoolManager.ViewModels.EditMedicalStaffVM
+
+@{
+    Layout = "~/Areas/Medical/Views/Shared/_LayoutDashboard.cshtml";
+    ViewData["Title"] = "Editar Personal Médico";
+}
+
+<div class="dashboard-header">
+    <div class="header-content d-flex align-items-start justify-content-between flex-wrap">
+        <div>
+            <h2 class="text-white">EDITAR PERSONAL MÉDICO</h2>
+            <p class="mb-0">Sistema Médico - Gestión de Personal</p>
+        </div>
+
+        <div class="buttons-right">
+            <a asp-controller="Dashboard" asp-action="Index" class="btn-header">
+                <i class="bi bi-arrow-left-circle"></i> Regresar al inicio
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="container mt-4">
+    <div class="card p-4 shadow-sm">
+        <form asp-action="Edit" method="post">
+
+            <div asp-validation-summary="All" class="text-danger mb-3"></div>
+            <input type="hidden" asp-for="Id" />
+
+            <h5 class="section-title">INFORMACIÓN DEL TRABAJADOR</h5>
+            <div class="row g-4">
+                <div class="col-md-6">
+                    <div class="info-block">
+                        <label class="fw-bold text-uppercase">Nombre</label>
+                        <input type="text" value="@Model.NombreCompleto" class="form-control" readonly />
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="info-block">
+                        <label class="fw-bold text-uppercase">CURP</label>
+                        <input type="text" value="@Model.Curp" class="form-control" readonly />
+                    </div>
+                </div>
+            </div>
+
+            <hr class="section-divider" />
+
+            <h5 class="section-title">DATOS DEL PERSONAL</h5>
+            <div class="row g-4">
+                <div class="col-md-6">
+                    <div class="info-block">
+                        <label class="fw-bold text-uppercase">Rol</label>
+                        <select asp-for="RoleId" class="form-control" required>
+                            <option value="">Seleccionar rol</option>
+                            <option value="4">Enfermero</option>
+                            <option value="5">Psicólogo</option>
+                            <option value="6">Jefe de Enfermería</option>
+                            <option value="7">Jefe de Psicología</option>
+                            <option value="9">Coordinador</option>
+                            <option value="10">Master</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="info-block">
+                        <label class="fw-bold text-uppercase">Turno</label>
+                        <select asp-for="Shift" class="form-control" required>
+                            <option value="">Seleccionar turno</option>
+                            <option value="Mañana">Mañana</option>
+                            <option value="Tarde">Tarde</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <hr class="section-divider" />
+
+            <h5 class="section-title">PERMISOS DEL PERSONAL</h5>
+            <p class="text-muted small">Ajusta los permisos según el rol asignado.</p>
+
+            <div class="row g-4" id="seccionPermisos">
+                <div class="col-md-3">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" asp-for="Ver" id="permisoVer" />
+                        <label class="form-check-label fw-bold" for="permisoVer">
+                            <i class="bi bi-eye"></i> Ver bitácoras
+                        </label>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" asp-for="Agregar" id="permisoAgregar" />
+                        <label class="form-check-label fw-bold" for="permisoAgregar">
+                            <i class="bi bi-plus-circle"></i> Agregar bitácoras
+                        </label>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" asp-for="Modificar" id="permisoModificar" />
+                        <label class="form-check-label fw-bold" for="permisoModificar">
+                            <i class="bi bi-pencil"></i> Modificar bitácoras
+                        </label>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" asp-for="Borrar" id="permisoBorrar" />
+                        <label class="form-check-label fw-bold" for="permisoBorrar">
+                            <i class="bi bi-trash"></i> Borrar bitácoras
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <hr class="section-divider" />
+
+            <div class="d-flex justify-content-between mt-4">
+                <a asp-action="Index" class="btn" style="border: 1.5px solid #6c757d;">
+                    CANCELAR
+                </a>
+                <button type="submit" class="btn" style="border: 1.5px solid #6c757d;">
+                    GUARDAR CAMBIOS
+                </button>
+            </div>
+
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        const permisosPorRol = {
+            "4":  { ver: true,  agregar: true,  modificar: false, borrar: false },
+            "5":  { ver: true,  agregar: true,  modificar: false, borrar: false },
+            "6":  { ver: true,  agregar: true,  modificar: true,  borrar: true  },
+            "7":  { ver: true,  agregar: true,  modificar: true,  borrar: true  },
+            "9":  { ver: true,  agregar: true,  modificar: true,  borrar: true  },
+            "10": { ver: true,  agregar: true,  modificar: true,  borrar: true  },
+        };
+
+        const rolesSuperior = ["6", "7", "9", "10"];
+
+        document.querySelector("select[name='RoleId']").addEventListener("change", function () {
+            var rolId = this.value;
+            if (rolId === "") return;
+
+            var permisos = permisosPorRol[rolId];
+            if (permisos) {
+                document.getElementById("permisoVer").checked       = permisos.ver;
+                document.getElementById("permisoAgregar").checked   = permisos.agregar;
+                document.getElementById("permisoModificar").checked = permisos.modificar;
+                document.getElementById("permisoBorrar").checked    = permisos.borrar;
+            }
+
+            var esSuperior = rolesSuperior.includes(rolId);
+            document.getElementById("permisoVer").disabled       = esSuperior;
+            document.getElementById("permisoAgregar").disabled   = esSuperior;
+            document.getElementById("permisoModificar").disabled = esSuperior;
+            document.getElementById("permisoBorrar").disabled    = esSuperior;
+        });
+
+        (function () {
+            var rolId = document.querySelector("select[name='RoleId']").value;
+            if (rolesSuperior.includes(rolId)) {
+                document.getElementById("permisoVer").disabled       = true;
+                document.getElementById("permisoAgregar").disabled   = true;
+                document.getElementById("permisoModificar").disabled = true;
+                document.getElementById("permisoBorrar").disabled    = true;
+            }
+        })();
+    </script>
+}

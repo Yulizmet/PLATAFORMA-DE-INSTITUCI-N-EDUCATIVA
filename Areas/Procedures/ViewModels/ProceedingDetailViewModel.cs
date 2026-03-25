@@ -15,6 +15,7 @@
 
         // Account
         public string Username { get; set; } = null!;
+        public string? NewPassword { get; set; }
         public string UserStatus { get; set; } = null!;
         public string? LastLogin { get; set; }
 

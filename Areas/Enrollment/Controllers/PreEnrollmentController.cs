@@ -163,6 +163,7 @@ namespace SchoolManager.Areas.Enrollment.Controllers
                 neighborhood = vm.Neighborhood,
                 state = vm.State,
                 city = vm.City,
+                //phone = vm.Phone
             };
             _context.PreenrollmentAddresses.Add(address);
 
