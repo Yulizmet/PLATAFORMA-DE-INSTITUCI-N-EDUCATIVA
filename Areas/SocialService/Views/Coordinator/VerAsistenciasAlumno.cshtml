@@ -15,23 +15,26 @@
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
 }
-
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h3 class="mb-0">
-        <i class="bi bi-calendar-check me-2"></i>Asistencias de @Model.StudentName
-    </h3>
+<div class="mb-2">
     @if (ViewBag.TeacherId != null)
     {
         <a asp-area="SocialService" asp-controller="Coordinator" asp-action="VerAlumnosAsesor" asp-route-id="@ViewBag.TeacherId" class="btn btn-secondary">
-            <i class="bi bi-arrow-left me-1"></i> Volver a Alumnos del Asesor
+            <i class="bi bi-arrow-left me-1"></i>Volver a Alumnos del Asesor
         </a>
     }
     else
     {
         <a asp-area="SocialService" asp-controller="Coordinator" asp-action="Alumnos" class="btn btn-secondary">
-            <i class="bi bi-arrow-left me-1"></i> Volver
+            <i class="bi bi-arrow-left me-1"></i>Volver
         </a>
     }
+</div>
+
+<!-- Título -->
+<div class="mb-4 text-center">
+    <h3 class="mb-0">
+        Asistencias de @Model.StudentName
+    </h3>
 </div>
 
 <!-- Resumen -->
