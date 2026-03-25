@@ -46,10 +46,7 @@ namespace SchoolManager.Pages.Estadisticas
 
         public IActionResult OnGet()
         {
-            if (!User.IsInRole("Teacher"))
-            {
-                return Redirect("/CalificacionesDocente");
-            }
+
 
             LoadStudents();
             LoadEmployees();
