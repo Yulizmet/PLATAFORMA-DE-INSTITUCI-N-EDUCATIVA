@@ -5,7 +5,7 @@
                 <h5 class="modal-title"><i class="bi bi-person-plus-fill me-2"></i>Crear Usuario Administrativo</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
-            <form id="formQuickUser" asp-action="QuickCreateStaff" method="post">
+            <form id="QuickCreateStaff" asp-action="QuickCreateStaff" method="post">
                 <div class="modal-body">
                     <div class="alert alert-info small">
                         Este botón crea automáticamente el registro en Personas/Usuarios y le asigna el rol administrativo.
@@ -41,6 +41,10 @@
                         <div class="col-md-12 mb-2">
                             <label class="form-label fw-bold">Nombre de Usuario</label>
                             <input type="text" name="Username" class="form-control" placeholder="ej:juan.perez" required />
+                        </div>
+                        <div class="col-md-12 mb-2">
+                            <label class="form-label fw-bold">Contraseña</label>
+                            <input type="password" name="Password" class="form-control" required />
                         </div>
                     </div>
                 </div>

@@ -82,6 +82,25 @@ namespace SchoolManager.Areas.UserMng.Controllers
                 claims.Add(new Claim(ClaimTypes.Role, role.Name));
             }
 
+            var staffMedico = await _context.MedicalStaff
+                .FirstOrDefaultAsync(s => s.PersonId == usuario.PersonId);
+
+            if (staffMedico != null)
+            {
+                claims.Add(new Claim("StaffId", staffMedico.Id.ToString()));
+                claims.Add(new Claim("StaffRoleId", staffMedico.RoleId.ToString()));
+            }
+
+            var persona = await _context.Persons
+                .FirstOrDefaultAsync(p => p.PersonId == usuario.PersonId);
+
+            if (persona != null)
+            {
+                var primerNombre = persona.FirstName.Split(' ')[0];
+                claims.Add(new Claim("NombreCompleto",
+                    primerNombre + " " + persona.LastNamePaternal));
+            }
+
             var identity  = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
             var principal = new ClaimsPrincipal(identity);
             var authProps = new AuthenticationProperties
@@ -132,16 +151,9 @@ namespace SchoolManager.Areas.UserMng.Controllers
         {
 
             if (principal.IsInRole("Administrator"))
-                return RedirectToAction("Index", "Manager", new { area = "UserMng" });
-            
-            if (principal.IsInRole("Master"))
+            {
                 return RedirectToAction("Index", "MainScreen", new { area = "MainScreen" });
-
-            if (principal.IsInRole("Head Nurse"))
-                return RedirectToAction("Users", "Manager", new { area = "UserMng", role = "Nurse" });
-
-            if (principal.IsInRole("Head of Psychology"))
-                return RedirectToAction("Users", "Manager", new { area = "UserMng", role = "Psychologist" });
+            }
 
             if (principal.IsInRole("Teacher"))
                 return RedirectToAction("Index", "Teachers", new { area = "UserMng" });

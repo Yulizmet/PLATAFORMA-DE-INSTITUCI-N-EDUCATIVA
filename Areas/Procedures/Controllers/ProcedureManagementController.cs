@@ -1,28 +1,48 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using SchoolManager.Areas.Procedures.ViewModels;
 using SchoolManager.Data;
 using SchoolManager.Models;
+using System.Security.Claims;
 
 namespace SchoolManager.Areas.Procedures.Controllers
 {
     [Area("Procedures")]
-    public class ProcedureManagementController : Controller
+    [Authorize(Roles = "Administrator")]
+    public class ProcedureManagementController : _ProceduresBaseController
     {
-        private readonly AppDbContext _context;
+        private int CurrentUserId => int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ??
+             User.FindFirst("UserId")?.Value ?? "0");
 
-        public ProcedureManagementController(AppDbContext context)
-        {
-            _context = context;
-        }
+        public ProcedureManagementController(AppDbContext context) : base(context) { }
 
         public async Task<IActionResult> Index()
         {
-            var requests = await _context.ProcedureRequest
+            await LoadPermissions("Seguimiento");
+
+            var staffInfo = await _context.ProcedureStaff
+                .FirstOrDefaultAsync(s => s.IdUser == CurrentUserId && s.IsActive == true);
+
+            if (staffInfo == null)
+            {
+                return View(new List<procedure_request>());
+            }
+
+            var query = _context.ProcedureRequest.AsQueryable();
+
+            if (staffInfo.IsSuperAdmin == false)
+            {
+                query = query.Where(r => r.ProcedureType.IdArea == staffInfo.IdArea);
+            }
+
+            var requests = await query
                 .Include(r => r.ProcedureDocuments)
                 .Include(r => r.ProcedureType)
-                .Include(r => r.ProcedureFlow).ThenInclude(f => f.ProcedureStatus)
+                    .ThenInclude(pt => pt.ProcedureArea)
+                .Include(r => r.ProcedureFlow)
+                    .ThenInclude(f => f.ProcedureStatus)
                 .Include(r => r.Preenrollments)
                 .Include(r => r.User)
                     .ThenInclude(u => u.Person)
@@ -34,11 +54,15 @@ namespace SchoolManager.Areas.Procedures.Controllers
             return View(requests);
         }
 
+
         public async Task<IActionResult> Monitoring(int id)
         {
-            var request = await _context.ProcedureRequest
+            await LoadPermissions("Seguimiento");
+
+            var request = await _context.ProcedureRequest              
                 .Include(r => r.ProcedureType)
-                .Include(r => r.ProcedureFlow).ThenInclude(f => f.ProcedureStatus)
+                .Include(r => r.ProcedureFlow)
+                    .ThenInclude(f => f.ProcedureStatus)
                 .Include(r => r.ProcedureDocuments)
                 .Include(r => r.User).ThenInclude(u => u.Person)
                 .Include(r => r.User).ThenInclude(u => u.Preenrollments)
@@ -63,6 +87,7 @@ namespace SchoolManager.Areas.Procedures.Controllers
                 CreationDate = request.DateCreated,
                 LastUpdate = request.DateUpdated,
                 TerminatedDate = request.DateTerminated,
+                ProcedureFlow = request.ProcedureFlow,
 
                 StudentFullName = currentPreenrollment?.User?.Person != null
                     ? $"{currentPreenrollment.User.Person.FirstName} {currentPreenrollment.User.Person.LastNamePaternal} {currentPreenrollment.User.Person.LastNameMaternal}"
@@ -105,18 +130,46 @@ namespace SchoolManager.Areas.Procedures.Controllers
 
             viewModel.History = historyList.OrderByDescending(h => h.Date).ToList();
 
-            var steps = await _context.ProcedureFlow
+            var currentFlow = request.ProcedureFlow;
+            var currentStatus = currentFlow?.ProcedureStatus;
+
+            bool isCurrentTerminal = currentStatus?.IsTerminalState ?? false;
+
+            var stepsQuery = _context.ProcedureFlow
                 .Include(f => f.ProcedureStatus)
-                .Where(f => f.IdTypeProcedure == request.IdTypeProcedure && f.ProcedureStatus.Name != "Cancelado")
-                .OrderBy(f => f.StepOrder)
-                .ToListAsync();
+                .Where(f => f.IdTypeProcedure == request.IdTypeProcedure &&
+                            f.ProcedureStatus!.Name != "Cancelado");
+
+            if (isCurrentTerminal)
+            {
+                stepsQuery = stepsQuery.Where(f => f.StepOrder > currentFlow!.StepOrder &&
+                                                 f.ProcedureStatus!.Name.Contains("Rechazado") == false);
+            }
+            else
+            {
+                int currentOrder = currentFlow?.StepOrder ?? 0;
+                stepsQuery = stepsQuery.Where(f => f.StepOrder > currentOrder ||
+                                                 f.ProcedureStatus!.IsTerminalState == true);
+            }
+
+            var steps = await stepsQuery.OrderBy(f => f.StepOrder).ToListAsync();
 
             var selectListItems = steps.Select(f => new {
                 Id = f.Id,
-                DisplayName = f.StepOrder >= 90 ? $"🔴 {f.ProcedureStatus.Name}" : $"🟢 {f.ProcedureStatus.Name}"
-            });
+                DisplayName = f.ProcedureStatus!.Name.Contains("Rechazado")
+                   ? $"🔴 {f.ProcedureStatus.Name}"
+                   : (f.ProcedureStatus.Name.Contains("Aprobado") || f.ProcedureStatus.IsTerminalState)
+                   ? $"🟢 {f.ProcedureStatus.Name}"
+                   : $"🟡 {f.ProcedureStatus.Name}"
+            }).ToList();
 
-            ViewBag.Statuses = new SelectList(selectListItems, "Id", "DisplayName", request.IdProcedureFlow);
+            viewModel.FullProgressSteps = await _context.ProcedureFlow
+                .Include(f => f.ProcedureStatus)
+                .Where(f => f.IdTypeProcedure == request.IdTypeProcedure)
+                .OrderBy(f => f.StepOrder)
+                .ToListAsync();
+
+            ViewBag.Statuses = new SelectList(selectListItems, "Id", "DisplayName");
 
             return PartialView("_Monitoring", viewModel);
         }
@@ -138,6 +191,8 @@ namespace SchoolManager.Areas.Procedures.Controllers
                     .FirstOrDefaultAsync(f => f.Id == newFlowId);
 
                 if (newFlowStep == null) return Json(new { success = false, message = "Estado de flujo no válido" });
+
+                if (CurrentUserId == 0) return Json(new { success = false, message = "Sesión administrativa no válida" });
 
                 request.IdProcedureFlow = newFlowId; 
                 request.DateUpdated = DateTime.Now;
@@ -161,7 +216,7 @@ namespace SchoolManager.Areas.Procedures.Controllers
                     IdProcedureFlow = newFlowId,
                     Comment = adminComment,
                     DateUpdated = DateTime.Now,
-                    IdUser = 3 // Recuerda cambiar esto por el ID del usuario logueado después
+                    IdUser = CurrentUserId
                 };
 
                 _context.ProcedureMonitoring.Add(monitoring);
@@ -179,6 +234,52 @@ namespace SchoolManager.Areas.Procedures.Controllers
             {
                 await transaction.RollbackAsync();
                 return Json(new { success = false, message = "Error: " + ex.Message });
+            }
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> BulkDelete(List<int> ids)
+        {
+            await LoadPermissions("Seguimiento");
+            if (ids == null || !ids.Any())
+                return Json(new { success = false, message = "No hay trámites seleccionados." });
+
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try
+            {
+                var requests = await _context.ProcedureRequest
+                    .Include(r => r.ProcedureDocuments)
+                    .Include(r => r.ProcedureMonitorings)
+                    .Include(r => r.Preenrollments)
+                    .Where(r => ids.Contains(r.Id))
+                    .ToListAsync();
+
+                foreach (var request in requests)
+                {
+                    foreach (var pre in request.Preenrollments)
+                    {
+                        pre.ProcedureRequestId = null; 
+                    }
+
+                    if (request.ProcedureMonitorings.Any())
+                        _context.ProcedureMonitoring.RemoveRange(request.ProcedureMonitorings);
+                    if (request.ProcedureDocuments.Any())
+                        _context.ProcedureDocuments.RemoveRange(request.ProcedureDocuments);
+                    _context.ProcedureRequest.Remove(request);
+                }
+
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+
+                return Json(new { success = true, message = $"{requests.Count} trámite(s) eliminado(s) correctamente." });
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+
+                var message = ex.InnerException != null ? ex.InnerException.Message : ex.Message;
+                return Json(new { success = false, message = "Error de base de datos: " + message });
             }
         }
     }
