@@ -4,54 +4,237 @@
     ViewData["Title"] = "Preinscripción";
 }
 
-<main class="content">
-
-    <div class="container-fluid p-0">
-        <h1 class="h3 mb-3"><strong>Datos del Aspirante</strong></h1>
+<div class="px-3 px-md-4 mb-4">
+    <div class="mx-auto" style="max-width: 1100px;">
+        <h1 class="h3 mb-2"><strong>Datos del Aspirante</strong></h1>
+        <p class="mb-0 text-secondary">
+            Completa la información del aspirante en cada apartado. Verifica que todos los campos estén correctos antes de <strong>Continuar</strong>.
+        </p>
     </div>
+</div>
 
-    <div class="container my-5">
-
-        <form asp-action="Create" method="post">
-
-            <!-- Carrera -->
-            <div class="card mb-4">
+<div class="px-3 px-md-4 px-lg-4 my-4 my-md-5">
+    <div class="mx-auto" style="max-width: 1100px;">
+        <form id="preinscripcionForm" novalidate>
+            <div class="card mb-4" data-section="Carrera">
+                <div class="card-header fw-bold text-uppercase d-flex justify-content-between align-items-center">
+                    Carrera
+                </div>
                 <div class="card-body">
-                    <label asp-for="DatosGenerales.IdCareer" class="form-label">
-                        Carrera solicitada
-                    </label>
-
+                    <label asp-for="DatosGenerales.IdCareer" class="form-label">Carrera solicitada</label>
                     <select asp-for="DatosGenerales.IdCareer"
                             asp-items="ViewBag.IdCareer"
                             class="form-select"
                             required>
-                        <option value="">Sin selección</option>
+                        <option value="" selected disabled>Sin selección</option>
                     </select>
-
-                    <span asp-validation-for="DatosGenerales.IdCareer" class="text-danger"></span>
                 </div>
             </div>
 
-            <!-- 🔥 IMPORTANTE: pasar el Model COMPLETO -->
+
             <partial name="Partials/_DatosGenerales" model="Model" />
             <partial name="Partials/_DatosEscolares" model="Model" />
             <partial name="Partials/_Domicilio" model="Model" />
             <partial name="Partials/_Tutor" model="Model" />
             <partial name="Partials/_OtrosDatos" model="Model" />
 
-            <div class="d-flex justify-content-end">
-                <button type="submit" class="btn btn-primary">
+            <div class="d-flex justify-content-end mt-4">
+                <button type="submit" class="btn btn-primary px-4 py-2">
                     Continuar
                 </button>
             </div>
-
         </form>
-
     </div>
-</main>
-
+</div>
 @section Scripts {
-    @{
-        await Html.RenderPartialAsync("_ValidationScriptsPartial");
-    }
+    @await Html.PartialAsync("_ValidationScriptsPartial")
+
+    <script>
+        window.PRE_URLS = {
+            preinscripcion: '@Url.Action("Create", "PreEnrollment", new { area = "Enrollment" })',
+            documentos: '@Url.Action("SubirDocumentos", "PreEnrollment", new { area = "Enrollment" })',
+            confirmar: '@Url.Action("ConfirmarPreinscripcion", "PreEnrollment", new { area = "Enrollment" })'
+        };
+
+        document.addEventListener("DOMContentLoaded", function () {
+            const form = document.getElementById("preinscripcionForm");
+            if (!form) return;
+
+            function obtenerLabel(input) {
+                const contenedor = input.closest(".col-12, .col-sm-6, .col-md-3, .col-md-4, .col-md-6, .col-md-8, .col-lg-3, .card-body, div");
+                const label = contenedor?.querySelector("label");
+                return label ? label.innerText.trim() : "Este campo";
+            }
+
+            function limpiarErrores() {
+                form.querySelectorAll(".is-invalid").forEach(el => el.classList.remove("is-invalid"));
+                form.querySelectorAll(".error-personalizado").forEach(el => el.remove());
+            }
+
+            function mostrarError(input, mensaje) {
+                input.classList.add("is-invalid");
+
+                const error = document.createElement("div");
+                error.className = "invalid-feedback d-block error-personalizado";
+                error.innerText = mensaje;
+
+                input.insertAdjacentElement("afterend", error);
+            }
+
+            function validarFormularioManual() {
+                limpiarErrores();
+
+                let valido = true;
+                let primerInvalido = null;
+
+                const camposObligatorios = form.querySelectorAll("[data-required='true']");
+
+                camposObligatorios.forEach(input => {
+                    if (input.disabled || input.offsetParent === null) return;
+
+                    const tipo = (input.type || "").toLowerCase();
+                    const nombreCampo = obtenerLabel(input);
+                    let valor = (input.value || "").trim();
+
+                    // Validación para radios y checkboxes
+                    if ((tipo === "radio" || tipo === "checkbox") && input.name) {
+                        const grupo = form.querySelectorAll(`[name="${input.name}"]`);
+                        const algunoMarcado = Array.from(grupo).some(x => x.checked);
+
+                        if (!algunoMarcado) {
+                            valido = false;
+
+                            grupo.forEach(x => x.classList.add("is-invalid"));
+
+                            if (!primerInvalido) primerInvalido = input;
+
+                            const ultimo = grupo[grupo.length - 1];
+                            const yaExiste = ultimo.parentElement?.parentElement?.querySelector(".error-personalizado");
+
+                            if (!yaExiste) {
+                                const error = document.createElement("div");
+                                error.className = "invalid-feedback d-block error-personalizado";
+                                error.innerText = `Obligatorio: ${nombreCampo}`;
+                                ultimo.parentElement.parentElement.appendChild(error);
+                            }
+                        }
+
+                        return;
+                    }
+
+                    // Validación de campo vacío
+                    if (!valor) {
+                        valido = false;
+                        if (!primerInvalido) primerInvalido = input;
+                        mostrarError(input, `Obligatorio: ${nombreCampo}`);
+                        return;
+                    }
+
+                    // Validación especial CURP
+                    if (input.name && input.name.toLowerCase().includes("curp")) {
+                        if (valor.length !== 18) {
+                            valido = false;
+                            if (!primerInvalido) primerInvalido = input;
+                            mostrarError(input, "La CURP debe tener exactamente 18 caracteres");
+                            return;
+                        }
+                    }
+                });
+
+                if (!valido && primerInvalido) {
+                    primerInvalido.focus();
+                }
+
+                return valido;
+            }
+
+            form.addEventListener("input", function (e) {
+                const input = e.target;
+                if (!input.matches("[data-required='true']")) return;
+
+                input.classList.remove("is-invalid");
+
+                const siguiente = input.nextElementSibling;
+                if (siguiente && siguiente.classList.contains("error-personalizado")) {
+                    siguiente.remove();
+                }
+            });
+
+            form.addEventListener("change", function (e) {
+                const input = e.target;
+                if (!input.matches("[data-required='true']")) return;
+
+                if (input.type === "radio" && input.name) {
+                    const grupo = form.querySelectorAll(`[name="${input.name}"]`);
+                    grupo.forEach(x => x.classList.remove("is-invalid"));
+
+                    const contenedor = input.closest(".col-12, .col-sm-6, .col-md-3, .col-md-4, .col-md-6, .col-md-8, .col-lg-3, div");
+                    const error = contenedor?.querySelector(".error-personalizado");
+                    if (error) error.remove();
+                } else {
+                    input.classList.remove("is-invalid");
+
+                    const siguiente = input.nextElementSibling;
+                    if (siguiente && siguiente.classList.contains("error-personalizado")) {
+                        siguiente.remove();
+                    }
+                }
+            });
+
+            form.addEventListener("submit", function (e) {
+                e.preventDefault();
+
+                if (!validarFormularioManual()) {
+                    return;
+                }
+
+                const formData = new FormData(form);
+                const data = {};
+                formData.forEach((value, key) => data[key] = value);
+
+                const curp = (data["Persona.CURP"] || data["curp"] || "").trim().toUpperCase();
+                const birth = (data["Persona.BirthDate"] || data["fechaNacimiento"] || "").trim();
+
+                if (curp && birth) {
+                    data.hash = generarHash(curp, birth);
+                }
+
+                guardarPreinscripcionLS(data);
+
+                const nombre = (data["Persona.Name"] || data["nombres"] || "").trim();
+                const apPat = (data["Persona.PaternalLastName"] || data["apPaterno"] || "").trim();
+                const apMat = (data["Persona.MaternalLastName"] || data["apMaterno"] || "").trim();
+                const nombreCompleto = `${nombre} ${apPat} ${apMat}`.trim();
+
+                localStorage.setItem("preenrollment_general", JSON.stringify({
+                    IdData: 0,
+                    Nombre: nombre,
+                    NombreCompleto: nombreCompleto || nombre || "Aspirante",
+                    Curp: curp,
+                    FechaNacimiento: birth
+                }));
+
+                if (!localStorage.getItem("preenrollment_docs")) {
+                    localStorage.setItem("preenrollment_docs", JSON.stringify({
+                        IdData: 0,
+                        Fotos: false,
+                        PagoExamen: false,
+                        ActaNacimiento: false,
+                        Curp: false,
+                        Certificados: false,
+                        ComprobanteDomicilio: false,
+                        CartaBuenaConducta: false
+                    }));
+                }
+
+                window.location.href = window.PRE_URLS.documentos;
+            });
+        });
+    </script>
+
+    <script src="~/enrollment/src/js/modules/index-scripts.js"></script>
 }
+
+
+
+   

@@ -6,7 +6,12 @@ namespace SchoolManager.Areas.SocialService.ViewModels
     {
         public int StudentId { get; set; }
         public string StudentName { get; set; } = string.Empty;
+        public string? SemesterName { get; set; }
         public string? GroupName { get; set; }
+        public int TotalBitacoras { get; set; }
+        public int BitacorasPendientesCount { get; set; }
+        public int TotalHorasPracticas { get; set; }
+        public int TotalHorasServicioSocial { get; set; }
         public List<BitacoraPendiente> BitacorasPendientes { get; set; } = new();
         public int TotalHorasPracticasPendientes { get; set; }
         public int TotalHorasServicioSocialPendientes { get; set; }

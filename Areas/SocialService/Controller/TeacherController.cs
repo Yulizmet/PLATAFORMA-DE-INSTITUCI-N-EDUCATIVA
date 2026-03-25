@@ -4,6 +4,10 @@ using System.Security.Claims;
 using SchoolManager.Data;
 using SchoolManager.Models;
 using SchoolManager.Areas.SocialService.ViewModels;
+using ClosedXML.Excel;
+using DinkToPdf;
+using DinkToPdf.Contracts;
+using SchoolManager.Helpers;
 
 namespace SchoolManager.Areas.SocialService.Controllers
 {
@@ -11,10 +15,12 @@ namespace SchoolManager.Areas.SocialService.Controllers
     public class TeacherController : Controller
     {
         private readonly AppDbContext _context;
+        private readonly IConverter _converter;
 
-        public TeacherController(AppDbContext context)
+        public TeacherController(AppDbContext context, IConverter converter)
         {
             _context = context;
+            _converter = converter;
         }
 
         public IActionResult Index()
@@ -60,9 +66,11 @@ namespace SchoolManager.Areas.SocialService.Controllers
             return View();
         }
 
-        public async Task<IActionResult> Alumnos()
+        public async Task<IActionResult> Alumnos(string searchName, string sortBy = "name", string sortOrder = "asc", string semesterFilter = "", string groupFilter = "", int page = 1, int pageSize = 10)
         {
             int currentTeacherId = GetCurrentTeacherId();
+            int[] allowedPageSizes = { 10, 25, 50, 100 };
+            if (!allowedPageSizes.Contains(pageSize)) pageSize = 10;
 
             if (currentTeacherId == 0)
             {
@@ -78,13 +86,17 @@ namespace SchoolManager.Areas.SocialService.Controllers
                 .Where(a => a.TeacherId == currentTeacherId && a.IsActive)
                 .ToListAsync();
 
+            var studentIds = assignedStudents.Select(a => a.StudentId).ToList();
+
+            var enrollments = await _context.grades_Enrollments
+                .Include(e => e.Group)
+                    .ThenInclude(g => g.GradeLevel)
+                .Where(e => studentIds.Contains(e.StudentId))
+                .ToListAsync();
+
             foreach (var assignment in assignedStudents)
             {
-                var enrollment = await _context.grades_Enrollments
-                    .Include(e => e.Group)
-                        .ThenInclude(g => g.GradeLevel)
-                    .Where(e => e.StudentId == assignment.StudentId)
-                    .FirstOrDefaultAsync();
+                var enrollment = enrollments.FirstOrDefault(e => e.StudentId == assignment.StudentId);
 
                 if (enrollment != null)
                 {
@@ -93,12 +105,130 @@ namespace SchoolManager.Areas.SocialService.Controllers
                 }
             }
 
-            return View(assignedStudents);
+            // Filtrar por nombre
+            if (!string.IsNullOrWhiteSpace(searchName))
+            {
+                string searchNormalized = RemoveAccents(searchName.ToLower());
+                assignedStudents = assignedStudents
+                    .Where(a =>
+                    {
+                        string fullName = $"{a.Student.Person.LastNamePaternal} {a.Student.Person.LastNameMaternal} {a.Student.Person.FirstName}";
+                        string fullNameNormalized = RemoveAccents(fullName.ToLower());
+                        return fullNameNormalized.Contains(searchNormalized);
+                    })
+                    .ToList();
+                ViewBag.SearchName = searchName;
+            }
+
+            // Filtrar por semestre
+            if (!string.IsNullOrWhiteSpace(semesterFilter))
+            {
+                assignedStudents = assignedStudents.Where(a => a.SemesterName == semesterFilter).ToList();
+            }
+
+            // Filtrar por grupo
+            if (!string.IsNullOrWhiteSpace(groupFilter))
+            {
+                assignedStudents = assignedStudents.Where(a => a.GroupName == groupFilter).ToList();
+            }
+
+            // Obtener listas únicas para los filtros
+            var allAssignments = await _context.SocialServiceAssignments
+                .Include(a => a.Student)
+                    .ThenInclude(s => s.Person)
+                .Where(a => a.TeacherId == currentTeacherId && a.IsActive)
+                .ToListAsync();
+
+            var allStudentIds = allAssignments.Select(a => a.StudentId).ToList();
+            var allEnrollments = await _context.grades_Enrollments
+                .Include(e => e.Group)
+                    .ThenInclude(g => g.GradeLevel)
+                .Where(e => allStudentIds.Contains(e.StudentId))
+                .ToListAsync();
+
+            foreach (var assignment in allAssignments)
+            {
+                var enrollment = allEnrollments.FirstOrDefault(e => e.StudentId == assignment.StudentId);
+                if (enrollment != null)
+                {
+                    assignment.SemesterName = enrollment.Group?.GradeLevel?.Name;
+                    assignment.GroupName = enrollment.Group?.Name;
+                }
+            }
+
+            var semesters = allAssignments
+                .Where(a => !string.IsNullOrEmpty(a.SemesterName))
+                .Select(a => a.SemesterName)
+                .Distinct()
+                .OrderBy(s => s)
+                .ToList();
+
+            var groups = allAssignments
+                .Where(a => !string.IsNullOrEmpty(a.GroupName))
+                .Select(a => a.GroupName)
+                .Distinct()
+                .OrderBy(g => g)
+                .ToList();
+
+            // Aplicar ordenamiento
+            assignedStudents = sortBy.ToLower() switch
+            {
+                "name" => sortOrder == "asc"
+                    ? assignedStudents.OrderBy(a => a.Student.Person.LastNamePaternal)
+                        .ThenBy(a => a.Student.Person.LastNameMaternal)
+                        .ThenBy(a => a.Student.Person.FirstName).ToList()
+                    : assignedStudents.OrderByDescending(a => a.Student.Person.LastNamePaternal)
+                        .ThenByDescending(a => a.Student.Person.LastNameMaternal)
+                        .ThenByDescending(a => a.Student.Person.FirstName).ToList(),
+
+                "semester" => sortOrder == "asc"
+                    ? assignedStudents.OrderBy(a => a.SemesterName ?? "").ToList()
+                    : assignedStudents.OrderByDescending(a => a.SemesterName ?? "").ToList(),
+
+                "group" => sortOrder == "asc"
+                    ? assignedStudents.OrderBy(a => a.GroupName ?? "").ToList()
+                    : assignedStudents.OrderByDescending(a => a.GroupName ?? "").ToList(),
+
+                "date" => sortOrder == "asc"
+                    ? assignedStudents.OrderBy(a => a.AssignedDate).ToList()
+                    : assignedStudents.OrderByDescending(a => a.AssignedDate).ToList(),
+
+                _ => assignedStudents.OrderBy(a => a.Student.Person.LastNamePaternal).ToList()
+            };
+
+            // Calcular paginación
+            int totalRecords = assignedStudents.Count;
+            int totalPages = (int)Math.Ceiling(totalRecords / (double)pageSize);
+
+            if (page < 1) page = 1;
+            if (page > totalPages && totalPages > 0) page = totalPages;
+
+            var paginatedStudents = assignedStudents
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToList();
+
+            // ViewBag para paginación y filtros
+            ViewBag.CurrentPage = page;
+            ViewBag.TotalPages = totalPages;
+            ViewBag.TotalRecords = totalRecords;
+            ViewBag.CurrentSort = sortBy;
+            ViewBag.CurrentOrder = sortOrder;
+            ViewBag.NextOrder = sortOrder == "asc" ? "desc" : "asc";
+            ViewBag.Semesters = semesters;
+            ViewBag.Groups = groups;
+            ViewBag.SemesterFilter = semesterFilter;
+            ViewBag.GroupFilter = groupFilter;
+            ViewBag.PageSize = pageSize;
+
+            return View(paginatedStudents);
         }
 
-        public async Task<IActionResult> AgregarAlumnos(string searchName)
+        public async Task<IActionResult> AgregarAlumnos(string searchName, string sortBy = "name", string sortOrder = "asc", string semesterFilter = "", string groupFilter = "", int page = 1, int pageSize = 10)
         {
             int currentTeacherId = GetCurrentTeacherId();
+            int[] allowedPageSizes = { 10, 25, 50, 100 };
+            if (!allowedPageSizes.Contains(pageSize)) pageSize = 10;
 
             var assignedStudentIds = await _context.SocialServiceAssignments
                 .Where(a => a.IsActive)
@@ -114,8 +244,9 @@ namespace SchoolManager.Areas.SocialService.Controllers
                     && u.IsActive);
 
             var availableStudents = await availableStudentsQuery
-                .OrderBy(u => u.Person.FirstName)
-                    .ThenBy(u => u.Person.LastNamePaternal)
+                .OrderBy(u => u.Person.LastNamePaternal)
+                    .ThenBy(u => u.Person.LastNameMaternal)
+                    .ThenBy(u => u.Person.FirstName)
                 .ToListAsync();
 
             if (!string.IsNullOrWhiteSpace(searchName))
@@ -124,7 +255,7 @@ namespace SchoolManager.Areas.SocialService.Controllers
                 availableStudents = availableStudents
                     .Where(u => 
                     {
-                        string fullName = $"{u.Person.FirstName} {u.Person.LastNamePaternal} {u.Person.LastNameMaternal}";
+                        string fullName = $"{u.Person.LastNamePaternal} {u.Person.LastNameMaternal} {u.Person.FirstName}";
                         string fullNameNormalized = RemoveAccents(fullName.ToLower());
                         return fullNameNormalized.Contains(searchNormalized);
                     })
@@ -134,25 +265,96 @@ namespace SchoolManager.Areas.SocialService.Controllers
 
             var viewModel = new List<AvailableStudentViewModel>();
 
+            var studentIds = availableStudents.Select(s => s.UserId).ToList();
+
+            var enrollments = await _context.grades_Enrollments
+                .Include(e => e.Group)
+                    .ThenInclude(g => g.GradeLevel)
+                .Where(e => studentIds.Contains(e.StudentId))
+                .ToListAsync();
+
             foreach (var student in availableStudents)
             {
-                var enrollment = await _context.grades_Enrollments
-                    .Include(e => e.Group)
-                        .ThenInclude(g => g.GradeLevel)
-                    .Where(e => e.StudentId == student.UserId)
-                    .FirstOrDefaultAsync();
+                var enrollment = enrollments.FirstOrDefault(e => e.StudentId == student.UserId);
 
                 viewModel.Add(new AvailableStudentViewModel
                 {
                     UserId = student.UserId,
-                    FullName = $"{student.Person.FirstName} {student.Person.LastNamePaternal} {student.Person.LastNameMaternal}",
+                    FullName = $"{student.Person.LastNamePaternal} {student.Person.LastNameMaternal} {student.Person.FirstName}",
                     Email = student.Email,
                     SemesterName = enrollment?.Group?.GradeLevel?.Name,
                     GroupName = enrollment?.Group?.Name
                 });
             }
 
-            return View(viewModel);
+            // Filtrar por semestre
+            if (!string.IsNullOrWhiteSpace(semesterFilter))
+            {
+                viewModel = viewModel.Where(s => s.SemesterName == semesterFilter).ToList();
+            }
+
+            // Filtrar por grupo
+            if (!string.IsNullOrWhiteSpace(groupFilter))
+            {
+                viewModel = viewModel.Where(s => s.GroupName == groupFilter).ToList();
+            }
+
+            // Obtener lista de semestres únicos para el filtro
+            var semesters = viewModel
+                .Where(s => !string.IsNullOrEmpty(s.SemesterName))
+                .Select(s => s.SemesterName)
+                .Distinct()
+                .OrderBy(s => s)
+                .ToList();
+
+            // Obtener lista de grupos únicos para el filtro
+            var groups = viewModel
+                .Where(s => !string.IsNullOrEmpty(s.GroupName))
+                .Select(s => s.GroupName)
+                .Distinct()
+                .OrderBy(g => g)
+                .ToList();
+
+            // Aplicar ordenamiento
+            viewModel = sortBy.ToLower() switch
+            {
+                "name" => sortOrder == "asc"
+                    ? viewModel.OrderBy(s => s.FullName).ToList()
+                    : viewModel.OrderByDescending(s => s.FullName).ToList(),
+
+                "semester" => sortOrder == "asc"
+                    ? viewModel.OrderBy(s => s.SemesterName ?? "").ToList()
+                    : viewModel.OrderByDescending(s => s.SemesterName ?? "").ToList(),
+
+                _ => viewModel.OrderBy(s => s.FullName).ToList()
+            };
+
+            // Calcular paginación
+            int totalRecords = viewModel.Count;
+            int totalPages = (int)Math.Ceiling(totalRecords / (double)pageSize);
+
+            if (page < 1) page = 1;
+            if (page > totalPages && totalPages > 0) page = totalPages;
+
+            var paginatedStudents = viewModel
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToList();
+
+            // ViewBag para paginación y filtros
+            ViewBag.CurrentPage = page;
+            ViewBag.TotalPages = totalPages;
+            ViewBag.TotalRecords = totalRecords;
+            ViewBag.CurrentSort = sortBy;
+            ViewBag.CurrentOrder = sortOrder;
+            ViewBag.NextOrder = sortOrder == "asc" ? "desc" : "asc";
+            ViewBag.Semesters = semesters;
+            ViewBag.Groups = groups;
+            ViewBag.SemesterFilter = semesterFilter;
+            ViewBag.GroupFilter = groupFilter;
+            ViewBag.PageSize = pageSize;
+
+            return View(paginatedStudents);
         }
 
         [HttpPost]
@@ -263,7 +465,7 @@ namespace SchoolManager.Areas.SocialService.Controllers
 
             if (student != null)
             {
-                ViewBag.StudentName = $"{student.Person.FirstName} {student.Person.LastNamePaternal} {student.Person.LastNameMaternal}";
+                ViewBag.StudentName = $"{student.Person.LastNamePaternal} {student.Person.LastNameMaternal} {student.Person.FirstName}";
                 ViewBag.StudentId = id;
             }
 
@@ -368,73 +570,244 @@ namespace SchoolManager.Areas.SocialService.Controllers
             return RedirectToAction("RevisarBitacorasAlumno", new { id = bitacora.StudentId });
         }
 
-        public async Task<IActionResult> AsignarHoras()
+        [HttpPost]
+        public async Task<IActionResult> RechazarBitacora(int logId, string rejectionReason)
         {
             int currentTeacherId = GetCurrentTeacherId();
+
+            var bitacora = await _context.SocialServiceLogs
+                .FirstOrDefaultAsync(b => b.LogId == logId);
+
+            if (bitacora == null)
+            {
+                TempData["Error"] = "Bitácora no encontrada.";
+                return RedirectToAction("Alumnos");
+            }
+
+            var isAssigned = await _context.SocialServiceAssignments
+                .AnyAsync(a => a.TeacherId == currentTeacherId
+                    && a.StudentId == bitacora.StudentId
+                    && a.IsActive);
+
+            if (!isAssigned)
+            {
+                TempData["Error"] = "No tienes permiso para rechazar esta bitácora.";
+                return RedirectToAction("Alumnos");
+            }
+
+            if (bitacora.IsApproved)
+            {
+                TempData["Error"] = "No se puede rechazar una bitácora que ya fue aprobada.";
+                return RedirectToAction("RevisarBitacorasAlumno", new { id = bitacora.StudentId });
+            }
+
+            int studentId = bitacora.StudentId;
+
+            var rejection = new social_service_rejection
+            {
+                StudentId = bitacora.StudentId,
+                Week = bitacora.Week,
+                RejectionReason = rejectionReason,
+                RejectedBy = currentTeacherId,
+                RejectedAt = DateTime.Now
+            };
+
+            _context.SocialServiceRejections.Add(rejection);
+
+            _context.SocialServiceLogs.Remove(bitacora);
+            await _context.SaveChangesAsync();
+
+            TempData["Success"] = "Bitácora rechazada y eliminada. El alumno deberá crear una nueva.";
+            return RedirectToAction("RevisarBitacorasAlumno", new { id = studentId });
+        }
+
+        public async Task<IActionResult> AsignarHoras(string searchName = "", string sortBy = "name", string sortOrder = "asc", int page = 1, int pageSize = 10, string semesterFilter = "", string groupFilter = "")
+        {
+            int currentTeacherId = GetCurrentTeacherId();
+            int[] allowedPageSizes = { 10, 25, 50, 100 };
+            if (!allowedPageSizes.Contains(pageSize)) pageSize = 10;
 
             var assignments = await _context.SocialServiceAssignments
                 .Include(a => a.Student)
                     .ThenInclude(s => s.Person)
                 .Where(a => a.TeacherId == currentTeacherId && a.IsActive)
-                .OrderBy(a => a.Student.Person.FirstName)
                 .ToListAsync();
 
-            var viewModel = new List<AsignarHorasViewModel>();
+            var studentIds = assignments.Select(a => a.StudentId).ToList();
+
+            // Obtener enrollments para semestre y grupo
+            var enrollments = await _context.grades_Enrollments
+                .Include(e => e.Group)
+                    .ThenInclude(g => g.GradeLevel)
+                .Where(e => studentIds.Contains(e.StudentId))
+                .ToListAsync();
+
+            // Obtener todas las bitácoras (pendientes y aprobadas)
+            var allLogs = await _context.SocialServiceLogs
+                .Where(log => studentIds.Contains(log.StudentId))
+                .ToListAsync();
+
+            var logsByStudent = allLogs
+                .GroupBy(log => log.StudentId)
+                .ToDictionary(g => g.Key, g => g.ToList());
+
+            var allViewModel = new List<AsignarHorasViewModel>();
 
             foreach (var assignment in assignments)
             {
-                var bitacorasPendientes = await _context.SocialServiceLogs
-                    .Where(log => log.StudentId == assignment.StudentId && !log.IsApproved)
-                    .OrderBy(log => log.Week)
-                    .Select(log => new BitacoraPendiente
-                    {
-                        LogId = log.LogId,
-                        Week = log.Week,
-                        HoursPracticas = log.HoursPracticas,
-                        HoursServicioSocial = log.HoursServicioSocial,
-                        CreatedAt = log.CreatedAt
-                    })
-                    .ToListAsync();
+                var enrollment = enrollments.FirstOrDefault(e => e.StudentId == assignment.StudentId);
+                var semesterName = enrollment?.Group?.GradeLevel?.Name;
+                var groupName = enrollment?.Group?.Name ?? assignment.GroupName;
 
-                // Solo agregar alumnos que tengan bitácoras pendientes
-                if (bitacorasPendientes.Any())
+                var studentLogs = logsByStudent.ContainsKey(assignment.StudentId)
+                    ? logsByStudent[assignment.StudentId]
+                    : new List<social_service_log>();
+
+                var pendingLogs = studentLogs.Where(l => !l.IsApproved).ToList();
+                var approvedLogs = studentLogs.Where(l => l.IsApproved).ToList();
+
+                var fullName = $"{assignment.Student.Person.LastNamePaternal} {assignment.Student.Person.LastNameMaternal} {assignment.Student.Person.FirstName}";
+
+                allViewModel.Add(new AsignarHorasViewModel
                 {
-                    var fullName = $"{assignment.Student.Person.FirstName} {assignment.Student.Person.LastNamePaternal} {assignment.Student.Person.LastNameMaternal}";
-
-                    viewModel.Add(new AsignarHorasViewModel
+                    StudentId = assignment.StudentId,
+                    StudentName = fullName,
+                    SemesterName = semesterName,
+                    GroupName = groupName,
+                    TotalBitacoras = studentLogs.Count,
+                    BitacorasPendientesCount = pendingLogs.Count,
+                    TotalHorasPracticas = approvedLogs.Sum(l => l.ApprovedHoursPracticas),
+                    TotalHorasServicioSocial = approvedLogs.Sum(l => l.ApprovedHoursServicioSocial),
+                    BitacorasPendientes = pendingLogs.Select(l => new BitacoraPendiente
                     {
-                        StudentId = assignment.StudentId,
-                        StudentName = fullName,
-                        GroupName = assignment.GroupName,
-                        BitacorasPendientes = bitacorasPendientes,
-                        TotalHorasPracticasPendientes = bitacorasPendientes.Sum(b => b.HoursPracticas),
-                        TotalHorasServicioSocialPendientes = bitacorasPendientes.Sum(b => b.HoursServicioSocial)
-                    });
-                }
+                        LogId = l.LogId,
+                        Week = l.Week,
+                        HoursPracticas = l.HoursPracticas,
+                        HoursServicioSocial = l.HoursServicioSocial,
+                        CreatedAt = l.CreatedAt
+                    }).ToList(),
+                    TotalHorasPracticasPendientes = pendingLogs.Sum(l => l.HoursPracticas),
+                    TotalHorasServicioSocialPendientes = pendingLogs.Sum(l => l.HoursServicioSocial)
+                });
             }
 
-            return View(viewModel);
+            // Obtener todos los semestres y grupos posibles ANTES de filtrar
+            var allSemesters = allViewModel.Select(x => x.SemesterName).Where(x => !string.IsNullOrEmpty(x)).Distinct().OrderBy(x => x).ToList();
+            var allGroups = allViewModel.Select(x => x.GroupName).Where(x => !string.IsNullOrEmpty(x)).Distinct().OrderBy(x => x).ToList();
+
+            // Filtrar por nombre
+            if (!string.IsNullOrWhiteSpace(searchName))
+            {
+                string searchNormalized = RemoveAccents(searchName.ToLower());
+                allViewModel = allViewModel
+                    .Where(v => RemoveAccents(v.StudentName.ToLower()).Contains(searchNormalized))
+                    .ToList();
+            }
+
+            // Filtrar por semestre
+            if (!string.IsNullOrWhiteSpace(semesterFilter))
+            {
+                allViewModel = allViewModel.Where(v => v.SemesterName == semesterFilter).ToList();
+            }
+
+            // Filtrar por grupo
+            if (!string.IsNullOrWhiteSpace(groupFilter))
+            {
+                allViewModel = allViewModel.Where(v => v.GroupName == groupFilter).ToList();
+            }
+
+            // Aplicar ordenamiento
+            allViewModel = sortBy.ToLower() switch
+            {
+                "name" => sortOrder == "asc"
+                    ? allViewModel.OrderBy(a => a.StudentName).ToList()
+                    : allViewModel.OrderByDescending(a => a.StudentName).ToList(),
+                "semester" => sortOrder == "asc"
+                    ? allViewModel.OrderBy(a => a.SemesterName ?? "").ToList()
+                    : allViewModel.OrderByDescending(a => a.SemesterName ?? "").ToList(),
+                "group" => sortOrder == "asc"
+                    ? allViewModel.OrderBy(a => a.GroupName ?? "").ToList()
+                    : allViewModel.OrderByDescending(a => a.GroupName ?? "").ToList(),
+                "totalbitacoras" => sortOrder == "asc"
+                    ? allViewModel.OrderBy(a => a.TotalBitacoras).ToList()
+                    : allViewModel.OrderByDescending(a => a.TotalBitacoras).ToList(),
+                "pendientes" => sortOrder == "asc"
+                    ? allViewModel.OrderBy(a => a.BitacorasPendientesCount).ToList()
+                    : allViewModel.OrderByDescending(a => a.BitacorasPendientesCount).ToList(),
+                "practicas" => sortOrder == "asc"
+                    ? allViewModel.OrderBy(a => a.TotalHorasPracticas).ToList()
+                    : allViewModel.OrderByDescending(a => a.TotalHorasPracticas).ToList(),
+                "servicio" => sortOrder == "asc"
+                    ? allViewModel.OrderBy(a => a.TotalHorasServicioSocial).ToList()
+                    : allViewModel.OrderByDescending(a => a.TotalHorasServicioSocial).ToList(),
+                "validacion" => sortOrder == "asc"
+                    ? allViewModel.OrderBy(a => a.TotalHorasPracticas + a.TotalHorasServicioSocial).ToList()
+                    : allViewModel.OrderByDescending(a => a.TotalHorasPracticas + a.TotalHorasServicioSocial).ToList(),
+                _ => allViewModel.OrderBy(a => a.StudentName).ToList()
+            };
+
+            // Totales globales (antes de paginar)
+            ViewBag.TotalBitacorasPendientes = allViewModel.Sum(a => a.BitacorasPendientesCount);
+            ViewBag.TotalHorasPracticas = allViewModel.Sum(a => a.TotalHorasPracticas);
+            ViewBag.TotalHorasServicioSocial = allViewModel.Sum(a => a.TotalHorasServicioSocial);
+            ViewBag.TotalBitacoras = allViewModel.Sum(a => a.TotalBitacoras);
+
+            // Paginación
+            int totalRecords = allViewModel.Count;
+            int totalPages = (int)Math.Ceiling(totalRecords / (double)pageSize);
+            if (page < 1) page = 1;
+            if (page > totalPages && totalPages > 0) page = totalPages;
+
+            var paginatedViewModel = allViewModel
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToList();
+
+            // Para los selects de filtro (usar todos los posibles, no solo los filtrados)
+            ViewBag.Semesters = allSemesters;
+            ViewBag.Groups = allGroups;
+            ViewBag.SemesterFilter = semesterFilter;
+            ViewBag.GroupFilter = groupFilter;
+            ViewBag.SearchName = searchName;
+            ViewBag.CurrentPage = page;
+            ViewBag.TotalPages = totalPages;
+            ViewBag.TotalRecords = totalRecords;
+            ViewBag.PageSize = pageSize;
+            ViewBag.CurrentSort = sortBy;
+            ViewBag.CurrentOrder = sortOrder;
+
+            return View(paginatedViewModel);
         }
 
-        public async Task<IActionResult> Asistencia()
+        public async Task<IActionResult> Asistencia(string sortBy = "name", string sortOrder = "asc", string groupFilter = "", string searchName = "", int page = 1, int pageSize = 10, string dateFrom = "", string dateTo = "")
         {
             int currentTeacherId = GetCurrentTeacherId();
             DateTime today = DateTime.Today;
+            int[] allowedPageSizes = { 10, 25, 50, 100 };
+            if (!allowedPageSizes.Contains(pageSize)) pageSize = 10;
+
+            DateTime? filterDateFrom = null;
+            DateTime? filterDateTo = null;
+            if (DateTime.TryParse(dateFrom, out var parsedFrom)) filterDateFrom = parsedFrom.Date;
+            if (DateTime.TryParse(dateTo, out var parsedTo)) filterDateTo = parsedTo.Date;
 
             var assignments = await _context.SocialServiceAssignments
                 .Include(a => a.Student)
                     .ThenInclude(s => s.Person)
                 .Where(a => a.TeacherId == currentTeacherId && a.IsActive)
-                .OrderBy(a => a.Student.Person.FirstName)
+                .ToListAsync();
+
+            var studentIds = assignments.Select(a => a.StudentId).ToList();
+
+            var enrollments = await _context.grades_Enrollments
+                .Include(e => e.Group)
+                    .ThenInclude(g => g.GradeLevel)
+                .Where(e => studentIds.Contains(e.StudentId))
                 .ToListAsync();
 
             foreach (var assignment in assignments)
             {
-                var enrollment = await _context.grades_Enrollments
-                    .Include(e => e.Group)
-                        .ThenInclude(g => g.GradeLevel)
-                    .Where(e => e.StudentId == assignment.StudentId)
-                    .FirstOrDefaultAsync();
+                var enrollment = enrollments.FirstOrDefault(e => e.StudentId == assignment.StudentId);
 
                 if (enrollment != null)
                 {
@@ -443,38 +816,144 @@ namespace SchoolManager.Areas.SocialService.Controllers
                 }
             }
 
+            // Filtrar por grupo
+            if (!string.IsNullOrWhiteSpace(groupFilter))
+            {
+                assignments = assignments.Where(a => a.GroupName == groupFilter).ToList();
+            }
+
+            // Filtrar por nombre
+            if (!string.IsNullOrWhiteSpace(searchName))
+            {
+                string searchNormalized = RemoveAccents(searchName.ToLower());
+                assignments = assignments
+                    .Where(a =>
+                    {
+                        string fullName = $"{a.Student.Person.LastNamePaternal} {a.Student.Person.LastNameMaternal} {a.Student.Person.FirstName}";
+                        return RemoveAccents(fullName.ToLower()).Contains(searchNormalized);
+                    })
+                    .ToList();
+            }
+
+            // Obtener lista de grupos únicos para el filtro
+            var allAssignments = await _context.SocialServiceAssignments
+                .Include(a => a.Student)
+                    .ThenInclude(s => s.Person)
+                .Where(a => a.TeacherId == currentTeacherId && a.IsActive)
+                .ToListAsync();
+
+            var allStudentIds = allAssignments.Select(a => a.StudentId).ToList();
+            var allEnrollments = await _context.grades_Enrollments
+                .Include(e => e.Group)
+                    .ThenInclude(g => g.GradeLevel)
+                .Where(e => allStudentIds.Contains(e.StudentId))
+                .ToListAsync();
+
+            foreach (var assignment in allAssignments)
+            {
+                var enrollment = allEnrollments.FirstOrDefault(e => e.StudentId == assignment.StudentId);
+                if (enrollment != null)
+                {
+                    assignment.GroupName = enrollment.Group?.Name;
+                }
+            }
+
+            var groups = allAssignments
+                .Where(a => !string.IsNullOrEmpty(a.GroupName))
+                .Select(a => a.GroupName)
+                .Distinct()
+                .OrderBy(g => g)
+                .ToList();
+
+            // Aplicar ordenamiento
+            assignments = sortBy.ToLower() switch
+            {
+                "group" => sortOrder == "asc"
+                    ? assignments.OrderBy(a => a.GroupName ?? "").ToList()
+                    : assignments.OrderByDescending(a => a.GroupName ?? "").ToList(),
+
+                _ => sortOrder == "asc"
+                    ? assignments.OrderBy(a => a.Student.Person.LastNamePaternal)
+                        .ThenBy(a => a.Student.Person.LastNameMaternal)
+                        .ThenBy(a => a.Student.Person.FirstName)
+                        .ToList()
+                    : assignments.OrderByDescending(a => a.Student.Person.LastNamePaternal)
+                        .ThenByDescending(a => a.Student.Person.LastNameMaternal)
+                        .ThenByDescending(a => a.Student.Person.FirstName)
+                        .ToList()
+            };
+
+            // Paginación
+            int totalRecords = assignments.Count;
+            int totalPages = (int)Math.Ceiling(totalRecords / (double)pageSize);
+            if (page < 1) page = 1;
+            if (page > totalPages && totalPages > 0) page = totalPages;
+
+            var paginatedAssignments = assignments
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToList();
+
+            var paginatedStudentIds = paginatedAssignments.Select(a => a.StudentId).ToList();
+
+            var todayAttendances = await _context.SocialServiceAttendances
+                .Where(att => studentIds.Contains(att.StudentId) && att.Date.Date == today)
+                .ToListAsync();
+
+            var allAttendancesQuery = _context.SocialServiceAttendances
+                .Where(att => paginatedStudentIds.Contains(att.StudentId));
+
+            if (filterDateFrom.HasValue)
+                allAttendancesQuery = allAttendancesQuery.Where(att => att.Date.Date >= filterDateFrom.Value);
+            if (filterDateTo.HasValue)
+                allAttendancesQuery = allAttendancesQuery.Where(att => att.Date.Date <= filterDateTo.Value);
+
+            var allAttendances = await allAttendancesQuery
+                .OrderByDescending(att => att.Date)
+                .ToListAsync();
+
+            var attendancesByStudent = allAttendances
+                .GroupBy(att => att.StudentId)
+                .ToDictionary(g => g.Key, g => g.ToList());
+
             var viewModel = new AttendanceListViewModel
             {
                 Today = today
             };
 
-            foreach (var assignment in assignments)
+            foreach (var assignment in paginatedAssignments)
             {
-                var todayAttendance = await _context.SocialServiceAttendances
-                    .FirstOrDefaultAsync(att => att.StudentId == assignment.StudentId
-                        && att.Date.Date == today);
-
-                // Obtener las últimas 5 asistencias incluyendo hoy (para mostrar historial)
-                var recentAttendances = await _context.SocialServiceAttendances
-                    .Where(att => att.StudentId == assignment.StudentId)
-                    .OrderByDescending(att => att.Date)
-                    .Take(5)
-                    .ToListAsync();
+                var todayAttendance = todayAttendances.FirstOrDefault(att => att.StudentId == assignment.StudentId);
+                attendancesByStudent.TryGetValue(assignment.StudentId, out var recentAttendances);
 
                 viewModel.Students.Add(new AttendanceViewModel
                 {
                     Assignment = assignment,
                     HasAttendanceToday = todayAttendance != null,
                     IsPresentToday = todayAttendance?.IsPresent ?? false,
-                    RecentAttendances = recentAttendances
+                    RecentAttendances = recentAttendances ?? new List<social_service_attendance>()
                 });
             }
+
+            // ViewBag para filtros y paginación
+            ViewBag.CurrentSort = sortBy;
+            ViewBag.SortOrder = sortOrder;
+            ViewBag.NextOrder = sortOrder == "asc" ? "desc" : "asc";
+            ViewBag.Groups = groups;
+            ViewBag.GroupFilter = groupFilter;
+            ViewBag.SearchName = searchName;
+            ViewBag.CurrentPage = page;
+            ViewBag.TotalPages = totalPages;
+            ViewBag.TotalRecords = totalRecords;
+            ViewBag.PageSize = pageSize;
+            ViewBag.DateFrom = dateFrom;
+            ViewBag.DateTo = dateTo;
 
             return View(viewModel);
         }
 
         [HttpPost]
-        public async Task<IActionResult> GuardarAsistencia(List<int> presentStudents)
+        public async Task<IActionResult> GuardarAsistencia(List<int> presentStudents, List<int> allStudentsOnPage, string sortOrder = "asc", string groupFilter = "", string searchName = "", int page = 1, int pageSize = 10, string dateFrom = "", string dateTo = "")
         {
             int currentTeacherId = GetCurrentTeacherId();
             DateTime today = DateTime.Today;
@@ -483,9 +962,12 @@ namespace SchoolManager.Areas.SocialService.Controllers
                 .Where(a => a.TeacherId == currentTeacherId && a.IsActive)
                 .ToListAsync();
 
-            foreach (var assignment in assignments)
+            var studentsToProcess = allStudentsOnPage != null && allStudentsOnPage.Any()
+                ? assignments.Where(a => allStudentsOnPage.Contains(a.StudentId)).ToList()
+                : assignments;
+
+            foreach (var assignment in studentsToProcess)
             {
-                // Verificar si ya existe asistencia para hoy (actualizar o crear)
                 var existingAttendance = await _context.SocialServiceAttendances
                     .FirstOrDefaultAsync(att => att.StudentId == assignment.StudentId
                         && att.Date.Date == today);
@@ -511,7 +993,161 @@ namespace SchoolManager.Areas.SocialService.Controllers
 
             await _context.SaveChangesAsync();
             TempData["Success"] = "Asistencia guardada exitosamente.";
-            return RedirectToAction("Asistencia");
+            return RedirectToAction("Asistencia", new { sortOrder, groupFilter, searchName, page, pageSize, dateFrom, dateTo });
+        }
+
+        private async Task<List<AsignarHorasViewModel>> GetAvanceData(int teacherId, string searchName = "")
+        {
+            var assignments = await _context.SocialServiceAssignments
+                .Include(a => a.Student)
+                    .ThenInclude(s => s.Person)
+                .Where(a => a.TeacherId == teacherId && a.IsActive)
+                .OrderBy(a => a.Student.Person.LastNamePaternal)
+                    .ThenBy(a => a.Student.Person.LastNameMaternal)
+                    .ThenBy(a => a.Student.Person.FirstName)
+                .ToListAsync();
+
+            var studentIds = assignments.Select(a => a.StudentId).ToList();
+
+            var enrollments = await _context.grades_Enrollments
+                .Include(e => e.Group)
+                    .ThenInclude(g => g.GradeLevel)
+                .Where(e => studentIds.Contains(e.StudentId))
+                .ToListAsync();
+
+            var allLogs = await _context.SocialServiceLogs
+                .Where(log => studentIds.Contains(log.StudentId))
+                .ToListAsync();
+
+            var logsByStudent = allLogs
+                .GroupBy(log => log.StudentId)
+                .ToDictionary(g => g.Key, g => g.ToList());
+
+            var result = new List<AsignarHorasViewModel>();
+
+            foreach (var assignment in assignments)
+            {
+                var enrollment = enrollments.FirstOrDefault(e => e.StudentId == assignment.StudentId);
+                var studentLogs = logsByStudent.ContainsKey(assignment.StudentId)
+                    ? logsByStudent[assignment.StudentId]
+                    : new List<social_service_log>();
+
+                var pendingLogs = studentLogs.Where(l => !l.IsApproved).ToList();
+                var approvedLogs = studentLogs.Where(l => l.IsApproved).ToList();
+
+                result.Add(new AsignarHorasViewModel
+                {
+                    StudentId = assignment.StudentId,
+                    StudentName = $"{assignment.Student.Person.LastNamePaternal} {assignment.Student.Person.LastNameMaternal} {assignment.Student.Person.FirstName}",
+                    SemesterName = enrollment?.Group?.GradeLevel?.Name,
+                    GroupName = enrollment?.Group?.Name ?? assignment.GroupName,
+                    TotalBitacoras = studentLogs.Count,
+                    BitacorasPendientesCount = pendingLogs.Count,
+                    TotalHorasPracticas = approvedLogs.Sum(l => l.ApprovedHoursPracticas),
+                    TotalHorasServicioSocial = approvedLogs.Sum(l => l.ApprovedHoursServicioSocial)
+                });
+            }
+
+            if (!string.IsNullOrWhiteSpace(searchName))
+            {
+                string searchNormalized = RemoveAccents(searchName.ToLower());
+                result = result
+                    .Where(v => RemoveAccents(v.StudentName.ToLower()).Contains(searchNormalized))
+                    .ToList();
+            }
+
+            return result;
+        }
+
+        public async Task<IActionResult> ExportAvanceExcel(string searchName = "")
+        {
+            int currentTeacherId = GetCurrentTeacherId();
+            if (currentTeacherId == 0) return RedirectToAction("Login", "Account", new { area = "UserMng" });
+
+            var data = await GetAvanceData(currentTeacherId, searchName);
+
+            using var workbook = new XLWorkbook();
+            var ws = workbook.Worksheets.Add("Avance del Alumno");
+
+            // Encabezados
+            var headers = new[] { "Alumno", "Semestre", "Grupo", "Total Bitácoras", "Bitácoras Pendientes", "Horas Prácticas", "Horas Servicio Social", "Validación" };
+            for (int i = 0; i < headers.Length; i++)
+            {
+                var cell = ws.Cell(1, i + 1);
+                cell.Value = headers[i];
+                cell.Style.Font.Bold = true;
+                cell.Style.Fill.BackgroundColor = XLColor.FromHtml("#8C1B1B");
+                cell.Style.Font.FontColor = XLColor.White;
+                cell.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+            }
+
+            // Datos
+            int row = 2;
+            foreach (var alumno in data)
+            {
+                int totalHoras = alumno.TotalHorasPracticas + alumno.TotalHorasServicioSocial;
+                double porcentaje = (totalHoras / 720.0) * 100;
+
+                string validacion = porcentaje >= 100 ? "100%" : porcentaje >= 75 ? "75%" : porcentaje >= 50 ? "50%" : porcentaje >= 25 ? "25%" : "0%";
+
+                ws.Cell(row, 1).Value = alumno.StudentName;
+                ws.Cell(row, 2).Value = alumno.SemesterName ?? "N/A";
+                ws.Cell(row, 3).Value = alumno.GroupName ?? "N/A";
+                ws.Cell(row, 4).Value = alumno.TotalBitacoras;
+                ws.Cell(row, 5).Value = alumno.BitacorasPendientesCount;
+                ws.Cell(row, 6).Value = $"{alumno.TotalHorasPracticas} h";
+                ws.Cell(row, 7).Value = $"{alumno.TotalHorasServicioSocial} h";
+                ws.Cell(row, 8).Value = validacion;
+
+                for (int c = 2; c <= 8; c++)
+                    ws.Cell(row, c).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+
+                row++;
+            }
+
+            ws.Columns().AdjustToContents();
+
+            using var stream = new MemoryStream();
+            workbook.SaveAs(stream);
+            return File(stream.ToArray(),
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                $"Avance_Alumnos_{DateTime.Now:yyyyMMdd}.xlsx");
+        }
+
+        public async Task<IActionResult> ExportAvancePdf(string searchName = "")
+        {
+            int currentTeacherId = GetCurrentTeacherId();
+            if (currentTeacherId == 0) return RedirectToAction("Login", "Account", new { area = "UserMng" });
+
+            var data = await GetAvanceData(currentTeacherId, searchName);
+
+            string htmlContent = await this.RenderViewAsync("_AvancePdf", data, true);
+
+            var globalSettings = new GlobalSettings
+            {
+                ColorMode = ColorMode.Color,
+                Orientation = Orientation.Landscape,
+                PaperSize = PaperKind.Letter,
+                Margins = new MarginSettings { Top = 10, Bottom = 10, Left = 10, Right = 10 }
+            };
+
+            var objectSettings = new ObjectSettings
+            {
+                PagesCount = true,
+                HtmlContent = htmlContent,
+                WebSettings = { DefaultEncoding = "utf-8" },
+                HeaderSettings = { Line = false },
+                FooterSettings = { Center = "Página [page] de [toPage]", FontSize = 8, Line = false }
+            };
+
+            var pdf = new HtmlToPdfDocument
+            {
+                GlobalSettings = globalSettings,
+                Objects = { objectSettings }
+            };
+
+            var file = _converter.Convert(pdf);
+            return File(file, "application/pdf", $"Avance_Alumnos_{DateTime.Now:yyyyMMdd}.pdf");
         }
 
         private int GetCurrentTeacherId()
@@ -551,8 +1187,13 @@ namespace SchoolManager.Areas.SocialService.Controllers
             if (string.IsNullOrWhiteSpace(weekString))
                 return 0;
 
+            if (int.TryParse(weekString.Trim(), out int weekNumber))
+            {
+                return weekNumber;
+            }
+
             var parts = weekString.Split(' ');
-            if (parts.Length >= 2 && int.TryParse(parts[1], out int weekNumber))
+            if (parts.Length >= 2 && int.TryParse(parts[1], out weekNumber))
             {
                 return weekNumber;
             }

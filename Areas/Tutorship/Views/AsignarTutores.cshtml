@@ -1,0 +1,88 @@
+﻿@{
+    ViewData["Title"] = "Asignación de Tutores";
+    var maestros = ViewBag.Maestros as IEnumerable<SchoolManager.Models.users_user>;
+    var grupos = ViewBag.Grupos as IEnumerable<SchoolManager.Models.grades_group>;
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="fw-bold m-0" style="color: var(--utt-dark-red);">
+                    <i class="bi bi-diagram-3-fill"></i> Asignación de Tutores a Grupos
+                </h2>
+                <a asp-action="Controlador" class="btn btn-outline-secondary btn-sm">
+                    <i class="bi bi-arrow-left"></i> Volver al panel
+                </a>
+            </div>
+
+            @if (TempData["Exito"] != null)
+            {
+                <div class="alert alert-success shadow-sm">
+                    <i class="bi bi-check-circle-fill"></i> @TempData["Exito"]
+                </div>
+            }
+            @if (TempData["Error"] != null)
+            {
+                <div class="alert alert-danger shadow-sm">
+                    <i class="bi bi-exclamation-triangle-fill"></i> @TempData["Error"]
+                </div>
+            }
+
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-dark text-white p-3">
+                    <h5 class="mb-0">Vincular Maestro con Grupo</h5>
+                </div>
+                <div class="card-body p-4" style="background-color: var(--utt-light);">
+
+                    <form asp-area="Gestion" asp-controller="Tutorship" asp-action="GuardarAsignacionTutor" method="post">
+
+                        <div class="mb-4">
+                            <label class="form-label fw-bold" style="color: var(--utt-black);">1. Selecciona al Maestro (Tutor)</label>
+                            <select name="teacherId" class="form-select form-select-lg" style="border-color: var(--utt-beige);" required>
+                                <option value="">-- Elige un profesor --</option>
+                                @if (maestros != null)
+                                {
+                                    foreach (var maestro in maestros)
+                                    {
+                                        <option value="@maestro.UserId">
+                                            @maestro.Person.FirstName @maestro.Person.LastNamePaternal @maestro.Person.LastNameMaternal
+                                        </option>
+                                    }
+                                }
+                            </select>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label fw-bold" style="color: var(--utt-black);">2. Selecciona el Grupo</label>
+                            <select name="groupId" class="form-select form-select-lg" style="border-color: var(--utt-beige);" required>
+                                <option value="">-- Elige un grupo --</option>
+                                @if (grupos != null)
+                                {
+                                    foreach (var grupo in grupos)
+                                    {
+                                        <option value="@grupo.GroupId">
+                                            Grado @grupo.GradeLevelId | Grupo @grupo.Name
+                                        </option>
+                                    }
+                                }
+                            </select>
+                            <div class="form-text mt-2 text-muted">
+                                * Al asignar, todos los alumnos actualmente inscritos en este grupo tendrán a este profesor como su tutor asignado en el sistema.
+                            </div>
+                        </div>
+
+                        <div class="d-grid mt-5">
+                            <button type="submit" class="btn btn-utt-primary btn-lg fw-bold shadow">
+                                <i class="bi bi-link-45deg"></i> Guardar Asignación
+                            </button>
+                        </div>
+
+                    </form>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

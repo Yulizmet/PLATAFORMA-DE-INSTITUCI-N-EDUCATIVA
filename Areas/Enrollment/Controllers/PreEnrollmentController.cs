@@ -1,10 +1,11 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System.Security.Cryptography;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using SchoolManager.Areas.Enrollment.ViewModels;
 using SchoolManager.Data;
 using SchoolManager.Models;
-using System.Security.Cryptography;
-using SchoolManager.Models.ViewModels;
+
 
 namespace SchoolManager.Areas.Enrollment.Controllers
 {
@@ -12,8 +13,9 @@ namespace SchoolManager.Areas.Enrollment.Controllers
     public class PreEnrollmentController : Controller
     {
         private readonly AppDbContext _context;
+   
 
-        public PreEnrollmentController(AppDbContext context)
+        public PreEnrollmentController(AppDbContext context, IWebHostEnvironment env)
         {
             _context = context;
         }
@@ -61,6 +63,40 @@ namespace SchoolManager.Areas.Enrollment.Controllers
             return _context.PreenrollmentGenerals.Any(e => e.IdData == id);
         }
 
+
+        // =====================================================================
+        // DOCUMENTOS (Checklist)
+        // =====================================================================
+
+        [HttpPost]
+        public async Task<IActionResult> GuardarDocs([FromBody] PreenrollmentDocsDto dto)
+        {
+            var docs = await _context.PreenrollmentDocs
+                .FirstOrDefaultAsync(x => x.IdData == dto.IdData);
+
+            if (docs == null)
+            {
+                docs = new preenrollment_docs
+                {
+                    IdData = dto.IdData
+                };
+                _context.PreenrollmentDocs.Add(docs);
+            }
+
+            docs.Fotos = dto.Fotos;
+            docs.PagoExamen = dto.PagoExamen;
+            docs.ActaNacimiento = dto.ActaNacimiento;
+            docs.Curp = dto.Curp;
+            docs.Certificados = dto.Certificados;
+            docs.ComprobanteDomicilio = dto.ComprobanteDomicilio;
+            docs.CartaBuenaConducta = dto.CartaBuenaConducta;
+
+            await _context.SaveChangesAsync();
+
+            return Ok(new { success = true });
+        }
+
+
         // =====================================================================
         // FLUJO 1: REGISTRO INICIAL + GENERACIÓN DE FOLIO
         // El usuario (sin cuenta) llena sus datos y genera un folio de pago.
@@ -69,6 +105,8 @@ namespace SchoolManager.Areas.Enrollment.Controllers
         // GET: Enrollment/PreEnrollment/Create
         public IActionResult Create()
         {
+            ViewData["PasoActual"] = 1;
+
             ViewData["IdCareer"] = new SelectList(
                 _context.PreenrollmentCareers, "IdCareer", "name_career");
             ViewData["IdGeneration"] = new SelectList(
@@ -85,6 +123,8 @@ namespace SchoolManager.Areas.Enrollment.Controllers
         {
             if (!ModelState.IsValid)
             {
+                ViewData["PasoActual"] = 1;
+
                 ViewData["IdCareer"] = new SelectList(
                     _context.PreenrollmentCareers, "IdCareer", "name_career", vm.IdCareer);
                 ViewData["IdGeneration"] = new SelectList(
@@ -118,7 +158,7 @@ namespace SchoolManager.Areas.Enrollment.Controllers
                 id_data = general.IdData,
                 street = vm.Street,
                 exterior_number = vm.ExteriorNumber,
-                interior_number = vm.InteriorNumber ?? "N/A",
+                interior_number = vm.InteriorNumber,
                 postal_code = vm.PostalCode,
                 neighborhood = vm.Neighborhood,
                 state = vm.State,
@@ -151,8 +191,8 @@ namespace SchoolManager.Areas.Enrollment.Controllers
                 paternal_last_name = vm.TutorPaternalLastName,
                 maternal_last_name = vm.TutorMaternalLastName,
                 name = vm.TutorName,
-                home_phone = vm.TutorHomePhone ?? "N/A",
-                work_phone = vm.TutorWorkPhone ?? "N/A"
+                home_phone = vm.TutorHomePhone,
+                work_phone = vm.TutorWorkPhone
             };
             _context.PreenrollmentTutors.Add(tutor);
 
@@ -160,12 +200,12 @@ namespace SchoolManager.Areas.Enrollment.Controllers
             var info = new preenrollment_infos
             {
                 id_data = general.IdData,
-                beca = vm.Beca ?? "N/A",
+                beca = vm.Beca,
                 comu_indi = vm.ComuIndi,
                 lengu_indi = vm.LenguIndi,
                 incapa = vm.Incapa,
                 disease = vm.Disease,
-                comment = vm.Comment ?? "N/A"
+                comment = vm.Comment
             };
             _context.PreenrollmentInfos.Add(info);
 
@@ -186,7 +226,7 @@ namespace SchoolManager.Areas.Enrollment.Controllers
             await _context.SaveChangesAsync();
 
             // Redirigir a confirmación mostrando el folio generado
-            return RedirectToAction(nameof(FolioGenerado), new { id = general.IdData });
+            return RedirectToAction(nameof(SubirDocumentos), new { id = general.IdData });
         }
 
         // GET: Enrollment/PreEnrollment/FolioGenerado/5
@@ -228,7 +268,7 @@ namespace SchoolManager.Areas.Enrollment.Controllers
 
             var pre = await _context.PreenrollmentGenerals
                 .Include(p => p.ProcedureRequest)
-                    .ThenInclude(pr => pr!.ProcedureFlow)
+                    .ThenInclude(pr => pr.ProcedureFlow)
                         .ThenInclude(pf => pf.ProcedureStatus)
                 .FirstOrDefaultAsync(p => p.Folio == folio);
 
@@ -268,7 +308,7 @@ namespace SchoolManager.Areas.Enrollment.Controllers
         {
             var pre = await _context.PreenrollmentGenerals
                 .Include(p => p.ProcedureRequest)
-                    .ThenInclude(pr => pr!.ProcedureFlow)
+                    .ThenInclude(pr => pr.ProcedureFlow)
                         .ThenInclude(pf => pf.ProcedureStatus)
                 .FirstOrDefaultAsync(p => p.IdData == id);
 
@@ -305,7 +345,7 @@ namespace SchoolManager.Areas.Enrollment.Controllers
 
             var pre = await _context.PreenrollmentGenerals
                 .Include(p => p.ProcedureRequest)
-                    .ThenInclude(pr => pr!.ProcedureFlow)
+                    .ThenInclude(pr => pr.ProcedureFlow)
                         .ThenInclude(pf => pf.ProcedureStatus)
                 .FirstOrDefaultAsync(p => p.IdData == vm.IdData);
 
@@ -362,6 +402,289 @@ namespace SchoolManager.Areas.Enrollment.Controllers
         // CRUD ADMIN (Index, Details, Edit, Delete)
         // Para que el admin pueda gestionar las preinscripciones.
         // =====================================================================
+
+
+        // =====================================================================
+        // Documentos
+        // =====================================================================
+
+        // GET: Enrollment/PreEnrollment/SubirDocumentos
+        [HttpGet]
+        public IActionResult SubirDocumentos()
+        {
+            ViewData["PasoActual"] = 2;
+            return View();
+        }
+
+        public class PreenrollmentDocsDto
+        {
+            public int IdData { get; set; }
+            public bool Fotos { get; set; }
+            public bool PagoExamen { get; set; }
+            public bool ActaNacimiento { get; set; }
+            public bool Curp { get; set; }
+            public bool Certificados { get; set; }
+            public bool ComprobanteDomicilio { get; set; }
+            public bool CartaBuenaConducta { get; set; }
+        }
+
+
+        // =====================================================================
+        // Confirmar informacion
+        // =====================================================================
+
+        // GET: Enrollment/PreEnrollment/ConfirmarPreinscripcion
+        [HttpGet]
+        public IActionResult ConfirmarPreinscripcion()
+        {
+            ViewData["PasoActual"] = 3;
+
+            ViewData["IdCareer"] = new SelectList(
+                _context.PreenrollmentCareers, "IdCareer", "name_career"
+            );
+
+            return View();
+        }
+
+        // POST: Enrollment/PreEnrollment/ConfirmarPreinscripcion
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ConfirmarPreinscripcion(PreEnrollmentViewModel vm)
+        {
+            Console.WriteLine("=== ENTRO AL POST ConfirmarPreinscripcion ===");
+
+            if (!ModelState.IsValid)
+            {
+                Console.WriteLine("=== MODELSTATE INVALIDO ===");
+
+                foreach (var item in ModelState)
+                {
+                    if (item.Value.Errors.Count > 0)
+                    {
+                        Console.WriteLine($"Campo: {item.Key}");
+                        foreach (var error in item.Value.Errors)
+                        {
+                            Console.WriteLine($" - Error: {error.ErrorMessage}");
+                            if (error.Exception != null)
+                                Console.WriteLine($" - Exception: {error.Exception.Message}");
+                        }
+                    }
+                }
+
+                ViewData["PasoActual"] = 3;
+                ViewData["IdCareer"] = new SelectList(
+                    _context.PreenrollmentCareers, "IdCareer", "name_career", vm?.DatosGenerales?.IdCareer
+                );
+                ViewData["ModoConfirmacion"] = true;
+
+                return View(vm);
+            }
+
+            var generation = await _context.PreenrollmentGenerations
+                .OrderByDescending(g => g.Year)
+                .FirstOrDefaultAsync();
+
+            if (generation == null)
+            {
+                Console.WriteLine("=== NO HAY GENERACION ===");
+
+                ModelState.AddModelError("", "No hay generaciones registradas en el sistema.");
+                ViewData["PasoActual"] = 3;
+                ViewData["IdCareer"] = new SelectList(
+                    _context.PreenrollmentCareers, "IdCareer", "name_career", vm?.DatosGenerales?.IdCareer
+                );
+                ViewData["ModoConfirmacion"] = true;
+
+                return View(vm);
+            }
+
+            using var transaction = await _context.Database.BeginTransactionAsync();
+
+            try
+            {
+                Console.WriteLine("=== VA A GUARDAR PERSON ===");
+
+                var person = new users_person
+                {
+                    FirstName = vm.Persona.FirstName,
+                    LastNamePaternal = vm.Persona.LastNamePaternal,
+                    LastNameMaternal = vm.Persona.LastNameMaternal,
+                    BirthDate = vm.Persona.BirthDate,
+                    Gender = vm.Persona.Gender,
+                    Curp = vm.Persona.Curp,
+                    Email = vm.Persona.Email,
+                    Phone = vm.Persona.Phone,
+                    IsActive = true,
+                    CreatedDate = DateTime.Now
+                };
+
+                _context.Persons.Add(person);
+                await _context.SaveChangesAsync();
+
+                Console.WriteLine("=== PERSON GUARDADA ===");
+
+                var general = new preenrollment_general
+                {
+                    IdCareer = vm.DatosGenerales.IdCareer,
+                    IdGeneration = generation.IdGeneration,
+                    PersonId = person.PersonId,
+                    BloodType = vm.DatosGenerales.BloodType,
+                    MaritalStatus = vm.DatosGenerales.MaritalStatus,
+                    Nationality = vm.DatosGenerales.Nationality,
+                    Occupation = vm.DatosGenerales.Occupation,
+                    Work = vm.DatosGenerales.Work,
+                    WorkAddress = vm.DatosGenerales.WorkAddress,
+                    WorkPhone = vm.DatosGenerales.WorkPhone,
+                    CreateStat = DateTime.Now,
+                    Folio = GenerarFolio(generation.IdGeneration),
+                    Matricula = GenerarMatriculaUnica()
+                };
+
+                _context.PreenrollmentGenerals.Add(general);
+                await _context.SaveChangesAsync();
+
+                Console.WriteLine("=== GENERAL GUARDADA CON ID: " + general.IdData + " ===");
+
+                var address = new preenrollment_addresses
+                {
+                    id_data = general.IdData,
+                    street = vm.Domicilio.street,
+                    exterior_number = vm.Domicilio.exterior_number,
+                    interior_number = vm.Domicilio.interior_number,
+                    postal_code = vm.Domicilio.postal_code,
+                    neighborhood = vm.Domicilio.neighborhood,
+                    state = vm.Domicilio.state,
+                    city = vm.Domicilio.city,
+                };
+                _context.PreenrollmentAddresses.Add(address);
+
+                var school = new preenrollment_schools
+                {
+                    id_data = general.IdData,
+                    school = vm.DatosEscolares.school,
+                    degree = vm.DatosEscolares.degree,
+                    state = vm.DatosEscolares.state,
+                    city = vm.DatosEscolares.city,
+                    average = vm.DatosEscolares.average,
+                    start_date = vm.DatosEscolares.start_date,
+                    end_date = vm.DatosEscolares.end_date,
+                    study_system = vm.DatosEscolares.study_system,
+                    high_school_type = vm.DatosEscolares.high_school_type
+                };
+                _context.PreenrollmentSchools.Add(school);
+
+                var tutor = new preenrollment_tutors
+                {
+                    id_data = general.IdData,
+                    relationship = vm.Tutor.relationship,
+                    paternal_last_name = vm.Tutor.paternal_last_name,
+                    maternal_last_name = vm.Tutor.maternal_last_name,
+                    name = vm.Tutor.name,
+                    home_phone = vm.Tutor.home_phone,
+                    work_phone = vm.Tutor.work_phone
+                };
+                _context.PreenrollmentTutors.Add(tutor);
+
+                var info = new preenrollment_infos
+                {
+                    id_data = general.IdData,
+                    beca = string.IsNullOrWhiteSpace(vm.Otros?.beca) ? "No" : vm.Otros.beca,
+                    comu_indi = vm.Otros?.comu_indi ?? false,
+                    lengu_indi = vm.Otros?.lengu_indi ?? false,
+                    incapa = vm.Otros?.incapa ?? false,
+                    disease = vm.Otros?.disease ?? false,
+                    comment = vm.Otros?.comment
+                };
+                _context.PreenrollmentInfos.Add(info);
+
+                var docs = new preenrollment_docs
+                {
+                    IdData = general.IdData,
+                    Fotos = false,
+                    PagoExamen = false,
+                    ActaNacimiento = false,
+                    Curp = false,
+                    Certificados = false,
+                    ComprobanteDomicilio = false,
+                    CartaBuenaConducta = false
+                };
+                _context.PreenrollmentDocs.Add(docs);
+
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+
+                Console.WriteLine("=== TODO GUARDADO, REDIRIGIENDO A FINALIZAR ===");
+
+                return RedirectToAction(nameof(Finalizar), new { id = general.IdData });
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+
+                Console.WriteLine("=== ERROR EN CATCH ===");
+                Console.WriteLine(ex.ToString());
+
+                ViewData["PasoActual"] = 3;
+                ViewData["IdCareer"] = new SelectList(
+                    _context.PreenrollmentCareers, "IdCareer", "name_career", vm?.DatosGenerales?.IdCareer
+                );
+                ViewData["ModoConfirmacion"] = true;
+
+                throw;
+            }
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> Finalizar(int id)
+        {
+            ViewData["PasoActual"] = 4;
+
+            var general = await _context.PreenrollmentGenerals
+                .Include(g => g.Career)
+                .Include(g => g.Person)
+                .Include(g => g.Generation)
+                .FirstOrDefaultAsync(g => g.IdData == id);
+
+            if (general == null)
+                return NotFound();
+
+            var domicilio = await _context.PreenrollmentAddresses
+                .FirstOrDefaultAsync(x => x.id_data == id);
+
+            var escuela = await _context.PreenrollmentSchools
+                .FirstOrDefaultAsync(x => x.id_data == id);
+
+            var vm = new FinalizarViewModel
+            {
+                Folio = general.Folio,
+                FechaEnvio = general.CreateStat ?? DateTime.Now,
+                NombreAspirante = general.Person == null
+                    ? ""
+                    : $"{general.Person.FirstName} {general.Person.LastNamePaternal} {general.Person.LastNameMaternal}",
+                Especialidad = general.Career?.name_career ?? "",
+
+                Genero = general.Person?.Gender ?? "",
+                FechaNacimiento = general.Person?.BirthDate,
+                Curp = general.Person?.Curp ?? "",
+                TipoSangre = general.BloodType ?? "",
+
+                SecundariaProcedencia = escuela?.school ?? "",
+                Promedio = escuela?.average,
+                FechaFinSecundaria = escuela?.end_date,
+
+                Calle = domicilio?.street ?? "",
+                NumeroExterior = domicilio?.exterior_number ?? "",
+                NumeroInterior = domicilio?.interior_number ?? "",
+                Colonia = domicilio?.neighborhood ?? "",
+                CodigoPostal = domicilio?.postal_code ?? "",
+                Municipio = domicilio?.city ?? "",
+                Estado = domicilio?.state ?? "",
+
+                Generacion = general.Generation != null ? general.Generation.Year.ToString() : ""
+            };
+
+            return View(vm);
+        }
 
         // GET: Enrollment/PreEnrollment
 

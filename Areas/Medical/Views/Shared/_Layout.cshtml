@@ -1,0 +1,68 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title class="text-white">@ViewData["Title"] - Sistema Médico</title>
+
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.css" />
+    <link rel="stylesheet" href="~/css/medical.css"/>
+</head>
+
+<body style="margin:0;">
+
+    <div class="d-flex">
+
+        <!-- BARRA LATERAL IZQUIERDA -->
+        <div style="width:250px; height:100vh; background:#620900;" class="text-white p-3">
+
+            <h4 class="text-center text-white">Sistema Médico</h4>
+            <hr class="bg-light" />
+
+            <ul class="nav flex-column">
+                <!-- INICIO -->
+                <li class="nav-item mb-2">
+                    <a class="nav-link text-white" asp-controller="Home" asp-action="Index">
+                        Inicio
+                    </a>
+                </li>
+
+                <!-- VER ALUMNOS -->
+                <li class="nav-item mb-2">
+                    <a class="nav-link text-white" asp-controller="Students" asp-action="Index">
+                        Alumnos
+                    </a>
+                </li>
+
+                <!-- VER BITACORAS CLINICAS-->
+                <li class="nav-item mb-2">
+                    <a class="nav-link text-white" asp-controller="Logbook" asp-action="Index">
+                        Bitácoras Clínicas
+                    </a>
+                </li>
+
+                <!-- VER BITACORAS PSICOLOGIA -->
+                <li class="nav-item mb-2">
+                    <a class="nav-link text-white" asp-controller="Psychology" asp-action="Index">
+                        Psicología
+                    </a>
+                </li>
+
+
+            </ul>
+
+        </div>
+
+        <!-- CONTENIDO DERECHO -->
+        <div class="flex-grow-1 p-4">
+            @RenderBody()
+        </div>
+
+    </div>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+
+</body>
+</html>

@@ -14,8 +14,18 @@ builder.Services.AddScoped<IStorageService, AzureStorageService>();
 builder.Services.AddTransient<IEmailSender, OutlookEmailSender>();
 builder.Services.AddScoped<ProcedureRouteAuthorizeAttribute>();
 builder.Services.AddScoped<EmailService>();
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddSession(options =>
+{
+    options.IdleTimeout = TimeSpan.FromHours(8);
+    options.Cookie.HttpOnly = true;
+    options.Cookie.IsEssential = true;
+});
 builder.Services.AddRazorPages();
-builder.Services.AddControllersWithViews();
+builder.Services.AddControllersWithViews(options =>
+{
+    options.Filters.Add<SchoolManager.Areas.Medical.Filters.MedicalPermissionFilter>();
+});
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(
         builder.Configuration.GetConnectionString("DefaultConnection")));
@@ -49,6 +59,7 @@ if (!app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseRouting();
+app.UseSession();
 app.UseAuthentication();
 app.UseAuthorization();
 
@@ -68,9 +79,19 @@ app.MapAreaControllerRoute(
     areaName: "Procedures",
     pattern: "Procedures/{controller=Dashboard}/{action=Index}/{id?}");
 
+app.MapAreaControllerRoute(   
+    name: "medical",
+    areaName: "Medical",
+    pattern: "Medical/{controller=Dashboard}/{action=Index}/{id?}");
+
+app.MapControllerRoute(
+    name: "areas",
+    pattern: "{area:exists}/{controller=Home}/{action=Index}/{id?}");
+
 app.MapControllerRoute(
     name: "default",
     pattern: "{area=MainScreen}/{controller=MainScreen}/{action=Index}/{id?}");
+
 
 //app.MapControllerRoute(
 //    name: "areas",
@@ -81,5 +102,5 @@ app.MapControllerRoute(
 //    pattern: "{controller=Home}/{action=Index}/{id?}");
 
 app.MapRazorPages();
-
+app.UseStaticFiles();
 app.Run();

@@ -1,0 +1,104 @@
+@model List<SchoolManager.Areas.SocialService.ViewModels.AsignarHorasViewModel>
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 11px;
+            margin: 0;
+            padding: 20px;
+        }
+        h2 {
+            text-align: center;
+            color: #8C1B1B;
+            margin-bottom: 5px;
+        }
+        .subtitle {
+            text-align: center;
+            color: #666;
+            font-size: 10px;
+            margin-bottom: 15px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th {
+            background-color: #8C1B1B;
+            color: white;
+            padding: 8px 6px;
+            text-align: center;
+            font-size: 10px;
+        }
+        td {
+            padding: 6px;
+            border-bottom: 1px solid #ddd;
+            text-align: center;
+            font-size: 10px;
+        }
+        td:first-child {
+            text-align: left;
+            font-weight: bold;
+        }
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        .badge {
+            display: inline-block;
+            padding: 2px 6px;
+            border-radius: 4px;
+            color: white;
+            font-size: 9px;
+            font-weight: bold;
+            margin: 0 1px;
+        }
+        .bg-success { background-color: #198754; }
+        .bg-danger { background-color: #dc3545; }
+    </style>
+</head>
+<body>
+    <h2>Avance del Alumno</h2>
+    <p class="subtitle">Generado el @DateTime.Now.ToString("dd/MM/yyyy HH:mm")</p>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Alumno</th>
+                <th>Semestre</th>
+                <th>Grupo</th>
+                <th>Total Bitácoras</th>
+                <th>Bitácoras Pendientes</th>
+                <th>Horas Prácticas</th>
+                <th>Horas Servicio Social</th>
+                <th>Validación</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var alumno in Model)
+            {
+                int totalHoras = alumno.TotalHorasPracticas + alumno.TotalHorasServicioSocial;
+                double porcentaje = (totalHoras / 720.0) * 100;
+
+                <tr>
+                    <td>@alumno.StudentName</td>
+                    <td>@(alumno.SemesterName ?? "N/A")</td>
+                    <td>@(alumno.GroupName ?? "N/A")</td>
+                    <td>@alumno.TotalBitacoras</td>
+                    <td>@alumno.BitacorasPendientesCount</td>
+                    <td>@alumno.TotalHorasPracticas h</td>
+                    <td>@alumno.TotalHorasServicioSocial h</td>
+                    <td>
+                        <span class="badge @(porcentaje >= 25 ? "bg-success" : "bg-danger")">25%</span>
+                        <span class="badge @(porcentaje >= 50 ? "bg-success" : "bg-danger")">50%</span>
+                        <span class="badge @(porcentaje >= 75 ? "bg-success" : "bg-danger")">75%</span>
+                        <span class="badge @(porcentaje >= 100 ? "bg-success" : "bg-danger")">100%</span>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</body>
+</html>

@@ -19,7 +19,7 @@ namespace SchoolManager.Areas.UserMng.Controllers
         {
             _context = context;
         }
-        
+
         [HttpGet]
         public IActionResult Login(string? returnUrl = null)
         {
@@ -82,6 +82,25 @@ namespace SchoolManager.Areas.UserMng.Controllers
                 claims.Add(new Claim(ClaimTypes.Role, role.Name));
             }
 
+            var staffMedico = await _context.MedicalStaff
+                .FirstOrDefaultAsync(s => s.PersonId == usuario.PersonId);
+
+            if (staffMedico != null)
+            {
+                claims.Add(new Claim("StaffId", staffMedico.Id.ToString()));
+                claims.Add(new Claim("StaffRoleId", staffMedico.RoleId.ToString()));
+            }
+
+            var persona = await _context.Persons
+                .FirstOrDefaultAsync(p => p.PersonId == usuario.PersonId);
+
+            if (persona != null)
+            {
+                var primerNombre = persona.FirstName.Split(' ')[0];
+                claims.Add(new Claim("NombreCompleto",
+                    primerNombre + " " + persona.LastNamePaternal));
+            }
+
             var identity  = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
             var principal = new ClaimsPrincipal(identity);
             var authProps = new AuthenticationProperties
@@ -130,22 +149,25 @@ namespace SchoolManager.Areas.UserMng.Controllers
         
         private IActionResult RedirectByRole(ClaimsPrincipal principal)
         {
+
             if (principal.IsInRole("Administrator"))
             {
                 return RedirectToAction("Index", "MainScreen", new { area = "MainScreen" });
             }
 
             if (principal.IsInRole("Teacher"))
-            {
                 return RedirectToAction("Index", "Teachers", new { area = "UserMng" });
-            }
+
+            if (principal.IsInRole("Nurse"))
+                return RedirectToAction("Index", "Home"); // RAMOS actualiza cuando tengas tu vista
+
+            if (principal.IsInRole("Psychologist"))
+                return RedirectToAction("Index", "Home"); // RAMOS actualiza cuando tengas tu vista
 
             if (principal.IsInRole("Student"))
-            {
                 return RedirectToAction("SistemaEscolar", "MainScreen", new { area = "MainScreen" });
-            }
 
-            return RedirectToAction("Login", "Account", new { area = "UserMng" });
+            return RedirectToAction("Index", "MainScreen", new { area = "MainScreen" });
         }
     }
 }

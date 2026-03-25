@@ -18,8 +18,6 @@ namespace SchoolManager.Areas.Grades.Controllers
         }
 
         // GET: Enrollment/ByGroup/5
-        // GET: Enrollment/ByGroup/5
-        // GET: Enrollment/ByGroup/5
         public async Task<IActionResult> ByGroup(int? groupId)
         {
             if (groupId == null) return NotFound();
@@ -37,17 +35,29 @@ namespace SchoolManager.Areas.Grades.Controllers
             ViewBag.GroupName = group.Name;
             ViewBag.GradeLevelName = group.GradeLevel.Name;
 
-            var students = group.Enrollments.Select(e => new EnrollmentViewModel
-            {
-                EnrollmentId = e.EnrollmentId,
-                StudentId = e.StudentId,
-                StudentName = $"{e.Student.Person.FirstName} {e.Student.Person.LastNamePaternal} {e.Student.Person.LastNameMaternal}",
-                Matricula = e.Student.Person.Curp ?? "S/N",
-                //Email = e.Student.Email ?? "S/N",
-                GroupId = e.GroupId,
-                GroupName = group.Name,
-                GradeLevelName = group.GradeLevel.Name
-            }).ToList();
+            var studentIds = group.Enrollments.Select(e => e.StudentId).ToList();
+            var matriculas = await _context.Set<preenrollment_general>()
+                .Where(p => p.UserId != null && studentIds.Contains(p.UserId.Value))
+                .GroupBy(p => p.UserId)
+                .Select(g => new
+                {
+                    UserId = g.Key,
+                    Matricula = g.OrderByDescending(p => p.CreateStat).Select(p => p.Matricula).FirstOrDefault()
+                })
+                .ToDictionaryAsync(x => x.UserId!.Value, x => x.Matricula ?? "S/N");
+
+            var students = group.Enrollments
+                .Where(e => e.IsActive)
+                .Select(e => new EnrollmentViewModel
+                {
+                    EnrollmentId = e.EnrollmentId,
+                    StudentId = e.StudentId,
+                    StudentName = $"{e.Student.Person.FirstName} {e.Student.Person.LastNamePaternal} {e.Student.Person.LastNameMaternal}",
+                    Matricula = matriculas.GetValueOrDefault(e.StudentId, "S/N"),
+                    GroupId = e.GroupId,
+                    GroupName = group.Name,
+                    GradeLevelName = group.GradeLevel.Name
+                }).ToList();
 
             return View(students);
         }
@@ -57,6 +67,7 @@ namespace SchoolManager.Areas.Grades.Controllers
         {
             var grupos = await _context.grades_GradeGroups
                 .Include(g => g.GradeLevel)
+                .Where(g => g.GradeLevel.IsOpen)
                 .OrderBy(g => g.GradeLevel.Name)
                 .ThenBy(g => g.Name)
                 .Select(g => new GrupoResumenViewModel
@@ -108,25 +119,64 @@ namespace SchoolManager.Areas.Grades.Controllers
 
             if (group == null) return NotFound();
 
-            // Obtener estudiantes ya inscritos en este grupo
-            var enrolledStudentIds = group.Enrollments.Select(e => e.StudentId).ToList();
+            // IDs de alumnos activos en ESTE grupo
+            var enrolledStudentIds = group.Enrollments
+                .Where(e => e.IsActive)
+                .Select(e => e.StudentId)
+                .ToList();
 
-            // Obtener todos los usuarios con rol de estudiante (de momento sin rol)
-            var students = await _context.UserRoles
+            // Todos los enrollments activos en OTROS grupos (para saber dónde está cada alumno)
+            var otherActiveEnrollments = await _context.grades_Enrollments
+                .Include(e => e.Group)
+                    .ThenInclude(g => g.GradeLevel)
+                .Where(e => e.IsActive && e.GroupId != groupId)
+                .ToListAsync();
+
+            // Datos de semestres y grupos para los filtros de la vista
+            var gradeLevels = await _context.grades_GradeLevels
+                .OrderBy(gl => gl.Name)
+                .Select(gl => new { gl.GradeLevelId, gl.Name })
+                .ToListAsync();
+
+            var allGroups = await _context.grades_GradeGroups
+                .Include(g => g.GradeLevel)
+                .OrderBy(g => g.GradeLevel.Name)
+                .ThenBy(g => g.Name)
+                .Select(g => new { g.GroupId, g.Name, g.GradeLevelId, GradeLevelName = g.GradeLevel.Name })
+                .ToListAsync();
+
+            // Obtener usuarios con rol Student
+            var studentRoleUsers = await _context.UserRoles
                 .Include(ur => ur.User)
                     .ThenInclude(u => u.Person)
-                //.Where(ur => ur.RoleId == 3 && ur.IsActive) // Rol de estudiante (sin validacion ahorita)
-                .Select(ur => new StudentSelectionViewModel
+                .Where(ur => ur.Role.Name == "Student" && ur.IsActive)
+                .Select(ur => new
                 {
-                    StudentId = ur.User.UserId,
-                    FullName = ur.User.Person.FirstName + " " +
-                               ur.User.Person.LastNamePaternal + " " +
-                               ur.User.Person.LastNameMaternal,
-                    Matricula = ur.User.Person.Curp, // O donde tengas matrícula
-                    Email = ur.User.Email,
-                    IsSelected = enrolledStudentIds.Contains(ur.User.UserId)
+                    ur.User.UserId,
+                    ur.User.Email,
+                    ur.User.Person.FirstName,
+                    ur.User.Person.LastNamePaternal,
+                    ur.User.Person.LastNameMaternal,
+                    ur.User.Person.Curp
                 })
                 .ToListAsync();
+
+            var students = studentRoleUsers.Select(u =>
+            {
+                var otherEnrollment = otherActiveEnrollments
+                    .FirstOrDefault(e => e.StudentId == u.UserId);
+
+                return new StudentSelectionViewModel
+                {
+                    StudentId = u.UserId,
+                    FullName = $"{u.FirstName} {u.LastNamePaternal} {u.LastNameMaternal}",
+                    Matricula = u.Curp,
+                    Email = u.Email,
+                    IsSelected = enrolledStudentIds.Contains(u.UserId),
+                    CurrentGroupName = otherEnrollment?.Group.Name,
+                    CurrentGradeLevelName = otherEnrollment?.Group.GradeLevel.Name
+                };
+            }).ToList();
 
             var viewModel = new EnrollmentCreateViewModel
             {
@@ -136,6 +186,9 @@ namespace SchoolManager.Areas.Grades.Controllers
                 AvailableStudents = students
             };
 
+            ViewBag.GradeLevels = gradeLevels;
+            ViewBag.AllGroups = allGroups;
+
             return View(viewModel);
         }
 
@@ -144,30 +197,64 @@ namespace SchoolManager.Areas.Grades.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> SaveAssignments(int groupId, List<int> selectedStudentIds)
         {
+            selectedStudentIds ??= new List<int>();
+
             var group = await _context.grades_GradeGroups
-                .Include(g => g.Enrollments)
                 .FirstOrDefaultAsync(g => g.GroupId == groupId);
 
             if (group == null) return NotFound();
 
-            // Eliminar inscripciones que ya no están seleccionadas
-            var toRemove = group.Enrollments
-                .Where(e => !selectedStudentIds.Contains(e.StudentId))
+            // Enrollments activos en este grupo
+            var currentEnrollments = await _context.grades_Enrollments
+                .Where(e => e.GroupId == groupId && e.IsActive)
+                .ToListAsync();
+
+            // Desactivar los que ya no están seleccionados (en lugar de borrar)
+            foreach (var enrollment in currentEnrollments)
+            {
+                if (!selectedStudentIds.Contains(enrollment.StudentId))
+                {
+                    enrollment.IsActive = false;
+                }
+            }
+
+            // Para los nuevos seleccionados
+            var currentActiveIds = currentEnrollments
+                .Where(e => e.IsActive)
+                .Select(e => e.StudentId)
                 .ToList();
 
-            _context.grades_Enrollments.RemoveRange(toRemove);
+            foreach (var studentId in selectedStudentIds.Where(id => !currentActiveIds.Contains(id)))
+            {
+                // Buscar si existe un enrollment inactivo previo para reactivar
+                var existing = await _context.grades_Enrollments
+                    .FirstOrDefaultAsync(e => e.StudentId == studentId && e.GroupId == groupId && !e.IsActive);
 
-            // Agregar nuevas inscripciones
-            var currentStudentIds = group.Enrollments.Select(e => e.StudentId);
-            var toAdd = selectedStudentIds
-                .Where(id => !currentStudentIds.Contains(id))
-                .Select(id => new grades_enrollment
+                if (existing != null)
                 {
-                    StudentId = id,
-                    GroupId = groupId
-                });
+                    existing.IsActive = true;
+                    existing.EnrolledAt = DateTime.Now;
+                }
+                else
+                {
+                    // Desactivar cualquier enrollment activo en OTRO grupo
+                    var otherEnrollments = await _context.grades_Enrollments
+                        .Where(e => e.StudentId == studentId && e.GroupId != groupId && e.IsActive)
+                        .ToListAsync();
 
-            await _context.grades_Enrollments.AddRangeAsync(toAdd);
+                    foreach (var other in otherEnrollments)
+                        other.IsActive = false;
+
+                    _context.grades_Enrollments.Add(new grades_enrollment
+                    {
+                        StudentId = studentId,
+                        GroupId = groupId,
+                        IsActive = true,
+                        EnrolledAt = DateTime.Now
+                    });
+                }
+            }
+
             await _context.SaveChangesAsync();
 
             TempData["Success"] = "Estudiantes asignados exitosamente";
@@ -187,7 +274,8 @@ namespace SchoolManager.Areas.Grades.Controllers
 
             var groupId = enrollment.GroupId;
 
-            _context.grades_Enrollments.Remove(enrollment);
+            // Desactivar en lugar de borrar
+            enrollment.IsActive = false;
             await _context.SaveChangesAsync();
 
             TempData["Success"] = "Estudiante removido del grupo";

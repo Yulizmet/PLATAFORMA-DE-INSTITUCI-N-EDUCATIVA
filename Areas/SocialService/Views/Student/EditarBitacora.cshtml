@@ -39,11 +39,12 @@
                   asp-controller="Student"
                   asp-action="EditarBitacora"
                   asp-route-id="@ViewBag.LogId"
-                  method="post">
+                  method="post"
+                  enctype="multipart/form-data">
 
                 <div class="mb-4 form-group-inline">
                     <label asp-for="Week" class="form-label">Semana</label>
-                    <input asp-for="Week" class="form-control input-small" />
+                    <input asp-for="Week" type="number" min="1" class="form-control input-small" />
                     <span asp-validation-for="Week" class="text-danger"></span>
                 </div>
 
