@@ -173,6 +173,12 @@ body {
 }
 
 /* ====== TABLES ====== */
+
+/* Aplica la fuente Inter a todas las tablas del módulo Servicio Social */
+.table, .table * {
+    font-family: 'Inter', Arial, Helvetica, sans-serif !important;
+}
+
 .table {
     margin-bottom: 0;
 }
