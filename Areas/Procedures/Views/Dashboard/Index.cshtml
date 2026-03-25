@@ -54,33 +54,42 @@
     @* --- CARDS DE MÉTRICAS --- *@
     <div class="row g-3 mb-5">
         <div class="col-xl col-md-4">
-            <div class="card shadow-sm border-0 h-100 accent-total p-3">
-                <h6 class="text-muted small fw-bold text-uppercase">Total Solicitudes</h6>
-                <h2 class="fw-bold mb-0">@Model.TotalRequests</h2>
+            <div class="card card-metric shadow-sm h-100 accent-total p-3">
+                <i class="bi bi-stack position-absolute end-0 bottom-0 m-2 opacity-25 display-4" style="color: #8C1B1B;"></i>
+                <h6 class="text-muted small fw-bold text-uppercase position-relative" style="z-index: 2;">Total Solicitudes</h6>
+                <h2 class="fw-bold mb-0 position-relative" style="z-index: 2;">@Model.TotalRequests</h2>
             </div>
         </div>
+
         <div class="col-xl col-md-4">
-            <div class="card shadow-sm border-0 h-100 accent-action p-3">
-                <h6 class="text-muted small fw-bold text-uppercase">Acción Requerida</h6>
-                <h2 class="fw-bold mb-0">@Model.ActionRequired</h2>
+            <div class="card card-metric shadow-sm h-100 accent-action p-3">
+                <i class="bi bi-exclamation-triangle-fill position-absolute end-0 bottom-0 m-2 opacity-25 display-4" style="color: #ffde59;"></i>
+                <h6 class="text-muted small fw-bold text-uppercase position-relative" style="z-index: 2;">Acción Requerida</h6>
+                <h2 class="fw-bold mb-0 position-relative" style="z-index: 2;">@Model.ActionRequired</h2>
             </div>
         </div>
+
         <div class="col-xl col-md-4">
-            <div class="card shadow-sm border-0 h-100 accent-course p-3">
-                <h6 class="text-muted small fw-bold text-uppercase">En Curso</h6>
-                <h2 class="fw-bold mb-0">@Model.InProgress</h2>
+            <div class="card card-metric shadow-sm h-100 accent-course p-3">
+                <i class="bi bi-clock-history position-absolute end-0 bottom-0 m-2 opacity-25 display-4" style="color: #38b6ff;"></i>
+                <h6 class="text-muted small fw-bold text-uppercase position-relative" style="z-index: 2;">En Curso</h6>
+                <h2 class="fw-bold mb-0 position-relative" style="z-index: 2;">@Model.InProgress</h2>
             </div>
         </div>
+
         <div class="col-xl col-md-6">
-            <div class="card shadow-sm border-0 h-100 accent-done p-3">
-                <h6 class="text-muted small fw-bold text-uppercase">Finalizadas</h6>
-                <h2 class="fw-bold mb-0">@Model.Done</h2>
+            <div class="card card-metric shadow-sm h-100 accent-done p-3">
+                <i class="bi bi-check-circle-fill position-absolute end-0 bottom-0 m-2 opacity-25 display-4" style="color: #7ed957;"></i>
+                <h6 class="text-muted small fw-bold text-uppercase position-relative" style="z-index: 2;">Finalizadas</h6>
+                <h2 class="fw-bold mb-0 position-relative" style="z-index: 2;">@Model.Done</h2>
             </div>
         </div>
+
         <div class="col-xl col-md-6">
-            <div class="card shadow-sm border-0 h-100 accent-cancel p-3">
-                <h6 class="text-muted small fw-bold text-uppercase">Canceladas</h6>
-                <h2 class="fw-bold mb-0">@Model.Cancelled</h2>
+            <div class="card card-metric shadow-sm h-100 accent-cancel p-3">
+                <i class="bi bi-x-circle-fill position-absolute end-0 bottom-0 m-2 opacity-25 display-4" style="color: #ff3131;"></i>
+                <h6 class="text-muted small fw-bold text-uppercase position-relative" style="z-index: 2;">Canceladas</h6>
+                <h2 class="fw-bold mb-0 position-relative" style="z-index: 2;">@Model.Cancelled</h2>
             </div>
         </div>
     </div>
@@ -163,7 +172,7 @@
 
     // --- GENERACIÓN DE GRÁFICAS ---
 
-    // 1. Tendencia Mensual (Línea) - Mantenemos Burgundy para seriedad
+    // 1. Tendencia Mensual (Línea)
     new Chart(document.getElementById('monthChart'), {
         type: 'line',
         data: {
@@ -171,12 +180,14 @@
             datasets: [{
                 label: 'Solicitudes',
                 data: @Html.Raw(Json.Serialize(Model.MonthlyRequests)),
-                borderColor: '#620900',
-                backgroundColor: 'rgba(98, 9, 0, 0.1)',
+                borderColor: '#7ed957',
+                backgroundColor: 'rgba(126, 217, 87, 0.1)',
                 fill: true,
                 tension: 0.4,
-                pointRadius: 4,
-                pointBackgroundColor: '#620900'
+                pointRadius: 3,
+                pointBackgroundColor: '#7ed957',
+                pointBorderColor: '#fff',
+                pointBorderWidth: 2
             }]
         },
         options: {

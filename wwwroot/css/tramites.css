@@ -196,24 +196,46 @@ body {
     width: 100%;
 }
 
+.card-metric {
+    background-color: #ffffff; /* Fondo base blanco */
+    border-radius: 16px;
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.03) !important;
+}
+
+    .card-metric:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.08) !important;
+    }
+
 .accent-total {
-    border-left: 5px solid #8C1B1B !important;
+    border: 1px solid rgba(140, 27, 27, 0.4) !important;
+    /*background-color: rgba(140, 27, 27, 0.08) !important;*/
 }
 
 .accent-action {
-    border-left: 6px solid #B1A596 !important;
+    border: 1px solid rgba(255, 222, 89, 0.4) !important;
+    /*background-color: rgba(255, 222, 89, 0.1) !important;*/
 }
 
 .accent-course {
-    border-left: 6px solid #620900 !important;
+    border: 1px solid rgba(56, 182, 255, 0.4) !important;
+   /* background-color: rgba(56, 182, 255, 0.1) !important;*/
 }
 
 .accent-done {
-    border-left: 6px solid #28a745 !important;
+    border: 1px solid rgba(126, 217, 87, 0.4) !important;
+    /*background-color: rgba(126, 217, 87, 0.1) !important;*/
 }
 
 .accent-cancel {
-    border-left: 6px solid #6c757d !important;
+    border: 1px solid rgba(255, 49, 49, 0.4) !important;
+    /*background-color: rgba(255, 49, 49, 0.1) !important;*/
 }
 
 .metric-big {
