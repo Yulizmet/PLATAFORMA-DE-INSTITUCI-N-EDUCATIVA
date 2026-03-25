@@ -17,7 +17,7 @@
 
 body {
     background-color: #f4f4f4;
-    font-family: 'Segoe UI',sans-serif;
+    font-family: 'Merriweather', serif;
     margin: 0;
 }
 
@@ -429,4 +429,11 @@ body {
 
 .modal-body {
     min-height: 300px;
+}
+
+/*BOTONES HEADER MODULOS*/
+
+.btn-header:hover {
+    background: #f1f1f1;
+    color: #8C1B1B;
 }
