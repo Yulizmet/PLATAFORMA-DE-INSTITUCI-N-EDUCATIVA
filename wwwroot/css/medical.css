@@ -21,6 +21,11 @@ body {
     margin: 0;
 }
 
+/* Inputs, tablas y datos */
+input, textarea, select, table, .table, .info-block, .info-box {
+    font-family: 'Inter', sans-serif !important;
+}
+
 /* 
    HEADER DASHBOARD (INDEX)
  */
