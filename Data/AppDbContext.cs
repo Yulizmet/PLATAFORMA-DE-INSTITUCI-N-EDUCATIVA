@@ -95,6 +95,7 @@ namespace SchoolManager.Data
             base.OnModelCreating(modelBuilder);
 
             #region 1. Procedures Configuration
+
             modelBuilder.Entity<procedure_status>().ToTable("procedure_status");
             modelBuilder.Entity<procedure_areas>().ToTable("procedure_areas");
             modelBuilder.Entity<procedure_documents>().ToTable("procedure_documents");
@@ -121,7 +122,7 @@ namespace SchoolManager.Data
             });
 
             modelBuilder.Entity<procedure_types>(entity => {
-                entity.HasOne(d => d.ProcedureArea).WithMany(p => p.ProcedureTypes).HasForeignKey(d => d.IdArea);
+                entity.HasOne(d => d.ProcedureArea).WithMany(p => p.ProcedureTypes).HasForeignKey(d => d.IdArea).OnDelete(DeleteBehavior.Restrict);
             });
 
             modelBuilder.Entity<procedure_job_position>(entity =>
@@ -141,26 +142,22 @@ namespace SchoolManager.Data
             modelBuilder.Entity<procedure_permission>(entity =>
             {
                 entity.HasKey(e => e.Id);
-                entity.HasOne(d => d.Area).WithMany().HasForeignKey(d => d.IdArea).OnDelete(DeleteBehavior.Cascade).HasConstraintName("FK_Permission_Area");
-                entity.HasOne(d => d.JobPosition).WithMany().HasForeignKey(d => d.IdJobPosition).OnDelete(DeleteBehavior.Cascade).HasConstraintName("FK_Permission_Job");
-                entity.HasOne(d => d.ModuleCatalog).WithMany().HasForeignKey(d => d.IdModuleCatalog).OnDelete(DeleteBehavior.Cascade).HasConstraintName("FK_Permission_Catalog");
+                entity.HasOne(d => d.Area).WithMany().HasForeignKey(d => d.IdArea).OnDelete(DeleteBehavior.Restrict).HasConstraintName("FK_Permission_Area");
+                entity.HasOne(d => d.JobPosition).WithMany().HasForeignKey(d => d.IdJobPosition).OnDelete(DeleteBehavior.Restrict).HasConstraintName("FK_Permission_Job");
+                entity.HasOne(d => d.ModuleCatalog).WithMany().HasForeignKey(d => d.IdModuleCatalog).OnDelete(DeleteBehavior.Restrict).HasConstraintName("FK_Permission_Catalog");
             });
 
             modelBuilder.Entity<procedure_flow>(entity => {
-                entity.ToTable("procedure_flow");
                 entity.Property(e => e.StepOrder).IsRequired();
                 entity.HasOne(d => d.ProcedureType).WithMany(p => p.ProcedureFlow).HasForeignKey(d => d.IdTypeProcedure).OnDelete(DeleteBehavior.Cascade);
                 entity.HasOne(d => d.ProcedureStatus).WithMany(p => p.ProcedureFlow).HasForeignKey(d => d.IdStatus).OnDelete(DeleteBehavior.Restrict);
             });
 
             modelBuilder.Entity<procedure_request>(entity => {
-                entity.ToTable("procedure_request");
                 entity.HasOne(d => d.ProcedureType).WithMany(p => p.ProcedureRequests).HasForeignKey(d => d.IdTypeProcedure).OnDelete(DeleteBehavior.Restrict);
                 entity.HasOne(d => d.ProcedureFlow).WithMany().HasForeignKey(d => d.IdProcedureFlow).OnDelete(DeleteBehavior.Restrict);
                 entity.HasOne(d => d.User).WithMany(u => u.ProcedureRequests).HasForeignKey(d => d.IdUser).OnDelete(DeleteBehavior.Restrict);
-                entity.HasOne(d => d.User).WithMany(u => u.ProcedureRequests).HasForeignKey(d => d.IdUser).OnDelete(DeleteBehavior.Restrict);
-                entity.HasOne(d => d.ProcedureType).WithMany(p => p.ProcedureRequests).HasForeignKey(d => d.IdTypeProcedure).OnDelete(DeleteBehavior.Restrict);
-            entity.Property(p => p.DateCreated).HasDefaultValueSql("GETDATE()").ValueGeneratedOnAdd();
+                entity.Property(p => p.DateCreated).HasDefaultValueSql("GETDATE()").ValueGeneratedOnAdd();
                 entity.Property(p => p.DateUpdated).HasDefaultValueSql("GETDATE()");
             });
 
@@ -171,17 +168,15 @@ namespace SchoolManager.Data
             });
 
             modelBuilder.Entity<procedure_monitoring>(entity => {
-                entity.ToTable("procedure_monitoring");
                 entity.HasOne(pm => pm.ProcedureRequest).WithMany(pr => pr.ProcedureMonitorings).HasForeignKey(pm => pm.IdProcedure).OnDelete(DeleteBehavior.Cascade);
                 entity.HasOne(pm => pm.ProcedureFlow).WithMany().HasForeignKey(pm => pm.IdProcedureFlow).OnDelete(DeleteBehavior.Restrict);
                 entity.HasOne(pm => pm.User).WithMany().HasForeignKey(pm => pm.IdUser).OnDelete(DeleteBehavior.Restrict);
             });
 
-
             #endregion
 
             #region 2. Users Configuration
-            modelBuilder.Entity<users_person>().ToTable("users_person").HasKey(p => p.PersonId);
+        modelBuilder.Entity<users_person>().ToTable("users_person").HasKey(p => p.PersonId);
             modelBuilder.Entity<users_user>().ToTable("users_user").HasKey(u => u.UserId);
             modelBuilder.Entity<users_role>().ToTable("users_role").HasKey(r => r.RoleId);
             modelBuilder.Entity<users_permission>().ToTable("users_permission").HasKey(p => p.PermissionId);

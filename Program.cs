@@ -1,9 +1,10 @@
 using DinkToPdf;
 using DinkToPdf.Contracts;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
+using SchoolManager.Areas.Procedures.Filters;
 using SchoolManager.Data;
 using SchoolManager.Services;
-using Microsoft.AspNetCore.Authentication.Cookies;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -11,6 +12,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddScoped<ISearchService, SearchService > ();
 builder.Services.AddScoped<IStorageService, AzureStorageService>();
 builder.Services.AddTransient<IEmailSender, OutlookEmailSender>();
+builder.Services.AddScoped<ProcedureRouteAuthorizeAttribute>();
 builder.Services.AddScoped<EmailService>();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddSession(options =>

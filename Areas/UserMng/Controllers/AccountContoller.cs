@@ -151,16 +151,9 @@ namespace SchoolManager.Areas.UserMng.Controllers
         {
 
             if (principal.IsInRole("Administrator"))
-                return RedirectToAction("Index", "Manager", new { area = "UserMng" });
-            
-            if (principal.IsInRole("Master"))
-                return RedirectToAction("Index", "Manager", new { area = "UserMng" });
-
-            if (principal.IsInRole("Head Nurse"))
-                return RedirectToAction("Users", "Manager", new { area = "UserMng", role = "Nurse" });
-
-            if (principal.IsInRole("Head of Psychology"))
-                return RedirectToAction("Users", "Manager", new { area = "UserMng", role = "Psychologist" });
+            {
+                return RedirectToAction("Index", "MainScreen", new { area = "MainScreen" });
+            }
 
             if (principal.IsInRole("Teacher"))
                 return RedirectToAction("Index", "Teachers", new { area = "UserMng" });

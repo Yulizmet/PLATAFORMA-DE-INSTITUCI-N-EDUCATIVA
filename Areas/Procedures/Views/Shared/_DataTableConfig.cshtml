@@ -2,13 +2,13 @@
     let reqIndex = 0;
     let flowIndex = 0;
 
-        $(document).ready(function () {
+    $(document).ready(function () {
         const table = $('#mainTable').DataTable({
             "language": { "url": "//cdn.datatables.net/plug-ins/1.10.24/i18n/Spanish.json" },
             "stateSave": true,
             "stateDuration": 60 * 60 * 24,
             "pageLength": 5,
-            "lengthMenu": [5, 10, 15, 20, 50, 100],
+            "lengthMenu": [5, 8, 10, 15, 20, 50, 100],
             "responsive": true,
             "autoWidth": false,
             "dom": '<"dt-header-container d-flex align-items-center justify-content-between gap-3"l <"central-tools flex-fill d-flex justify-content-center"> <"search-box">>rt<"dt-footer-container d-flex align-items-center justify-content-between px-0" <"footer-left"> p>',

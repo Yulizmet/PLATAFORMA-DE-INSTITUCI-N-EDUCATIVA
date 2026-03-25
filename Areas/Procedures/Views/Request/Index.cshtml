@@ -1,7 +1,7 @@
 ﻿@{
     ViewData["Title"] = "Centro de Trámites";
     Layout = "/Areas/MainScreen/Views/Shared/_Layout.cshtml";
-    //var isAuthenticated = false;
+    bool isAuthenticated = User!.Identity!.IsAuthenticated;
 }
 
 <link rel="stylesheet" href="~/css/tramites.css" asp-append-version="true" />
@@ -31,8 +31,8 @@
             </div>
         </div>
 
-        <div class="col-xl-4 col-lg-6 auth-only" id="card-new-request">
-            <div class="card-horizontal">
+        <div class="col-xl-4 col-lg-6 @(isAuthenticated ? "" : "opacity-75")" id="card-new-request">
+            <div class="card-horizontal shadow-sm">
                 <div class="img-side">
                     <img src="https://images.unsplash.com/photo-1586281380349-632531db7ed4?q=80&w=600&auto=format&fit=crop" alt="Nueva Solicitud">
                     <div class="img-overlay"></div>
@@ -41,14 +41,24 @@
                     <i class="bi bi-file-earmark-text icon-float"></i>
                     <h3 class="fw-bold h5 merriweather-font">Nueva Solicitud</h3>
                     <p class="text-muted mb-3" style="font-size: 0.85rem;">Trámites generales. Prepara tu documentación académica en formato PDF.</p>
-                    <a asp-action="Requests" class="btn btn-burgundy">
-                        <i class="bi bi-plus-circle me-2"></i>Comenzar
-                    </a>
+
+                    @if (isAuthenticated)
+                    {
+                        <a asp-action="Requests" class="btn btn-burgundy">
+                            <i class="bi bi-plus-circle me-2"></i>Comenzar
+                        </a>
+                    }
+                    else
+                    {
+                        <a asp-area="UserMng" asp-controller="Account" asp-action="Login" class="btn btn-disabled fw-bold">
+                            <i class="bi bi-lock-fill me-2"></i>Iniciar Sesión
+                        </a>
+                    }
                 </div>
             </div>
         </div>
 
-        <div class="col-xl-4 col-lg-6 auth-only" id="card-tracking">
+        <div class="col-xl-4 col-lg-6 @(isAuthenticated ? "" : "opacity-75")" id="card-tracking">
             <div class="card-horizontal shadow-sm">
                 <div class="img-side">
                     <img src="https://images.unsplash.com/photo-1507925921958-8a62f3d1a50d?auto=format&fit=crop&q=80&w=600" alt="Seguimiento">
@@ -58,35 +68,27 @@
                     <i class="bi bi-search icon-float"></i>
                     <h3 class="fw-bold h5 merriweather-font">Mis Trámites</h3>
                     <p class="text-muted mb-3" style="font-size: 0.85rem;">Monitorea estatus en tiempo real y descarga tus resultados oficiales.</p>
-                    <a asp-action="Tracking" class="btn btn-burgundy">
-                        <i class="bi bi-eye me-2"></i>Ver Estatus
-                    </a>
+
+                    @if (isAuthenticated)
+                    {
+                        <a asp-action="Tracking" class="btn btn-burgundy">
+                            <i class="bi bi-eye me-2"></i>Ver Estatus
+                        </a>
+                    }
+                    else
+                    {
+                        <a asp-area="UserMng" asp-controller="Account" asp-action="Login" class="btn btn-disabled fw-bold">
+                            <i class="bi bi-lock-fill me-2"></i>Iniciar Sesión
+                        </a>
+                    }
                 </div>
             </div>
         </div>
-    </div>
 
-    <div class="mt-5 text-center">
-        <small class="text-muted">
-            <i class="bi bi-info-circle me-1"></i> Para trámites administrativos avanzados, es necesario iniciar sesión con tu cuenta institucional.
-        </small>
+        <div class="mt-5 text-center">
+            <small class="text-muted">
+                <i class="bi bi-info-circle me-1"></i> Para trámites administrativos avanzados, es necesario iniciar sesión con tu cuenta institucional.
+            </small>
+        </div>
     </div>
 </div>
-
-@section Scripts {
-    <script>
-        $(document).ready(function() {
-            checkUserSession();
-        });
-
-        function checkUserSession() {
-            let userId = 1;
-
-            if (userId != null && userId > 0) {
-                $('.auth-only').fadeIn(600);
-            } else {
-                $('.auth-only').hide();
-            }
-        }
-    </script>
-}
