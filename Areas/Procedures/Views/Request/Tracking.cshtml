@@ -134,8 +134,10 @@
                 $('body').append(modalHtml);
                 const myModal = new bootstrap.Modal(document.getElementById('dynamicModal'));
                 myModal.show();
+
+                showToast('info', 'Detalles cargados');
             }).fail(function() {
-                Swal.fire('Error', 'No se pudo cargar el detalle.', 'error');
+                showToast('error', 'No se pudo cargar el detalle');
             });
         }
 
@@ -173,15 +175,20 @@
 
             if (result.isConfirmed) {
                 const token = $('input[name="__RequestVerificationToken"]').val();
-                const response = await fetch(`/Procedures/Request/CancelRequest/${id}`, {
-                    method: 'POST',
-                    headers: { "RequestVerificationToken": token }
-                });
-                const data = await response.json();
-                if (data.success) {
-                    Swal.fire('Cancelado', 'Trámite cancelado.', 'success').then(() => location.reload());
-                } else {
-                    Swal.fire('Error', 'No se pudo procesar.', 'error');
+                try {
+                    const response = await fetch(`/Procedures/Request/CancelRequest/${id}`, {
+                        method: 'POST',
+                        headers: { "RequestVerificationToken": token }
+                    });
+                    const data = await response.json();
+                    if (data.success) {
+                        showToast('success', 'Trámite cancelado con éxito');
+                        setTimeout(() => location.reload(), 1500);
+                    } else {
+                        showToast('error', data.message || 'No se pudo procesar la cancelación');
+                    }
+                } catch (error) {
+                    showToast('error', 'Error de comunicación con el servidor');
                 }
             }
         }
@@ -190,7 +197,7 @@
         if (formRequest) {
             formRequest.addEventListener('submit', function (e) {
                 const files = this.querySelectorAll('input[type="file"]');
-                const maxSize = 100 * 1024 * 1024; // 100MB
+                const maxSize = 100 * 1024 * 1024;
                 const allowedExtensions = /(\.pdf|\.jpg|\.jpeg|\.png|\.txt|\.xml)$/i;
 
                 for (let fileInput of files) {
@@ -198,14 +205,17 @@
                         const file = fileInput.files[0];
                         if (!allowedExtensions.exec(file.name)) {
                             e.preventDefault();
-                            Swal.fire('Error', `Extensión no válida: ${file.name}`, 'error');
+                            showToast('error', `Extensión no válida: ${file.name}`);
+                            fileInput.classList.add('is-invalid');
                             return;
                         }
                         if (file.size > maxSize) {
                             e.preventDefault();
-                            Swal.fire('Error', `El archivo ${file.name} supera los 100MB`, 'error');
+                            showToast('warning', `El archivo ${file.name} supera los 100MB`);
+                            fileInput.classList.add('is-invalid');
                             return;
                         }
+                        fileInput.classList.remove('is-invalid');
                     }
                 }
             });

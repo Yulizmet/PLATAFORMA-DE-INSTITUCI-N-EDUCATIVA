@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SchoolManager.Areas.Procedures.Controllers;
@@ -33,7 +34,7 @@ public class ProceedingController : _ProceduresBaseController
                 Username = p.User.Username,
 
                 CareerName = p.User.Preenrollments.Any()
-                      ? p.User.Preenrollments.FirstOrDefault().Career.name_career
+                      ? p.User!.Preenrollments!.FirstOrDefault()!.Career!.name_career
                       : "Sin asignar",
 
                 Matricula = p.User.Preenrollments.Any()
@@ -60,7 +61,7 @@ public class ProceedingController : _ProceduresBaseController
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> QuickCreateStudent(string FirstName, string LastNamePaternal, string LastNameMaternal, string Curp, string Email, string Username, string Matricula)
+    public async Task<IActionResult> QuickCreateStudent(string FirstName, string LastNamePaternal, string LastNameMaternal, string Curp, string Email, string Username, string Matricula, string Password)
     {
         await LoadPermissions("Expedientes");
         using var transaction = await _context.Database.BeginTransactionAsync();
@@ -86,7 +87,7 @@ public class ProceedingController : _ProceduresBaseController
                 PersonId = person.PersonId,
                 Username = Username.ToLower(),
                 Email = Email,
-                PasswordHash = "$2a$11$kciDhmEYrvC2mpaAOzRXOuq.DNahusX.YH733TzD64atU1tGorJ..",
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword(Password),
                 IsLocked = false,
                 LockReason = "",
                 CreatedDate = DateTime.Now,
@@ -345,6 +346,11 @@ public class ProceedingController : _ProceduresBaseController
             string genderInput = model.Gender?.Trim() ?? "";
             person.Gender = (genderInput == "Masculino" || genderInput == "M") ? "M" : "F";
 
+            if (preEnrollment?.User != null && !string.IsNullOrWhiteSpace(model.NewPassword))
+            {
+                preEnrollment.User.PasswordHash = BCrypt.Net.BCrypt.HashPassword(model.NewPassword);
+            }
+
             preEnrollment!.BloodType = model.BloodType;
             preEnrollment.MaritalStatus = model.MaritalStatus;
 
@@ -562,9 +568,9 @@ public class ProceedingController : _ProceduresBaseController
 
                     foreach (var pre in person.User.Preenrollments)
                     {
-                        _context.PreenrollmentAddresses.RemoveRange(pre.Addresses);
-                        _context.PreenrollmentInfos.RemoveRange(pre.Infos);
-                        _context.PreenrollmentSchools.RemoveRange(pre.Schools);
+                        _context.PreenrollmentAddresses.RemoveRange(pre!.Addresses!);
+                        _context.PreenrollmentInfos.RemoveRange(pre!.Infos!);
+                        _context.PreenrollmentSchools.RemoveRange(pre!.Schools!);
                     }
                     _context.PreenrollmentGenerals.RemoveRange(person.User.Preenrollments);
 

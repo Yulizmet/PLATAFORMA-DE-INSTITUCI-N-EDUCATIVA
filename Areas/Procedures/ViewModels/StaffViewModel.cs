@@ -17,9 +17,9 @@
         public string FullName { get; set; } = null!;
         public string Username { get; set; } = null!;
         public string Email { get; set; } = null!;
+        public string? NewPassword { get; set; }
 
         public int IdJobPosition { get; set; }
-
         public string JobPositionName { get; set; } = null!;
 
         public string AreaName { get; set; } = null!;

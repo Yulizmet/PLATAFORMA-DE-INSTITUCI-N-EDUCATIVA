@@ -220,7 +220,7 @@
                                         }
                                         else if (student != null)
                                         {
-                                            <span>Aspirante: <i>Sin expediente</i></span>
+                                            <span class="text-dark">Aspirante: <i class="text-muted fw-normal fst-italic">Sin expediente</i></span>
                                         }
                                         else
                                         {
@@ -230,23 +230,29 @@
 
                                     <small class="text-muted">
                                         @{
-                                            string label = "Usuario Registrado";
+                                            bool isRealStudent = (student?.User?.Person != null || item.User?.Person != null);
+                                            string matriculaVal = student?.Matricula ?? "";
 
-                                            if (!string.IsNullOrWhiteSpace(student?.Matricula) && student.Matricula != "0")
+                                            if (isRealStudent && !string.IsNullOrWhiteSpace(matriculaVal) && matriculaVal != "0" && matriculaVal != "S/M")
                                             {
-                                                label = $"Matrícula: {student.Matricula}";
+                                                <i class="fst-italic opacity-75">Matrícula:</i> 
+                                                @matriculaVal
                                             }
-                                            else if (item.User?.Preenrollments?.Any(p => !string.IsNullOrEmpty(p.Matricula) && p.Matricula != "0") == true)
+                                            else if (!isRealStudent && !string.IsNullOrWhiteSpace(student?.Folio))
                                             {
-                                                var m = item.User.Preenrollments.First(p => !string.IsNullOrEmpty(p.Matricula) && p.Matricula != "0").Matricula;
-                                                label = $"Matrícula: {m}";
+                                                <i class="fst-italic opacity-75">Folio:</i> 
+                                                @student.Folio
                                             }
-                                            else if (!string.IsNullOrWhiteSpace(student?.Folio) && student.Folio != "0")
+                                            else if (!string.IsNullOrWhiteSpace(student?.Matricula) && student.Matricula != "0")
                                             {
-                                                label = $"Folio: {student.Folio}";
+                                                <i class="fst-italic opacity-75">Folio:</i> 
+                                                @student.Matricula
+                                            }
+                                            else
+                                            {
+                                                <i class="fst-italic opacity-75">Sin Matrícula / Folio</i>
                                             }
                                         }
-                                        @label
                                     </small>
                                 </td>
 

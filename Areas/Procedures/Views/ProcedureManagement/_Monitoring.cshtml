@@ -172,8 +172,18 @@
                 {
                     foreach (var doc in Model.Documents)
                     {
-                        <a href="@doc.FilePath" target="_blank" class="doc-card-custom list-group-item list-group-item-action rounded-4 mb-2 p-3 d-flex align-items-center">
-                            <i class="bi bi-file-earmark-pdf-fill text-danger fs-3 me-3"></i>
+                        // Lógica para detectar extensión e ícono
+                        string ext = System.IO.Path.GetExtension(doc.FileName).ToLower();
+                        string iconClass = ext switch
+                        {
+                            ".pdf" => "bi-file-earmark-pdf-fill text-danger",
+                            ".jpg" or ".jpeg" or ".png" => "bi-file-earmark-image-fill text-primary",
+                            ".docx" or ".doc" => "bi-file-earmark-word-fill text-info",
+                            _ => "bi-file-earmark-fill text-secondary"
+                        };
+
+                        <a href="@doc.FilePath" target="_blank" class="doc-card-custom list-group-item list-group-item-action rounded-4 mb-2 p-3 d-flex align-items-center border shadow-sm">
+                            <i class="bi @iconClass fs-3 me-3"></i>
                             <div class="overflow-hidden">
                                 <div class="text-dark fw-bold small text-truncate">@doc.FileName</div>
                                 <small class="text-muted">Abrir documento</small>
@@ -183,7 +193,9 @@
                 }
                 else
                 {
-                    <p class="text-muted small">No hay documentos adjuntos.</p>
+                    <div class="p-3 bg-light rounded-4 border border-dashed text-center">
+                        <p class="text-muted small mb-0">No hay documentos adjuntos.</p>
+                    </div>
                 }
             </div>
 
@@ -224,6 +236,7 @@
                                         <span class="badge bg-light text-dark border p-1 px-2" style="cursor:pointer; font-size: 0.75rem;" onclick="setComment('Trámite revisado y aprobado.')">✅ Aprobado</span>
                                         <span class="badge bg-light text-dark border p-1 px-2" style="cursor:pointer; font-size: 0.75rem;" onclick="setComment('Documentación completa, en espera de validación.')">📄 Documentos OK</span>
                                         <span class="badge bg-light text-dark border p-1 px-2" style="cursor:pointer; font-size: 0.75rem;" onclick="setComment('Se ha avanzado al siguiente paso del proceso.')">🚀 Continuar</span>
+                                        <span class="badge bg-light text-dark border p-1 px-2" style="cursor:pointer; font-size: 0.75rem;" onclick="setComment('El pago ha sido aprobado.')">💵 Verificado</span>
                                     </div>
 
                                     <textarea id="adminComment" name="adminComment" class="form-control shadow-sm" rows="3"

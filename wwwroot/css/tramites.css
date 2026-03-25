@@ -10,6 +10,14 @@
     --burgundy: #620900;
     --burgundy-light: #8C1B1B;
     --transition: all 0.3s ease;
+    --green-success: #7ed957;
+    --blue-info: #38b6ff;
+    --yellow-warning: #ffde59;
+    --red-danger: #ff3131;
+    --green-opacity-success: rgba(126, 217, 87, 0.1);
+    --blue-opacity-info: rgba(56, 182, 255, 0.1);
+    --yellow-opacity-warning: rgba(255, 222, 89, 0.1);
+    --red-opacity-danger: rgba(255, 49, 49, 0.1);
 }
 
 .merriweather-font {
@@ -39,10 +47,6 @@
 .form-control:focus, .form-select:focus, .form-check-input:focus {
     box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem rgba(98, 9, 0, 0.25);
     border-color: var(--burgundy-light) !important;
-}
-
-.form-check-input:focus {
-    background-color: var(--burgundy-light) !important;
 }
 
 .form-check-input:checked {
@@ -75,10 +79,61 @@ body {
     }
 }
 
+.bg-info {
+    background-color: var(--blue-info) !important;
+}
+
+.bg-success {
+    background-color: var(--green-success) !important;
+}
+
+.bg-warning {
+    background-color: var(--yellow-warning) !important;
+}
+
+.bg-danger {
+    background-color: var(--red-danger) !important;
+}
+
+.text-info {
+    color: var(--blue-info) !important;
+}
+
+.text-primary {
+    color: var(--blue-info) !important;
+}
+
+.text-success {
+    color: var(--green-success) !important;
+}
+
+.text-warning {
+    color: var(--yellow-warning) !important;
+}
+
+.text-danger {
+    color: var(--red-danger) !important;
+}
+
+.bg-outline-info {
+    background-color: var(--blue-info) !important;
+}
+
+.bg-outline-success {
+    background-color: var(--green-success) !important;
+}
+
+.bg-outline-warning {
+    background-color: var(--yellow-warning) !important;
+}
+
+.bg-outline-danger {
+    background-color: var(--red-danger) !important;
+}
+
 /*============================================================================
     DASHBOARD
 ==============================================================================*/
-
 .card {
     border-radius: 15px;
     transition: 0.3s;
@@ -598,6 +653,19 @@ body {
     border-color: #620900 !important;
 }
 
+.form-check-input:focus {
+    border-color: rgba(98, 9, 0, 0.5);
+    outline: 0;
+}
+
+.form-switch .form-check-input:focus {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='3' fill='rgba%2898, 9, 0, 0.6%29'/%3e%3c/svg%3e");
+}
+
+.form-switch .form-check-input:checked:focus {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='3' fill='%23fff'/%3e%3c/svg%3e");
+}
+
 .form-switch .form-check-input:checked {
     background-color: #620900 !important;
     border-color: #620900 !important;
@@ -718,15 +786,15 @@ body {
 }
 
 .bg-active {
-    background-color: rgba(13, 110, 253, 0.1) !important; /* Azul Bootstrap al 10% */
+    background-color: var(--blue-opacity-info) !important;
 }
 
 .bg-inactive {
-    background-color: rgba(220, 53, 69, 0.1) !important; /* Rojo Bootstrap al 10% */
+    background-color: var(--red-opacity-danger) !important;
 }
 
 .bg-superadmin {
-    background-color: rgba(33, 37, 41, 0.05) !important;
+    background-color: var(--yellow-opacity-warning) !important;
 }
 
 /* TABLE TOOLS AND DATA TABLE */

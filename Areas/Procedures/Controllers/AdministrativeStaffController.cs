@@ -127,7 +127,7 @@ namespace SchoolManager.Areas.Procedures.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> QuickCreateStaff(string FirstName, string LastNamePaternal, string LastNameMaternal, string Curp, string Gender, string Email, string Username)
+        public async Task<IActionResult> QuickCreateStaff(string FirstName, string LastNamePaternal, string LastNameMaternal, string Curp, string Gender, string Email, string Username, string Password)
         {
             await LoadPermissions("Personal");
             using var transaction = await _context.Database.BeginTransactionAsync();
@@ -153,7 +153,7 @@ namespace SchoolManager.Areas.Procedures.Controllers
                     PersonId = newPerson.PersonId,
                     Username = Username.ToLower(),
                     Email = Email,
-                    PasswordHash = "$2a$11$kciDhmEYrvC2mpaAOzRXOuq.DNahusX.YH733TzD64atU1tGorJ..",
+                    PasswordHash = BCrypt.Net.BCrypt.HashPassword(Password),
                     IsLocked = false,
                     LockReason = "",
                     CreatedDate = DateTime.Now,
@@ -322,6 +322,11 @@ namespace SchoolManager.Areas.Procedures.Controllers
 
                 if (DateTime.TryParse(model.BirthDate, out DateTime fecha))
                     staff.User.Person.BirthDate = fecha;
+
+                if (!string.IsNullOrWhiteSpace(model.NewPassword))
+                {
+                    staff.User.PasswordHash = BCrypt.Net.BCrypt.HashPassword(model.NewPassword);
+                }
 
                 staff.User.Username = model.Username;
                 staff.User.Email = model.Email;

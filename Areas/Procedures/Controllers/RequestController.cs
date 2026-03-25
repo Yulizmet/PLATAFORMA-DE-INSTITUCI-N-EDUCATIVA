@@ -57,6 +57,14 @@ namespace SchoolManager.Areas.Procedures.Controllers
                 .ToListAsync();
 
             ViewBag.Procedures = new SelectList(procedures, "Id", "Name");
+
+            var studentData = await _context.PreenrollmentGenerals
+                .Where(p => p.UserId == CurrentUserId)
+                .Select(p => p.Matricula)
+                .FirstOrDefaultAsync();
+
+            ViewBag.UserMatricula = studentData ?? "";
+
             return View();
         }
 
@@ -99,9 +107,34 @@ namespace SchoolManager.Areas.Procedures.Controllers
             request.IdProcedureFlow = initialFlow.Id;
             request.IdUser = CurrentUserId;
 
+            string yearPrefix = DateTime.Now.ToString("yy");
+
+            var lastRequest = await _context.ProcedureRequest
+                .Where(r => r.Folio.StartsWith(yearPrefix))
+                .OrderByDescending(r => r.Folio)
+                .FirstOrDefaultAsync();
+
+            string newFolio;
+
+            if (lastRequest == null)
+            {
+                newFolio = yearPrefix + "000001";
+            }
+            else
+            {
+                if (int.TryParse(lastRequest.Folio.Substring(2), out int lastNumber))
+                {
+                    newFolio = yearPrefix + (lastNumber + 1).ToString("D6");
+                }
+                else
+                {
+                    newFolio = yearPrefix + "000001";
+                }
+            }
+
             if (string.IsNullOrEmpty(request.Folio))
             {
-                request.Folio = DateTime.Now.Ticks.ToString().Substring(10).ToUpper();
+                request.Folio = newFolio;
             }
 
             ModelState.Clear();
@@ -222,9 +255,15 @@ namespace SchoolManager.Areas.Procedures.Controllers
                 }).OrderByDescending(h => h.Date).ToList()
             };
 
+            int failureThreshold = 90;
+
             viewModel.FullProgressSteps = await _context.ProcedureFlow
                 .Include(f => f.ProcedureStatus)
                 .Where(f => f.IdTypeProcedure == request.IdTypeProcedure)
+                .Where(f =>
+                    f.StepOrder < failureThreshold ||
+                    f.Id == request.IdProcedureFlow
+                )
                 .OrderBy(f => f.StepOrder)
                 .ToListAsync();
 
@@ -234,12 +273,33 @@ namespace SchoolManager.Areas.Procedures.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> PaymentRegistration()
         {
-            ViewBag.TramitesPago = await _context.ProcedureTypes
-                .Where(p => p.Name.Contains("Preinscripción") || p.Name.Contains("Inscripción"))
-                .ToListAsync();
+            bool isAuthenticated = User.Identity?.IsAuthenticated ?? false;
+
+            if (isAuthenticated)
+            {
+                ViewBag.TramitesPago = await _context.ProcedureTypes
+                    .Where(p => p.Name.Contains("Inscripción") && !p.Name.Contains("Preinscripción"))
+                    .ToListAsync();
+
+                var studentData = await _context.PreenrollmentGenerals
+                    .Where(p => p.UserId == CurrentUserId)
+                    .Select(p => p.Matricula)
+                    .FirstOrDefaultAsync();
+
+                ViewBag.UserMatricula = studentData ?? "";
+            }
+            else
+            {
+                ViewBag.TramitesPago = await _context.ProcedureTypes
+                    .Where(p => p.Name.Contains("Preinscripción"))
+                    .ToListAsync();
+
+                ViewBag.UserMatricula = "";
+            }
 
             return View();
         }
+
         [AllowAnonymous]
         [HttpGet]
         public async Task<IActionResult> GetPaymentRequirements(int procedureTypeId)
@@ -284,15 +344,40 @@ namespace SchoolManager.Areas.Procedures.Controllers
                 return Json(new { success = false, errors = new[] { "Flujo de validación no encontrado para este trámite." } });
             }
 
+            string yearPrefix = DateTime.Now.ToString("yy");
+
+            var lastRequest = await _context.ProcedureRequest
+                .Where(r => r.Folio.StartsWith(yearPrefix))
+                .OrderByDescending(r => r.Folio)
+                .FirstOrDefaultAsync();
+
+            string newFolio;
+
+            if (lastRequest == null)
+            {
+                newFolio = yearPrefix + "000001";
+            }
+            else
+            {
+                if (int.TryParse(lastRequest.Folio.Substring(2), out int lastNumber))
+                {
+                    newFolio = yearPrefix + (lastNumber + 1).ToString("D6");
+                }
+                else
+                {
+                    newFolio = yearPrefix + "000001";
+                }
+            }
+
             var request = new procedure_request
             {
                 IdTypeProcedure = procedureTypeId,
                 IdProcedureFlow = flow.Id,
-                IdUser = student.UserId ?? 1,
+                IdUser = student.UserId,
                 DateCreated = DateTime.Now,
                 Subject = "Validación de pago institucional",
                 Message = $"Validación de pago institucional para folio/matrícula: {identifier}",
-                Folio = DateTime.Now.Ticks.ToString().Substring(10).ToUpper()
+                Folio = newFolio
             };
 
             ModelState.Clear();
@@ -310,11 +395,12 @@ namespace SchoolManager.Areas.Procedures.Controllers
                 {
                     if (file.Length > 0)
                     {
+                        string extension = Path.GetExtension(file.FileName);
                         string fileUrl = await _storageService.UploadFileAsync(file, "proceduresfiles", STORAGE_CONNECTION);
                         _context.ProcedureDocuments.Add(new procedure_documents
                         {
                             IdProcedure = request.Id,
-                            Name = $"Voucher_{identifier}",
+                            Name = $"Voucher_{identifier}{extension}",
                             FilePath = fileUrl,
                         });
                     }

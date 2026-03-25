@@ -4,12 +4,14 @@
 @{
     var currentOrder = Model.ProcedureFlow?.StepOrder ?? 0;
     var currentStatusName = Model.CurrentStatus.ToLower();
+
     bool isFailed = currentStatusName.Contains("cancelado") || currentStatusName.Contains("rechazado");
 
     var stepsToShow = Model.FullProgressSteps
-        .Where(s => !s.ProcedureStatus.IsTerminalState ||
-                    s.Id == Model.ProcedureFlow?.Id ||
-                    (s.ProcedureStatus.Name.Contains("Finalizado") && !currentStatusName.Contains("rechazado") && !currentStatusName.Contains("cancelado")))
+        .Where(s =>
+            (!s.ProcedureStatus.Name.Contains("Rechazado") && !s.ProcedureStatus.Name.Contains("Cancelado")) ||
+            s.Id == Model.ProcedureFlow?.Id
+        )
         .OrderBy(s => s.StepOrder)
         .ToList();
 }
@@ -84,9 +86,9 @@
         </h6>
         <div class="timeline-detail p-1" style="max-height: 250px; overflow-y: auto;">
 
-            <div class="p-3 bg-white rounded shadow-sm border-start border-4 border-primary mb-3">
+            <div class="p-3 bg-white rounded shadow-sm border-start border-4 border-dark mb-3">
                 <div class="d-flex justify-content-between align-items-center mb-1">
-                    <small class="fw-bold text-primary text-uppercase">Tú (Remitente)</small>
+                    <small class="fw-bold text-dark text-uppercase">Tú (Remitente)</small>
                     <small class="text-muted italic">Mensaje inicial</small>
                 </div>
                 <p class="mb-0 text-dark small">@(string.IsNullOrEmpty(Model.UserMessage) ? "Sin mensaje adicional." : Model.UserMessage)</p>
@@ -103,9 +105,13 @@
                             <small class="text-muted" style="font-size: 0.7rem;">@history.Date.ToString("g")</small>
                         </div>
                         <p class="mb-1 text-dark small">@history.AdminComment</p>
-                        <span class="badge rounded-pill" style="font-size: 0.6rem; background-color: @history.BackgroundColor; color: @history.TextColor">
-                            Estatus: @history.StatusName
-                        </span>
+                        <div class="d-flex align-items-center gap-1">
+                            <span class="fw-bold text-dark" style="font-size: 0.7rem;">Estatus:</span>
+                            <span class="badge rounded-pill"
+                                  style="font-size: 0.6rem; background-color: @(history.BackgroundColor); color: @(history.TextColor); border: 1px solid rgba(0,0,0,0.1);">
+                                @history.StatusName
+                            </span>
+                        </div>
                     </div>
                 }
             }
