@@ -37,7 +37,7 @@
 }
 
 <div class="mb-3 d-flex gap-2">
-    <a href="/SocialService/Teacher/Dashboard" class="btn btn-secondary">
+    <a href="/SocialService/Teacher/Dashboard" class="btn btn-secondary me-auto">
         <i class="bi bi-arrow-left"></i> Regresar al Dashboard
     </a>
     <a href="/SocialService/Teacher/ExportAvanceExcel?searchName=@Uri.EscapeDataString(searchName)" class="btn btn-success">
@@ -193,7 +193,7 @@
                                 {
                                     <tr>
                                         <td data-label="Alumno">
-                                            <strong>@alumno.StudentName</strong>
+                                            @alumno.StudentName
                                         </td>
                                         <td class="text-center" data-label="Semestre">
                                             @(alumno.SemesterName ?? "N/A")

@@ -24,15 +24,18 @@
     }
 }
 
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <div>
-        <h3 class="mb-0">
-            <i class="bi bi-people-fill me-2"></i>Alumnos de @ViewBag.TeacherName
-        </h3>
-    </div>
+<!-- Botón -->
+<div class="mb-2">
     <a asp-area="SocialService" asp-controller="Coordinator" asp-action="Maestros" class="btn btn-secondary">
-        <i class="bi bi-arrow-left me-1"></i> Volver a Maestros
+        <i class="bi bi-arrow-left"></i> Volver a Maestros
     </a>
+</div>
+
+<!-- Título -->
+<div class="mb-4 text-center">
+    <h3 class="mb-0">
+        Alumnos de @ViewBag.TeacherName
+    </h3>
 </div>
 
 <!-- Filtros de búsqueda -->
@@ -167,7 +170,7 @@
                 {
                     <tr>
                         <td>@(rowNum++)</td>
-                        <td><strong>@student.StudentName</strong></td>
+                        <td>@student.StudentName</td>
                         <td>@student.Email</td>
                         <td>@(student.SemesterName ?? "N/A")</td>
                         <td>@(student.GroupName ?? "N/A")</td>
