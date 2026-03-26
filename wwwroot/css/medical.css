@@ -138,22 +138,20 @@ z
 
 .cards-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 320px));
+    grid-template-columns: repeat(4, 300px);
     justify-content: center;
-    justify-items: center;
-    gap: 40px;
+    gap: 25px;
     margin-top: 40px;
     padding-bottom: 80px;
 }
 
     .cards-grid .card-link {
-        max-width: 320px;
         width: 100%;
     }
 
 @media (max-width:1200px) {
     .cards-grid {
-        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        grid-template-columns: repeat(2, 310px);
     }
 }
 
