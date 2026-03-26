@@ -21,10 +21,10 @@ public class ManagerController : Controller
         ["Teacher"]            = ("Maestros",             "bi-briefcase-fill",         "success"),
         ["Administrator"]      = ("Administradores",      "bi-shield-lock-fill",       "dark"),
         ["Nurse"]              = ("Enfermeras",           "bi-heart-pulse-fill",       "danger"),
-        ["Psychologist"]       = ("Psicólogos",           "bi-bandaid-fill",                  "info"),
+        ["Psychologist"]       = ("Psicólogos",           "bi-hospital-fill",                  "info"),
         ["Head Nurse"]         = ("Jefes de Enfermería",  "bi-hospital-fill",          "warning"),
         ["Head of Psychology"] = ("Jefes de Psicología",  "bi-clipboard2-pulse-fill",  "secondary"),
-        ["Coordinator"]        = ("Coordiadores",    "bi-star-fill",     "dark"),
+        ["Coordinator"]        = ("Coordinadores",        "bi-star-fill",     "dark"),
         ["Master"]             = ("Masters",              "bi-star-fill",              "dark"),
     };
 
