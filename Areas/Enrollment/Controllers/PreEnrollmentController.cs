@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Identity;
-using System.Security.Cryptography;
+﻿using System.Security.Cryptography;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -231,6 +230,7 @@ namespace SchoolManager.Areas.Enrollment.Controllers
             return RedirectToAction(nameof(SubirDocumentos), new { id = general.IdData });
         }
 
+
         // GET: Enrollment/PreEnrollment/FolioGenerado/5
         // Muestra al usuario su folio de pago recién generado.
         public async Task<IActionResult> FolioGenerado(int id)
@@ -301,6 +301,7 @@ namespace SchoolManager.Areas.Enrollment.Controllers
             return RedirectToAction(nameof(CrearUsuarioAlumno), new { id = pre.IdData });
         }
 
+        // GET: Enrollment/PreEnrollment/CrearUsuarioAlumno
         [HttpGet]
         public async Task<IActionResult> CrearUsuarioAlumno(int id)
         {
@@ -322,10 +323,7 @@ namespace SchoolManager.Areas.Enrollment.Controllers
                 return RedirectToAction(nameof(ValidateFolio));
 
             if (pre.Person == null)
-            {
-                ModelState.AddModelError("", "No existe una persona asociada a esta preinscripción.");
                 return RedirectToAction(nameof(ValidateFolio));
-            }
 
             var vm = new CreateStudentUserViewModel
             {
@@ -342,6 +340,7 @@ namespace SchoolManager.Areas.Enrollment.Controllers
             return View(vm);
         }
 
+        // POST: Enrollment/PreEnrollment/CrearUsuarioAlumno
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> CrearUsuarioAlumno(CreateStudentUserViewModel vm)
@@ -410,8 +409,7 @@ namespace SchoolManager.Areas.Enrollment.Controllers
                     CreatedDate = DateTime.Now
                 };
 
-                var passwordHasher = new PasswordHasher<users_user>();
-                user.PasswordHash = passwordHasher.HashPassword(user, vm.Password);
+                user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(vm.Password);
 
                 _context.Users.Add(user);
                 await _context.SaveChangesAsync();
@@ -419,10 +417,28 @@ namespace SchoolManager.Areas.Enrollment.Controllers
                 pre.UserId = user.UserId;
                 pre.PersonId = pre.Person.PersonId;
 
+                if (pre.ProcedureRequest != null)
+                {
+                    pre.ProcedureRequest.IdUser = user.UserId;
+                }
+
                 await _context.SaveChangesAsync();
                 await transaction.CommitAsync();
 
-                return RedirectToAction(nameof(Success));
+                ModelState.Clear();
+
+                vm.Username = user.Username;
+                vm.Matricula = pre.Matricula ?? "";
+                vm.NombreCompleto = $"{pre.Person.FirstName} {pre.Person.LastNamePaternal} {pre.Person.LastNameMaternal}";
+                vm.Carrera = pre.Career?.name_career ?? "";
+                vm.Email = user.Email;
+                vm.Password = "";
+                vm.ConfirmPassword = "";
+
+                ViewBag.UserCreated = true;
+                ViewBag.CreatedPassword = "La contraseña es la que capturaste antes de crear el usuario.";
+
+                return View(vm);
             }
             catch
             {
@@ -430,12 +446,6 @@ namespace SchoolManager.Areas.Enrollment.Controllers
                 ModelState.AddModelError("", "Ocurrió un error al crear el usuario.");
                 return View(vm);
             }
-        }
-
-        // GET: Enrollment/PreEnrollment/Success
-        public IActionResult Success()
-        {
-            return View();
         }
 
         // =====================================================================
