@@ -1,35 +1,55 @@
-﻿/* ==========================================================
-   SISTEMA DE DISEÑO INSTITUCIONAL (Genérico)
-   Módulo de Tutorías
+/* ==========================================================
+   SISTEMA DE DISEÑO INSTITUCIONAL - MÓDULO DE TUTORÍAS
+   Ajuste visual y responsive sin tocar backend
    ========================================================== */
 :root {
-    /* Paleta Principal Institucional */
-    --brand-primary: #8C1B1B; /* Rojo Principal */
-    --brand-primary-light: #D42D2D; /* Rojo Claro */
-    --brand-dark: #620900; /* Rojo Oscuro (Vino) */
-    --brand-secondary: #B1A596; /* Beige */
+    --brand-primary: #8C1B1B;
+    --brand-primary-light: #D42D2D;
+    --brand-dark: #620900;
+    --brand-secondary: #B1A596;
     --brand-white: #ffffff;
     --brand-black: #000000;
-    /* Colores Extra para Botones de Acción (Brandbook) */
-    --btn-crear: #7ed957; /* Verde */
-    --btn-ver: #38b6ff; /* Azul */
-    --btn-editar: #ffde59; /* Amarillo */
-    --btn-eliminar: #ff3131; /* Rojo brillante */
-    /* Tipografías Oficiales */
+
+    --btn-crear: #7ed957;
+    --btn-ver: #38b6ff;
+    --btn-editar: #ffde59;
+    --btn-eliminar: #ff3131;
+
     --font-titulos: 'Merriweather', serif;
     --font-cuerpo: 'Inter', sans-serif;
+
+    --surface-page: #f4f4f4;
+    --surface-card: #ffffff;
+    --border-soft: rgba(0,0,0,0.08);
+    --shadow-soft: 0 8px 24px rgba(0,0,0,0.06);
+    --shadow-hover: 0 14px 30px rgba(0,0,0,0.10);
+    --radius-lg: 18px;
+    --radius-md: 14px;
+    --radius-sm: 10px;
+
+    /* Alias para vistas viejas, así no se rompe nada */
+    --utt-red: var(--brand-primary);
+    --utt-dark-red: var(--brand-dark);
+    --utt-light: var(--brand-white);
+    --utt-black: var(--brand-black);
+    --utt-beige: var(--brand-secondary);
 }
 
-/* ==========================================================
-   REGLAS GLOBALES DE TIPOGRAFÍA Y ESTRUCTURA
-   ========================================================== */
+html {
+    height: 100%;
+}
+
 body {
-    background-color: #f4f4f4;
+    min-height: 100%;
+    background: var(--surface-page);
     color: var(--brand-black);
     font-family: var(--font-cuerpo) !important;
     display: flex;
     flex-direction: column;
-    min-height: 100vh;
+}
+
+main {
+    width: 100%;
 }
 
 footer {
@@ -37,69 +57,144 @@ footer {
     margin-top: auto !important;
 }
 
-/* Títulos institucionales con Merriweather */
 h1, h2, h3, h4, h5, h6, .navbar-brand div, .modal-title {
     font-family: var(--font-titulos) !important;
 }
 
-/* ¡LA REGLA MAESTRA PARA LA FUENTE INTER!
-   Obliga a TODOS los elementos rebeldes de Bootstrap y DataTables a usar Inter */
 p, span, a, label, input, select, textarea, button, .btn,
 table, .table, th, td, tr, .dataTables_wrapper *, .badge,
-.form-control, .form-select {
+.form-control, .form-select, .form-check-label, .input-group-text {
     font-family: var(--font-cuerpo) !important;
 }
 
-    /* Corrección de enlaces (Evita que Bootstrap los pinte de azul por defecto) */
-    a.text-decoration-none {
-        color: inherit !important;
-    }
+a.text-decoration-none {
+    color: inherit !important;
+}
+
+.form-control,
+.form-select,
+.input-group-text,
+textarea {
+    border-radius: var(--radius-sm);
+    min-height: 46px;
+    border-color: rgba(177,165,150,.65);
+}
+
+.form-control:focus,
+.form-select:focus,
+textarea:focus {
+    border-color: var(--brand-primary);
+    box-shadow: 0 0 0 .2rem rgba(140,27,27,.12);
+}
+
+.table-responsive {
+    border-radius: var(--radius-md);
+}
 
 /* ==========================================================
-   DISEÑO DEL PANEL DE CONTROL (DASHBOARD)
+   NAVBAR / NAVEGACIÓN
+   ========================================================== */
+.tutorship-navbar {
+    background: linear-gradient(90deg, var(--brand-primary), var(--brand-primary-light));
+    padding-top: 14px;
+    padding-bottom: 14px;
+}
+
+.navbar-brand-portal {
+    line-height: 1;
+}
+
+.navbar-brand-portal .portal-title {
+    font-weight: 900;
+    font-size: 1.8rem;
+    letter-spacing: 1px;
+    color: var(--brand-white);
+}
+
+.navbar-brand-portal .portal-subtitle {
+    font-size: .85rem;
+    font-weight: 400;
+    letter-spacing: 2px;
+    opacity: .92;
+    color: var(--brand-white);
+    font-family: var(--font-cuerpo);
+}
+
+.offcanvas-tutorship .offcanvas-header {
+    background-color: var(--brand-dark);
+    color: var(--brand-white);
+}
+
+.offcanvas-tutorship .offcanvas-body {
+    background-color: #f8f9fa;
+}
+
+.offcanvas-tutorship .nav-link {
+    color: #222 !important;
+    font-weight: 600;
+    border-radius: 12px;
+    padding: .85rem 1rem;
+    margin-bottom: .35rem;
+    transition: all .2s ease;
+}
+
+.offcanvas-tutorship .nav-link:hover,
+.offcanvas-tutorship .nav-link:focus {
+    background: rgba(140,27,27,.08);
+    color: var(--brand-dark) !important;
+}
+
+.offcanvas-tutorship .nav-link i {
+    color: var(--brand-primary) !important;
+}
+
+/* ==========================================================
+   DASHBOARD
    ========================================================== */
 .dashboard-header {
-    background-color: var(--brand-primary);
+    background: linear-gradient(135deg, var(--brand-primary), var(--brand-primary-light));
     color: var(--brand-white);
-    border-radius: 15px;
+    border-radius: var(--radius-lg);
     padding: 2rem;
     margin-bottom: -3rem;
     padding-bottom: 5rem;
-    box-shadow: 0 4px 15px rgba(140, 27, 27, 0.3);
+    box-shadow: 0 8px 24px rgba(140, 27, 27, 0.26);
 }
 
 .search-input {
     border: none;
-    border-radius: 20px;
-    padding: 10px 20px;
+    border-radius: 16px;
+    padding: 12px 18px;
+    min-height: 48px;
 }
 
 .dashboard-card {
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    transition: transform .28s ease, box-shadow .28s ease;
     border: none;
-    border-radius: 15px;
+    border-radius: var(--radius-lg);
     overflow: hidden;
     cursor: pointer;
     height: 100%;
     text-decoration: none;
     color: inherit;
-    background-color: var(--brand-white);
+    background: var(--surface-card);
+    box-shadow: var(--shadow-soft);
 }
 
-    .dashboard-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 10px 20px rgba(0,0,0,0.1);
-    }
+.dashboard-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-hover);
+}
 
-    .dashboard-card h5 {
-        color: var(--brand-primary) !important;
-    }
+.dashboard-card h5 {
+    color: var(--brand-primary) !important;
+}
 
 .card-icon-box {
-    width: 60px;
-    height: 60px;
-    background-color: #f8f9fa;
-    border-radius: 12px;
+    width: 64px;
+    height: 64px;
+    background-color: rgba(177,165,150,.18);
+    border-radius: 16px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -109,16 +204,16 @@ table, .table, th, td, tr, .dataTables_wrapper *, .badge,
 }
 
 .status-badge {
-    background-color: rgba(177, 165, 150, 0.2);
+    background-color: rgba(177, 165, 150, 0.22);
     color: var(--brand-dark);
-    font-weight: bold;
-    padding: 8px;
-    border-radius: 20px;
+    font-weight: 700;
+    padding: 10px 12px;
+    border-radius: 999px;
     display: block;
     width: 100%;
     text-align: center;
     margin-top: 15px;
-    transition: background-color 0.3s;
+    transition: all .25s ease;
 }
 
 .dashboard-card:hover .status-badge {
@@ -127,13 +222,21 @@ table, .table, th, td, tr, .dataTables_wrapper *, .badge,
 }
 
 /* ==========================================================
-   DISEÑO DE DIRECTORIO Y LISTAS
+   CONTENEDORES / BLOQUES GENERALES
    ========================================================== */
+.filter-container,
+.panel-surface,
+.card,
+.table-wrap,
+.content-card {
+    border-radius: var(--radius-md);
+}
+
 .filter-container {
     background-color: var(--brand-white);
-    border-radius: 15px;
+    border-radius: var(--radius-md);
     padding: 20px;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    box-shadow: var(--shadow-soft);
     margin-bottom: 30px;
     border-left: 5px solid var(--brand-primary);
 }
@@ -145,15 +248,15 @@ table, .table, th, td, tr, .dataTables_wrapper *, .badge,
     margin-bottom: 15px;
     display: flex;
     align-items: center;
-    transition: transform 0.2s, box-shadow 0.2s;
-    border: 1px solid rgba(0,0,0,0.05);
+    transition: transform .2s, box-shadow .2s;
+    border: 1px solid rgba(0,0,0,.05);
 }
 
-    .student-row:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 5px 15px rgba(0,0,0,0.08);
-        border-color: var(--brand-secondary);
-    }
+.student-row:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0,0,0,.08);
+    border-color: var(--brand-secondary);
+}
 
 .avatar-circle {
     width: 50px;
@@ -170,247 +273,298 @@ table, .table, th, td, tr, .dataTables_wrapper *, .badge,
 }
 
 .student-meta {
-    font-size: 0.85rem;
+    font-size: .85rem;
     color: #666;
 }
 
 /* ==========================================================
-   BOTONES INSTITUCIONALES 
+   BOTONES
    ========================================================== */
-.btn-primary-brand {
+.btn {
+    border-radius: 12px;
+}
+
+.btn-primary-brand,
+.btn-utt-primary {
     background-color: var(--brand-primary);
     border-color: var(--brand-primary);
     color: var(--brand-white);
-    font-weight: 600;
+    font-weight: 700;
 }
 
-    .btn-primary-brand:hover {
-        background-color: var(--brand-dark);
-        border-color: var(--brand-dark);
-        color: var(--brand-white);
-    }
+.btn-primary-brand:hover,
+.btn-primary-brand:focus,
+.btn-utt-primary:hover,
+.btn-utt-primary:focus {
+    background-color: var(--brand-dark);
+    border-color: var(--brand-dark);
+    color: var(--brand-white);
+}
 
 .btn-secondary-brand {
     background-color: var(--brand-secondary);
     border-color: var(--brand-secondary);
     color: var(--brand-white);
-    font-weight: 600;
+    font-weight: 700;
 }
 
-    .btn-secondary-brand:hover {
-        background-color: #9c8f80;
-        color: var(--brand-white);
-    }
-
-/* Botones de acción específicos (Para el directorio) */
-.btn-action-entrevista {
-    background-color: var(--brand-primary);
+.btn-secondary-brand:hover,
+.btn-secondary-brand:focus {
+    background-color: #9c8f80;
+    border-color: #9c8f80;
     color: var(--brand-white);
-    border: none;
-    padding: 8px 20px;
-    border-radius: 6px;
-    font-size: 0.9rem;
-    transition: background 0.3s;
-    font-weight: 600;
 }
 
-    .btn-action-entrevista:hover {
-        background-color: var(--brand-dark);
-        color: var(--brand-white);
-    }
-
+.btn-action-entrevista,
 .btn-action-seguimiento {
-    background-color: var(--brand-dark);
+    background-color: var(--brand-primary);
     color: var(--brand-white);
     border: none;
     padding: 8px 20px;
-    border-radius: 6px;
-    font-size: 0.9rem;
-    transition: background 0.3s;
-    font-weight: 600;
+    border-radius: 10px;
+    font-size: .9rem;
+    transition: background .3s ease, transform .2s ease;
+    font-weight: 700;
 }
 
-    .btn-action-seguimiento:hover {
-        background-color: var(--brand-black);
-        color: var(--brand-white);
-    }
-
-/* Elementos de Formularios y Tablas */
-.card-header-brand {
-    background-color: var(--brand-primary);
-    color: var(--brand-white);
-}
-
-.table-brand-head {
+.btn-action-entrevista:hover,
+.btn-action-seguimiento:hover {
     background-color: var(--brand-dark);
     color: var(--brand-white);
+    transform: translateY(-1px);
 }
 
-.form-check-input:checked {
+/* Colores extra */
+.btn-success-brand {
+    background: var(--btn-crear);
+    border-color: var(--btn-crear);
+    color: var(--brand-black);
+    font-weight: 700;
+}
+
+.btn-info-brand {
+    background: var(--btn-ver);
+    border-color: var(--btn-ver);
+    color: var(--brand-white);
+    font-weight: 700;
+}
+
+.btn-warning-brand {
+    background: var(--btn-editar);
+    border-color: var(--btn-editar);
+    color: var(--brand-black);
+    font-weight: 700;
+}
+
+.btn-danger-brand {
+    background: var(--btn-eliminar);
+    border-color: var(--btn-eliminar);
+    color: var(--brand-white);
+    font-weight: 700;
+}
+
+/* ==========================================================
+   TABLAS / DATATABLES
+   ========================================================== */
+.table-brand-head,
+.table-cards thead,
+.table > thead {
+    background-color: var(--brand-dark);
+    color: var(--brand-white);
+    vertical-align: middle;
+}
+
+.table > :not(caption) > * > * {
+    padding: 1rem .85rem;
+}
+
+.table tbody tr {
+    background: var(--brand-white);
+}
+
+.table-hover tbody tr:hover {
+    background-color: rgba(177,165,150,.12);
+}
+
+.table-cards {
+    border-collapse: separate;
+    border-spacing: 0 12px;
+}
+
+.table-cards tbody tr {
+    box-shadow: var(--shadow-soft);
+}
+
+.table-cards tbody td {
+    background: var(--brand-white);
+    vertical-align: middle;
+}
+
+.table-cards tbody td:first-child {
+    border-top-left-radius: 14px;
+    border-bottom-left-radius: 14px;
+}
+
+.table-cards tbody td:last-child {
+    border-top-right-radius: 14px;
+    border-bottom-right-radius: 14px;
+}
+
+.dataTables_wrapper .dataTables_filter input,
+.dataTables_wrapper .dataTables_length select {
+    border-radius: 10px;
+    border: 1px solid rgba(177,165,150,.75);
+    min-height: 40px;
+    background: #fff;
+}
+
+.dataTables_wrapper .page-link {
+    color: var(--brand-primary);
+}
+
+.dataTables_wrapper .page-item.active .page-link {
     background-color: var(--brand-primary);
     border-color: var(--brand-primary);
 }
 
-/* ==========================================================
-   ESTILOS PARA DATATABLES (Centralizados)
-   ========================================================== */
-.dataTables_wrapper {
-    font-size: 0.95rem;
+.badge {
+    border-radius: 999px;
 }
-
-.dataTables_length label,
-.dataTables_filter label {
-    font-weight: bold;
-    color: #444;
-}
-
-.dataTables_filter input,
-.dataTables_length select {
-    border: 1px solid #ddd;
-    border-radius: 0.375rem;
-    padding: 0.25rem 0.5rem;
-    box-shadow: 0 .125rem .25rem rgba(0,0,0,.05);
-}
-
-    .dataTables_filter input:focus,
-    .dataTables_length select:focus {
-        border-color: var(--brand-primary);
-        outline: none;
-        box-shadow: 0 0 0 0.2rem rgba(140, 27, 27, 0.25);
-    }
-
-.dataTables_info {
-    font-weight: 500;
-    color: #666;
-    padding-top: 1rem !important;
-}
-
-/* Paginación Institucional DataTables */
-.page-item.active .page-link {
-    background-color: var(--brand-dark) !important;
-    border-color: var(--brand-dark) !important;
-    color: var(--brand-white) !important;
-}
-
-.page-link {
-    color: var(--brand-dark);
-    font-weight: 500;
-}
-
-    .page-link:hover {
-        background-color: var(--brand-secondary);
-        color: var(--brand-white);
-        border-color: var(--brand-secondary);
-    }
 
 /* ==========================================================
-   DISEÑO DE TABLAS TIPO "TARJETAS FLOTANTES" (.table-cards)
+   ALERTAS Y TARJETAS DE CONTENIDO
    ========================================================== */
-.table-cards {
-    border-collapse: separate !important;
-    border-spacing: 0 1.2rem !important;
-    border: none !important;
-    width: 100%;
+.alert {
+    border: none;
+    border-radius: 14px;
 }
 
-    .table-cards thead th {
-        border: none !important;
-        color: #888;
-        font-size: 0.75rem;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 0.05rem;
-        padding-bottom: 0;
-        background: transparent !important;
-    }
-
-    .table-cards tbody tr {
-        background-color: var(--brand-white);
-        box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-        border-radius: 10px;
-        transition: transform 0.2s ease, box-shadow 0.2s ease;
-    }
-
-        .table-cards tbody tr:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 6px 15px rgba(0,0,0,0.1);
-        }
-
-    .table-cards tbody td {
-        border-top: 1px solid #f4f4f4;
-        border-bottom: 1px solid #f4f4f4;
-        vertical-align: middle;
-        padding: 1.2rem 1rem;
-    }
-
-        .table-cards tbody td:first-child {
-            border-left: 1px solid #f4f4f4;
-            border-top-left-radius: 10px;
-            border-bottom-left-radius: 10px;
-        }
-
-        .table-cards tbody td:last-child {
-            border-right: 1px solid #f4f4f4;
-            border-top-right-radius: 10px;
-            border-bottom-right-radius: 10px;
-        }
-
-/* Evita conflictos de sombras con DataTables */
-table.dataTable.table-striped > tbody > tr.odd > * {
-    box-shadow: none !important;
+.card {
+    border: none;
+    box-shadow: var(--shadow-soft);
 }
 
-.pregunta-row {
-    transition: background-color 0.2s ease;
+.card-header {
+    border-bottom: 1px solid var(--border-soft);
 }
-
-    .pregunta-row:hover {
-        background-color: #f8f9fa;
-    }
-
-/* ==========================================================
-   SEGUIMIENTO ACADÉMICO (Buscador y Línea de tiempo)
-   ========================================================== */
-.jumbotron-search {
-    background-color: var(--brand-dark);
-    color: var(--brand-white);
-    padding: 3rem 1rem;
-    border-radius: 12px;
-    margin-bottom: 3rem;
-    box-shadow: 0 4px 15px rgba(98, 9, 0, 0.3);
-}
-
-    .jumbotron-search h2 {
-        color: var(--brand-white) !important;
-        font-family: var(--font-titulos);
-    }
-
-    .jumbotron-search .input-group {
-        max-width: 600px;
-        margin: 0 auto;
-    }
-
-    .jumbotron-search .form-control {
-        border: none;
-        border-radius: 25px 0 0 25px;
-        padding: 12px 20px;
-        font-size: 1.1rem;
-    }
-
-    .jumbotron-search .btn {
-        border-radius: 0 25px 25px 0;
-        font-weight: 600;
-    }
 
 .dashboard-card-hover {
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-    border-radius: 12px;
-    background-color: var(--brand-white);
-    border: 1px solid rgba(0,0,0,0.08);
+    transition: transform .25s ease, box-shadow .25s ease;
 }
 
-    .dashboard-card-hover:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 10px 20px rgba(0,0,0,0.1);
-        border-color: var(--brand-secondary);
+.dashboard-card-hover:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-hover);
+}
+
+/* ==========================================================
+   RESPONSIVE
+   ========================================================== */
+@media (max-width: 991.98px) {
+    .dashboard-header {
+        margin-bottom: -2rem;
+        padding: 1.5rem;
+        padding-bottom: 4rem;
     }
+
+    .navbar-brand-portal .portal-title {
+        font-size: 1.45rem;
+    }
+
+    .navbar-brand-portal .portal-subtitle {
+        font-size: .72rem;
+        letter-spacing: 1.6px;
+    }
+}
+
+@media (max-width: 767.98px) {
+    .dashboard-header {
+        border-radius: 16px;
+        padding: 1.25rem;
+        margin-bottom: 1rem;
+    }
+
+    .dashboard-header .d-flex.justify-content-between {
+        flex-direction: column;
+        align-items: flex-start !important;
+        gap: .75rem;
+    }
+
+    .dashboard-header h2 {
+        font-size: 1.4rem;
+        line-height: 1.3;
+    }
+
+    .search-input {
+        min-height: 44px;
+    }
+
+    .table > :not(caption) > * > * {
+        padding: .8rem .65rem;
+    }
+
+    .btn-action-entrevista,
+    .btn-action-seguimiento,
+    .btn-primary-brand,
+    .btn-secondary-brand,
+    .btn-utt-primary {
+        width: 100%;
+    }
+
+    .d-flex.gap-2.justify-content-end,
+    .d-flex.gap-2 {
+        flex-wrap: wrap;
+    }
+
+    .table-cards thead th:nth-child(1) {
+        width: 70px !important;
+    }
+
+    .table-cards thead th:last-child {
+        width: auto !important;
+    }
+}
+
+@media (max-width: 575.98px) {
+    body {
+        font-size: .96rem;
+    }
+
+    .container,
+    .container-fluid {
+        padding-left: 14px;
+        padding-right: 14px;
+    }
+
+    .navbar-brand-portal {
+        position: static !important;
+        transform: none !important;
+        margin: 0 auto;
+        text-align: center;
+    }
+
+    .tutorship-navbar .container-fluid {
+        gap: .5rem;
+    }
+
+    .tutorship-navbar .ms-auto {
+        margin-left: 0 !important;
+    }
+
+    .table-responsive {
+        border-radius: 14px;
+    }
+
+    .card-body,
+    .card-header,
+    .card-footer {
+        padding-left: 1rem !important;
+        padding-right: 1rem !important;
+    }
+
+    .form-control,
+    .form-select,
+    textarea {
+        font-size: 16px !important;
+    }
+}
