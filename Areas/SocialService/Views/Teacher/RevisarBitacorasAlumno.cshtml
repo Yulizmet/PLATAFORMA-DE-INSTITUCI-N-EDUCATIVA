@@ -95,6 +95,13 @@
                     <p class="text-muted mt-3 mb-0">
                         <small><i class="bi bi-calendar3"></i> Creada el: @bitacora.CreatedAt.ToString("dd/MM/yyyy HH:mm")</small>
                     </p>
+                    @if (!string.IsNullOrEmpty(bitacora.SnapshotSemesterName) || !string.IsNullOrEmpty(bitacora.SnapshotGroupName))
+                    {
+                        <p class="text-muted mb-0"><small><i class="bi bi-building"></i>
+                            Semestre: @(string.IsNullOrEmpty(bitacora.SnapshotSemesterName) ? "N/A" : bitacora.SnapshotSemesterName)
+                            &nbsp;|&nbsp; Grupo: @(string.IsNullOrEmpty(bitacora.SnapshotGroupName) ? "N/A" : bitacora.SnapshotGroupName)
+                        </small></p>
+                    }
                 </div>
             </div>
 
@@ -165,6 +172,15 @@
                                     <strong>Fecha de creación:</strong> @bitacora.CreatedAt.ToString("dd/MM/yyyy HH:mm")
                                 </p>
                             </div>
+                            @if (!string.IsNullOrEmpty(bitacora.SnapshotSemesterName) || !string.IsNullOrEmpty(bitacora.SnapshotGroupName))
+                            {
+                                <div class="creation-date">
+                                    <p class="mb-0"><small><i class="bi bi-building me-2"></i>
+                                        Semestre: @(string.IsNullOrEmpty(bitacora.SnapshotSemesterName) ? "N/A" : bitacora.SnapshotSemesterName)
+                                        &nbsp;|&nbsp; Grupo: @(string.IsNullOrEmpty(bitacora.SnapshotGroupName) ? "N/A" : bitacora.SnapshotGroupName)
+                                    </small></p>
+                                </div>
+                            }
 
                             @if (bitacora.IsApproved)
                             {
@@ -189,6 +205,16 @@
                                         <i class="bi bi-calendar-check me-1"></i>
                                         <strong>Aprobada el:</strong> @bitacora.ApprovedAt?.ToString("dd/MM/yyyy HH:mm")
                                     </p>
+
+                                    @* Si el usuario es Master, permitir desaprobar desde la vista de revisión del maestro *@
+                                    @if (User.IsInRole("Master"))
+                                    {
+                                        <div class="mt-3">
+                                            <button type="button" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#bitacoraUnapproveModal@(bitacora.LogId)">
+                                                <i class="bi bi-arrow-counterclockwise me-1"></i> Desaprobar Bitácora
+                                            </button>
+                                        </div>
+                                    }
                                 </div>
                             }
                             else
@@ -269,6 +295,8 @@
                     </div>
                 </div>
             </div>
+
+
         }
     </div>
 }

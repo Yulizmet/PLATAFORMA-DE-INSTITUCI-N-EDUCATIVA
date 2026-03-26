@@ -12,7 +12,7 @@
     </a>
 </div>
 
-@if (TempData["Success"] != null)
+@if (TempData["Success"] != null && (User.IsInRole("Teacher") || User.IsInRole("Master")))
 {
     <div class="alert alert-success alert-dismissible fade show" role="alert">
         @TempData["Success"]
@@ -118,6 +118,13 @@
                 <p class="text-muted mb-0">
                     <i class="bi bi-calendar3"></i> @bitacora.CreatedAt.ToString("dd/MM/yyyy HH:mm")
                 </p>
+                @if (!string.IsNullOrEmpty(bitacora.SnapshotSemesterName) || !string.IsNullOrEmpty(bitacora.SnapshotGroupName))
+                {
+                    <p class="text-muted mb-0"><small><i class="bi bi-building"></i>
+                        Semestre: @(string.IsNullOrEmpty(bitacora.SnapshotSemesterName) ? "N/A" : bitacora.SnapshotSemesterName)
+                        &nbsp;|&nbsp; Grupo: @(string.IsNullOrEmpty(bitacora.SnapshotGroupName) ? "N/A" : bitacora.SnapshotGroupName)
+                    </small></p>
+                }
 
             </div>
 

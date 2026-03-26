@@ -593,8 +593,9 @@ textarea.form-control {
 }
 
 .bitacora-modal .modal-body {
-    padding: 2rem;
+    padding: 1.5rem 2rem;
     text-align: left !important;
+    background: linear-gradient(180deg, #ffffff, #fbfbfb);
 }
 
 .bitacora-modal .detail-section {
@@ -621,16 +622,15 @@ textarea.form-control {
 
 /* Fecha de creación estilizada */
 .bitacora-modal .creation-date {
-    background: var(--ss-gray-100);
-    padding: 0.75rem 1rem;
-    border-radius: 8px;
-    border-left: 3px solid var(--rojo-principal);
+    background: transparent;
+    padding: 0.5rem 0.75rem;
+    border-radius: 6px;
     margin-top: 1rem;
 }
 
 .bitacora-modal .creation-date p {
     margin-bottom: 0;
-    color: var(--ss-gray-700);
+    color: var(--ss-gray-600);
     font-size: 0.9rem;
 }
 
@@ -642,12 +642,15 @@ textarea.form-control {
 }
 
 .bitacora-modal .hour-badge {
-    background: var(--ss-gray-100);
-    padding: 1rem;
-    border-radius: 8px;
-    text-align: center;
-    border-left: 3px solid var(--rojo-principal);
+    background: #ffffff;
+    padding: 0.9rem 1rem;
+    border-radius: 10px;
+    text-align: left;
+    border: 1px solid var(--ss-gray-100);
+    box-shadow: var(--ss-shadow-sm);
 }
+
+.bitacora-modal .hour-badge strong { color: var(--rojo-principal); }
 
 /* ====== BITÁCORAS DEL PROFESOR ====== */
 .teacher-bitacora-grid {
