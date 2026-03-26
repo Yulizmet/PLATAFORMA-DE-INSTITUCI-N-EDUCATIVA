@@ -1,11 +1,12 @@
 ﻿@{
-string ctrl = ViewContext.RouteData.Values["controller"]?.ToString() ?? "";
-string action = ViewContext.RouteData.Values["action"]?.ToString() ?? "";
-string roleParam = ViewContext.HttpContext.Request.Query["role"].ToString();
+    string ctrl = ViewContext.RouteData.Values["controller"]?.ToString() ?? "";
+    string action = ViewContext.RouteData.Values["action"]?.ToString() ?? "";
+    string roleParam = ViewContext.HttpContext.Request.Query["role"].ToString();
 
-bool isAdmin = User.IsInRole("Administrator");
-bool isHeadNurse = User.IsInRole("Head Nurse");
-bool isHeadPsych = User.IsInRole("Head of Psychology");
+    bool isAdmin = User.IsInRole("Administrator");
+    bool isMaster = User.IsInRole("Master");
+    bool isHeadNurse = User.IsInRole("Head Nurse");
+    bool isHeadPsych = User.IsInRole("Head of Psychology");
 }
 <!DOCTYPE html>
 <html lang="es">
@@ -195,7 +196,7 @@ bool isHeadPsych = User.IsInRole("Head of Psychology");
                     }
                     }
 
-                    @if (isAdmin)
+                    @if (isAdmin || isMaster)
                     {
                     <div class="section-title">Sistema</div>
 
@@ -225,7 +226,26 @@ bool isHeadPsych = User.IsInRole("Head of Psychology");
                             <span>Administradores</span>
                         </a>
                     </li>
+                    
+                    <li class="nav-item">
+                        <a class="nav-link @(ctrl == "Manager" && roleParam == "Master" ? "active-item" : "")"
+                           asp-area="UserMng" asp-controller="Manager" asp-action="Users"
+                           asp-route-role="Master">
+                            <i class="bi bi-star-fill"></i>
+                            <span>Masters</span>
+                        </a>
+                    </li>
                     }
+                    
+                    <li class="nav-item">
+                        <a class="nav-link @(ctrl == "Manager" && roleParam == "Coordinator" ? "active-item" : "")"
+                           asp-area="UserMng" asp-controller="Manager" asp-action="Users"
+                           asp-route-role="Coordinator">
+                            <i class="bi bi-star-fill"></i>
+                            <span>Coordinadores</span>
+                        </a>
+                    </li>
+                    
 
                 </ul>
             </div>

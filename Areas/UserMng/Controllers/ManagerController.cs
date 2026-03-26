@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore;
 namespace SchoolManager.Areas.UserMng.Controllers;
 
 [Area("UserMng")]
-[Authorize(Roles = "Administrator,Head Nurse,Head of Psychology")]
+[Authorize(Roles = "Administrator,Head Nurse,Head of Psychology, Master")]
 public class ManagerController : Controller
 {
     private readonly AppDbContext _context;
@@ -24,14 +24,17 @@ public class ManagerController : Controller
         ["Psychologist"]       = ("Psicólogos",           "bi-bandaid-fill",                  "info"),
         ["Head Nurse"]         = ("Jefes de Enfermería",  "bi-hospital-fill",          "warning"),
         ["Head of Psychology"] = ("Jefes de Psicología",  "bi-clipboard2-pulse-fill",  "secondary"),
+        ["Coordinator"]        = ("Coordiadores",    "bi-star-fill",     "dark"),
+        ["Master"]             = ("Masters",              "bi-star-fill",              "dark"),
     };
 
     // roles puede gestionar cada quien
     private static readonly Dictionary<string, HashSet<string>> _rolePermissions = new()
     {
-        ["Administrator"]      = new() { "Administrator", "Nurse", "Psychologist", "Head Nurse", "Head of Psychology" },
+        ["Administrator"]      = new() { "Administrator", "Nurse", "Psychologist", "Head Nurse", "Head of Psychology", "Master", "Coordinator" },
         ["Head Nurse"]         = new() { "Nurse" },
         ["Head of Psychology"] = new() { "Psychologist" },
+        ["Master"] = new() { "Administrator", "Nurse", "Psychologist", "Head Nurse", "Head of Psychology" , "Master"},
     };
 
     public ManagerController(AppDbContext context)

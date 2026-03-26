@@ -1,0 +1,138 @@
+﻿@model IEnumerable<SchoolManager.Models.LogBookListVM>
+
+@{
+    Layout = "~/Areas/Medical/Views/Shared/_LayoutDashboard.cshtml";
+    ViewData["Title"] = "Bitácoras Clínicas";
+}
+
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
+
+<div class="dashboard-header">
+    <div class="header-content d-flex align-items-center justify-content-between flex-wrap">
+        <div>
+            <h2 class="text-white">BITÁCORAS CLÍNICAS</h2>
+            <div class="buttons-left">
+                <a asp-action="Create" class="btn-header">
+                    <i class="bi bi-plus-circle"></i> Crear Bitácora
+                </a>
+                <a asp-action="Index" class="btn-header">
+                    <i class="bi bi-journal-medical"></i> Ver Bitácoras
+                </a>
+                <a asp-action="Reporte" class="btn-header">
+                    <i class="bi bi-file-earmark-bar-graph"></i> Reporte
+                </a>
+            </div>
+        </div>
+        <div class="buttons-right">
+            <a asp-controller="Dashboard" asp-action="Index" class="btn-header">
+                <i class="bi bi-arrow-left-circle"></i> Regresar al inicio
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="container mt-4">
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <table id="tablaBitacoras" class="table table-hover align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>Matrícula</th>
+                        <th>Alumno</th>
+                        <th>Motivo</th>
+                        <th>Estado</th>
+                        <th>Folio</th>
+                        <th>Fecha</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td>@item.Matricula</td>
+                            <td>@item.NombreCompleto</td>
+                            <td>@item.Motivo</td>
+                            <td>
+                                @switch (item.Estado)
+                                {
+                                    case "Estable":
+                                        <span class="estado-badge estado-estable">Estable</span>
+                                        break;
+                                    case "Urgente":
+                                        <span class="estado-badge estado-urgente">Urgente</span>
+                                        break;
+                                    case "Crítico":
+                                        <span class="estado-badge estado-critico">Crítico</span>
+                                        break;
+                                    case "Observación":
+                                        <span class="estado-badge estado-observacion">Observación</span>
+                                        break;
+                                    case "Alta":
+                                        <span class="estado-badge estado-alta">Alta</span>
+                                        break;
+                                    default:
+                                        <span class="estado-badge estado-default">@item.Estado</span>
+                                        break;
+                                }
+                            </td>
+                            <td><strong>@item.Folio</strong></td>
+                            <td data-sort="@item.Fecha.ToString("yyyyMMddHHmmss")">
+                                @item.Fecha.ToString("dd/MM/yyyy hh:mm tt")
+                            </td>
+                            <td>
+                                <div class="d-flex gap-2">
+
+                                    <a asp-action="Details"
+                                       asp-route-id="@item.Id"
+                                       class="btn btn-sm"
+                                       style="background:#38b6ff;color:white;border:none;"
+                                       title="Ver">
+                                        <i class="bi bi-eye-fill"></i>
+                                    </a>
+
+                                    <a asp-action="Edit"
+                                       asp-route-id="@item.Id"
+                                       class="btn btn-sm"
+                                       style="background:#ffde59;color:white;border:none;"
+                                       title="Editar">
+                                        <i class="bi bi-pencil-square"></i>
+                                    </a>
+
+                                    <a asp-action="Delete"
+                                       asp-route-id="@item.Id"
+                                       class="btn btn-sm"
+                                       style="background:#ff3131;color:white;border:none;"
+                                       title="Eliminar">
+                                        <i class="bi bi-trash-fill"></i>
+                                    </a>
+
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+    <script>
+        var $jq = jQuery.noConflict(true);
+        $jq(document).ready(function () {
+            $jq('#tablaBitacoras').DataTable({
+                "language": {
+                    "url": "https://cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json"
+                },
+                "order": [[5, "desc"]],
+                "columnDefs": [
+                    { "orderable": false, "targets": 6 }
+                ]
+            });
+        });
+    </script>
+}

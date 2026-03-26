@@ -1,17 +1,17 @@
-﻿@model SchoolManager.Areas.Grades.ViewModels.FinalGrades.FinalGradeListViewModel
+﻿@using SchoolManager.Areas.Grades.ViewModels.Breadcrumbs;
+@model SchoolManager.Areas.Grades.ViewModels.FinalGrades.FinalGradeListViewModel
 
 @{
     ViewData["Title"] = $"Finales - {Model.SubjectName}";
     Layout = "~/Areas/MainScreen/Views/Shared/_Layout.cshtml";
+    var breadcrumbs = new BreadcrumbViewModel();
+    breadcrumbs.AddItem("Calificaciones", "/CalificacionesDocente");
+    breadcrumbs.AddItem("Calificaciones Finales", "Index");
+    breadcrumbs.AddItem(Model.SubjectName + " " + Model.GroupName);
 }
+<partial name="_Breadcrumb" model="breadcrumbs" />
 
 <div class="container-fluid py-4">
-    <nav aria-label="breadcrumb" class="mb-4">
-        <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a asp-action="Index">Calificaciones Finales</a></li>
-            <li class="breadcrumb-item active">@Model.SubjectName - @Model.GroupName</li>
-        </ol>
-    </nav>
 
     <div class="sistema-card mb-4">
         <div class="row align-items-center">

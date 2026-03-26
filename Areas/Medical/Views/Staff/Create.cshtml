@@ -1,0 +1,229 @@
+﻿@model SchoolManager.ViewModels.CreateMedicalStaffVM
+
+@{
+    Layout = "~/Areas/Medical/Views/Shared/_LayoutDashboard.cshtml";
+    ViewData["Title"] = "Registrar Personal Médico";
+}
+<div class="dashboard-header">
+    <div class="header-content d-flex align-items-start justify-content-between flex-wrap">
+        <div>
+            <h2 class="text-white">REGISTRAR PERSONAL MÉDICO</h2>
+            <div class="buttons-left">
+                <a asp-action="Create" class="btn-header ">
+                    <i class="bi bi-person-plus"></i> Crear Personal
+                </a>
+                <a asp-action="Index" class="btn-header ">
+                    <i class="bi bi-person-badge"></i> Ver Personal
+                </a>
+            </div>
+        </div>
+        <div class="buttons-right">
+            <a asp-controller="Dashboard" asp-action="Index" class="btn-header">
+                <i class="bi bi-arrow-left-circle"></i> Regresar al inicio
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="container mt-4">
+    <div class="card p-4 shadow-sm">
+        <form asp-action="Create" method="post" id="formPersonal">
+
+            <div asp-validation-summary="All" class="text-danger mb-3"></div>
+            <input type="hidden" name="PersonId" id="PersonId" />
+
+            <h5 class="section-title">BUSCAR TRABAJADOR</h5>
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <div class="info-block">
+                        <label class="fw-bold text-uppercase">CURP</label>
+                        <input type="text" id="curp" class="form-control"
+                               placeholder="Escribe CURP" required />
+                    </div>
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
+                    <button type="button" id="btnBuscar" class="btn btn-dark w-100">
+                        Buscar
+                    </button>
+                </div>
+            </div>
+
+            <div class="row g-4 mt-1">
+                <div class="col-md-6">
+                    <div class="info-block">
+                        <label class="fw-bold text-uppercase">Nombre</label>
+                        <input type="text" id="nombre" class="form-control" readonly />
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="info-block">
+                        <label class="fw-bold text-uppercase">Correo</label>
+                        <input type="text" id="correo" class="form-control" readonly />
+                    </div>
+                </div>
+            </div>
+
+            <hr class="section-divider" />
+
+            <h5 class="section-title">DATOS DEL PERSONAL</h5>
+            <div class="row g-4">
+                <div class="col-md-6">
+                    <div class="info-block">
+                        <label class="fw-bold text-uppercase">Rol</label>
+                        <select name="RoleId" id="selectRol" class="form-control" required>
+                            <option value="">Seleccionar rol</option>
+                            <option value="4">Enfermero</option>
+                            <option value="5">Psicólogo</option>
+                            <option value="6">Jefe de Enfermería</option>
+                            <option value="7">Jefe de Psicología</option>
+                            <option value="9">Coordinador</option>
+                            <option value="10">Master</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="info-block">
+                        <label class="fw-bold text-uppercase">Turno</label>
+                        <select name="Shift" class="form-control" required>
+                            <option value="">Seleccionar turno</option>
+                            <option value="Mañana">Mañana</option>
+                            <option value="Tarde">Tarde</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <hr class="section-divider" />
+
+            <h5 class="section-title">PERMISOS DEL PERSONAL</h5>
+            <p class="text-muted small">Los permisos se asignan automáticamente según el rol, pero puedes ajustarlos.</p>
+
+            <div class="row g-4" id="seccionPermisos" style="display:none !important;">
+                <div class="col-md-3">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="Ver" id="permisoVer" value="true" />
+                        <input type="hidden" name="Ver" value="false" />
+                        <label class="form-check-label fw-bold" for="permisoVer">
+                            <i class="bi bi-eye"></i> Ver bitácoras
+                        </label>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="Agregar" id="permisoAgregar" value="true" />
+                        <input type="hidden" name="Agregar" value="false" />
+                        <label class="form-check-label fw-bold" for="permisoAgregar">
+                            <i class="bi bi-plus-circle"></i> Agregar bitácoras
+                        </label>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="Modificar" id="permisoModificar" value="true" />
+                        <input type="hidden" name="Modificar" value="false" />
+                        <label class="form-check-label fw-bold" for="permisoModificar">
+                            <i class="bi bi-pencil"></i> Modificar bitácoras
+                        </label>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="Borrar" id="permisoBorrar" value="true" />
+                        <input type="hidden" name="Borrar" value="false" />
+                        <label class="form-check-label fw-bold" for="permisoBorrar">
+                            <i class="bi bi-trash"></i> Borrar bitácoras
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <hr class="section-divider" />
+
+            <div class="d-flex justify-content-between mt-4">
+                <a asp-action="Index" class="btn" style="border: 1.5px solid #6c757d;">
+                    CANCELAR
+                </a>
+                <button type="submit" class="btn" style="border: 1.5px solid #6c757d;">
+                    GUARDAR PERSONAL
+                </button>
+            </div>
+
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Buscar persona
+        document.getElementById("btnBuscar").addEventListener("click", function () {
+            var curp = document.getElementById("curp").value;
+
+            if (curp === "") {
+                alert("Escribe una CURP");
+                return;
+            }
+
+            fetch("/Medical/Staff/BuscarPorCurp?curp=" + encodeURIComponent(curp))
+                .then(function (response) { return response.json(); })
+                .then(function (data) {
+                    if (data == null) {
+                        alert("Persona no encontrada");
+                        return;
+                    }
+                    document.getElementById("PersonId").value = data.personId;
+                    document.getElementById("nombre").value   = data.nombre + " " + data.paterno + " " + data.materno;
+                    document.getElementById("correo").value   = data.correo;
+                })
+                .catch(function (error) {
+                    alert("Error: " + error);
+                });
+        });
+
+        // Validar al enviar el form
+        document.getElementById("formPersonal").addEventListener("submit", function (e) {
+            var personId = document.getElementById("PersonId").value;
+            if (!personId || personId === "0") {
+                e.preventDefault();
+                alert("Debes buscar y seleccionar un trabajador antes de guardar.");
+            }
+        });
+
+        // Permisos por rol
+        const permisosPorRol = {
+            "4":  { ver: true, agregar: true,  modificar: false, borrar: false },
+            "5":  { ver: true, agregar: true,  modificar: false, borrar: false },
+            "6":  { ver: true, agregar: true,  modificar: true,  borrar: true  },
+            "7":  { ver: true, agregar: true,  modificar: true,  borrar: true  },
+            "9":  { ver: true, agregar: true,  modificar: true,  borrar: true  },
+            "10": { ver: true, agregar: true,  modificar: true,  borrar: true  },
+        };
+
+        const rolesSuperior = ["6", "7", "9", "10"];
+
+        document.querySelector("select[name='RoleId']").addEventListener("change", function () {
+            var rolId = this.value;
+            var seccion = document.getElementById("seccionPermisos");
+
+            if (rolId === "") {
+                seccion.style.setProperty("display", "none", "important");
+                return;
+            }
+
+            seccion.style.removeProperty("display");
+
+            var permisos = permisosPorRol[rolId];
+            if (permisos) {
+                document.getElementById("permisoVer").checked       = permisos.ver;
+                document.getElementById("permisoAgregar").checked   = permisos.agregar;
+                document.getElementById("permisoModificar").checked = permisos.modificar;
+                document.getElementById("permisoBorrar").checked    = permisos.borrar;
+            }
+
+            var esSuperior = rolesSuperior.includes(rolId);
+            document.getElementById("permisoVer").disabled       = esSuperior;
+            document.getElementById("permisoAgregar").disabled   = esSuperior;
+            document.getElementById("permisoModificar").disabled = esSuperior;
+            document.getElementById("permisoBorrar").disabled    = esSuperior;
+        });
+    </script>
+}

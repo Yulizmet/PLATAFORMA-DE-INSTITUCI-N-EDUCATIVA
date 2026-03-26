@@ -19,7 +19,7 @@ namespace SchoolManager.Areas.UserMng.Controllers
         {
             _context = context;
         }
-        
+
         [HttpGet]
         public IActionResult Login(string? returnUrl = null)
         {
@@ -40,7 +40,7 @@ namespace SchoolManager.Areas.UserMng.Controllers
             var usuario = _context.Users
                 .FirstOrDefault(u => u.Email == model.Email && u.IsActive == true);
 
-            if (usuario == null && !BCrypt.Net.BCrypt.Verify(model.Password, usuario.PasswordHash))
+            if (usuario == null || !BCrypt.Net.BCrypt.Verify(model.Password, usuario.PasswordHash))
             {
                 ModelState.AddModelError(string.Empty, "Correo o contraseña incorrectos.");
                 return View(model);
@@ -80,6 +80,25 @@ namespace SchoolManager.Areas.UserMng.Controllers
             foreach (var role in userRoles)
             {
                 claims.Add(new Claim(ClaimTypes.Role, role.Name));
+            }
+
+            var staffMedico = await _context.MedicalStaff
+                .FirstOrDefaultAsync(s => s.PersonId == usuario.PersonId);
+
+            if (staffMedico != null)
+            {
+                claims.Add(new Claim("StaffId", staffMedico.Id.ToString()));
+                claims.Add(new Claim("StaffRoleId", staffMedico.RoleId.ToString()));
+            }
+
+            var persona = await _context.Persons
+                .FirstOrDefaultAsync(p => p.PersonId == usuario.PersonId);
+
+            if (persona != null)
+            {
+                var primerNombre = persona.FirstName.Split(' ')[0];
+                claims.Add(new Claim("NombreCompleto",
+                    primerNombre + " " + persona.LastNamePaternal));
             }
 
             var identity  = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
@@ -132,28 +151,25 @@ namespace SchoolManager.Areas.UserMng.Controllers
         {
             return RedirectToAction("Index", "MainScreen", new { area = "MainScreen" });
 
+
             if (principal.IsInRole("Administrator"))
-                return RedirectToAction("Index", "Manager", new { area = "UserMng" });
-
-            if (principal.IsInRole("Head Nurse"))
-                return RedirectToAction("Users", "Manager", new { area = "UserMng", role = "Nurse" });
-
-            if (principal.IsInRole("Head of Psychology"))
-                return RedirectToAction("Users", "Manager", new { area = "UserMng", role = "Psychologist" });
+            {
+                return RedirectToAction("Index", "MainScreen", new { area = "MainScreen" });
+            }
 
             if (principal.IsInRole("Teacher"))
                 return RedirectToAction("Index", "Teachers", new { area = "UserMng" });
 
             if (principal.IsInRole("Nurse"))
-                return RedirectToAction("Index", "Home"); // RAMOS actualiza cuando tengas tu vista
+                return RedirectToAction("Extension", "MainScreen", new { area = "MainScreen" }); // RAMOS actualiza cuando tengas tu vista, los puse para que funcionara el mio ServicioSocial
 
             if (principal.IsInRole("Psychologist"))
-                return RedirectToAction("Index", "Home"); // RAMOS actualiza cuando tengas tu vista
+                return RedirectToAction("Extension", "MainScreen", new { area = "MainScreen" }); // RAMOS actualiza cuando tengas tu vista, los puse para que funcionara el mio ServicioSocial
 
             if (principal.IsInRole("Student"))
-                return RedirectToAction("SistemaEscolar", "MainScreen", new { area = "MainScreen" });
+                return RedirectToAction("Extension", "MainScreen", new { area = "MainScreen" });
 
-            return RedirectToAction("Login", "Account", new { area = "UserMng" });
+            return RedirectToAction("Index", "MainScreen", new { area = "MainScreen" });
         }
     }
 }

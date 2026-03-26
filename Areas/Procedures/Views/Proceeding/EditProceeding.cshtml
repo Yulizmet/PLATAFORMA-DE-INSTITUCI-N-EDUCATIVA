@@ -9,7 +9,7 @@
             const formData = new FormData(form);
             const personId = $(form).find('input[name="PersonId"]').val();
 
-            let isValid = true;
+            $('.form-control').removeClass('is-invalid');
 
             const curpInput = $('input[name="Curp"]');
             const curpVal = curpInput.val().trim();
@@ -25,51 +25,24 @@
 
             if (birthDate >= today) {
                 birthDateInput.addClass('is-invalid');
-
-                Swal.fire({
-                    title: 'Fecha Inválida',
-                    text: 'La fecha de nacimiento no puede ser futura.',
-                    icon: 'warning',
-                    confirmButtonColor: '#620900'
-                });
-
+                showToast('warning', 'La fecha de nacimiento no puede ser futura');
                 return;
             }
 
             if (cpVal.length > 0 && !cpRegex.test(cpVal)) {
-
                 cpInput.addClass('is-invalid');
-
-                Swal.fire({
-                    title: 'Código Postal Inválido',
-                    text: 'El C.P. debe consistir en exactamente 5 números.',
-                    icon: 'error',
-                    confirmButtonColor: '#620900'
-                });
+                showToast('error', 'El C.P. debe tener 5 números');
 
                 const tabTrigger = new bootstrap.Tab(document.getElementById('domicilio-tab'));
                 tabTrigger.show();
-
                 return;
             }
 
-            $('.form-control').removeClass('is-invalid');
-
             if (curpVal.length !== 18 || !curpRegex.test(curpVal)) {
-
                 curpInput.addClass('is-invalid');
-                isValid = false;
-
-                Swal.fire({
-                    title: 'CURP Inválida',
-                    text: 'La CURP debe tener 18 caracteres válidos.',
-                    icon: 'error',
-                    confirmButtonColor: '#620900'
-                });
+                showToast('error', 'La CURP no tiene un formato válido');
+                return;
             }
-
-
-            if (!isValid) return;
 
             fetch(form.action, {
                 method: 'POST',
@@ -88,14 +61,26 @@
                         window.location.href = '/Procedures/Proceeding/Details/' + personId;
                     });
                 } else {
-                    Swal.fire({ icon: 'error', title: 'Error', text: data.message });
+                    showToast('error', data.message);
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
-                Swal.fire('Error', 'No se pudo conectar con el servidor', 'error');
+                showToast('error', 'No se pudo conectar con el servidor');
             });
         });
+
+        function togglePassword(inputId) {
+            const input = document.getElementById(inputId);
+            const icon = event.currentTarget.querySelector('i');
+            if (input.type === "password") {
+                input.type = "text";
+                icon.classList.replace('bi-eye', 'bi-eye-slash');
+            } else {
+                input.type = "password";
+                icon.classList.replace('bi-eye-slash', 'bi-eye');
+            }
+        }
     </script>
 }
 
@@ -293,10 +278,20 @@
                             <input asp-for="CityState" class="form-control shadow-sm border-2" />
                         </div>
                         <div class="col-md-12">
-                            <label class="form-label fw-bold small text-muted text-uppercase small">e-mail personal</label>
+                            <label class="form-label fw-bold small text-muted text-uppercase small">Correo Institucional</label>
                             <div class="input-group shadow-sm">
                                 <span class="input-group-text bg-light border-2"><i class="bi bi-envelope"></i></span>
                                 <input asp-for="Email" class="form-control border-2" type="email" />
+                            </div>
+                        </div>
+                        <div class="col-md-12 mt-3">
+                            <label class="form-label fw-bold small text-muted text-uppercase small">Nueva Contraseña (opcional)</label>
+                            <div class="input-group shadow-sm">
+                                <span class="input-group-text bg-light border-2"><i class="bi bi-key"></i></span>
+                                <input type="password" name="NewPassword" id="NewPasswordEst" class="form-control border-2" placeholder="Dejar en blanco para no cambiar" />
+                                <button class="btn btn-outline-secondary border-2" type="button" onclick="togglePassword('NewPasswordEst')">
+                                    <i class="bi bi-eye"></i>
+                                </button>
                             </div>
                         </div>
                     </div>

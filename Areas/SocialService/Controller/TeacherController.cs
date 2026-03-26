@@ -621,7 +621,7 @@ namespace SchoolManager.Areas.SocialService.Controllers
             return RedirectToAction("RevisarBitacorasAlumno", new { id = studentId });
         }
 
-        public async Task<IActionResult> AsignarHoras(string searchName = "", string sortBy = "name", string sortOrder = "asc", int page = 1, int pageSize = 10)
+        public async Task<IActionResult> AsignarHoras(string searchName = "", string sortBy = "name", string sortOrder = "asc", int page = 1, int pageSize = 10, string semesterFilter = "", string groupFilter = "")
         {
             int currentTeacherId = GetCurrentTeacherId();
             int[] allowedPageSizes = { 10, 25, 50, 100 };
@@ -691,6 +691,10 @@ namespace SchoolManager.Areas.SocialService.Controllers
                 });
             }
 
+            // Obtener todos los semestres y grupos posibles ANTES de filtrar
+            var allSemesters = allViewModel.Select(x => x.SemesterName).Where(x => !string.IsNullOrEmpty(x)).Distinct().OrderBy(x => x).ToList();
+            var allGroups = allViewModel.Select(x => x.GroupName).Where(x => !string.IsNullOrEmpty(x)).Distinct().OrderBy(x => x).ToList();
+
             // Filtrar por nombre
             if (!string.IsNullOrWhiteSpace(searchName))
             {
@@ -698,6 +702,18 @@ namespace SchoolManager.Areas.SocialService.Controllers
                 allViewModel = allViewModel
                     .Where(v => RemoveAccents(v.StudentName.ToLower()).Contains(searchNormalized))
                     .ToList();
+            }
+
+            // Filtrar por semestre
+            if (!string.IsNullOrWhiteSpace(semesterFilter))
+            {
+                allViewModel = allViewModel.Where(v => v.SemesterName == semesterFilter).ToList();
+            }
+
+            // Filtrar por grupo
+            if (!string.IsNullOrWhiteSpace(groupFilter))
+            {
+                allViewModel = allViewModel.Where(v => v.GroupName == groupFilter).ToList();
             }
 
             // Aplicar ordenamiento
@@ -747,6 +763,11 @@ namespace SchoolManager.Areas.SocialService.Controllers
                 .Take(pageSize)
                 .ToList();
 
+            // Para los selects de filtro (usar todos los posibles, no solo los filtrados)
+            ViewBag.Semesters = allSemesters;
+            ViewBag.Groups = allGroups;
+            ViewBag.SemesterFilter = semesterFilter;
+            ViewBag.GroupFilter = groupFilter;
             ViewBag.SearchName = searchName;
             ViewBag.CurrentPage = page;
             ViewBag.TotalPages = totalPages;
@@ -758,12 +779,17 @@ namespace SchoolManager.Areas.SocialService.Controllers
             return View(paginatedViewModel);
         }
 
-        public async Task<IActionResult> Asistencia(string sortBy = "name", string sortOrder = "asc", string groupFilter = "", string searchName = "", int page = 1, int pageSize = 10)
+        public async Task<IActionResult> Asistencia(string sortBy = "name", string sortOrder = "asc", string groupFilter = "", string searchName = "", int page = 1, int pageSize = 10, string dateFrom = "", string dateTo = "")
         {
             int currentTeacherId = GetCurrentTeacherId();
             DateTime today = DateTime.Today;
             int[] allowedPageSizes = { 10, 25, 50, 100 };
             if (!allowedPageSizes.Contains(pageSize)) pageSize = 10;
+
+            DateTime? filterDateFrom = null;
+            DateTime? filterDateTo = null;
+            if (DateTime.TryParse(dateFrom, out var parsedFrom)) filterDateFrom = parsedFrom.Date;
+            if (DateTime.TryParse(dateTo, out var parsedTo)) filterDateTo = parsedTo.Date;
 
             var assignments = await _context.SocialServiceAssignments
                 .Include(a => a.Student)
@@ -874,8 +900,15 @@ namespace SchoolManager.Areas.SocialService.Controllers
                 .Where(att => studentIds.Contains(att.StudentId) && att.Date.Date == today)
                 .ToListAsync();
 
-            var allAttendances = await _context.SocialServiceAttendances
-                .Where(att => paginatedStudentIds.Contains(att.StudentId))
+            var allAttendancesQuery = _context.SocialServiceAttendances
+                .Where(att => paginatedStudentIds.Contains(att.StudentId));
+
+            if (filterDateFrom.HasValue)
+                allAttendancesQuery = allAttendancesQuery.Where(att => att.Date.Date >= filterDateFrom.Value);
+            if (filterDateTo.HasValue)
+                allAttendancesQuery = allAttendancesQuery.Where(att => att.Date.Date <= filterDateTo.Value);
+
+            var allAttendances = await allAttendancesQuery
                 .OrderByDescending(att => att.Date)
                 .ToListAsync();
 
@@ -913,12 +946,14 @@ namespace SchoolManager.Areas.SocialService.Controllers
             ViewBag.TotalPages = totalPages;
             ViewBag.TotalRecords = totalRecords;
             ViewBag.PageSize = pageSize;
+            ViewBag.DateFrom = dateFrom;
+            ViewBag.DateTo = dateTo;
 
             return View(viewModel);
         }
 
         [HttpPost]
-        public async Task<IActionResult> GuardarAsistencia(List<int> presentStudents, List<int> allStudentsOnPage, string sortOrder = "asc", string groupFilter = "", string searchName = "", int page = 1, int pageSize = 10)
+        public async Task<IActionResult> GuardarAsistencia(List<int> presentStudents, List<int> allStudentsOnPage, string sortOrder = "asc", string groupFilter = "", string searchName = "", int page = 1, int pageSize = 10, string dateFrom = "", string dateTo = "")
         {
             int currentTeacherId = GetCurrentTeacherId();
             DateTime today = DateTime.Today;
@@ -958,10 +993,10 @@ namespace SchoolManager.Areas.SocialService.Controllers
 
             await _context.SaveChangesAsync();
             TempData["Success"] = "Asistencia guardada exitosamente.";
-            return RedirectToAction("Asistencia", new { sortOrder, groupFilter, searchName, page, pageSize });
+            return RedirectToAction("Asistencia", new { sortOrder, groupFilter, searchName, page, pageSize, dateFrom, dateTo });
         }
 
-        private async Task<List<AsignarHorasViewModel>> GetAvanceData(int teacherId)
+        private async Task<List<AsignarHorasViewModel>> GetAvanceData(int teacherId, string searchName = "")
         {
             var assignments = await _context.SocialServiceAssignments
                 .Include(a => a.Student)
@@ -1013,15 +1048,23 @@ namespace SchoolManager.Areas.SocialService.Controllers
                 });
             }
 
+            if (!string.IsNullOrWhiteSpace(searchName))
+            {
+                string searchNormalized = RemoveAccents(searchName.ToLower());
+                result = result
+                    .Where(v => RemoveAccents(v.StudentName.ToLower()).Contains(searchNormalized))
+                    .ToList();
+            }
+
             return result;
         }
 
-        public async Task<IActionResult> ExportAvanceExcel()
+        public async Task<IActionResult> ExportAvanceExcel(string searchName = "")
         {
             int currentTeacherId = GetCurrentTeacherId();
             if (currentTeacherId == 0) return RedirectToAction("Login", "Account", new { area = "UserMng" });
 
-            var data = await GetAvanceData(currentTeacherId);
+            var data = await GetAvanceData(currentTeacherId, searchName);
 
             using var workbook = new XLWorkbook();
             var ws = workbook.Worksheets.Add("Avance del Alumno");
@@ -1071,12 +1114,12 @@ namespace SchoolManager.Areas.SocialService.Controllers
                 $"Avance_Alumnos_{DateTime.Now:yyyyMMdd}.xlsx");
         }
 
-        public async Task<IActionResult> ExportAvancePdf()
+        public async Task<IActionResult> ExportAvancePdf(string searchName = "")
         {
             int currentTeacherId = GetCurrentTeacherId();
             if (currentTeacherId == 0) return RedirectToAction("Login", "Account", new { area = "UserMng" });
 
-            var data = await GetAvanceData(currentTeacherId);
+            var data = await GetAvanceData(currentTeacherId, searchName);
 
             string htmlContent = await this.RenderViewAsync("_AvancePdf", data, true);
 

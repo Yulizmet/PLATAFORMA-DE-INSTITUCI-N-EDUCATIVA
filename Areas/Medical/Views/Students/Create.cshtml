@@ -1,0 +1,146 @@
+﻿@model SchoolManager.Models.medical_student
+
+@{
+    Layout = "~/Areas/Medical/Views/Shared/_LayoutDashboard.cshtml";
+    ViewData["Title"] = "Crear Alumno";
+}
+
+<div class="dashboard-header">
+    <div class="header-content d-flex align-items-start justify-content-between flex-wrap">
+        <div>
+            <h2 class="text-white">REGISTRAR NUEVO ALUMNO</h2>
+            <div class="buttons-left mt-3">
+                <a asp-action="Create" class="btn-header ">
+                    <i class="bi bi-person-plus"></i> Registrar Alumno
+                </a>
+                <a asp-action="Index" class="btn-header ">
+                    <i class="bi bi-people"></i> Ver Alumnos
+                </a>
+            </div>
+        </div>
+        <div class="buttons-right">
+            <a asp-controller="Dashboard" asp-action="Index" class="btn-header">
+                <i class="bi bi-arrow-left-circle"></i> Regresar al inicio
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="container mt-4">
+    <div class="card p-4 shadow-sm">
+        <form asp-action="Create" method="post" id="formAlumno">
+
+            <input type="hidden" asp-for="PreenrollmentId" id="preid" />
+
+            <h5 class="section-title">DATOS DEL ALUMNO</h5>
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <div class="info-block">
+                        <label class="fw-bold text-uppercase">Matrícula</label>
+                        <input id="matricula" class="form-control" placeholder="Escribe matrícula" required />
+                    </div>
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
+                    <button type="button" onclick="buscar()" class="btn btn-dark w-100">
+                        Buscar
+                    </button>
+                </div>
+                <div class="col-md-6">
+                    <div class="info-block">
+                        <label class="fw-bold text-uppercase">Nombre</label>
+                        <input id="nombre" class="form-control" readonly />
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="info-block">
+                        <label class="fw-bold text-uppercase">Apellido Paterno</label>
+                        <input id="paterno" class="form-control" readonly />
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="info-block">
+                        <label class="fw-bold text-uppercase">Apellido Materno</label>
+                        <input id="materno" class="form-control" readonly />
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="info-block">
+                        <label class="fw-bold text-uppercase">Tipo de Sangre</label>
+                        <input id="sangre" class="form-control" readonly />
+                    </div>
+                </div>
+            </div>
+
+            <hr class="section-divider" />
+
+            <h5 class="section-title">INFORMACIÓN MÉDICA</h5>
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <div class="info-block">
+                        <label class="fw-bold text-uppercase">Peso (kg)</label>
+                        <input asp-for="Peso" class="form-control" required />
+                    </div>
+                </div>
+                <div class="col-md-8">
+                    <div class="info-block">
+                        <label class="fw-bold text-uppercase">Alergias</label>
+                        <input asp-for="Alergias" class="form-control" required />
+                    </div>
+                </div>
+                <div class="col-md-12">
+                    <div class="info-block">
+                        <label class="fw-bold text-uppercase">Condiciones Crónicas</label>
+                        <textarea asp-for="CondicionesCronicas" class="form-control" rows="3" required></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <hr class="section-divider" />
+
+            <div class="d-flex justify-content-between mt-4">
+                <a asp-action="Index" class="btn" style="border: 1.5px solid #6c757d;">
+                    CANCELAR
+                </a>
+                <button type="submit" class="btn" style="border: 1.5px solid #6c757d;">
+                    GUARDAR REGISTRO
+                </button>
+            </div>
+
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        async function buscar() {
+            let matricula = document.getElementById("matricula").value;
+
+            if (matricula === "") {
+                alert("Ingrese matrícula");
+                return;
+            }
+
+            let res = await fetch('/Medical/Students/BuscarPorMatricula?matricula=' + matricula);
+            let data = await res.json();
+
+            if (data == null) {
+                alert("Alumno no encontrado");
+                return;
+            }
+
+            document.getElementById("nombre").value = data.nombre;
+            document.getElementById("paterno").value = data.paterno;
+            document.getElementById("materno").value = data.materno;
+            document.getElementById("sangre").value = data.sangre;
+            document.getElementById("preid").value = data.preenrollmentId;
+        }
+
+        document.getElementById("formAlumno").addEventListener("submit", function (e) {
+            var preid = document.getElementById("preid").value;
+            if (!preid || preid === "0") {
+                e.preventDefault();
+                alert("Debes buscar y seleccionar un alumno antes de guardar.");
+            }
+        });
+    </script>
+}

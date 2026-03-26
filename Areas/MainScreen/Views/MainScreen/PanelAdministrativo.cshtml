@@ -86,7 +86,7 @@
                         <i class="bi bi-person-plus"></i>
                     </div>
 
-                    <h4>Inscripciones</h4>
+                    <h4>Asignar Estudiantes a Grupos</h4>
                     <p class="text-muted mt-3">
                         Administra los estudiantes en los grupos escolares.
                     </p>
@@ -94,7 +94,7 @@
                     <!-- Acciones rápidas - llevan al selector -->
                     <div class="mt-4">
                         <a href="/Grades/Enrollment/SelectGroupForAssignment" class="btn btn-calificaciones w-100 mb-2">
-                            <i class="bi bi-person-plus"></i> Inscribir Estudiante
+                            <i class="bi bi-person-plus"></i> Asignar Estudiante a Grupo
                         </a>
 
                         <a href="/Grades/Enrollment/SelectGroupForViewing" class="btn btn-outline-secondary w-100 mb-2">
@@ -112,21 +112,24 @@
                 </div>
             </div>
 
-            <!-- REPORTES -->
-            <div class="col-lg-5 col-md-6">
-                <div class="sistema-card border-calificaciones text-start">
-                    <div class="sistema-icon icon-calificaciones">
-                        <i class="bi bi-bar-chart"></i>
+            @if (User.IsInRole("Teacher"))
+            {
+                <!-- REPORTES -->
+                <div class="col-lg-5 col-md-6">
+                    <div class="sistema-card border-calificaciones text-start">
+                        <div class="sistema-icon icon-calificaciones">
+                            <i class="bi bi-bar-chart"></i>
+                        </div>
+                        <h4>Reportes</h4>
+                        <p class="text-muted mt-3">
+                            Visualiza estadísticas de aprovechamiento y rendimiento académico.
+                        </p>
+                        <a href="/Estadisticas" class="btn btn-nav-blue mt-4">
+                            Ver Reportes →
+                        </a>
                     </div>
-                    <h4>Reportes</h4>
-                    <p class="text-muted mt-3">
-                        Visualiza estadísticas de aprovechamiento y rendimiento académico.
-                    </p>
-                    <a href="/Estadisticas" class="btn btn-calificaciones mt-4">
-                        Ver Reportes →
-                    </a>
                 </div>
-            </div>
+            }
 
         </div>
     </div>

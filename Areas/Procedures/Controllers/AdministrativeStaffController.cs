@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using SchoolManager.Areas.Procedures.ViewModels;
@@ -8,18 +9,13 @@ using SchoolManager.Models;
 namespace SchoolManager.Areas.Procedures.Controllers
 {
     [Area("Procedures")]
-    public class AdministrativeStaffController : Controller
+    public class AdministrativeStaffController : _ProceduresBaseController
     {
-
-        private readonly AppDbContext _context;
-
-        public AdministrativeStaffController(AppDbContext context)
-        {
-            _context = context;
-        }
+        public AdministrativeStaffController(AppDbContext context) : base(context) { }
 
         public async Task<IActionResult> Index()
         {
+            await LoadPermissions("Personal");
             var staff = await _context.ProcedureStaff
                 .Include(s => s.User).ThenInclude(u => u.Person)
                 .Include(s => s.User).ThenInclude(u => u.UserRoles).ThenInclude(ur => ur.Role)
@@ -47,6 +43,7 @@ namespace SchoolManager.Areas.Procedures.Controllers
         [HttpGet]
         public async Task<IActionResult> SearchUsers(string term)
         {
+            await LoadPermissions("Personal");
             var staffUserIds = await _context.ProcedureStaff.Select(s => s.IdUser).ToListAsync();
 
             var users = await _context.Users
@@ -55,7 +52,8 @@ namespace SchoolManager.Areas.Procedures.Controllers
                 .Where(u => u.IsActive && !staffUserIds.Contains(u.UserId))
                 .Where(u => u.UserRoles.Any(ur => ur.RoleId == 3))
                 .Where(u => u.Username.Contains(term) || u.Person.FirstName.Contains(term))
-                .Select(u => new {
+                .Select(u => new
+                {
                     id = u.UserId,
                     text = $"{u.Person.FirstName} {u.Person.LastNamePaternal} (@{u.Username})"
                 })
@@ -68,10 +66,9 @@ namespace SchoolManager.Areas.Procedures.Controllers
         [HttpGet]
         public async Task<IActionResult> Create()
         {
+            await LoadPermissions("Personal");
             ViewBag.Areas = await _context.ProcedureAreas.OrderBy(a => a.Name).ToListAsync();
-
             ViewBag.JobPositions = await _context.ProcedureJobPosition.OrderBy(j => j.Name).ToListAsync();
-
             return PartialView("_CreateModal");
         }
 
@@ -79,6 +76,7 @@ namespace SchoolManager.Areas.Procedures.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> CreateStaff(int IdUser, int IdArea, int IdJobPosition, bool IsSuperAdmin)
         {
+            await LoadPermissions("Personal");
             try
             {
                 bool exists = await _context.ProcedureStaff.AnyAsync(s => s.IdUser == IdUser);
@@ -123,13 +121,15 @@ namespace SchoolManager.Areas.Procedures.Controllers
         [HttpGet]
         public IActionResult QuickAddUser()
         {
+            LoadPermissions("Personal");
             return PartialView("_AddStaffModal");
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> QuickCreateStaff(string FirstName, string LastNamePaternal, string LastNameMaternal, string Curp, string Gender, string Email, string Username)
+        public async Task<IActionResult> QuickCreateStaff(string FirstName, string LastNamePaternal, string LastNameMaternal, string Curp, string Gender, string Email, string Username, string Password)
         {
+            await LoadPermissions("Personal");
             using var transaction = await _context.Database.BeginTransactionAsync();
             try
             {
@@ -153,7 +153,7 @@ namespace SchoolManager.Areas.Procedures.Controllers
                     PersonId = newPerson.PersonId,
                     Username = Username.ToLower(),
                     Email = Email,
-                    PasswordHash = "HASH_TEMPORAL_TEST",
+                    PasswordHash = BCrypt.Net.BCrypt.HashPassword(Password),
                     IsLocked = false,
                     LockReason = "",
                     CreatedDate = DateTime.Now,
@@ -188,6 +188,7 @@ namespace SchoolManager.Areas.Procedures.Controllers
         [HttpGet]
         public async Task<IActionResult> Edit(int id)
         {
+            await LoadPermissions("Personal");
             var staff = await _context.ProcedureStaff
                 .Include(s => s.User).ThenInclude(u => u.Person)
                 .FirstOrDefaultAsync(s => s.Id == id);
@@ -205,6 +206,7 @@ namespace SchoolManager.Areas.Procedures.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> EditStaff(procedure_staff staffData)
         {
+            await LoadPermissions("Personal");
             try
             {
                 var existingStaff = await _context.ProcedureStaff.FindAsync(staffData.Id);
@@ -232,6 +234,7 @@ namespace SchoolManager.Areas.Procedures.Controllers
         [HttpGet]
         public async Task<IActionResult> DetailsStaff(int id)
         {
+            await LoadPermissions("Personal");
             var staff = await _context.ProcedureStaff
                 .Include(s => s.User).ThenInclude(u => u.Person)
                 .Include(s => s.User).ThenInclude(u => u.UserRoles).ThenInclude(ur => ur.Role)
@@ -265,6 +268,7 @@ namespace SchoolManager.Areas.Procedures.Controllers
         [HttpGet]
         public async Task<IActionResult> EditAdministrativeStaff(int id)
         {
+            await LoadPermissions("Personal");
             var staff = await _context.ProcedureStaff
                 .Include(s => s.User).ThenInclude(u => u.Person)
                 .FirstOrDefaultAsync(s => s.Id == id);
@@ -299,6 +303,7 @@ namespace SchoolManager.Areas.Procedures.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> UpdateStaff(StaffViewModel model)
         {
+            await LoadPermissions("Personal");
             using var transaction = await _context.Database.BeginTransactionAsync();
             try
             {
@@ -317,6 +322,11 @@ namespace SchoolManager.Areas.Procedures.Controllers
 
                 if (DateTime.TryParse(model.BirthDate, out DateTime fecha))
                     staff.User.Person.BirthDate = fecha;
+
+                if (!string.IsNullOrWhiteSpace(model.NewPassword))
+                {
+                    staff.User.PasswordHash = BCrypt.Net.BCrypt.HashPassword(model.NewPassword);
+                }
 
                 staff.User.Username = model.Username;
                 staff.User.Email = model.Email;
@@ -337,6 +347,7 @@ namespace SchoolManager.Areas.Procedures.Controllers
         [HttpGet]
         public async Task<IActionResult> Activate(int id)
         {
+            await LoadPermissions("Personal");
             var staff = await _context.ProcedureStaff
                 .Include(s => s.User).ThenInclude(u => u.Person)
                 .Include(s => s.ProcedureArea)
@@ -357,6 +368,7 @@ namespace SchoolManager.Areas.Procedures.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ActivateStaff(int id)
         {
+            await LoadPermissions("Personal");
             try
             {
                 var staff = await _context.ProcedureStaff.FindAsync(id);
@@ -377,6 +389,7 @@ namespace SchoolManager.Areas.Procedures.Controllers
         [HttpGet]
         public async Task<IActionResult> Deactivate(int id)
         {
+            await LoadPermissions("Personal");
             var staff = await _context.ProcedureStaff
                 .Include(s => s.User).ThenInclude(u => u.Person)
                 .Include(s => s.ProcedureArea)
@@ -397,6 +410,7 @@ namespace SchoolManager.Areas.Procedures.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeactivateStaff(int id)
         {
+            await LoadPermissions("Personal");
             using var transaction = await _context.Database.BeginTransactionAsync();
             try
             {
@@ -418,6 +432,37 @@ namespace SchoolManager.Areas.Procedures.Controllers
             {
                 await transaction.RollbackAsync();
                 return Json(new { success = false, message = "Error: " + ex.Message });
+            }
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> BulkDelete(List<int> ids)
+        {
+            await LoadPermissions("Personal");
+            if (ids == null || !ids.Any())
+                return Json(new { success = false, message = "No hay registros seleccionados." });
+
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try
+            {
+                var staffList = await _context.ProcedureStaff
+                    .Where(s => ids.Contains(s.Id))
+                    .ToListAsync();
+
+                foreach (var staff in staffList)
+                {
+                    _context.ProcedureStaff.Remove(staff);
+                }
+
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+                return Json(new { success = true, message = $"{staffList.Count} registro(s) de personal eliminados correctamente." });
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                return Json(new { success = false, message = "Error al eliminar: " + ex.Message });
             }
         }
     }

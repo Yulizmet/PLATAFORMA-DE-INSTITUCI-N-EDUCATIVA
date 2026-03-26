@@ -13,7 +13,7 @@
                 <p class="text-muted small">Esta acción no se puede deshacer.</p>
             </div>
             <div class="modal-footer">
-                <form id="formProcedureMaster" method="post" action="/Procedures/ProcedureConfiguration/DeleteConfirmed">
+                <form id="formDeleteProcedure" method="post" action="/Procedures/ProcedureConfiguration/DeleteConfirmed">
                     @Html.AntiForgeryToken()
                     <input type="hidden" name="id" value="@Model.Id" />
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>

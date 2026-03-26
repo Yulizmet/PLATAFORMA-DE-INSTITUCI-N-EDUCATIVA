@@ -1,4 +1,5 @@
 ﻿// Areas/Grades/Controllers/SchoolCycleWizardController.cs
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -10,6 +11,8 @@ using System.Text.Json;
 namespace SchoolManager.Areas.Grades.Controllers
 {
     [Area("Grades")]
+    [Authorize(Roles = "Administrator")]
+
     public class SchoolCycleWizardController : Controller
     {
         private readonly AppDbContext _context;
@@ -112,7 +115,6 @@ namespace SchoolManager.Areas.Grades.Controllers
         {
             var model = GetModelFromTempData();
 
-            // 👇 DEPURACIÓN
             System.Diagnostics.Debug.WriteLine($"=== STEP3 GET ===");
             System.Diagnostics.Debug.WriteLine($"Materias recuperadas: {model.Subjects.Count}");
             System.Diagnostics.Debug.WriteLine($"Grupos: {model.Groups?.Count ?? 0}");
