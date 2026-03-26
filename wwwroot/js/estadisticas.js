@@ -20,7 +20,7 @@
 
     let charts = {};
 
-    // ── Sin animaciones: opción que se mezcla sin romper otras opciones ───────
+    // ── Sin animaciones ───────────────────────────────────────────────────────
     function noAnim(opts) {
         opts = opts || {};
         opts.animation = false;
@@ -87,7 +87,6 @@
     function makeChart(id, config) {
         const el = document.getElementById(id); if (!el) return null;
         if (charts[id]) { charts[id].destroy(); }
-        // Deshabilitar animaciones sin romper otras opciones
         config.options = noAnim(config.options);
         charts[id] = new Chart(el.getContext('2d'), config);
         return charts[id];
@@ -113,7 +112,6 @@
             plugins: vlOpts('#fff')
         };
         if (!extra) return base;
-        // Mezclar sin romper plugins ni scales
         if (extra.scales) base.scales = Object.assign(base.scales, extra.scales);
         if (extra.plugins) base.plugins = Object.assign(base.plugins, extra.plugins);
         return base;
@@ -133,6 +131,33 @@
     }
     function pagText(from, to, total) {
         return total > 0 ? `Mostrando ${from}-${to} de ${total}` : 'Sin resultados';
+    }
+
+    // ── Helper: detectar vista/sub-vista activa ──────────────────────────────
+    // FIX: centraliza la detección de qué sección está visible para
+    //      que tanto Excel como PDF usen la misma lógica.
+    function getActiveSection() {
+        const viewStudents = document.getElementById('viewStudents');
+        const viewSocialServices = document.getElementById('viewSocialServices');
+        const viewProcedures = document.getElementById('viewProcedures');
+        const viewBitacoras = document.getElementById('viewBitacoras');
+        const subViewSemestre = document.getElementById('subViewSemestre');
+        const subViewPsicologia = document.getElementById('subViewPsicologia');
+
+        if (viewStudents && !viewStudents.classList.contains('d-none')) {
+            // Detectar sub-vista activa dentro de Calificaciones
+            if (subViewSemestre && !subViewSemestre.classList.contains('d-none')) {
+                return 'calificaciones_semestre';
+            }
+            return 'calificaciones_grupo';
+        }
+        if (viewSocialServices && !viewSocialServices.classList.contains('d-none')) return 'social';
+        if (viewProcedures && !viewProcedures.classList.contains('d-none')) return 'tramites';
+        if (viewBitacoras && !viewBitacoras.classList.contains('d-none')) {
+            if (subViewPsicologia && !subViewPsicologia.classList.contains('d-none')) return 'psicologia';
+            return 'enfermeria';
+        }
+        return null;
     }
 
     // ════════════════════════════════════════════════════════════════════════
@@ -269,7 +294,7 @@
     function applyGroupFilters() {
         const name = ($('#filterGrupoName').val() || '').toLowerCase();
         const status = $('#filterGrupoStatus').val() || '';
-        const genero = $('#filterGrupoGenero').val() || '';
+        const genero = ($('#filterGrupoGenero').val() || '');
         const grupo = ($('#filterGrupoGrupo').val() || '').toLowerCase();
         filteredGroups = students.filter(s =>
             (!name || (s.Nombre || '').toLowerCase().includes(name))
@@ -294,9 +319,9 @@
         if (!list || !list.length) { tbody.html('<tr><td colspan="8" class="text-center text-muted py-4">Sin datos disponibles</td></tr>'); $('#pageInfo').text('Sin resultados'); return; }
         const { items, from, to, total } = paginate(list, pageStudents, PAGE_SIZE);
         items.forEach(s => {
-            const badge = s.Estado === 'Aprobado'   ? '<span class="badge bg-success">Aprobado</span>'
-                        : s.Estado === 'Reprobado' ? '<span class="badge bg-danger">Reprobado</span>'
-                        : s.Estado === 'Cursando'  ? '<span class="badge bg-warning text-dark">Cursando</span>'
+            const badge = s.Estado === 'Aprobado' ? '<span class="badge bg-success">Aprobado</span>'
+                : s.Estado === 'Reprobado' ? '<span class="badge bg-danger">Reprobado</span>'
+                    : s.Estado === 'Cursando' ? '<span class="badge bg-warning text-dark">Cursando</span>'
                         : '<span class="badge bg-secondary">Inscrito</span>';
             const fecha = s.FechaInscripcion ? new Date(s.FechaInscripcion).toISOString().slice(0, 10) : '';
             tbody.append(`<tr data-name="${escHtml(s.Nombre)}" data-status="${escHtml(s.Estado)}" data-genero="${escHtml(s.Genero)}" data-semestre="${s.Semestre}"><td>${s.Id}</td><td>${escHtml(s.Nombre)}</td><td>${escHtml(s.Genero)}</td><td>${escHtml(s.Curso)}</td><td>${s.Semestre}</td><td>${badge}</td><td>${s.Nota}</td><td>${fecha}</td></tr>`);
@@ -309,9 +334,9 @@
         if (!list || !list.length) { tbody.html('<tr><td colspan="8" class="text-center text-muted py-4">Sin datos disponibles</td></tr>'); $('#pageInfoGrupo').text('Sin resultados'); return; }
         const { items, from, to, total } = paginate(list, pageGroups, PAGE_SIZE);
         items.forEach(s => {
-            const badge = s.Estado === 'Aprobado'   ? '<span class="badge bg-success">Aprobado</span>'
-                        : s.Estado === 'Reprobado' ? '<span class="badge bg-danger">Reprobado</span>'
-                        : s.Estado === 'Cursando'  ? '<span class="badge bg-warning text-dark">Cursando</span>'
+            const badge = s.Estado === 'Aprobado' ? '<span class="badge bg-success">Aprobado</span>'
+                : s.Estado === 'Reprobado' ? '<span class="badge bg-danger">Reprobado</span>'
+                    : s.Estado === 'Cursando' ? '<span class="badge bg-warning text-dark">Cursando</span>'
                         : '<span class="badge bg-secondary">Inscrito</span>';
             const fecha = s.FechaInscripcion ? new Date(s.FechaInscripcion).toISOString().slice(0, 10) : '';
             tbody.append(`<tr data-name="${escHtml(s.Nombre)}" data-status="${escHtml(s.Estado)}" data-genero="${escHtml(s.Genero)}" data-grupo="${escHtml(s.Grupo || '')}"><td>${s.Id}</td><td>${escHtml(s.Nombre)}</td><td>${escHtml(s.Genero)}</td><td>${escHtml(s.Curso)}</td><td>${escHtml(s.Grupo || 'Sin grupo')}</td><td>${badge}</td><td>${s.Nota}</td><td>${fecha}</td></tr>`);
@@ -736,15 +761,13 @@
     // GENERAL — Dashboard ejecutivo
     // ════════════════════════════════════════════════════════════════════════
     function renderGeneralCharts() {
-        // ── KPI cards ────────────────────────────────────────────────────────
         const totalBitacoras = psychologyLogs.length + medicalLogs.length;
         const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
-        set('genKpiAlumnos',   students.length);
-        set('genKpiServicio',  socialServices.length);
-        set('genKpiTramites',  procedures.length);
+        set('genKpiAlumnos', students.length);
+        set('genKpiServicio', socialServices.length);
+        set('genKpiTramites', procedures.length);
         set('genKpiBitacoras', totalBitacoras);
 
-        // ── Bloque 1: Alumnos ─────────────────────────────────────────────────
         const stMap = { Inscrito: 0, Cursando: 0, Aprobado: 0, Reprobado: 0 };
         students.forEach(s => { if (stMap[s.Estado] !== undefined) stMap[s.Estado]++; });
         const stLabels = Object.keys(stMap).filter(k => stMap[k] > 0);
@@ -758,7 +781,6 @@
             });
         } else { emptyChart('genAlumnosPie'); }
 
-        // Tabla resumen alumnos
         const genAlumnosBody = document.getElementById('genAlumnosBody');
         if (genAlumnosBody) {
             const total = students.length || 1;
@@ -770,14 +792,12 @@
                 }).join('');
         }
 
-        // Barra de aprobados
         const aprobados = stMap['Aprobado'] || 0;
         const aprobPct = students.length > 0 ? ((aprobados / students.length) * 100).toFixed(1) : '0.0';
         set('genAprobadosPct', aprobPct + '%');
         const aprobBar = document.getElementById('genAprobadosBar');
         if (aprobBar) aprobBar.style.width = aprobPct + '%';
 
-        // ── Bloque 2: Servicio Social ─────────────────────────────────────────
         const ssMap = { 'Completado': 0, 'En progreso': 0, 'Pendiente': 0 };
         socialServices.forEach(i => { const k = ssMap[i.Status] !== undefined ? i.Status : 'Pendiente'; ssMap[k]++; });
         const ssLabels = Object.keys(ssMap).filter(k => ssMap[k] > 0);
@@ -790,11 +810,10 @@
             });
         } else { emptyChart('genServicioPie'); }
 
-        // Tabla resumen servicio social
         const ssBody = document.getElementById('genServicioBody');
         if (ssBody) {
             const totalPresent = socialServices.reduce((s, i) => s + (i.TotalPresent || 0), 0);
-            const totalAbsent  = socialServices.reduce((s, i) => s + (i.TotalAbsent || 0), 0);
+            const totalAbsent = socialServices.reduce((s, i) => s + (i.TotalAbsent || 0), 0);
             const wa = socialServices.filter(i => (i.TotalAttendances || 0) > 0);
             const avgAtt = wa.length > 0
                 ? (wa.reduce((s, i) => s + (i.AttendanceRate || 0), 0) / wa.length).toFixed(1)
@@ -806,7 +825,6 @@
                 <tr><td>Asistencia promedio</td><td class="text-end fw-semibold">${avgAtt}%</td></tr>`;
         }
 
-        // ── Bloque 3: Trámites ────────────────────────────────────────────────
         const trCodeMap = { APPROVED: 'Pagó inscripción', PENDING: 'Pendiente', REJECTED: 'No pagó' };
         const trMap = { 'Pagó inscripción': 0, 'Pendiente': 0, 'No pagó': 0 };
         procedures.forEach(i => { const k = trCodeMap[i.InternalCode] || 'Otro'; trMap[k] = (trMap[k] || 0) + 1; });
@@ -822,11 +840,11 @@
 
         const trBody = document.getElementById('genTramitesBody');
         if (trBody) {
-            const trTotal    = procedures.length;
+            const trTotal = procedures.length;
             const trApproved = trMap['Pagó inscripción'] || 0;
-            const trPending  = trMap['Pendiente'] || 0;
+            const trPending = trMap['Pendiente'] || 0;
             const trRejected = trMap['No pagó'] || 0;
-            const trPct      = trTotal > 0 ? ((trApproved / trTotal) * 100).toFixed(1) : '0.0';
+            const trPct = trTotal > 0 ? ((trApproved / trTotal) * 100).toFixed(1) : '0.0';
             trBody.innerHTML = `
                 <tr><td>Total solicitudes</td><td class="text-end fw-semibold">${trTotal}</td></tr>
                 <tr><td><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#198754;margin-right:6px;"></span>Pagó inscripción</td><td class="text-end fw-semibold text-success">${trApproved}</td></tr>
@@ -835,14 +853,13 @@
                 <tr class="table-light"><td class="text-muted small">% con pago</td><td class="text-end fw-bold text-success">${trPct}%</td></tr>`;
         }
 
-        // ── Bloque 4: Bitácoras ───────────────────────────────────────────────
         const psyMap = { 'Asistió': 0, 'No asistió': 0, 'Justificado': 0 };
         psychologyLogs.forEach(i => { const k = psyMap[i.AttendanceStatus] !== undefined ? i.AttendanceStatus : 'No asistió'; psyMap[k]++; });
         const medStatusMap = { 'Estable': 0, 'Alta': 0, 'Urgente': 0, 'Critico': 0, 'Observacion': 0, 'Pendiente': 0 };
         medicalLogs.forEach(i => { const s = i.Status || 'Pendiente'; if (medStatusMap[s] !== undefined) medStatusMap[s]++; else medStatusMap['Pendiente']++; });
         const medPositivo = (medStatusMap['Estable'] || 0) + (medStatusMap['Alta'] || 0);
         const medNegativo = (medStatusMap['Urgente'] || 0) + (medStatusMap['Critico'] || 0);
-        const medOtro     = (medStatusMap['Observacion'] || 0) + (medStatusMap['Pendiente'] || 0);
+        const medOtro = (medStatusMap['Observacion'] || 0) + (medStatusMap['Pendiente'] || 0);
 
         makeChart('genBitacorasBar', {
             type: 'bar',
@@ -868,16 +885,16 @@
     }
 
     // ════════════════════════════════════════════════════════════════════════
-    // EXPORTAR CSV
+    // EXPORTAR CSV  — FIX: usa getActiveSection() para detectar sub-vista
     // ════════════════════════════════════════════════════════════════════════
-    function exportVisibleTableToCSV(sel, fn) {
-        const $t = $(sel); if (!$t.length) return;
+    function exportVisibleTableToCSV(tableId, fn) {
+        const $t = $('#' + tableId); if (!$t.length) return;
         const rows = [], h = [];
-        $t.find('thead th').each(function () { h.push(csvEsc($(this).text().trim())); });
+        $t.find('thead th').each(function () { h.push(csvEsc($(this).text().replace('▼', '').replace('▲', '').trim())); });
         rows.push(h.join(','));
-        $t.find('tbody tr:visible').each(function () {
+        $t.find('tbody tr').each(function () {
             const c = []; $(this).find('td').each(function () { c.push(csvEsc($(this).text().trim())); });
-            rows.push(c.join(','));
+            if (c.length) rows.push(c.join(','));
         });
         dlCSV(rows.join('\n'), fn);
     }
@@ -894,7 +911,7 @@
     }
 
     // ════════════════════════════════════════════════════════════════════════
-    // EXPORTAR PDF
+    // EXPORTAR PDF  — FIX: usa getActiveSection() para detectar sub-vista
     // ════════════════════════════════════════════════════════════════════════
     function exportToPDF() {
         if (!window.jspdf || !window.jspdf.jsPDF) { alert('jsPDF no cargó, verifica tu conexión.'); return; }
@@ -905,29 +922,44 @@
         const margin = 12;
         const dateStr = new Date().toLocaleDateString('es-MX');
 
-        // Detectar sección activa
+        // ── FIX: detectar sección activa con helper centralizado ──────────────
+        const section = getActiveSection();
         let title = document.getElementById('pageTitle').textContent;
-        let tableSelector = null, chartIds = [], filename = 'estadisticas.pdf';
+        let tableId = null, chartIds = [], filename = 'estadisticas.pdf';
 
-        if (!document.getElementById('viewStudents').classList.contains('d-none')) {
-            tableSelector = '#studentsTable'; chartIds = ['pieChart', 'barChart', 'gradeHistogramChart', 'courseStatusStacked'];
-            filename = `alumnos_${new Date().toISOString().slice(0, 10)}.pdf`;
-        } else if (!document.getElementById('viewSocialServices').classList.contains('d-none')) {
-            tableSelector = '#socialServiceTable'; chartIds = ['socialPieChart', 'socialHoursBar', 'socialAttendanceBar', 'socialHoursStacked'];
+        if (section === 'calificaciones_semestre') {
+            title = 'Calificaciones — Por Semestre';
+            tableId = 'studentsTable';
+            chartIds = ['pieChart', 'barChart', 'gradeHistogramChart', 'courseStatusStacked'];
+            filename = `calificaciones_semestre_${new Date().toISOString().slice(0, 10)}.pdf`;
+        } else if (section === 'calificaciones_grupo') {
+            title = 'Calificaciones — Por Grupo';
+            tableId = 'grupoTable';
+            chartIds = ['pieChartGrupo', 'barChartGrupo', 'gradeHistogramChartGrupo', 'groupStatusStacked'];
+            filename = `calificaciones_grupo_${new Date().toISOString().slice(0, 10)}.pdf`;
+        } else if (section === 'social') {
+            title = 'Estadísticas de Servicio Social';
+            tableId = 'socialServiceTable';
+            chartIds = ['socialPieChart', 'socialHoursBar', 'socialAttendanceBar', 'socialHoursStacked'];
             filename = `servicios_sociales_${new Date().toISOString().slice(0, 10)}.pdf`;
-        } else if (!document.getElementById('viewProcedures').classList.contains('d-none')) {
-            tableSelector = '#proceduresTable'; chartIds = ['tramitesPieChart', 'tramitesAreaBar', 'tramitesTipoBar', 'tramitesDiasBar'];
+        } else if (section === 'tramites') {
+            title = 'Estadísticas de Trámites';
+            tableId = 'proceduresTable';
+            chartIds = ['tramitesPieChart', 'tramitesAreaBar', 'tramitesTipoBar', 'tramitesDiasBar'];
             filename = `tramites_${new Date().toISOString().slice(0, 10)}.pdf`;
-        } else if (!document.getElementById('viewBitacoras').classList.contains('d-none')) {
-            if (!document.getElementById('subViewPsicologia').classList.contains('d-none')) {
-                title = 'Bitácoras — Psicología'; tableSelector = '#psychologyTable';
-                chartIds = ['psyPieChart', 'psyStudentBar', 'psyMonthBar', 'psyAttendanceStacked'];
-                filename = `psicologia_${new Date().toISOString().slice(0, 10)}.pdf`;
-            } else {
-                title = 'Bitácoras — Enfermería'; tableSelector = '#medicalTable';
-                chartIds = ['medPieChart', 'medReasonBar', 'medMonthBar', 'medStudentBar'];
-                filename = `enfermeria_${new Date().toISOString().slice(0, 10)}.pdf`;
-            }
+        } else if (section === 'psicologia') {
+            title = 'Bitácoras — Psicología';
+            tableId = 'psychologyTable';
+            chartIds = ['psyPieChart', 'psyStudentBar', 'psyMonthBar', 'psyAttendanceStacked'];
+            filename = `psicologia_${new Date().toISOString().slice(0, 10)}.pdf`;
+        } else if (section === 'enfermeria') {
+            title = 'Bitácoras — Enfermería';
+            tableId = 'medicalTable';
+            chartIds = ['medPieChart', 'medReasonBar', 'medMonthBar', 'medStudentBar'];
+            filename = `enfermeria_${new Date().toISOString().slice(0, 10)}.pdf`;
+        } else {
+            alert('Selecciona una sección antes de exportar el PDF.');
+            return;
         }
 
         // Cabecera
@@ -941,7 +973,7 @@
         let cy = 22;
 
         // Tarjetas de stats
-        const statCards = getPDFStatCards();
+        const statCards = getPDFStatCards(section);
         if (statCards.length) {
             const cw = (pageW - margin * 2 - (statCards.length - 1) * 4) / statCards.length;
             statCards.forEach((card, i) => {
@@ -956,15 +988,17 @@
             doc.setTextColor(0, 0, 0); cy += 20;
         }
 
-        // Tabla
-        if (tableSelector && window.jspdf) {
-            const $table = $(tableSelector);
+        // Tabla — exporta TODOS los datos filtrados (no sólo la página visible)
+        if (tableId) {
+            const $table = $('#' + tableId);
             const headers = [];
-            $table.find('thead th').each(function () { headers.push($(this).text().replace('▼', '').trim()); });
+            $table.find('thead th').each(function () {
+                headers.push($(this).text().replace('▼', '').replace('▲', '').trim());
+            });
             const rows = [];
-            $table.find('tbody tr:visible').each(function () {
+            $table.find('tbody tr').each(function () {
                 const row = []; $(this).find('td').each(function () { row.push($(this).text().trim()); });
-                rows.push(row);
+                if (row.length) rows.push(row);
             });
             if (rows.length) {
                 doc.setFontSize(8); doc.setFont('helvetica', 'bold'); doc.setTextColor(98, 9, 0);
@@ -976,7 +1010,6 @@
                     headStyles: { fillColor: [98, 9, 0], textColor: 255, fontStyle: 'bold' },
                     alternateRowStyles: { fillColor: [245, 242, 240] },
                     didDrawPage: (data) => {
-                        // Solo redibujar cabecera en páginas adicionales (no en la primera)
                         if (data.pageNumber > 1) {
                             doc.setFillColor(98, 9, 0); doc.rect(0, 0, pageW, 10, 'F');
                             doc.setTextColor(255, 255, 255); doc.setFontSize(9);
@@ -1015,7 +1048,8 @@
                 }
                 const cx = margin + col * (chartW + 6);
                 const canvas = document.getElementById(id);
-                const chartTitle = canvas ? (canvas.closest('.card') || {}).querySelector && (canvas.closest('.card').querySelector('h5') || {}).textContent || '' : '';
+                const cardEl = canvas ? canvas.closest('.card') : null;
+                const chartTitle = cardEl ? (cardEl.querySelector('h5') || {}).textContent || '' : '';
                 doc.setFontSize(7); doc.setFont('helvetica', 'bold'); doc.setTextColor(98, 9, 0);
                 doc.text(chartTitle, cx, cy); doc.setTextColor(0, 0, 0);
                 try {
@@ -1041,18 +1075,43 @@
         doc.save(filename);
     }
 
-    function getPDFStatCards() {
-        if (!document.getElementById('viewStudents').classList.contains('d-none'))
-            return [{ label: 'Total alumnos', value: $('#statTotal').text() }, { label: 'Inscritos', value: $('#statInscritos').text() }, { label: 'Cursando', value: $('#statCursando').text() }, { label: 'Aprobados', value: $('#statAprobados').text() }];
-        if (!document.getElementById('viewSocialServices').classList.contains('d-none'))
-            return [{ label: 'Con asistencia', value: $('#statSocialTotal').text() }, { label: 'Presentes', value: $('#statSocialHours').text() }, { label: 'Ausencias', value: $('#statSocialPending').text() }, { label: 'Promedio', value: $('#statSocialAttendance').text() }];
-        if (!document.getElementById('viewProcedures').classList.contains('d-none'))
-            return [{ label: 'Total', value: $('#statProcsTotal').text() }, { label: 'Acción req.', value: $('#statProcsAction').text() }, { label: 'En proceso', value: $('#statProcsInProgress').text() }, { label: 'Finalizadas', value: $('#statProcsFinalized').text() }];
-        if (!document.getElementById('viewBitacoras').classList.contains('d-none')) {
-            if (!document.getElementById('subViewPsicologia').classList.contains('d-none'))
-                return [{ label: 'Total', value: $('#statPsyTotal').text() }, { label: 'Asistió', value: $('#statPsyAttended').text() }, { label: 'No asistió', value: $('#statPsyAbsent').text() }, { label: 'Justificados', value: $('#statPsyJustified').text() }];
-            return [{ label: 'Total', value: $('#statMedTotal').text() }, { label: 'Atendidos', value: $('#statMedAttended').text() }, { label: 'Pendientes', value: $('#statMedPending').text() }, { label: 'Otros', value: $('#statMedOther').text() }];
-        }
+    // FIX: recibe section como parámetro en lugar de releer el DOM
+    function getPDFStatCards(section) {
+        if (section === 'calificaciones_semestre' || section === 'calificaciones_grupo')
+            return [
+                { label: 'Total alumnos', value: $('#statTotal').text() },
+                { label: 'Inscritos', value: $('#statInscritos').text() },
+                { label: 'Cursando', value: $('#statCursando').text() },
+                { label: 'Aprobados', value: $('#statAprobados').text() }
+            ];
+        if (section === 'social')
+            return [
+                { label: 'Con asistencia', value: $('#statSocialTotal').text() },
+                { label: 'Presentes', value: $('#statSocialHours').text() },
+                { label: 'Ausencias', value: $('#statSocialPending').text() },
+                { label: 'Promedio', value: $('#statSocialAttendance').text() }
+            ];
+        if (section === 'tramites')
+            return [
+                { label: 'Total', value: $('#statProcsTotal').text() },
+                { label: 'Acción req.', value: $('#statProcsAction').text() },
+                { label: 'En proceso', value: $('#statProcsInProgress').text() },
+                { label: 'Finalizadas', value: $('#statProcsFinalized').text() }
+            ];
+        if (section === 'psicologia')
+            return [
+                { label: 'Total', value: $('#statPsyTotal').text() },
+                { label: 'Asistió', value: $('#statPsyAttended').text() },
+                { label: 'No asistió', value: $('#statPsyAbsent').text() },
+                { label: 'Justificados', value: $('#statPsyJustified').text() }
+            ];
+        if (section === 'enfermeria')
+            return [
+                { label: 'Total', value: $('#statMedTotal').text() },
+                { label: 'Atendidos', value: $('#statMedAttended').text() },
+                { label: 'Pendientes', value: $('#statMedPending').text() },
+                { label: 'Otros', value: $('#statMedOther').text() }
+            ];
         return [];
     }
 
@@ -1065,7 +1124,7 @@
         filteredStudents = [...students]; populateStudentsTable(filteredStudents); updateStudentCards(filteredStudents); renderAllStudentCharts(filteredStudents);
         filteredGroups = [...students]; populateGroupTable(filteredGroups); renderAllGroupCharts(filteredGroups);
         window.refreshSemestreCharts = function () { renderAllStudentCharts(filteredStudents); };
-        window.refreshGroupCharts    = function () { renderAllGroupCharts(filteredGroups); };
+        window.refreshGroupCharts = function () { renderAllGroupCharts(filteredGroups); };
 
         filteredSocial = [...socialServices]; populateSocialTable(filteredSocial); updateSocialCards(filteredSocial); renderAllSocialCharts(filteredSocial);
         filteredProcs = [...procedures]; populateProcsTable(filteredProcs); updateProcCards(filteredProcs); renderAllTramitesCharts(filteredProcs);
@@ -1078,8 +1137,8 @@
         $('#applyStudentFilters').on('click', applyStudentFilters);
         $('#resetFilters').on('click', resetStudentFilters);
         $('#firstPage').on('click', () => { pageStudents = 1; populateStudentsTable(filteredStudents); });
-        $('#prevPage').on('click',  () => { if (pageStudents > 1) { pageStudents--; populateStudentsTable(filteredStudents); } });
-        $('#nextPage').on('click',  () => { const m = Math.ceil(filteredStudents.length / PAGE_SIZE); if (pageStudents < m) { pageStudents++; populateStudentsTable(filteredStudents); } });
+        $('#prevPage').on('click', () => { if (pageStudents > 1) { pageStudents--; populateStudentsTable(filteredStudents); } });
+        $('#nextPage').on('click', () => { const m = Math.ceil(filteredStudents.length / PAGE_SIZE); if (pageStudents < m) { pageStudents++; populateStudentsTable(filteredStudents); } });
 
         // Calificaciones — Por Grupo
         $('#filterGrupoName,#filterGrupoGrupo').on('input', applyGroupFilters);
@@ -1087,8 +1146,8 @@
         $('#applyGroupFilters').on('click', applyGroupFilters);
         $('#resetGroupFilters').on('click', resetGroupFilters);
         $('#firstPageGrupo').on('click', () => { pageGroups = 1; populateGroupTable(filteredGroups); });
-        $('#prevPageGrupo').on('click',  () => { if (pageGroups > 1) { pageGroups--; populateGroupTable(filteredGroups); } });
-        $('#nextPageGrupo').on('click',  () => { const m = Math.ceil(filteredGroups.length / PAGE_SIZE); if (pageGroups < m) { pageGroups++; populateGroupTable(filteredGroups); } });
+        $('#prevPageGrupo').on('click', () => { if (pageGroups > 1) { pageGroups--; populateGroupTable(filteredGroups); } });
+        $('#nextPageGrupo').on('click', () => { const m = Math.ceil(filteredGroups.length / PAGE_SIZE); if (pageGroups < m) { pageGroups++; populateGroupTable(filteredGroups); } });
 
         // Servicios Sociales
         $('#filterSocialName,#filterSocialTeacher,#filterSocialGroup').on('input', applySocialFilters);
@@ -1129,19 +1188,36 @@
         // PDF
         $('#btnExportPDF').on('click', exportToPDF);
 
-        // Excel
+        // ── FIX: Excel — usa getActiveSection() para detectar sub-vista ─────
         $('#btnExportTable').on('click', function () {
             const d = new Date().toISOString().slice(0, 10);
-            if ($('#viewStudents').is(':visible'))
-                exportVisibleTableToCSV('#studentsTable', `alumnos_${d}.csv`);
-            else if ($('#viewSocialServices').is(':visible'))
-                exportDataToCSV(filteredSocial, ['Alumno', 'Maestro asesor', 'Grupo', 'Asistencias', 'Faltas', 'Justificadas', '% Asistencia', 'Estado', 'Última asistencia'], ['StudentName', 'TeacherName', 'GroupName', 'TotalPresent', 'TotalAbsent', 'TotalJustified', 'AttendanceRate', 'Status', 'LastAttendanceDate'], `servicios_sociales_${d}.csv`);
-            else if ($('#viewProcedures').is(':visible'))
-                exportDataToCSV(filteredProcs, ['Folio', 'Usuario', 'Tipo de trámite', 'Área', 'Estado', 'Fecha creación', 'Fecha actualización', 'Días transcurridos'], ['Folio', 'StudentName', 'ProcedureType', 'AreaName', 'StatusName', 'DateCreated', 'DateUpdated', 'DaysElapsed'], `tramites_${d}.csv`);
-            else if ($('#subViewPsicologia').is(':visible') && $('#viewBitacoras').is(':visible'))
-                exportDataToCSV(filteredPsy, ['Folio', 'Alumno', 'Matrícula', 'Fecha cita', 'Asistencia', 'Observaciones', 'Fecha creación'], ['Folio', 'StudentName', 'EnrollmentOrMatricula', 'AppointmentDate', 'AttendanceStatus', 'Observations', 'CreatedAt'], `psicologia_${d}.csv`);
-            else if ($('#subViewEnfermeria').is(':visible') && $('#viewBitacoras').is(':visible'))
-                exportDataToCSV(filteredMed, ['Folio', 'Alumno', 'Matrícula', 'Fecha registro', 'Motivo', 'Signos vitales', 'Observaciones', 'Acción', 'Estado'], ['Folio', 'StudentName', 'EnrollmentOrMatricula', 'RecordDate', 'ConsultationReason', 'VitalSigns', 'Observations', 'TreatmentAction', 'Status'], `enfermeria_${d}.csv`);
+            const section = getActiveSection();
+
+            if (section === 'calificaciones_semestre') {
+                exportVisibleTableToCSV('studentsTable', `calificaciones_semestre_${d}.csv`);
+            } else if (section === 'calificaciones_grupo') {
+                exportVisibleTableToCSV('grupoTable', `calificaciones_grupo_${d}.csv`);
+            } else if (section === 'social') {
+                exportDataToCSV(filteredSocial,
+                    ['Alumno', 'Maestro asesor', 'Grupo', 'Asistencias', 'Faltas', 'Justificadas', '% Asistencia', 'Estado', 'Última asistencia'],
+                    ['StudentName', 'TeacherName', 'GroupName', 'TotalPresent', 'TotalAbsent', 'TotalJustified', 'AttendanceRate', 'Status', 'LastAttendanceDate'],
+                    `servicios_sociales_${d}.csv`);
+            } else if (section === 'tramites') {
+                exportDataToCSV(filteredProcs,
+                    ['Folio', 'Usuario', 'Tipo de trámite', 'Área', 'Estado', 'Fecha creación', 'Fecha actualización', 'Días transcurridos'],
+                    ['Folio', 'StudentName', 'ProcedureType', 'AreaName', 'StatusName', 'DateCreated', 'DateUpdated', 'DaysElapsed'],
+                    `tramites_${d}.csv`);
+            } else if (section === 'psicologia') {
+                exportDataToCSV(filteredPsy,
+                    ['Folio', 'Alumno', 'Matrícula', 'Fecha cita', 'Asistencia', 'Observaciones', 'Fecha creación'],
+                    ['Folio', 'StudentName', 'EnrollmentOrMatricula', 'AppointmentDate', 'AttendanceStatus', 'Observations', 'CreatedAt'],
+                    `psicologia_${d}.csv`);
+            } else if (section === 'enfermeria') {
+                exportDataToCSV(filteredMed,
+                    ['Folio', 'Alumno', 'Matrícula', 'Fecha registro', 'Motivo', 'Signos vitales', 'Observaciones', 'Acción', 'Estado'],
+                    ['Folio', 'StudentName', 'EnrollmentOrMatricula', 'RecordDate', 'ConsultationReason', 'VitalSigns', 'Observations', 'TreatmentAction', 'Status'],
+                    `enfermeria_${d}.csv`);
+            }
         });
     });
 
@@ -1194,10 +1270,8 @@ function updatePagination() {
     $('#pageInfo').text(`Mostrando ${from}-${Math.min(end, total)} de ${total}`);
 }
 
-// Estado de ordenamiento por tabla/columna
 const sortState = {};
 
-// Clic en la FLECHA ▼ — abre el popup de filtros
 $(document).on('click', '.excel-icon', function (e) {
     e.stopPropagation();
 
@@ -1259,7 +1333,6 @@ $(document).on('click', '.excel-icon', function (e) {
     });
 });
 
-// Clic en el TEXTO del encabezado (no en la flecha) — ordena A→Z / Z→A alternando
 $(document).on('click', '.excel-header', function (e) {
     if ($(e.target).hasClass('excel-icon')) return;
     e.stopPropagation();
@@ -1314,5 +1387,3 @@ $(document).on('click', function (e) {
     if (!$(e.target).closest('.excel-filter-popup').length && !$(e.target).closest('.excel-header').length)
         $('.excel-filter-popup').remove();
 });
-
-// Pagination for Calificaciones is handled inside the IIFE $(function(){}).
