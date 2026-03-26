@@ -1,4 +1,6 @@
-﻿namespace SchoolManager.Areas.Procedures.ViewModels
+﻿using SchoolManager.Models;
+
+namespace SchoolManager.Areas.Procedures.ViewModels
 {
     public class ExtraInfoViewModel
     {
@@ -17,6 +19,8 @@
         public string ApplicantFolio { get; set; } = null!;
         public bool IsAspirante { get; set; }
 
+        public procedure_flow? ProcedureFlow { get; set; }
+        public List<procedure_flow> FullProgressSteps { get; set; } = new List<procedure_flow>();
         public List<DocumentDetail> Documents { get; set; } = new List<DocumentDetail>();
         public List<MonitoringStep> History { get; set; } = new List<MonitoringStep>();
     }

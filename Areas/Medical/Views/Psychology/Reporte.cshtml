@@ -1,0 +1,203 @@
+﻿@{
+    Layout = "~/Areas/Medical/Views/Shared/_LayoutDashboard.cshtml";
+    ViewData["Title"] = "Reporte Psicológico";
+}
+
+<div class="dashboard-header">
+    <div class="header-content d-flex align-items-start justify-content-between flex-wrap">
+        <div>
+            <h2 class="text-white">REPORTE DE ATENCIONES PSICOLÓGICAS</h2>
+            <div class="buttons-left">
+                <a asp-action="Create" class="btn-header">
+                    <i class="bi bi-plus-circle"></i> Crear Registro
+                </a>
+                <a asp-action="Index" class="btn-header">
+                    <i class="bi bi-journal-medical"></i> Ver Registros
+                </a>
+                <a asp-action="Reporte" class="btn-header ">
+                    <i class="bi bi-file-earmark-bar-graph"></i> Reporte
+                </a>
+            </div>
+        </div>
+        <div class="buttons-right">
+            <a asp-controller="Dashboard" asp-action="Index" class="btn-header">
+                <i class="bi bi-arrow-left-circle"></i> Regresar al inicio
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="container mt-4">
+    <div class="card p-4 shadow-sm">
+
+        <h5 class="section-title">FILTRAR POR PERIODO</h5>
+
+        <div class="d-flex gap-2 flex-wrap mb-4">
+            <button class="btn" id="btn-dia" onclick="cargarReporte('dia')">Hoy</button>
+            <button class="btn" id="btn-semana" onclick="cargarReporte('semana')">Última semana</button>
+            <button class="btn" id="btn-mes" onclick="cargarReporte('mes')">Último mes</button>
+            <button class="btn" id="btn-personalizado" onclick="toggleFechas()">Personalizado</button>
+        </div>
+
+        <div id="div-fechas" style="display:none;" class="d-flex gap-3 align-items-end mb-4">
+            <div class="info-block">
+                <label class="fw-bold text-uppercase">Fecha inicio</label>
+                <input type="date" id="fechaInicio" class="form-control" />
+            </div>
+            <div class="info-block">
+                <label class="fw-bold text-uppercase">Fecha fin</label>
+                <input type="date" id="fechaFin" class="form-control" />
+            </div>
+            <button class="btn btn-dark" onclick="cargarReporte('personalizado')">Buscar</button>
+        </div>
+
+        <hr class="section-divider" />
+
+        <div id="div-resumen" style="display:none;">
+
+            <div class="row g-4 mb-4">
+                <div class="col-md-3">
+                    <div class="info-block">
+                        <label class="fw-bold text-uppercase">Total de registros</label>
+                        <div class="info-box fw-bold fs-4 text-center" id="txt-total">0</div>
+                    </div>
+                </div>
+                <div class="col-md-9">
+                    <div class="info-block">
+                        <label class="fw-bold text-uppercase">Desglose por asistencia</label>
+                        <div id="div-asistencia" class="d-flex gap-2 flex-wrap mt-2"></div>
+                    </div>
+                </div>
+            </div>
+
+            <h5 class="section-title">LISTA DE REGISTROS</h5>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Folio</th>
+                            <th>Matrícula</th>
+                            <th>Alumno</th>
+                            <th>Asistencia</th>
+                            <th>Fecha</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tbody-reporte"></tbody>
+                </table>
+            </div>
+
+            <hr class="section-divider" />
+
+            <div class="d-flex justify-content-end gap-2 mt-4">
+                <button class="btn" id="btn-csv" onclick="descargarCSV()" style="border: 1.5px solid #6c757d;">
+                    <i class="bi bi-filetype-csv"></i> DESCARGAR CSV
+                </button>
+                <button class="btn" id="btn-pdf" onclick="descargarPDF()" style="border: 1.5px solid #6c757d;">
+                    <i class="bi bi-file-earmark-pdf"></i> DESCARGAR PDF
+                </button>
+            </div>
+
+        </div>
+
+        <div id="div-vacio" class="text-center text-muted py-4" style="display:none;">
+            No hay registros en este periodo.
+        </div>
+
+        <div id="div-inicial" class="text-center text-muted py-4">
+            Selecciona un periodo para ver el reporte.
+        </div>
+
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        var filtroActual = 'dia';
+        var fechaInicioActual = null;
+        var fechaFinActual = null;
+
+        function toggleFechas() {
+            var div = document.getElementById('div-fechas');
+            div.style.display = div.style.display === 'none' ? 'flex' : 'none';
+            marcarFiltro('personalizado');
+        }
+
+        function marcarFiltro(filtro) {
+            ['dia', 'semana', 'mes', 'personalizado'].forEach(function (f) {
+                var btn = document.getElementById('btn-' + f);
+                btn.style.background = f === filtro ? '#620900' : '';
+                btn.style.color = f === filtro ? '#fff' : '';
+            });
+        }
+
+        function cargarReporte(filtro) {
+            filtroActual = filtro;
+            marcarFiltro(filtro);
+
+            if (filtro !== 'personalizado')
+                document.getElementById('div-fechas').style.display = 'none';
+
+            var url = '@Url.Action("ObtenerDatosReporte", "Psychology")?filtro=' + filtro;
+
+            if (filtro === 'personalizado') {
+                fechaInicioActual = document.getElementById('fechaInicio').value;
+                fechaFinActual = document.getElementById('fechaFin').value;
+                if (!fechaInicioActual || !fechaFinActual) {
+                    alert('Selecciona las fechas de inicio y fin.');
+                    return;
+                }
+                url += '&fechaInicio=' + fechaInicioActual + '&fechaFin=' + fechaFinActual;
+            }
+
+            fetch(url)
+                .then(r => r.json())
+                .then(data => {
+                    document.getElementById('div-inicial').style.display = 'none';
+                    document.getElementById('txt-total').textContent = data.total;
+
+                    var divAsistencia = document.getElementById('div-asistencia');
+                    divAsistencia.innerHTML = '';
+                    data.porAsistencia.forEach(function (e) {
+                        var clase = e.asistencia === 'Asistió' ? 'asistencia-asistio' :
+                                    e.asistencia === 'No asistió' ? 'asistencia-no' :
+                                    e.asistencia === 'Justificado' ? 'asistencia-justificado' : 'bg-secondary';
+                        divAsistencia.innerHTML += `<span class="badge ${clase} d-inline-block px-3 py-2 fs-6">
+                            ${e.asistencia}: ${e.cantidad}
+                        </span>`;
+                    });
+
+                    var tbody = document.getElementById('tbody-reporte');
+                    tbody.innerHTML = '';
+                    data.lista.forEach(function (item) {
+                        var clase = item.asistencia === 'Asistió' ? 'asistencia-asistio' :
+                                    item.asistencia === 'No asistió' ? 'asistencia-no' :
+                                    item.asistencia === 'Justificado' ? 'asistencia-justificado' : 'bg-secondary';
+                        tbody.innerHTML += `<tr>
+                            <td><strong>${item.folio}</strong></td>
+                            <td>${item.matricula}</td>
+                            <td>${item.nombreCompleto}</td>
+                            <td><span class="badge ${clase}">${item.asistencia}</span></td>
+                            <td>${new Date(item.fecha).toLocaleDateString('es-MX')}</td>
+                        </tr>`;
+                    });
+
+                    document.getElementById('div-resumen').style.display = data.total > 0 ? 'block' : 'none';
+                    document.getElementById('div-vacio').style.display = data.total === 0 ? 'block' : 'none';
+                });
+        }
+
+        function descargarCSV() {
+            var url = '@Url.Action("DescargarCSV", "Psychology")?filtro=' + filtroActual;
+            if (filtroActual === 'personalizado')
+                url += '&fechaInicio=' + fechaInicioActual + '&fechaFin=' + fechaFinActual;
+            window.location.href = url;
+        }
+
+        function descargarPDF() {
+            var url = '@Url.Action("DescargarPDF", "Psychology")?filtro=' + filtroActual;
+            if (filtroActual === 'personalizado')
+                url += '&fechaInicio=' + fechaInicioActual + '&fechaFin=' + fechaFinActual;
+            window.location.href = url;
+        }
+    </script>
+}

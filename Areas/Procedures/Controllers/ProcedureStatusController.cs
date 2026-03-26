@@ -1,26 +1,23 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SchoolManager.Data;
 using SchoolManager.Models;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace SchoolManager.Areas.Procedures.Controllers
 {
     [Area("Procedures")]
-    public class ProcedureStatusController : Controller
+    public class ProcedureStatusController : _ProceduresBaseController
     {
-        private readonly AppDbContext _context;
-
-        public ProcedureStatusController(AppDbContext context)
-        {
-            _context = context;
-        }
+        public ProcedureStatusController(AppDbContext context) : base(context) { }
 
         public async Task<IActionResult> Index()
         {
+            await LoadPermissions("Estados");
             var statusList = await _context.ProcedureStatus
                 .OrderBy(s => s.Name)
                 .ToListAsync();
@@ -28,12 +25,16 @@ namespace SchoolManager.Areas.Procedures.Controllers
         }
 
         [HttpGet]
-        public IActionResult Create() => PartialView("_CreateModal");
+        public IActionResult Create() 
+        { 
+            return PartialView("_CreateModal"); 
+        }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(procedure_status procedureStatus)
         {
+            await LoadPermissions("Estados");
             if (!ModelState.IsValid)
             {
                 return Json(new { success = false, errors = GetErrorsFromModelState() });
@@ -54,6 +55,7 @@ namespace SchoolManager.Areas.Procedures.Controllers
         [HttpGet]
         public async Task<IActionResult> Edit(int? id)
         {
+            await LoadPermissions("Estados");
             if (id == null) return NotFound();
 
             var status = await _context.ProcedureStatus.FindAsync(id);
@@ -66,6 +68,7 @@ namespace SchoolManager.Areas.Procedures.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(procedure_status procedureStatus)
         {
+            await LoadPermissions("Estados");
             if (!ModelState.IsValid)
             {
                 return Json(new { success = false, errors = GetErrorsFromModelState() });
@@ -88,6 +91,7 @@ namespace SchoolManager.Areas.Procedures.Controllers
         [HttpGet]
         public async Task<IActionResult> Delete(int? id)
         {
+            await LoadPermissions("Estados");
             if (id == null) return NotFound();
 
             var status = await _context.ProcedureStatus.FindAsync(id);
@@ -100,6 +104,7 @@ namespace SchoolManager.Areas.Procedures.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
+            await LoadPermissions("Estados");
             bool isInUse = await _context.ProcedureFlow.AnyAsync(f => f.IdStatus == id);
             if (isInUse)
             {

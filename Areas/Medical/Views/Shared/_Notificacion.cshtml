@@ -1,0 +1,14 @@
+﻿@if (TempData["Mensaje"] != null)
+{
+    var tipo = TempData["Tipo"]?.ToString() ?? "success";
+    <div id="toast-notificacion" class="toast-notif toast-@tipo">
+        @TempData["Mensaje"]
+    </div>
+
+    <script>
+        setTimeout(function () {
+            var t = document.getElementById('toast-notificacion');
+            if (t) t.remove();
+        }, 3000);
+    </script>
+}

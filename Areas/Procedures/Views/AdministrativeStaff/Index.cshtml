@@ -3,6 +3,10 @@
 @{
     ViewData["Title"] = "Gestión de Personal";
     Layout = "_ProceduresLayout";
+
+    bool HasPermission(string buttonName) =>
+        ViewBag.UserPermissions != null && ((List<string>)ViewBag.UserPermissions).Contains(buttonName);
+
 }
 
 @section Scripts {
@@ -28,14 +32,10 @@
                     $.post(form.attr('action'), form.serialize(), function(response) {
                         if(response.success) {
                             myModal.hide();
-                            Swal.fire({
-                                icon: 'success',
-                                title: '¡Actualizado!',
-                                text: response.message,
-                                confirmButtonColor: '#620900'
-                            }).then(() => { location.reload(); });
+                            showToast('success', response.message || '¡Actualizado!');
+                            setTimeout(() => { location.reload(); }, 1000);
                         } else {
-                            Swal.fire({ icon: 'error', title: 'Error', text: response.message });
+                            showToast('error', response.message || 'Error al actualizar');
                         }
                     });
                 });
@@ -86,18 +86,10 @@
                     $.post(form.attr('action'), form.serialize(), function (response) {
                         if (response.success) {
                             myModal.hide();
-                            Swal.fire({
-                                icon: 'success',
-                                title: '¡Éxito!',
-                                text: response.message,
-                                confirmButtonColor: '#620900'
-                            }).then(() => location.reload());
+                            showToast('success', response.message || '¡Éxito!');
+                            setTimeout(() => location.reload(), 1000);
                         } else {
-                            Swal.fire({
-                                icon: 'error',
-                                title: 'Error',
-                                text: response.message
-                            });
+                            showToast('error', response.message || 'Error al crear');
                         }
                     });
                 });
@@ -110,6 +102,23 @@
                 const modalElement = document.getElementById('quickUserModal');
                 const myModal = new bootstrap.Modal(modalElement);
                 myModal.show();
+
+                $('#QuickCreateStaff').on('submit', function (e) {
+                    e.preventDefault();
+                    const form = $(this);
+
+                    $.post(form.attr('action'), form.serialize(), function (response) {
+                        if (response.success) {
+                            myModal.hide();
+                            showToast('success', response.message || '¡Éxito!');
+                            setTimeout(() => { location.reload(); }, 1000);
+                        } else {
+                            showToast('error', response.message || 'Error en la creación rápida');
+                        }
+                    }).fail(function() {
+                        showToast('error', 'No se pudo conectar con el servidor');
+                    });
+                });
             });
         }
 
@@ -117,13 +126,10 @@
             const form = $('#formDeactivateStaff');
             $.post('/Procedures/AdministrativeStaff/DeactivateStaff', form.serialize(), function (response) {
                 if (response.success) {
-                    Swal.fire({
-                        icon: 'success',
-                        title: '¡Éxito!',
-                        text: response.message
-                    }).then(() => location.reload());
+                    showToast('success', response.message || '¡Éxito!');
+                    setTimeout(() => location.reload(), 1000);
                 } else {
-                    Swal.fire('Error', response.message, 'error');
+                    showToast('error', response.message || 'Error al desactivar');
                 }
             });
         }
@@ -132,19 +138,90 @@
             const form = $('#formActivateStaff');
             $.post('/Procedures/AdministrativeStaff/ActivateStaff', form.serialize(), function (response) {
                 if (response.success) {
-                    Swal.fire({
-                        icon: 'success',
-                        title: '¡Éxito!',
-                        text: 'Personal reactivado'
-                    }).then(() => location.reload());
+                    showToast('success', 'Personal reactivado');
+                    setTimeout(() => location.reload(), 1000);
                 } else {
-                    Swal.fire('Error', response.message, 'error');
+                    showToast('error', response.message || 'Error al activar');
                 }
             });
         }
 
         $(document).ready(function () {
+            $(document).on('change', '#checkAll', function () {
+                const isChecked = $(this).is(':checked');
+                $('.row-checkbox').prop('checked', isChecked);
+                $('.row-checkbox').closest('tr').toggleClass('table-active', isChecked);
+                updateBulkBar();
+            });
+
+            $(document).on('change', '.row-checkbox', function () {
+                const total = $('.row-checkbox').length;
+                const selected = $('.row-checkbox:checked').length;
+                $('#checkAll').prop('checked', total === selected);
+                $(this).closest('tr').toggleClass('table-active', $(this).is(':checked'));
+                updateBulkBar();
+            });
         });
+
+        function updateBulkBar() {
+            const count = $('.row-checkbox:checked').length;
+            const bar = $('#bulkActionsBar');
+
+            if (count > 0) {
+                const text = count === 1 ? '1 seleccionado' : count + ' seleccionados';
+                $('#selectedCount').text(text);
+                bar.removeClass('d-none').fadeIn('fast');
+            } else {
+                bar.fadeOut('fast', function() {
+                    $(this).addClass('d-none');
+                });
+                $('#checkAll').prop('checked', false);
+            }
+        }
+
+        function deselectAll() {
+            $('.row-checkbox, #checkAll').prop('checked', false).closest('tr').removeClass('table-active');
+            updateBulkBar();
+        }
+
+        function bulkDeleteStaff() {
+            const selectedIds = $('.row-checkbox:checked').map(function() {
+                return parseInt($(this).val());
+            }).get();
+
+            Swal.fire({
+                title: '¿Retirar personal seleccionado?',
+                html: `Se eliminarán <b>${selectedIds.length}</b> registros de la plantilla administrativa. <br><small class="text-muted">El acceso al módulo de trámites será revocado para estos usuarios.</small>`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#620900',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Sí, eliminar',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    Swal.fire({ title: 'Procesando...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
+
+                    $.ajax({
+                        url: '/Procedures/AdministrativeStaff/BulkDelete',
+                        type: 'POST',
+                        data: {
+                            ids: selectedIds,
+                            __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val()
+                        },
+                        success: function (r) {
+                            Swal.close();
+                            if (r.success) {
+                                showToast('success', r.message || '¡Éxito!');
+                                setTimeout(() => location.reload(), 1000);
+                            } else {
+                                showToast('error', r.message || 'Error al eliminar');
+                            }
+                        }
+                    });
+                }
+            });
+        }
 
         function fillTestData() {
             const random = Math.floor(Math.random() * 1000);
@@ -163,16 +240,23 @@
 <div class="container-fluid px-4 py-4 pt-5">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h2 class="fw-bold text-dark mb-0">
+            <h2 class="fw-bold text-dark mb-0 merriweather-font">
                 <i class="bi bi-people"></i> Gestión de Personal
             </h2>
             <p class="text-muted mb-0">Administra a los responsables de cada área y sus permisos.</p>
         </div>
         <div class="d-flex gap-2">
-            <button class="btn btn-burgundy shadow-sm" onclick="loadQuickUserModal()">
+            <button class="btn btn-burgundy shadow-sm"
+                    onclick="@(HasPermission("btn-agregar") ? "loadQuickUserModal()" : "")"
+                    @(HasPermission("btn-agregar") ? "" : "disabled")
+                    title="@(HasPermission("btn-agregar") ? "Añadir Personal" : "Sin permiso para añadir")">
                 <i class="bi bi-plus-circle me-1"></i> Añadir Personal
             </button>
-            <button class="btn btn-burgundy shadow-sm" onclick="loadCreateStaffModal()">
+
+            <button class="btn btn-burgundy shadow-sm"
+                    onclick="@(HasPermission("btn-asignar") ? "loadCreateStaffModal()" : "")"
+                    @(HasPermission("btn-asignar") ? "" : "disabled")
+                    title="@(HasPermission("btn-asignar") ? "Asignar Personal" : "Sin permiso para asignar")">
                 <i class="bi bi-person-plus-fill me-2"></i> Asignar Personal
             </button>
         </div>
@@ -183,16 +267,16 @@
     <div class="border-0 overflow-hidden">
         <div class="card-body p-0">
             <div class="table-responsive">
-                <table id="mainTable" class="table table-hover align-middle mb-0">
+                <table id="mainTable" class="table table-hover align-middle mb-0 table-container-rounded">
                     <thead class="bg-burgundy text-white">
                         <tr>
-                            <th class="no-sort text-center"> <input type="checkbox" id="checkAll"> </th>
+                            <th class="no-sort text-center"> <input type="checkbox" id="checkAll" class="form-check-input"> </th>
                             <th class="ps-4">Personal</th>
                             <th>Área Responsable</th>
                             <th>Puesto</th>
                             <th>Roles</th>
                             <th class="text-center">Estatus</th>
-                            <th class="text-end pe-4">Acciones</th>
+                            <th class="no-sort text-end pe-4">Acciones</th>
                         </tr>
                     </thead>
                     <tbody class="table-white">
@@ -240,7 +324,7 @@
                                     }
                                     else if (item.IsActive)
                                     {
-                                        <span class="status-badge bg-active text-primary border border-primary">
+                                        <span class="status-badge bg-active text-success border border-sucess">
                                             Activo
                                         </span>
                                     }
@@ -255,45 +339,42 @@
                                     <div class="btn-group">
                                         @if (item.IsActive)
                                         {
-                                            <a asp-controller="AdministrativeStaff"
-                                                asp-action="DetailsStaff"
-                                                asp-route-id="@item.Id"
-                                                class="btn btn-sm btn-light border shadow-sm me-2"
-                                                title="Ver Detalles">
+                                            <a asp-controller="AdministrativeStaff" asp-action="DetailsStaff" asp-route-id="@item.Id"
+                                               class="btn btn-sm btn-light border shadow-sm me-2 @(HasPermission("btn-detalles") ? "" : "disabled")"
+                                               title="@(HasPermission("btn-detalles") ? "Ver Detalles" : "Sin acceso a detalles")">
                                                 <i class="bi bi-eye"></i>
                                             </a>
-                                            <a asp-controller="AdministrativeStaff"
-                                               asp-action="EditAdministrativeStaff"
-                                               asp-route-id="@item.Id"
-                                               class="btn btn-sm btn-light border shadow-sm me-2"
-                                               title="Editar Persona">
+
+                                            <a asp-controller="AdministrativeStaff" asp-action="EditAdministrativeStaff" asp-route-id="@item.Id"
+                                               class="btn btn-sm btn-light border shadow-sm me-2 @(HasPermission("btn-editar") ? "" : "disabled")"
+                                               title="@(HasPermission("btn-editar") ? "Editar Persona" : "Sin permiso para editar")">
                                                 <i class="bi bi-pencil-square text-warning"></i>
                                             </a>
+
                                             <button class="btn btn-sm btn-light border shadow-sm me-2"
-                                                    onclick="loadEditStaffModal(@item.Id)"
-                                                    title="Asignar Área">
+                                                    onclick="@(HasPermission("btn-editar-asignacion") ? $"loadEditStaffModal({item.Id})" : "")"
+                                                    @(HasPermission("btn-editar-asignacion") ? "" : "disabled")
+                                                    title="@(HasPermission("btn-editar-asignacion") ? "Asignar Área" : "Sin permiso de asignación")">
                                                 <i class="bi bi-plus-circle text-success"></i>
                                             </button>
+
                                             <button class="btn btn-sm btn-light border shadow-sm"
-                                                    title="Dar de Baja"
-                                                    onclick="loadDeactivateModal(@item.Id)">
+                                                    onclick="@(HasPermission("btn-desactivar") ? $"loadDeactivateModal({item.Id})" : "")"
+                                                    @(HasPermission("btn-desactivar") ? "" : "disabled")
+                                                    title="@(HasPermission("btn-desactivar") ? "Dar de Baja" : "Sin permiso para dar de baja")">
                                                 <i class="bi bi-person-x-fill text-danger"></i>
                                             </button>
                                         }
                                         else
                                         {
-                                            <button class="btn btn-sm btn-light border shadow-sm me-2 opacity-50" disabled>
-                                                <i class="bi bi-eye-slash text-muted"></i>
-                                            </button>
-                                            <button class="btn btn-sm btn-light border shadow-sm me-2 opacity-50" disabled>
-                                                <i class="bi bi-pencil text-muted"></i>
-                                            </button>
-                                            <button class="btn btn-sm btn-light border shadow-sm me-2 opacity-50" disabled>
-                                                <i class="bi bi-plus-square text-muted"></i>
-                                            </button>
+                                            <button class="btn btn-sm btn-light border shadow-sm me-2 opacity-50" disabled><i class="bi bi-eye-slash text-muted"></i></button>
+                                            <button class="btn btn-sm btn-light border shadow-sm me-2 opacity-50" disabled><i class="bi bi-pencil text-muted"></i></button>
+                                            <button class="btn btn-sm btn-light border shadow-sm me-2 opacity-50" disabled><i class="bi bi-plus-square text-muted"></i></button>
+
                                             <button class="btn btn-sm btn-light border shadow-sm"
-                                                    title="Reactivar"
-                                                    onclick="loadActivateModal(@item.Id)">
+                                                    onclick="@(HasPermission("btn-activar") ? $"loadActivateModal({item.Id})" : "")"
+                                                    @(HasPermission("btn-activar") ? "" : "disabled")
+                                                    title="@(HasPermission("btn-activar") ? "Reactivar" : "Sin permiso para activar")">
                                                 <i class="bi bi-person-check-fill text-success"></i>
                                             </button>
                                         }
@@ -304,6 +385,21 @@
                     </tbody>
                 </table>
             </div>
+        </div>
+    </div>
+
+    <div id="bulkActionsBar" class="position-fixed bottom-0 start-50 translate-middle-x mb-4 shadow-lg bg-dark text-white p-3 rounded-pill d-none animate__animated animate__fadeInUp" style="z-index: 1050; min-width: 300px;">
+        <div class="d-flex align-items-center justify-content-between px-3">
+            <span id="selectedCount" class="fw-bold me-4">0 seleccionados</span>
+            <div class="btn-group">
+                @if (HasPermission("btn-multiple-eliminar"))
+                    {
+                        <button class="btn btn-danger btn-sm rounded-pill" onclick="bulkDeleteStaff()">
+                            <i class="bi bi-trash-fill me-1"></i> Eliminar
+                        </button>
+                    }
+            </div>
+            <button type="button" class="btn-close btn-close-white ms-3" onclick="deselectAll()"></button>
         </div>
     </div>
 </div>
