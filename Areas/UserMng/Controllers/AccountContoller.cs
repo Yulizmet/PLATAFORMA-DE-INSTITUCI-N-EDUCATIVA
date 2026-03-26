@@ -146,33 +146,32 @@ namespace SchoolManager.Areas.UserMng.Controllers
         {
             return View();
         }
-        
+
         private IActionResult RedirectByRole(ClaimsPrincipal principal)
         {
 
             if (principal.IsInRole("Administrator"))
-                return RedirectToAction("Index", "Manager", new { area = "UserMng" });
-            
-            if (principal.IsInRole("Master"))
-                return RedirectToAction("Index", "Manager", new { area = "UserMng" });
-
-            if (principal.IsInRole("Head Nurse"))
-                return RedirectToAction("Users", "Manager", new { area = "UserMng", role = "Nurse" });
-
-            if (principal.IsInRole("Head of Psychology"))
-                return RedirectToAction("Users", "Manager", new { area = "UserMng", role = "Psychologist" });
+            {
+                return RedirectToAction("Index", "MainScreen", new { area = "MainScreen" });
+            }
 
             if (principal.IsInRole("Teacher"))
                 return RedirectToAction("Index", "Teachers", new { area = "UserMng" });
 
+            if (principal.IsInRole("Head Nurse"))
+                return RedirectToAction("Extension", "MainScreen", new { area = "UserMng", role = "Nurse" });
+
+            if (principal.IsInRole("Head of Psychology"))
+                return RedirectToAction("Extension", "MainScreen", new { area = "UserMng", role = "Psychologist" });
+
             if (principal.IsInRole("Nurse"))
-                return RedirectToAction("Index", "Home"); // RAMOS actualiza cuando tengas tu vista
+                return RedirectToAction("Extension", "MainScreen", new { area = "MainScreen" }); // RAMOS actualiza cuando tengas tu vista, los puse para que funcionara el mio ServicioSocial
 
             if (principal.IsInRole("Psychologist"))
-                return RedirectToAction("Index", "Home"); // RAMOS actualiza cuando tengas tu vista
+                return RedirectToAction("Extension", "MainScreen", new { area = "MainScreen" }); // RAMOS actualiza cuando tengas tu vista, los puse para que funcionara el mio ServicioSocial
 
             if (principal.IsInRole("Student"))
-                return RedirectToAction("SistemaEscolar", "MainScreen", new { area = "MainScreen" });
+                return RedirectToAction("Extension", "MainScreen", new { area = "MainScreen" });
 
             return RedirectToAction("Index", "MainScreen", new { area = "MainScreen" });
         }
