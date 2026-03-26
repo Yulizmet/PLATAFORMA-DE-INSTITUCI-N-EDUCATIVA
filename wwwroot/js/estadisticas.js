@@ -12,9 +12,11 @@
     let filteredProcs = [...procedures];
     let filteredPsy = [...psychologyLogs];
     let filteredMed = [...medicalLogs];
+    let filteredStudents = [...students];
+    let filteredGroups = [...students];
 
     const PAGE_SIZE = 15;
-    let pageSocial = 1, pageProcs = 1, pagePsy = 1, pageMed = 1;
+    let pageSocial = 1, pageProcs = 1, pagePsy = 1, pageMed = 1, pageStudents = 1, pageGroups = 1;
 
     let charts = {};
 
@@ -208,29 +210,113 @@
     }
     function renderAllStudentCharts(list) { renderStudentPie(list); renderStudentBar(list); renderGradeHistogram(list); renderCourseStatusStacked(list); }
 
+    function renderGroupPie(list) {
+        const map = { Inscrito: '#6c757d', Cursando: '#ffc107', Aprobado: '#198754', Reprobado: '#dc3545' };
+        const st = computeStudentStats(list);
+        const labels = [], data = [], colors = [];
+        Object.entries(map).forEach(([k, c]) => { if ((st[k] || 0) > 0) { labels.push(k); data.push(st[k]); colors.push(c); } });
+        if (!data.length) { emptyChart('pieChartGrupo'); return; }
+        makeChart('pieChartGrupo', { type: 'pie', data: { labels, datasets: [{ data, backgroundColor: colors }] }, plugins: [valueLabelPlugin], options: { responsive: true, maintainAspectRatio: false, plugins: vlOpts('#fff') } });
+    }
+    function renderGroupBar(list) {
+        const bc = {};
+        list.forEach(s => { if (!bc[s.Curso]) bc[s.Curso] = { sum: 0, count: 0 }; if (s.Nota > 0) { bc[s.Curso].sum += s.Nota; bc[s.Curso].count++; } });
+        const labels = Object.keys(bc).filter(l => bc[l].count > 0);
+        if (!labels.length) { emptyChart('barChartGrupo'); return; }
+        makeChart('barChartGrupo', { type: 'bar', data: { labels, datasets: [{ label: 'Promedio nota', data: labels.map(l => +(bc[l].sum / bc[l].count).toFixed(2)), backgroundColor: '#0d6efd' }] }, plugins: [valueLabelPlugin], options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, max: 10 } }, plugins: vlOpts('#fff') } });
+    }
+    function renderGroupHistogram(list) {
+        const b = [0, 0, 0, 0, 0];
+        list.forEach(s => { const n = Number(s.Nota); if (isNaN(n)) return; if (n < 2) b[0]++; else if (n < 4) b[1]++; else if (n < 6) b[2]++; else if (n < 8) b[3]++; else b[4]++; });
+        const al = ['0-2', '2-4', '4-6', '6-8', '8-10'], fl = [], fb = [];
+        b.forEach((v, i) => { if (v > 0) { fl.push(al[i]); fb.push(v); } });
+        if (!fb.length) { emptyChart('gradeHistogramChartGrupo'); return; }
+        makeChart('gradeHistogramChartGrupo', { type: 'bar', data: { labels: fl, datasets: [{ label: 'Alumnos', data: fb, backgroundColor: '#6f42c1' }] }, plugins: [valueLabelPlugin], options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }, plugins: vlOpts('#fff') } });
+    }
+    function renderGroupStatusStacked(list) {
+        const bc = {};
+        list.forEach(s => { const g = s.Grupo || 'Sin grupo'; if (!bc[g]) bc[g] = { Inscrito: 0, Cursando: 0, Aprobado: 0, Reprobado: 0 }; bc[g][s.Estado] = (bc[g][s.Estado] || 0) + 1; });
+        const labels = Object.keys(bc).filter(g => (bc[g].Inscrito || 0) + (bc[g].Cursando || 0) + (bc[g].Aprobado || 0) + (bc[g].Reprobado || 0) > 0);
+        if (!labels.length) { emptyChart('groupStatusStacked'); return; }
+        makeChart('groupStatusStacked', { type: 'bar', data: { labels, datasets: [{ label: 'Inscrito', data: labels.map(l => bc[l].Inscrito || 0), backgroundColor: '#6c757d' }, { label: 'Cursando', data: labels.map(l => bc[l].Cursando || 0), backgroundColor: '#ffc107' }, { label: 'Aprobado', data: labels.map(l => bc[l].Aprobado || 0), backgroundColor: '#198754' }, { label: 'Reprobado', data: labels.map(l => bc[l].Reprobado || 0), backgroundColor: '#dc3545' }] }, plugins: [valueLabelPlugin], options: { responsive: true, maintainAspectRatio: false, scales: { x: { stacked: true }, y: { stacked: true, beginAtZero: true } }, plugins: { legend: { position: 'top' }, ...vlOpts('#fff') } } });
+    }
+    function renderAllGroupCharts(list) { renderGroupPie(list); renderGroupBar(list); renderGroupHistogram(list); renderGroupStatusStacked(list); }
+
     function applyStudentFilters() {
         const name = ($('#filterName').val() || '').toLowerCase();
         const status = $('#filterStatus').val() || '';
         const genero = $('#filterGenero').val() || '';
         const semestre = $('#filterSemestre').val() || '';
-        const rows = $('#studentsTable tbody tr'), filtered = [];
-        rows.each(function () {
-            const $tr = $(this);
-            const ok = (!name || ($tr.data('name') || '').toString().toLowerCase().includes(name))
-                && (!status || ($tr.data('status') || '') === status)
-                && (!genero || ($tr.data('genero') || '') === genero)
-                && (!semestre || ($tr.data('semestre') || '').toString() === semestre);
-            $tr.toggle(ok);
-            if (ok) filtered.push({ Estado: $tr.data('status') || '', Curso: $tr.find('td').eq(3).text(), Nota: parseFloat($tr.find('td').eq(6).text()) || 0 });
-        });
-        updateStudentCards(filtered); renderAllStudentCharts(filtered);
-        studentExcelFilters = {}; currentPage = 1; updatePagination();
+        filteredStudents = students.filter(s =>
+            (!name || (s.Nombre || '').toLowerCase().includes(name))
+            && (!status || s.Estado === status)
+            && (!genero || s.Genero === genero)
+            && (!semestre || String(s.Semestre) === semestre)
+        );
+        studentExcelFilters = {}; $('.excel-filter-popup').remove();
+        pageStudents = 1;
+        populateStudentsTable(filteredStudents);
+        updateStudentCards(filteredStudents); renderAllStudentCharts(filteredStudents);
     }
     function resetStudentFilters() {
         $('#filterName').val(''); $('#filterStatus').val(''); $('#filterGenero').val(''); $('#filterSemestre').val('');
         studentExcelFilters = {}; $('.excel-filter-popup').remove();
-        $('#studentsTable tbody tr').show(); currentPage = 1; updatePagination();
-        updateStudentCards(students); renderAllStudentCharts(students);
+        filteredStudents = [...students];
+        pageStudents = 1;
+        populateStudentsTable(filteredStudents);
+        updateStudentCards(filteredStudents); renderAllStudentCharts(filteredStudents);
+    }
+    function applyGroupFilters() {
+        const name = ($('#filterGrupoName').val() || '').toLowerCase();
+        const status = $('#filterGrupoStatus').val() || '';
+        const genero = $('#filterGrupoGenero').val() || '';
+        const grupo = ($('#filterGrupoGrupo').val() || '').toLowerCase();
+        filteredGroups = students.filter(s =>
+            (!name || (s.Nombre || '').toLowerCase().includes(name))
+            && (!status || s.Estado === status)
+            && (!genero || s.Genero === genero)
+            && (!grupo || (s.Grupo || '').toLowerCase().includes(grupo))
+        );
+        pageGroups = 1;
+        populateGroupTable(filteredGroups);
+        updateStudentCards(filteredGroups); renderAllGroupCharts(filteredGroups);
+    }
+    function resetGroupFilters() {
+        $('#filterGrupoName').val(''); $('#filterGrupoStatus').val(''); $('#filterGrupoGenero').val(''); $('#filterGrupoGrupo').val('');
+        filteredGroups = [...students];
+        pageGroups = 1;
+        populateGroupTable(filteredGroups);
+        updateStudentCards(filteredGroups); renderAllGroupCharts(filteredGroups);
+    }
+    function populateStudentsTable(list) {
+        const tbody = $('#studentsTable tbody'); if (!tbody.length) return;
+        tbody.empty();
+        if (!list || !list.length) { tbody.html('<tr><td colspan="8" class="text-center text-muted py-4">Sin datos disponibles</td></tr>'); $('#pageInfo').text('Sin resultados'); return; }
+        const { items, from, to, total } = paginate(list, pageStudents, PAGE_SIZE);
+        items.forEach(s => {
+            const badge = s.Estado === 'Aprobado'   ? '<span class="badge bg-success">Aprobado</span>'
+                        : s.Estado === 'Reprobado' ? '<span class="badge bg-danger">Reprobado</span>'
+                        : s.Estado === 'Cursando'  ? '<span class="badge bg-warning text-dark">Cursando</span>'
+                        : '<span class="badge bg-secondary">Inscrito</span>';
+            const fecha = s.FechaInscripcion ? new Date(s.FechaInscripcion).toISOString().slice(0, 10) : '';
+            tbody.append(`<tr data-name="${escHtml(s.Nombre)}" data-status="${escHtml(s.Estado)}" data-genero="${escHtml(s.Genero)}" data-semestre="${s.Semestre}"><td>${s.Id}</td><td>${escHtml(s.Nombre)}</td><td>${escHtml(s.Genero)}</td><td>${escHtml(s.Curso)}</td><td>${s.Semestre}</td><td>${badge}</td><td>${s.Nota}</td><td>${fecha}</td></tr>`);
+        });
+        $('#pageInfo').text(pagText(from, to, total));
+    }
+    function populateGroupTable(list) {
+        const tbody = $('#grupoTable tbody'); if (!tbody.length) return;
+        tbody.empty();
+        if (!list || !list.length) { tbody.html('<tr><td colspan="8" class="text-center text-muted py-4">Sin datos disponibles</td></tr>'); $('#pageInfoGrupo').text('Sin resultados'); return; }
+        const { items, from, to, total } = paginate(list, pageGroups, PAGE_SIZE);
+        items.forEach(s => {
+            const badge = s.Estado === 'Aprobado'   ? '<span class="badge bg-success">Aprobado</span>'
+                        : s.Estado === 'Reprobado' ? '<span class="badge bg-danger">Reprobado</span>'
+                        : s.Estado === 'Cursando'  ? '<span class="badge bg-warning text-dark">Cursando</span>'
+                        : '<span class="badge bg-secondary">Inscrito</span>';
+            const fecha = s.FechaInscripcion ? new Date(s.FechaInscripcion).toISOString().slice(0, 10) : '';
+            tbody.append(`<tr data-name="${escHtml(s.Nombre)}" data-status="${escHtml(s.Estado)}" data-genero="${escHtml(s.Genero)}" data-grupo="${escHtml(s.Grupo || '')}"><td>${s.Id}</td><td>${escHtml(s.Nombre)}</td><td>${escHtml(s.Genero)}</td><td>${escHtml(s.Curso)}</td><td>${escHtml(s.Grupo || 'Sin grupo')}</td><td>${badge}</td><td>${s.Nota}</td><td>${fecha}</td></tr>`);
+        });
+        $('#pageInfoGrupo').text(pagText(from, to, total));
     }
 
     // ════════════════════════════════════════════════════════════════════════
@@ -647,6 +733,141 @@
     }
 
     // ════════════════════════════════════════════════════════════════════════
+    // GENERAL — Dashboard ejecutivo
+    // ════════════════════════════════════════════════════════════════════════
+    function renderGeneralCharts() {
+        // ── KPI cards ────────────────────────────────────────────────────────
+        const totalBitacoras = psychologyLogs.length + medicalLogs.length;
+        const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+        set('genKpiAlumnos',   students.length);
+        set('genKpiServicio',  socialServices.length);
+        set('genKpiTramites',  procedures.length);
+        set('genKpiBitacoras', totalBitacoras);
+
+        // ── Bloque 1: Alumnos ─────────────────────────────────────────────────
+        const stMap = { Inscrito: 0, Cursando: 0, Aprobado: 0, Reprobado: 0 };
+        students.forEach(s => { if (stMap[s.Estado] !== undefined) stMap[s.Estado]++; });
+        const stLabels = Object.keys(stMap).filter(k => stMap[k] > 0);
+        const stColors = { Inscrito: '#6c757d', Cursando: '#ffc107', Aprobado: '#198754', Reprobado: '#dc3545' };
+        if (stLabels.length) {
+            makeChart('genAlumnosPie', {
+                type: 'doughnut',
+                data: { labels: stLabels, datasets: [{ data: stLabels.map(k => stMap[k]), backgroundColor: stLabels.map(k => stColors[k]) }] },
+                plugins: [valueLabelPlugin],
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' }, ...vlOpts('#fff') } }
+            });
+        } else { emptyChart('genAlumnosPie'); }
+
+        // Tabla resumen alumnos
+        const genAlumnosBody = document.getElementById('genAlumnosBody');
+        if (genAlumnosBody) {
+            const total = students.length || 1;
+            genAlumnosBody.innerHTML = Object.entries(stMap)
+                .map(([k, v]) => {
+                    const pct = total > 0 ? ((v / total) * 100).toFixed(1) : '0.0';
+                    const c = stColors[k] || '#aaa';
+                    return `<tr><td><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${c};margin-right:6px;"></span>${k}</td><td class="text-end fw-semibold">${v}</td><td class="text-end text-muted">${pct}%</td></tr>`;
+                }).join('');
+        }
+
+        // Barra de aprobados
+        const aprobados = stMap['Aprobado'] || 0;
+        const aprobPct = students.length > 0 ? ((aprobados / students.length) * 100).toFixed(1) : '0.0';
+        set('genAprobadosPct', aprobPct + '%');
+        const aprobBar = document.getElementById('genAprobadosBar');
+        if (aprobBar) aprobBar.style.width = aprobPct + '%';
+
+        // ── Bloque 2: Servicio Social ─────────────────────────────────────────
+        const ssMap = { 'Completado': 0, 'En progreso': 0, 'Pendiente': 0 };
+        socialServices.forEach(i => { const k = ssMap[i.Status] !== undefined ? i.Status : 'Pendiente'; ssMap[k]++; });
+        const ssLabels = Object.keys(ssMap).filter(k => ssMap[k] > 0);
+        if (ssLabels.length) {
+            makeChart('genServicioPie', {
+                type: 'doughnut',
+                data: { labels: ssLabels, datasets: [{ data: ssLabels.map(k => ssMap[k]), backgroundColor: ['#198754', '#ffc107', '#6c757d'] }] },
+                plugins: [valueLabelPlugin],
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' }, ...vlOpts('#fff') } }
+            });
+        } else { emptyChart('genServicioPie'); }
+
+        // Tabla resumen servicio social
+        const ssBody = document.getElementById('genServicioBody');
+        if (ssBody) {
+            const totalPresent = socialServices.reduce((s, i) => s + (i.TotalPresent || 0), 0);
+            const totalAbsent  = socialServices.reduce((s, i) => s + (i.TotalAbsent || 0), 0);
+            const wa = socialServices.filter(i => (i.TotalAttendances || 0) > 0);
+            const avgAtt = wa.length > 0
+                ? (wa.reduce((s, i) => s + (i.AttendanceRate || 0), 0) / wa.length).toFixed(1)
+                : '0.0';
+            ssBody.innerHTML = `
+                <tr><td>Alumnos activos</td><td class="text-end fw-semibold">${socialServices.length}</td></tr>
+                <tr><td>Asistencias totales</td><td class="text-end fw-semibold">${totalPresent}</td></tr>
+                <tr><td>Faltas totales</td><td class="text-end fw-semibold">${totalAbsent}</td></tr>
+                <tr><td>Asistencia promedio</td><td class="text-end fw-semibold">${avgAtt}%</td></tr>`;
+        }
+
+        // ── Bloque 3: Trámites ────────────────────────────────────────────────
+        const trCodeMap = { APPROVED: 'Pagó inscripción', PENDING: 'Pendiente', REJECTED: 'No pagó' };
+        const trMap = { 'Pagó inscripción': 0, 'Pendiente': 0, 'No pagó': 0 };
+        procedures.forEach(i => { const k = trCodeMap[i.InternalCode] || 'Otro'; trMap[k] = (trMap[k] || 0) + 1; });
+        const trLabels = Object.keys(trMap).filter(k => trMap[k] > 0);
+        if (trLabels.length) {
+            makeChart('genTramitesPie', {
+                type: 'doughnut',
+                data: { labels: trLabels, datasets: [{ data: trLabels.map(k => trMap[k]), backgroundColor: ['#198754', '#ffc107', '#dc3545', '#6c757d'] }] },
+                plugins: [valueLabelPlugin],
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' }, ...vlOpts('#fff') } }
+            });
+        } else { emptyChart('genTramitesPie'); }
+
+        const trBody = document.getElementById('genTramitesBody');
+        if (trBody) {
+            const trTotal    = procedures.length;
+            const trApproved = trMap['Pagó inscripción'] || 0;
+            const trPending  = trMap['Pendiente'] || 0;
+            const trRejected = trMap['No pagó'] || 0;
+            const trPct      = trTotal > 0 ? ((trApproved / trTotal) * 100).toFixed(1) : '0.0';
+            trBody.innerHTML = `
+                <tr><td>Total solicitudes</td><td class="text-end fw-semibold">${trTotal}</td></tr>
+                <tr><td><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#198754;margin-right:6px;"></span>Pagó inscripción</td><td class="text-end fw-semibold text-success">${trApproved}</td></tr>
+                <tr><td><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#ffc107;margin-right:6px;"></span>Pendiente</td><td class="text-end fw-semibold">${trPending}</td></tr>
+                <tr><td><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#dc3545;margin-right:6px;"></span>No pagó</td><td class="text-end fw-semibold text-danger">${trRejected}</td></tr>
+                <tr class="table-light"><td class="text-muted small">% con pago</td><td class="text-end fw-bold text-success">${trPct}%</td></tr>`;
+        }
+
+        // ── Bloque 4: Bitácoras ───────────────────────────────────────────────
+        const psyMap = { 'Asistió': 0, 'No asistió': 0, 'Justificado': 0 };
+        psychologyLogs.forEach(i => { const k = psyMap[i.AttendanceStatus] !== undefined ? i.AttendanceStatus : 'No asistió'; psyMap[k]++; });
+        const medStatusMap = { 'Estable': 0, 'Alta': 0, 'Urgente': 0, 'Critico': 0, 'Observacion': 0, 'Pendiente': 0 };
+        medicalLogs.forEach(i => { const s = i.Status || 'Pendiente'; if (medStatusMap[s] !== undefined) medStatusMap[s]++; else medStatusMap['Pendiente']++; });
+        const medPositivo = (medStatusMap['Estable'] || 0) + (medStatusMap['Alta'] || 0);
+        const medNegativo = (medStatusMap['Urgente'] || 0) + (medStatusMap['Critico'] || 0);
+        const medOtro     = (medStatusMap['Observacion'] || 0) + (medStatusMap['Pendiente'] || 0);
+
+        makeChart('genBitacorasBar', {
+            type: 'bar',
+            data: {
+                labels: ['Total', 'Positivo', 'Negativo', 'Otro'],
+                datasets: [
+                    { label: 'Psicología', data: [psychologyLogs.length, psyMap['Asistió'], psyMap['No asistió'], psyMap['Justificado']], backgroundColor: '#6610f2' },
+                    { label: 'Enfermería', data: [medicalLogs.length, medPositivo, medNegativo, medOtro], backgroundColor: '#0d6efd' }
+                ]
+            },
+            plugins: [valueLabelPlugin],
+            options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }, plugins: { legend: { position: 'bottom' }, ...vlOpts('#fff') } }
+        });
+
+        const bitBody = document.getElementById('genBitacorasBody');
+        if (bitBody) {
+            bitBody.innerHTML = `
+                <tr><td>Total registros</td><td class="text-end fw-semibold">${psychologyLogs.length}</td><td class="text-end fw-semibold">${medicalLogs.length}</td></tr>
+                <tr><td>Positivo (Asistió / Estable+Alta)</td><td class="text-end fw-semibold text-success">${psyMap['Asistió']}</td><td class="text-end fw-semibold text-success">${medPositivo}</td></tr>
+                <tr><td>Negativo (No asistió / Urgente+Crít.)</td><td class="text-end fw-semibold text-danger">${psyMap['No asistió']}</td><td class="text-end fw-semibold text-danger">${medNegativo}</td></tr>
+                <tr><td>Otro (Justificado / Obs.+Pend.)</td><td class="text-end fw-semibold text-warning">${psyMap['Justificado']}</td><td class="text-end fw-semibold text-warning">${medOtro}</td></tr>`;
+        }
+    }
+
+    // ════════════════════════════════════════════════════════════════════════
     // EXPORTAR CSV
     // ════════════════════════════════════════════════════════════════════════
     function exportVisibleTableToCSV(sel, fn) {
@@ -839,18 +1060,35 @@
     // INIT
     // ════════════════════════════════════════════════════════════════════════
     $(function () {
-        updateStudentCards(students); renderAllStudentCharts(students);
+        renderGeneralCharts();
+
+        filteredStudents = [...students]; populateStudentsTable(filteredStudents); updateStudentCards(filteredStudents); renderAllStudentCharts(filteredStudents);
+        filteredGroups = [...students]; populateGroupTable(filteredGroups); renderAllGroupCharts(filteredGroups);
+        window.refreshSemestreCharts = function () { renderAllStudentCharts(filteredStudents); };
+        window.refreshGroupCharts    = function () { renderAllGroupCharts(filteredGroups); };
 
         filteredSocial = [...socialServices]; populateSocialTable(filteredSocial); updateSocialCards(filteredSocial); renderAllSocialCharts(filteredSocial);
         filteredProcs = [...procedures]; populateProcsTable(filteredProcs); updateProcCards(filteredProcs); renderAllTramitesCharts(filteredProcs);
         filteredPsy = [...psychologyLogs]; populatePsyTable(filteredPsy); updatePsyCards(filteredPsy); renderAllPsyCharts(filteredPsy);
         filteredMed = [...medicalLogs]; populateMedTable(filteredMed); updateMedCards(filteredMed); renderAllMedCharts(filteredMed);
 
-        // Calificaciones
+        // Calificaciones — Por Semestre
         $('#filterName').on('input', applyStudentFilters);
         $('#filterStatus,#filterGenero,#filterSemestre').on('change', applyStudentFilters);
         $('#applyStudentFilters').on('click', applyStudentFilters);
         $('#resetFilters').on('click', resetStudentFilters);
+        $('#firstPage').on('click', () => { pageStudents = 1; populateStudentsTable(filteredStudents); });
+        $('#prevPage').on('click',  () => { if (pageStudents > 1) { pageStudents--; populateStudentsTable(filteredStudents); } });
+        $('#nextPage').on('click',  () => { const m = Math.ceil(filteredStudents.length / PAGE_SIZE); if (pageStudents < m) { pageStudents++; populateStudentsTable(filteredStudents); } });
+
+        // Calificaciones — Por Grupo
+        $('#filterGrupoName,#filterGrupoGrupo').on('input', applyGroupFilters);
+        $('#filterGrupoStatus,#filterGrupoGenero').on('change', applyGroupFilters);
+        $('#applyGroupFilters').on('click', applyGroupFilters);
+        $('#resetGroupFilters').on('click', resetGroupFilters);
+        $('#firstPageGrupo').on('click', () => { pageGroups = 1; populateGroupTable(filteredGroups); });
+        $('#prevPageGrupo').on('click',  () => { if (pageGroups > 1) { pageGroups--; populateGroupTable(filteredGroups); } });
+        $('#nextPageGrupo').on('click',  () => { const m = Math.ceil(filteredGroups.length / PAGE_SIZE); if (pageGroups < m) { pageGroups++; populateGroupTable(filteredGroups); } });
 
         // Servicios Sociales
         $('#filterSocialName,#filterSocialTeacher,#filterSocialGroup').on('input', applySocialFilters);
@@ -918,6 +1156,7 @@ let socialExcelFilters = {};
 let tramiteExcelFilters = {};
 let psyExcelFilters = {};
 let medExcelFilters = {};
+let grupoExcelFilters = {};
 
 function getExcelFilters(tableId) {
     if (tableId === 'studentsTable') return studentExcelFilters;
@@ -925,6 +1164,7 @@ function getExcelFilters(tableId) {
     if (tableId === 'proceduresTable') return tramiteExcelFilters;
     if (tableId === 'psychologyTable') return psyExcelFilters;
     if (tableId === 'medicalTable') return medExcelFilters;
+    if (tableId === 'grupoTable') return grupoExcelFilters;
     return {};
 }
 function setExcelFilters(tableId, obj) {
@@ -933,6 +1173,7 @@ function setExcelFilters(tableId, obj) {
     if (tableId === 'proceduresTable') { tramiteExcelFilters = obj; return; }
     if (tableId === 'psychologyTable') { psyExcelFilters = obj; return; }
     if (tableId === 'medicalTable') { medExcelFilters = obj; return; }
+    if (tableId === 'grupoTable') { grupoExcelFilters = obj; return; }
 }
 
 // Paginación Calificaciones (DOM)
@@ -1047,7 +1288,13 @@ function applyExcelFor(tableId) {
         }
         $(this).toggle(show);
     });
-    if (tableId === 'studentsTable') { currentPage = 1; updatePagination(); }
+    if (tableId === 'studentsTable') {
+        const vis = $('#studentsTable tbody tr:visible').length;
+        $('#pageInfo').text(vis > 0 ? `Mostrando 1-${Math.min(vis, PAGE_SIZE)} de ${vis}` : 'Sin resultados');
+    } else if (tableId === 'grupoTable') {
+        const vis = $('#grupoTable tbody tr:visible').length;
+        $('#pageInfoGrupo').text(vis > 0 ? `Mostrando 1-${Math.min(vis, PAGE_SIZE)} de ${vis}` : 'Sin resultados');
+    }
 }
 
 function sortGeneric(tableId, col, asc) {
@@ -1061,7 +1308,6 @@ function sortGeneric(tableId, col, asc) {
     });
     const tbody = $('#' + tableId + ' tbody');
     $.each(rows, function (_, row) { tbody.append(row); });
-    if (tableId === 'studentsTable') { currentPage = 1; updatePagination(); }
 }
 
 $(document).on('click', function (e) {
@@ -1069,13 +1315,4 @@ $(document).on('click', function (e) {
         $('.excel-filter-popup').remove();
 });
 
-$(document).ready(function () {
-    updatePagination();
-    $('#firstPage').on('click', () => { currentPage = 1; updatePagination(); });
-    $('#prevPage').on('click', () => { if (currentPage > 1) { currentPage--; updatePagination(); } });
-    $('#nextPage').on('click', () => {
-        const total = $('#studentsTable tbody tr:visible').length;
-        const maxPage = Math.ceil(total / ITEMS_PER_PAGE);
-        if (currentPage < maxPage) { currentPage++; updatePagination(); }
-    });
-});
+// Pagination for Calificaciones is handled inside the IIFE $(function(){}).
