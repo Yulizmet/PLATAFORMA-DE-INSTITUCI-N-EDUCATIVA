@@ -3,6 +3,7 @@
 @{
     Layout = "~/Areas/Medical/Views/Shared/_LayoutDashboard.cshtml";
     ViewData["Title"] = "Detalle Psicológico";
+    var permisos = ViewBag.Permisos as SchoolManager.Models.medical_permissions;
 }
 
 <div class="dashboard-header">
@@ -92,15 +93,24 @@
             <a asp-action="Index" class="btn" style="border: 1.5px solid #6c757d;">
                 REGRESAR
             </a>
+
             <div class="d-flex gap-2">
                 <button onclick="descargarPDF()" class="btn" style="border: 1.5px solid #6c757d;">
                     DESCARGAR PDF
                 </button>
-                <a asp-action="Edit"
-                   asp-route-id="@Model.Id"
-                   class="btn" style="border: 1.5px solid #6c757d;">
-                    EDITAR REGISTRO
-                </a>
+
+                @if (
+                    User.IsInRole("Master") ||
+                    User.IsInRole("Head of Psychology") ||
+                    (permisos != null && permisos.Modificar)
+                )
+                {
+                    <a asp-action="Edit"
+                       asp-route-id="@Model.Id"
+                       class="btn" style="border: 1.5px solid #6c757d;">
+                        EDITAR REGISTRO
+                    </a>
+                }
             </div>
         </div>
 

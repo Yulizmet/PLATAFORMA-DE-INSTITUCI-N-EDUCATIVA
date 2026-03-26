@@ -146,7 +146,7 @@ namespace SchoolManager.Areas.UserMng.Controllers
         {
             return View();
         }
-        
+
         private IActionResult RedirectByRole(ClaimsPrincipal principal)
         {
             return RedirectToAction("Index", "MainScreen", new { area = "MainScreen" });
