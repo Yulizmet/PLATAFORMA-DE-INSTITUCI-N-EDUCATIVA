@@ -159,16 +159,16 @@ namespace SchoolManager.Areas.UserMng.Controllers
                 return RedirectToAction("Index", "Teachers", new { area = "UserMng" });
 
             if (principal.IsInRole("Head Nurse"))
-                return RedirectToAction("Extension", "MainScreen", new { area = "UserMng", role = "Nurse" });
+                return RedirectToAction("Extension", "MainScreen", new { area = "MainScreen"});
 
             if (principal.IsInRole("Head of Psychology"))
-                return RedirectToAction("Extension", "MainScreen", new { area = "UserMng", role = "Psychologist" });
+                return RedirectToAction("Extension", "MainScreen", new { area = "MainScreen" });
 
             if (principal.IsInRole("Nurse"))
-                return RedirectToAction("Extension", "MainScreen", new { area = "MainScreen" }); // RAMOS actualiza cuando tengas tu vista, los puse para que funcionara el mio ServicioSocial
+                return RedirectToAction("Extension", "MainScreen", new { area = "MainScreen" }); 
 
             if (principal.IsInRole("Psychologist"))
-                return RedirectToAction("Extension", "MainScreen", new { area = "MainScreen" }); // RAMOS actualiza cuando tengas tu vista, los puse para que funcionara el mio ServicioSocial
+                return RedirectToAction("Extension", "MainScreen", new { area = "MainScreen" }); 
 
             if (principal.IsInRole("Student"))
                 return RedirectToAction("Extension", "MainScreen", new { area = "MainScreen" });
