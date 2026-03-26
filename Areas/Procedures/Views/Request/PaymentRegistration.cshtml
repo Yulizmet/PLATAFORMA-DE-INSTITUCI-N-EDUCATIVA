@@ -39,25 +39,35 @@
                         else
                         {
                             <small class="text-muted">
-                                <i class="bi bi-pencil-fill"></i> Ingresa tu folio asignado al preinscribirte o tu matrícula.
+                                <i class="bi bi-pencil-fill"></i> Ingresa tu folio asignado al preinscribirte.
                             </small>
                         }
                     </div>
 
                     <div class="col-md-6">
                         <label class="form-label fw-bold text-dark">Concepto de Pago:</label>
-                        <select name="procedureTypeId" class="form-select" id="procedureTypeId" required>
-                            <option value="">Seleccione concepto...</option>
-                            @foreach (var item in (List<SchoolManager.Models.procedure_types>)ViewBag.TramitesPago)
-                            {
-                                <option value="@item.Id">@item.Name</option>
-                            }
-                        </select>
-                        <small class="text-muted">
-                            @(User.Identity.IsAuthenticated
-                                ? "Mostrando trámites para alumnos inscritos."
-                                : "Mostrando trámites para nuevos aspirantes.")
-                        </small>
+                        @if (tramitesPago.Any())
+                        {
+                            <select name="procedureTypeId" class="form-select" id="procedureTypeId" required>
+                                <option value="">Seleccione concepto...</option>
+                                @foreach (var item in (List<SchoolManager.Models.procedure_types>)ViewBag.TramitesPago)
+                                {
+                                    <option value="@item.Id">@item.Name</option>
+                                    }
+                            </select>
+                            <small class="text-muted">
+                                @(User.Identity.IsAuthenticated
+                                    ? "Mostrando trámites para alumnos inscritos."
+                                    : "Mostrando trámites para nuevos aspirantes.")
+                            </small>
+                        }
+                        else
+                        {
+                            <div class="alert alert-warning py-2 mb-0 border-0" style="border-radius: 10px;">
+                                <i class="bi bi-exclamation-octagon me-2"></i> No hay periodos de pago activos en este momento.
+                            </div>
+                            <input type="hidden" name="procedureTypeId" value="" required />
+                        }
                     </div>
 
                     <div class="col-12" id="upload-section" style="display: none;">
@@ -101,6 +111,7 @@
     </div>
 </div>
 @section Scripts {
+    <script src="~/js/site.js" asp-append-version="true"></script>
     <script>
         function handleFileSelect(input) {
             const file = input.files[0];
@@ -204,6 +215,13 @@
                 success: function(response) {
                     Swal.close();
                     if (response.success) {
+                        const isAuth = @User.Identity.IsAuthenticated.ToString().ToLower();
+
+                        let confirmText = isAuth ? '<i class="bi bi-house-door me-2"></i>Ir a Mis Trámites' : '<i class="bi bi-check-lg me-2"></i>Entendido';
+                        let footerMsg = isAuth
+                            ? 'Puedes consultar el avance en la sección de "Seguimiento".'
+                            : '<strong>IMPORTANTE:</strong> Como no tienes una cuenta activa, toma una captura o anota tu folio. Podrás consultar el estatus en la página principal con este número.';
+
                         Swal.fire({
                             icon: 'success',
                             title: '<span style="color:#620900">¡Registro Exitoso!</span>',
@@ -214,15 +232,19 @@
                                         <small class="text-muted d-block">TU FOLIO DE SEGUIMIENTO:</small>
                                         <strong style="font-size: 1.5rem; color:#620900;">${response.folio}</strong>
                                     </div>
-                                    <p class="small text-muted">Conserva este folio para consultar el estatus de tu validación.</p>
+                                    <p class="small text-muted">${footerMsg}</p>
                                 </div>
                             `,
-                            confirmButtonText: '<i class="bi bi-house-door me-2"></i>Ir a Mis Trámites',
+                            confirmButtonText: confirmText,
                             confirmButtonColor: '#620900',
                             allowOutsideClick: false
                         }).then((result) => {
                             if (result.isConfirmed) {
-                                window.location.href = '/Procedures/Request/Tracking';
+                                if (isAuth) {
+                                    window.location.href = '/Procedures/Request/Tracking';
+                                } else {
+                                    window.location.href = '/Procedures/Request/Index';
+                                }
                             }
                         });
                     } else {

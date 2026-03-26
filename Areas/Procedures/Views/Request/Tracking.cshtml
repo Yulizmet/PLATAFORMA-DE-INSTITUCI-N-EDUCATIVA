@@ -101,7 +101,7 @@
                                             }
 
                                             <button type="button"
-                                                    class="btn btn-action @(isClosed ? "btn-secondary opacity-50" : "btn-danger")"
+                                                    class="btn btn-action @(isClosed ? "btn-secondary opacity-50" : "btn btn-action bg-danger text-white")"
                                                     onclick="@(isClosed ? "" : $"confirmCancel({item.Id}, '{item.Folio}')")"
                                                     title="@(isClosed ? "Este trámite ya no se puede cancelar" : "Cancelar Trámite")"
                                                     @(isClosed ? "disabled" : "")>
@@ -120,6 +120,7 @@
 </div>
 
 @section Scripts {
+    <script src="~/js/site.js" asp-append-version="true"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         function loadModal(url) {

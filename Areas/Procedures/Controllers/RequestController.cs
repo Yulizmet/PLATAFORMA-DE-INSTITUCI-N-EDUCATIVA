@@ -35,28 +35,102 @@ namespace SchoolManager.Areas.Procedures.Controllers
                 return RedirectToAction("Index", "Dashboard");
             }
 
-            int currentUserId = CurrentUserId;
+            var now = DateTime.Now;
+            bool isAuthenticated = User.Identity?.IsAuthenticated ?? false;
+            string targetTerm = isAuthenticated ? "Inscripción" : "Preinscripción";
 
-            var requests = await _context.ProcedureRequest
-                .Include(r => r.ProcedureType)
-                .Include(r => r.ProcedureFlow).ThenInclude(f => f.ProcedureStatus)
-                .Include(r => r.Preenrollments)
-                .Where(r => r.IdUser == currentUserId)
-                .ToListAsync();
+            List<procedure_request> requests = new List<procedure_request>();
+            if (isAuthenticated)
+            {
+                requests = await _context.ProcedureRequest
+                    .Include(r => r.ProcedureType)
+                    .Include(r => r.ProcedureFlow).ThenInclude(f => f.ProcedureStatus)
+                    .Include(r => r.Preenrollments)
+                    .Where(r => r.IdUser == CurrentUserId)
+                    .ToListAsync();
+            }
+
+            ViewBag.HasActivePayments = await _context.ProcedureTypes
+                .AnyAsync(p => p.Name.Contains(targetTerm) &&
+                               (!p.StartDate.HasValue || now >= p.StartDate) &&
+                               (!p.EndDate.HasValue || now <= p.EndDate));
+
+            if (!(bool)ViewBag.HasActivePayments)
+            {
+                ViewBag.NextPaymentOpening = await _context.ProcedureTypes
+                    .Where(p => p.Name.Contains(targetTerm) && p.StartDate.HasValue && p.StartDate > now)
+                    .OrderBy(p => p.StartDate)
+                    .Select(p => p.StartDate)
+                    .FirstOrDefaultAsync();
+            }
+
+            ViewBag.HasActiveGeneralProcedures = await _context.ProcedureTypes
+                .AnyAsync(p => !p.Name.Contains("Inscripción") &&
+                               !p.Name.Contains("Preinscripción") &&
+                               (!p.StartDate.HasValue || now >= p.StartDate) &&
+                               (!p.EndDate.HasValue || now <= p.EndDate));
 
             return View(requests);
+        }
+
+        [AllowAnonymous]
+        [HttpGet]
+        public async Task<IActionResult> PublicSearch(string folio, string identifier)
+        {
+            if (string.IsNullOrEmpty(folio) || string.IsNullOrEmpty(identifier))
+            {
+                return Json(new { success = false, message = "Por favor, ingresa ambos datos." });
+            }
+
+            var request = await _context.ProcedureRequest
+                .Include(r => r.ProcedureType)
+                .Include(r => r.ProcedureFlow).ThenInclude(f => f.ProcedureStatus)
+                .Include(r => r.ProcedureMonitorings).ThenInclude(m => m.ProcedureFlow).ThenInclude(f => f.ProcedureStatus)
+                .Where(r => r.Folio == folio)
+                .FirstOrDefaultAsync();
+
+            var student = await _context.PreenrollmentGenerals
+                .AnyAsync(p => p.UserId == request!.IdUser && (p.Matricula == identifier || p.Folio == identifier));
+
+            if (request == null || !student)
+            {
+                return Json(new { success = false, message = "No se encontró ningún trámite con esa combinación de datos." });
+            }
+
+            var viewModel = new PublicTrackingViewModel
+            {
+                Folio = request.Folio,
+                ProcedureName = request.ProcedureType?.Name!,
+                StatusName = request.ProcedureFlow?.ProcedureStatus?.Name!,
+                StatusColor = request.ProcedureFlow?.ProcedureStatus?.BackgroundColor!,
+                LastUpdate = request.DateUpdated ?? request.DateCreated,
+                AdminComment = request.ProcedureMonitorings?.OrderByDescending(m => m.DateUpdated!).Select(m => m.Comment!).FirstOrDefault()
+            };
+
+            return PartialView("_PublicTrackingResult", viewModel);
         }
 
         [Authorize(Roles = "Student")]
         [HttpGet]
         public async Task<IActionResult> Requests()
         {
-            var procedures = await _context.ProcedureTypes
+            var now = DateTime.Now;
+
+            var allProcedures = await _context.ProcedureTypes
                 .Where(p => !p.Name.Contains("Preinscripción") && !p.Name.Contains("Inscripción"))
                 .OrderBy(p => p.Name)
                 .ToListAsync();
 
-            ViewBag.Procedures = new SelectList(procedures, "Id", "Name");
+            var availableProcedures = allProcedures
+                .Where(p => (!p.StartDate.HasValue || now >= p.StartDate) &&
+                            (!p.EndDate.HasValue || now <= p.EndDate))
+                .ToList();
+
+            ViewBag.UpcomingProcedures = allProcedures
+                .Where(p => p.StartDate.HasValue && now < p.StartDate)
+                .ToList();
+
+            ViewBag.Procedures = new SelectList(availableProcedures, "Id", "Name");
 
             var studentData = await _context.PreenrollmentGenerals
                 .Where(p => p.UserId == CurrentUserId)
@@ -91,6 +165,12 @@ namespace SchoolManager.Areas.Procedures.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> CreateRequest(procedure_request request, IFormCollection form)
         {
+            var availability = await CheckProcedureAvailability(request.IdTypeProcedure);
+            if (!availability.IsAvailable)
+            {
+                return Json(new { success = false, errors = new[] { availability.Message } });
+            }
+
             var initialFlow = await _context.ProcedureFlow
                 .Where(f => f.IdTypeProcedure == request.IdTypeProcedure)
                 .OrderBy(f => f.StepOrder)
@@ -270,15 +350,39 @@ namespace SchoolManager.Areas.Procedures.Controllers
             return PartialView("_TrackingDetails", viewModel);
         }
 
+        private async Task<(bool IsAvailable, string Message)> CheckProcedureAvailability(int procedureTypeId)
+        {
+            var procedure = await _context.ProcedureTypes.FindAsync(procedureTypeId);
+            if (procedure == null) return (false, "El trámite no existe.");
+
+            var now = DateTime.Now;
+
+            if (procedure.StartDate.HasValue && now < procedure.StartDate.Value)
+            {
+                return (false, $"Este trámite aún no está disponible. Abre el {procedure.StartDate.Value:dd/MM/yyyy HH:mm}.");
+            }
+
+            if (procedure.EndDate.HasValue && now > procedure.EndDate.Value)
+            {
+                return (false, "El periodo para este trámite ha finalizado.");
+            }
+
+            return (true, "Disponible");
+        }
+
         [AllowAnonymous]
         public async Task<IActionResult> PaymentRegistration()
         {
             bool isAuthenticated = User.Identity?.IsAuthenticated ?? false;
 
+            var now = DateTime.Now;
+
             if (isAuthenticated)
             {
                 ViewBag.TramitesPago = await _context.ProcedureTypes
-                    .Where(p => p.Name.Contains("Inscripción") && !p.Name.Contains("Preinscripción"))
+                    .Where(p => p.Name.Contains(isAuthenticated ? "Inscripción" : "Preinscripción"))
+                    .Where(p => (!p.StartDate.HasValue || now >= p.StartDate) &&
+                                (!p.EndDate.HasValue || now <= p.EndDate))
                     .ToListAsync();
 
                 var studentData = await _context.PreenrollmentGenerals
