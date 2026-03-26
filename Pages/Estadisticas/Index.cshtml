@@ -30,6 +30,31 @@
 }
 .filter-values label { display: block; font-size: 0.85rem; margin-bottom: 4px; cursor: pointer; }
 
+/* ── Selector de filas por página ── */
+.page-size-select {
+    font-size: 0.8rem;
+    padding: 2px 6px;
+    border-radius: 4px;
+    border: 1px solid #ced4da;
+    background: #fff;
+    color: #333;
+    cursor: pointer;
+    height: 28px;
+}
+.page-size-select:focus { outline: none; border-color: #620900; box-shadow: 0 0 0 2px rgba(98,9,0,0.15); }
+.pagination-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+.pagination-bar-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
 #pageTitle {
     font-family: "Merriweather", serif;
 }
@@ -47,7 +72,6 @@ small,
     font-family: "Inter", sans-serif;
 }
 
-/* Botón Filtros — resaltado */
 .btn-filter-toggle {
     background-color: var(--school-primary) !important;
     border-color: var(--school-accent) !important;
@@ -409,13 +433,11 @@ small,
 ══════════════════════════════════════ -->
 <div id="viewGeneral" class="d-none">
 
-    <!-- ── Encabezado institucional ── -->
     <div class="card p-4 mb-4 general-report-banner">
         <h3 class="general-banner-title mb-1">Resumen General Institucional</h3>
         <p class="general-banner-sub mb-0">Vista ejecutiva de los principales indicadores del sistema académico</p>
     </div>
 
-    <!-- ── Tarjetas KPI ── -->
     <div class="row g-3 mb-4">
         <div class="col-6 col-lg-3">
             <div class="card general-kpi-card kpi-blue">
@@ -471,7 +493,6 @@ small,
         </div>
     </div>
 
-    <!-- ── Sección: Alumnos ── -->
     <div class="general-section-divider mb-4"><span>Alumnos &amp; Calificaciones</span></div>
     <div class="row g-3 mb-4">
         <div class="col-md-5">
@@ -500,7 +521,6 @@ small,
         </div>
     </div>
 
-    <!-- ── Sección: Servicio Social ── -->
     <div class="general-section-divider mb-4"><span>Servicio Social</span></div>
     <div class="row g-3 mb-4">
         <div class="col-md-5">
@@ -520,7 +540,6 @@ small,
         </div>
     </div>
 
-    <!-- ── Sección: Trámites ── -->
     <div class="general-section-divider mb-4"><span>Trámites</span></div>
     <div class="row g-3 mb-4">
         <div class="col-md-5">
@@ -540,7 +559,6 @@ small,
         </div>
     </div>
 
-    <!-- ── Sección: Bitácoras ── -->
     <div class="general-section-divider mb-4"><span>Bitácoras</span></div>
     <div class="row g-3 mb-4">
         <div class="col-md-5">
@@ -566,7 +584,6 @@ small,
      VIEW: CALIFICACIONES
 ══════════════════════════════════════ -->
 <div id="viewStudents">
-    <!-- Sub-botones Por Semestre / Por Grupo -->
     <div class="row mb-3">
         <div class="col-12">
             <div class="btn-group" role="group">
@@ -595,9 +612,15 @@ small,
                 <tbody><tr><td colspan="8" class="text-center text-muted py-4">Cargando datos...</td></tr></tbody>
             </table>
         </div>
-        <div class="row mb-3">
-            <div class="col-12 d-flex justify-content-between align-items-center">
-                <small id="pageInfo">Mostrando resultados</small>
+        <div class="pagination-bar mb-3">
+            <small id="pageInfo">Mostrando resultados</small>
+            <div class="pagination-bar-right">
+                <label class="text-muted small mb-0">Filas:</label>
+                <select id="pageSizeStudents" class="page-size-select">
+                    <option value="15" selected>15</option>
+                    <option value="20">20</option>
+                    <option value="50">50</option>
+                </select>
                 <div class="btn-group">
                     <button id="firstPage" class="btn btn-sm btn-outline-secondary">🏠</button>
                     <button id="prevPage"  class="btn btn-sm btn-outline-secondary">◀</button>
@@ -634,9 +657,15 @@ small,
                 <tbody><tr><td colspan="8" class="text-center text-muted py-4">Cargando datos...</td></tr></tbody>
             </table>
         </div>
-        <div class="row mb-3">
-            <div class="col-12 d-flex justify-content-between align-items-center">
-                <small id="pageInfoGrupo">Mostrando resultados</small>
+        <div class="pagination-bar mb-3">
+            <small id="pageInfoGrupo">Mostrando resultados</small>
+            <div class="pagination-bar-right">
+                <label class="text-muted small mb-0">Filas:</label>
+                <select id="pageSizeGroups" class="page-size-select">
+                    <option value="15" selected>15</option>
+                    <option value="20">20</option>
+                    <option value="50">50</option>
+                </select>
                 <div class="btn-group">
                     <button id="firstPageGrupo" class="btn btn-sm btn-outline-secondary">🏠</button>
                     <button id="prevPageGrupo"  class="btn btn-sm btn-outline-secondary">◀</button>
@@ -677,9 +706,15 @@ small,
             <tbody><tr><td colspan="9" class="text-center text-muted py-4">Cargando datos...</td></tr></tbody>
         </table>
     </div>
-    <div class="row mb-3">
-        <div class="col-12 d-flex justify-content-between align-items-center">
-            <small id="pageInfoSocial">Mostrando resultados</small>
+    <div class="pagination-bar mb-3">
+        <small id="pageInfoSocial">Mostrando resultados</small>
+        <div class="pagination-bar-right">
+            <label class="text-muted small mb-0">Filas:</label>
+            <select id="pageSizeSocial" class="page-size-select">
+                <option value="15" selected>15</option>
+                <option value="20">20</option>
+                <option value="50">50</option>
+            </select>
             <div class="btn-group">
                 <button id="firstPageSocial" class="btn btn-sm btn-outline-secondary">🏠</button>
                 <button id="prevPageSocial"  class="btn btn-sm btn-outline-secondary">◀</button>
@@ -718,9 +753,15 @@ small,
             <tbody><tr><td colspan="8" class="text-center text-muted py-4">Cargando datos...</td></tr></tbody>
         </table>
     </div>
-    <div class="row mb-3">
-        <div class="col-12 d-flex justify-content-between align-items-center">
-            <small id="pageInfoTramites">Mostrando resultados</small>
+    <div class="pagination-bar mb-3">
+        <small id="pageInfoTramites">Mostrando resultados</small>
+        <div class="pagination-bar-right">
+            <label class="text-muted small mb-0">Filas:</label>
+            <select id="pageSizeProcs" class="page-size-select">
+                <option value="15" selected>15</option>
+                <option value="20">20</option>
+                <option value="50">50</option>
+            </select>
             <div class="btn-group">
                 <button id="firstPageTramites" class="btn btn-sm btn-outline-secondary">🏠</button>
                 <button id="prevPageTramites"  class="btn btn-sm btn-outline-secondary">◀</button>
@@ -769,9 +810,15 @@ small,
                 <tbody><tr><td colspan="7" class="text-center text-muted py-4">Cargando datos de Psicología...</td></tr></tbody>
             </table>
         </div>
-        <div class="row mb-3">
-            <div class="col-12 d-flex justify-content-between align-items-center">
-                <small id="pageInfoPsy">Mostrando resultados</small>
+        <div class="pagination-bar mb-3">
+            <small id="pageInfoPsy">Mostrando resultados</small>
+            <div class="pagination-bar-right">
+                <label class="text-muted small mb-0">Filas:</label>
+                <select id="pageSizePsy" class="page-size-select">
+                    <option value="15" selected>15</option>
+                    <option value="20">20</option>
+                    <option value="50">50</option>
+                </select>
                 <div class="btn-group">
                     <button id="firstPagePsy" class="btn btn-sm btn-outline-secondary">🏠</button>
                     <button id="prevPagePsy"  class="btn btn-sm btn-outline-secondary">◀</button>
@@ -779,7 +826,6 @@ small,
                 </div>
             </div>
         </div>
-        <!-- Gráficas Psicología -->
         <div class="row mt-2">
             <div class="col-md-6 mb-3"><div class="card p-3"><h5>Distribución de asistencia</h5><div class="chart-container"><canvas id="psyPieChart"></canvas></div></div></div>
             <div class="col-md-6 mb-3"><div class="card p-3"><h5>Citas por alumno (Top 10)</h5><div class="chart-container"><canvas id="psyStudentBar"></canvas></div></div></div>
@@ -810,9 +856,15 @@ small,
                 <tbody><tr><td colspan="9" class="text-center text-muted py-4">Cargando datos de Enfermería...</td></tr></tbody>
             </table>
         </div>
-        <div class="row mb-3">
-            <div class="col-12 d-flex justify-content-between align-items-center">
-                <small id="pageInfoMed">Mostrando resultados</small>
+        <div class="pagination-bar mb-3">
+            <small id="pageInfoMed">Mostrando resultados</small>
+            <div class="pagination-bar-right">
+                <label class="text-muted small mb-0">Filas:</label>
+                <select id="pageSizeMed" class="page-size-select">
+                    <option value="15" selected>15</option>
+                    <option value="20">20</option>
+                    <option value="50">50</option>
+                </select>
                 <div class="btn-group">
                     <button id="firstPageMed" class="btn btn-sm btn-outline-secondary">🏠</button>
                     <button id="prevPageMed"  class="btn btn-sm btn-outline-secondary">◀</button>
@@ -820,7 +872,6 @@ small,
                 </div>
             </div>
         </div>
-        <!-- Gráficas Enfermería -->
         <div class="row mt-2">
             <div class="col-md-6 mb-3"><div class="card p-3"><h5>Distribución por estado</h5><div class="chart-container"><canvas id="medPieChart"></canvas></div></div></div>
             <div class="col-md-6 mb-3"><div class="card p-3"><h5>Motivos de consulta más frecuentes</h5><div class="chart-container"><canvas id="medReasonBar"></canvas></div></div></div>
@@ -888,7 +939,6 @@ small,
             allViews.forEach(v => v && v.classList.add('d-none'));
             allStats.forEach(s => s && s.classList.add('d-none'));
             allFilters.forEach(f => f && f.classList.add('d-none'));
-            // Restore action buttons for non-General tabs
             ['toggleFilters','btnExportTable','btnExportPDF'].forEach(id => {
                 const el = document.getElementById(id); if (el) el.classList.remove('d-none');
             });
@@ -906,7 +956,6 @@ small,
             collapseFilters();
             document.getElementById('pageTitle').textContent = 'Resumen General';
             document.getElementById('pageSubtitle').textContent = 'Vista ejecutiva de los principales indicadores del sistema académico institucional.';
-            // Hide Filtros and export buttons — not applicable in General view
             ['toggleFilters','btnExportTable','btnExportPDF'].forEach(id => {
                 const el = document.getElementById(id); if (el) el.classList.add('d-none');
             });
@@ -986,7 +1035,7 @@ small,
             }
         }
 
-        if (btnGeneral)      btnGeneral.addEventListener('click', showGeneral);
+        if (btnGeneral)        btnGeneral.addEventListener('click', showGeneral);
         if (btnCalificaciones) btnCalificaciones.addEventListener('click', showCalificaciones);
         btnServicios.addEventListener('click', showServicios);
         btnTramites.addEventListener('click', showTramites);

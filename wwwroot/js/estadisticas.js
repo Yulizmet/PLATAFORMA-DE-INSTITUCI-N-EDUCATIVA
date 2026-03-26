@@ -15,7 +15,17 @@
     let filteredStudents = [...students];
     let filteredGroups = [...students];
 
-    const PAGE_SIZE = 15;
+    // ── Tamaños de página dinámicos por sección ───────────────────────────────
+    // Cada sección mantiene su propio PAGE_SIZE independiente
+    const pageSizes = {
+        students: 15,
+        groups: 15,
+        social: 15,
+        procs: 15,
+        psy: 15,
+        med: 15
+    };
+
     let pageSocial = 1, pageProcs = 1, pagePsy = 1, pageMed = 1, pageStudents = 1, pageGroups = 1;
 
     let charts = {};
@@ -134,8 +144,6 @@
     }
 
     // ── Helper: detectar vista/sub-vista activa ──────────────────────────────
-    // FIX: centraliza la detección de qué sección está visible para
-    //      que tanto Excel como PDF usen la misma lógica.
     function getActiveSection() {
         const viewStudents = document.getElementById('viewStudents');
         const viewSocialServices = document.getElementById('viewSocialServices');
@@ -145,7 +153,6 @@
         const subViewPsicologia = document.getElementById('subViewPsicologia');
 
         if (viewStudents && !viewStudents.classList.contains('d-none')) {
-            // Detectar sub-vista activa dentro de Calificaciones
             if (subViewSemestre && !subViewSemestre.classList.contains('d-none')) {
                 return 'calificaciones_semestre';
             }
@@ -317,7 +324,7 @@
         const tbody = $('#studentsTable tbody'); if (!tbody.length) return;
         tbody.empty();
         if (!list || !list.length) { tbody.html('<tr><td colspan="8" class="text-center text-muted py-4">Sin datos disponibles</td></tr>'); $('#pageInfo').text('Sin resultados'); return; }
-        const { items, from, to, total } = paginate(list, pageStudents, PAGE_SIZE);
+        const { items, from, to, total } = paginate(list, pageStudents, pageSizes.students);
         items.forEach(s => {
             const badge = s.Estado === 'Aprobado' ? '<span class="badge bg-success">Aprobado</span>'
                 : s.Estado === 'Reprobado' ? '<span class="badge bg-danger">Reprobado</span>'
@@ -332,7 +339,7 @@
         const tbody = $('#grupoTable tbody'); if (!tbody.length) return;
         tbody.empty();
         if (!list || !list.length) { tbody.html('<tr><td colspan="8" class="text-center text-muted py-4">Sin datos disponibles</td></tr>'); $('#pageInfoGrupo').text('Sin resultados'); return; }
-        const { items, from, to, total } = paginate(list, pageGroups, PAGE_SIZE);
+        const { items, from, to, total } = paginate(list, pageGroups, pageSizes.groups);
         items.forEach(s => {
             const badge = s.Estado === 'Aprobado' ? '<span class="badge bg-success">Aprobado</span>'
                 : s.Estado === 'Reprobado' ? '<span class="badge bg-danger">Reprobado</span>'
@@ -355,7 +362,7 @@
         const tbody = $('#socialServiceTable tbody'); if (!tbody.length) return;
         tbody.empty();
         if (!list || !list.length) { tbody.html('<tr><td colspan="9" class="text-center text-muted py-4">Sin datos disponibles</td></tr>'); $('#pageInfoSocial').text('Sin resultados'); return; }
-        const { items, from, to, total } = paginate(list, pageSocial, PAGE_SIZE);
+        const { items, from, to, total } = paginate(list, pageSocial, pageSizes.social);
         items.forEach(item => {
             const la = item.LastAttendanceDate ? new Date(item.LastAttendanceDate).toLocaleDateString('es-MX') : 'Sin registro';
             tbody.append(`<tr><td>${escHtml(item.StudentName || 'Sin nombre')}</td><td>${escHtml(item.TeacherName || 'Sin asignar')}</td><td>${escHtml(item.GroupName || 'Sin grupo')}</td><td>${item.TotalPresent || 0}</td><td>${item.TotalAbsent || 0}</td><td>${item.TotalJustified || 0}</td><td>${(item.AttendanceRate || 0).toFixed(1)}%</td><td>${getStatusBadge(item.Status)}</td><td>${la}</td></tr>`);
@@ -454,7 +461,7 @@
         const tbody = $('#proceduresTable tbody'); if (!tbody.length) return;
         tbody.empty();
         if (!list || !list.length) { tbody.html('<tr><td colspan="8" class="text-center text-muted py-4">Sin datos disponibles</td></tr>'); $('#pageInfoTramites').text('Sin resultados'); return; }
-        const { items, from, to, total } = paginate(list, pageProcs, PAGE_SIZE);
+        const { items, from, to, total } = paginate(list, pageProcs, pageSizes.procs);
         items.forEach(item => {
             const dc = item.DateCreated ? new Date(item.DateCreated).toLocaleDateString('es-MX') : 'N/A';
             const du = item.DateUpdated ? new Date(item.DateUpdated).toLocaleDateString('es-MX') : 'N/A';
@@ -551,7 +558,7 @@
         const tbody = $('#psychologyTable tbody'); if (!tbody.length) return;
         tbody.empty();
         if (!list || !list.length) { tbody.html('<tr><td colspan="7" class="text-center text-muted py-4">Sin datos disponibles</td></tr>'); $('#pageInfoPsy').text('Sin resultados'); return; }
-        const { items, from, to, total } = paginate(list, pagePsy, PAGE_SIZE);
+        const { items, from, to, total } = paginate(list, pagePsy, pageSizes.psy);
         items.forEach(item => {
             const ad = item.AppointmentDate ? new Date(item.AppointmentDate).toLocaleString('es-MX') : 'N/A';
             const ca = item.CreatedAt ? new Date(item.CreatedAt).toLocaleDateString('es-MX') : 'N/A';
@@ -666,7 +673,7 @@
         const tbody = $('#medicalTable tbody'); if (!tbody.length) return;
         tbody.empty();
         if (!list || !list.length) { tbody.html('<tr><td colspan="9" class="text-center text-muted py-4">Sin datos disponibles</td></tr>'); $('#pageInfoMed').text('Sin resultados'); return; }
-        const { items, from, to, total } = paginate(list, pageMed, PAGE_SIZE);
+        const { items, from, to, total } = paginate(list, pageMed, pageSizes.med);
         items.forEach(item => {
             const rd = item.RecordDate ? new Date(item.RecordDate).toLocaleString('es-MX') : 'N/A';
             tbody.append(`<tr><td>${escHtml(item.Folio || 'Sin folio')}</td><td>${escHtml(item.StudentName || 'Sin nombre')}</td><td>${escHtml(item.EnrollmentOrMatricula || 'Sin matrícula')}</td><td>${rd}</td><td>${escHtml(item.ConsultationReason || '')}</td><td>${escHtml(item.VitalSigns || '')}</td><td>${escHtml(item.Observations || '')}</td><td>${escHtml(item.TreatmentAction || '')}</td><td>${getMedBadge(item.Status)}</td></tr>`);
@@ -885,7 +892,7 @@
     }
 
     // ════════════════════════════════════════════════════════════════════════
-    // EXPORTAR CSV  — FIX: usa getActiveSection() para detectar sub-vista
+    // EXPORTAR CSV
     // ════════════════════════════════════════════════════════════════════════
     function exportVisibleTableToCSV(tableId, fn) {
         const $t = $('#' + tableId); if (!$t.length) return;
@@ -911,7 +918,7 @@
     }
 
     // ════════════════════════════════════════════════════════════════════════
-    // EXPORTAR PDF  — FIX: usa getActiveSection() para detectar sub-vista
+    // EXPORTAR PDF
     // ════════════════════════════════════════════════════════════════════════
     function exportToPDF() {
         if (!window.jspdf || !window.jspdf.jsPDF) { alert('jsPDF no cargó, verifica tu conexión.'); return; }
@@ -922,7 +929,6 @@
         const margin = 12;
         const dateStr = new Date().toLocaleDateString('es-MX');
 
-        // ── FIX: detectar sección activa con helper centralizado ──────────────
         const section = getActiveSection();
         let title = document.getElementById('pageTitle').textContent;
         let tableId = null, chartIds = [], filename = 'estadisticas.pdf';
@@ -962,7 +968,6 @@
             return;
         }
 
-        // Cabecera
         doc.setFillColor(98, 9, 0); doc.rect(0, 0, pageW, 16, 'F');
         doc.setTextColor(255, 255, 255); doc.setFontSize(13); doc.setFont('helvetica', 'bold');
         doc.text(title, margin, 10.5);
@@ -972,7 +977,6 @@
 
         let cy = 22;
 
-        // Tarjetas de stats
         const statCards = getPDFStatCards(section);
         if (statCards.length) {
             const cw = (pageW - margin * 2 - (statCards.length - 1) * 4) / statCards.length;
@@ -988,7 +992,6 @@
             doc.setTextColor(0, 0, 0); cy += 20;
         }
 
-        // Tabla — exporta TODOS los datos filtrados (no sólo la página visible)
         if (tableId) {
             const $table = $('#' + tableId);
             const headers = [];
@@ -1021,7 +1024,6 @@
             }
         }
 
-        // Gráficas (2 por fila)
         const validCharts = chartIds.filter(id => document.getElementById(id) && charts[id]);
         if (validCharts.length) {
             if (cy + 65 > pageH) {
@@ -1066,7 +1068,6 @@
             });
         }
 
-        // Pie de página
         const totalPages = doc.internal.getNumberOfPages();
         for (let p = 1; p <= totalPages; p++) {
             doc.setPage(p); doc.setFontSize(7); doc.setTextColor(130, 130, 130);
@@ -1075,7 +1076,6 @@
         doc.save(filename);
     }
 
-    // FIX: recibe section como parámetro en lugar de releer el DOM
     function getPDFStatCards(section) {
         if (section === 'calificaciones_semestre' || section === 'calificaciones_grupo')
             return [
@@ -1138,7 +1138,14 @@
         $('#resetFilters').on('click', resetStudentFilters);
         $('#firstPage').on('click', () => { pageStudents = 1; populateStudentsTable(filteredStudents); });
         $('#prevPage').on('click', () => { if (pageStudents > 1) { pageStudents--; populateStudentsTable(filteredStudents); } });
-        $('#nextPage').on('click', () => { const m = Math.ceil(filteredStudents.length / PAGE_SIZE); if (pageStudents < m) { pageStudents++; populateStudentsTable(filteredStudents); } });
+        $('#nextPage').on('click', () => { const m = Math.ceil(filteredStudents.length / pageSizes.students); if (pageStudents < m) { pageStudents++; populateStudentsTable(filteredStudents); } });
+
+        // Selector de filas — Por Semestre
+        $('#pageSizeStudents').on('change', function () {
+            pageSizes.students = parseInt($(this).val(), 10);
+            pageStudents = 1;
+            populateStudentsTable(filteredStudents);
+        });
 
         // Calificaciones — Por Grupo
         $('#filterGrupoName,#filterGrupoGrupo').on('input', applyGroupFilters);
@@ -1147,7 +1154,14 @@
         $('#resetGroupFilters').on('click', resetGroupFilters);
         $('#firstPageGrupo').on('click', () => { pageGroups = 1; populateGroupTable(filteredGroups); });
         $('#prevPageGrupo').on('click', () => { if (pageGroups > 1) { pageGroups--; populateGroupTable(filteredGroups); } });
-        $('#nextPageGrupo').on('click', () => { const m = Math.ceil(filteredGroups.length / PAGE_SIZE); if (pageGroups < m) { pageGroups++; populateGroupTable(filteredGroups); } });
+        $('#nextPageGrupo').on('click', () => { const m = Math.ceil(filteredGroups.length / pageSizes.groups); if (pageGroups < m) { pageGroups++; populateGroupTable(filteredGroups); } });
+
+        // Selector de filas — Por Grupo
+        $('#pageSizeGroups').on('change', function () {
+            pageSizes.groups = parseInt($(this).val(), 10);
+            pageGroups = 1;
+            populateGroupTable(filteredGroups);
+        });
 
         // Servicios Sociales
         $('#filterSocialName,#filterSocialTeacher,#filterSocialGroup').on('input', applySocialFilters);
@@ -1156,7 +1170,14 @@
         $('#resetSocialFilters').on('click', resetSocialFilters);
         $('#firstPageSocial').on('click', () => { pageSocial = 1; populateSocialTable(filteredSocial); });
         $('#prevPageSocial').on('click', () => { if (pageSocial > 1) { pageSocial--; populateSocialTable(filteredSocial); } });
-        $('#nextPageSocial').on('click', () => { const m = Math.ceil(filteredSocial.length / PAGE_SIZE); if (pageSocial < m) { pageSocial++; populateSocialTable(filteredSocial); } });
+        $('#nextPageSocial').on('click', () => { const m = Math.ceil(filteredSocial.length / pageSizes.social); if (pageSocial < m) { pageSocial++; populateSocialTable(filteredSocial); } });
+
+        // Selector de filas — Social
+        $('#pageSizeSocial').on('change', function () {
+            pageSizes.social = parseInt($(this).val(), 10);
+            pageSocial = 1;
+            populateSocialTable(filteredSocial);
+        });
 
         // Trámites
         $('#filterTramiteUser,#filterTramiteFolio,#filterTramiteArea').on('input', applyTramiteFilters);
@@ -1165,7 +1186,14 @@
         $('#resetTramiteFilters').on('click', resetTramiteFilters);
         $('#firstPageTramites').on('click', () => { pageProcs = 1; populateProcsTable(filteredProcs); });
         $('#prevPageTramites').on('click', () => { if (pageProcs > 1) { pageProcs--; populateProcsTable(filteredProcs); } });
-        $('#nextPageTramites').on('click', () => { const m = Math.ceil(filteredProcs.length / PAGE_SIZE); if (pageProcs < m) { pageProcs++; populateProcsTable(filteredProcs); } });
+        $('#nextPageTramites').on('click', () => { const m = Math.ceil(filteredProcs.length / pageSizes.procs); if (pageProcs < m) { pageProcs++; populateProcsTable(filteredProcs); } });
+
+        // Selector de filas — Trámites
+        $('#pageSizeProcs').on('change', function () {
+            pageSizes.procs = parseInt($(this).val(), 10);
+            pageProcs = 1;
+            populateProcsTable(filteredProcs);
+        });
 
         // Psicología
         $('#filterPsyName,#filterPsyFolio,#filterPsyMatricula').on('input', applyPsyFilters);
@@ -1174,7 +1202,14 @@
         $('#resetPsyFilters').on('click', resetPsyFilters);
         $('#firstPagePsy').on('click', () => { pagePsy = 1; populatePsyTable(filteredPsy); });
         $('#prevPagePsy').on('click', () => { if (pagePsy > 1) { pagePsy--; populatePsyTable(filteredPsy); } });
-        $('#nextPagePsy').on('click', () => { const m = Math.ceil(filteredPsy.length / PAGE_SIZE); if (pagePsy < m) { pagePsy++; populatePsyTable(filteredPsy); } });
+        $('#nextPagePsy').on('click', () => { const m = Math.ceil(filteredPsy.length / pageSizes.psy); if (pagePsy < m) { pagePsy++; populatePsyTable(filteredPsy); } });
+
+        // Selector de filas — Psicología
+        $('#pageSizePsy').on('change', function () {
+            pageSizes.psy = parseInt($(this).val(), 10);
+            pagePsy = 1;
+            populatePsyTable(filteredPsy);
+        });
 
         // Enfermería
         $('#filterMedName,#filterMedFolio,#filterMedReason').on('input', applyMedFilters);
@@ -1183,12 +1218,19 @@
         $('#resetMedFilters').on('click', resetMedFilters);
         $('#firstPageMed').on('click', () => { pageMed = 1; populateMedTable(filteredMed); });
         $('#prevPageMed').on('click', () => { if (pageMed > 1) { pageMed--; populateMedTable(filteredMed); } });
-        $('#nextPageMed').on('click', () => { const m = Math.ceil(filteredMed.length / PAGE_SIZE); if (pageMed < m) { pageMed++; populateMedTable(filteredMed); } });
+        $('#nextPageMed').on('click', () => { const m = Math.ceil(filteredMed.length / pageSizes.med); if (pageMed < m) { pageMed++; populateMedTable(filteredMed); } });
+
+        // Selector de filas — Enfermería
+        $('#pageSizeMed').on('change', function () {
+            pageSizes.med = parseInt($(this).val(), 10);
+            pageMed = 1;
+            populateMedTable(filteredMed);
+        });
 
         // PDF
         $('#btnExportPDF').on('click', exportToPDF);
 
-        // ── FIX: Excel — usa getActiveSection() para detectar sub-vista ─────
+        // Excel
         $('#btnExportTable').on('click', function () {
             const d = new Date().toISOString().slice(0, 10);
             const section = getActiveSection();
@@ -1225,7 +1267,7 @@
 
 
 // ════════════════════════════════════════════════════════════════════════════
-// FILTROS TIPO EXCEL — 5 tablas
+// FILTROS TIPO EXCEL — 6 tablas
 // ════════════════════════════════════════════════════════════════════════════
 let studentExcelFilters = {};
 let socialExcelFilters = {};
@@ -1252,7 +1294,6 @@ function setExcelFilters(tableId, obj) {
     if (tableId === 'grupoTable') { grupoExcelFilters = obj; return; }
 }
 
-// Paginación Calificaciones (DOM)
 let currentPage = 1;
 const ITEMS_PER_PAGE = 15;
 
@@ -1363,13 +1404,13 @@ function applyExcelFor(tableId) {
     });
     if (tableId === 'studentsTable') {
         const vis = $('#studentsTable tbody tr:visible').length;
-        $('#pageInfo').text(vis > 0 ? `Mostrando 1-${Math.min(vis, PAGE_SIZE)} de ${vis}` : 'Sin resultados');
+        $('#pageInfo').text(vis > 0 ? `Mostrando 1-${Math.min(vis, ITEMS_PER_PAGE)} de ${vis}` : 'Sin resultados');
     } else if (tableId === 'grupoTable') {
         const vis = $('#grupoTable tbody tr:visible').length;
-        $('#pageInfoGrupo').text(vis > 0 ? `Mostrando 1-${Math.min(vis, PAGE_SIZE)} de ${vis}` : 'Sin resultados');
+        $('#pageInfoGrupo').text(vis > 0 ? `Mostrando 1-${Math.min(vis, ITEMS_PER_PAGE)} de ${vis}` : 'Sin resultados');
     }
 }
-//finally
+
 function sortGeneric(tableId, col, asc) {
     const rows = $('#' + tableId + ' tbody tr').get();
     rows.sort(function (a, b) {
