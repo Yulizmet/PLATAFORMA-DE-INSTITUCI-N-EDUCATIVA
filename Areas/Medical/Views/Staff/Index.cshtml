@@ -79,41 +79,48 @@
                             <td data-sort="@item.FechaCreacion.ToString("yyyyMMddHHmmss")">
                                 @item.FechaCreacion.ToString("dd/MM/yyyy")
                             </td>
-                            <td>
-                                <div class="d-flex gap-2">
+                                <td>
+                                    <div class="d-flex gap-2">
 
-                                    @* Ver — todos *@
-                                    <a asp-action="Details" asp-route-id="@item.Id"
-                                       class="btn btn-sm"
-                                       style="background:#38b6ff;color:white;border:none;"
-                                       title="Ver">
-                                        <i class="bi bi-eye-fill"></i>
-                                    </a>
-
-                                    @* Editar — solo Master *@
-                                    @if (User.IsInRole("Head Nurse") || User.IsInRole("Head of Psychology") || User.IsInRole("Master"))
-                                    {
-                                        <a asp-action="Edit" asp-route-id="@item.Id"
+                                        <a asp-action="Details" asp-route-id="@item.Id"
                                            class="btn btn-sm"
-                                           style="background:#ffde59;color:white;border:none;"
-                                           title="Editar">
-                                            <i class="bi bi-pencil-fill"></i>
+                                           style="background:#38b6ff;color:white;border:none;"
+                                           title="Ver">
+                                            <i class="bi bi-eye-fill"></i>
                                         </a>
-                                    }
 
-                                    @* Eliminar — solo Master *@
-                                    @if (User.IsInRole("Master"))
-                                    {
-                                        <a asp-action="Delete" asp-route-id="@item.Id"
-                                           class="btn btn-sm"
-                                           style="background:#ff3131;color:white;border:none;"
-                                           title="Eliminar">
-                                            <i class="bi bi-trash-fill"></i>
-                                        </a>
-                                    }
+                                        @if (
+                                            (User.IsInRole("Head Nurse") && item.Rol == "Nurse") ||
+                                            (User.IsInRole("Head of Psychology") && item.Rol == "Psychologist") ||
+                                            (User.IsInRole("Coordinator") && (item.Rol == "Nurse" || item.Rol == "Psychologist" || item.Rol == "Head Nurse" || item.Rol == "Head of Psychology")) ||
+                                            User.IsInRole("Master")
+                                        )
+                                        {
+                                            <a asp-action="Edit" asp-route-id="@item.Id"
+                                               class="btn btn-sm"
+                                               style="background:#ffde59;color:white;border:none;"
+                                               title="Editar">
+                                                <i class="bi bi-pencil-fill"></i>
+                                            </a>
+                                        }
 
-                                </div>
-                            </td>
+                                        @if (
+                                            (User.IsInRole("Head Nurse") && item.Rol == "Nurse") ||
+                                            (User.IsInRole("Head of Psychology") && item.Rol == "Psychologist") ||
+                                            (User.IsInRole("Coordinator") && (item.Rol == "Nurse" || item.Rol == "Psychologist" || item.Rol == "Head Nurse" || item.Rol == "Head of Psychology")) ||
+                                            User.IsInRole("Master")
+                                        )
+                                        {
+                                            <a asp-action="Delete" asp-route-id="@item.Id"
+                                               class="btn btn-sm"
+                                               style="background:#ff3131;color:white;border:none;"
+                                               title="Eliminar">
+                                                <i class="bi bi-trash-fill"></i>
+                                            </a>
+                                        }
+
+                                    </div>
+                                </td>
                         </tr>
                     }
                 </tbody>

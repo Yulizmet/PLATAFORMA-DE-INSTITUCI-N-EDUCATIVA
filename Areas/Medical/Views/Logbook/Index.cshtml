@@ -3,6 +3,7 @@
 @{
     Layout = "~/Areas/Medical/Views/Shared/_LayoutDashboard.cshtml";
     ViewData["Title"] = "Bitácoras Clínicas";
+    var permisos = ViewBag.Permisos as SchoolManager.Models.medical_permissions;
 }
 
 <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
@@ -13,11 +14,17 @@
             <h2 class="text-white">BITÁCORAS CLÍNICAS</h2>
             <div class="buttons-left">
 
-                @* Crear — Nurse, Head Nurse, Master *@
-                @if (User.IsInRole("Nurse") || User.IsInRole("Head Nurse") || User.IsInRole("Master"))
+                @if (
+                    !User.IsInRole("Coordinator") &&
+                    (
+                        User.IsInRole("Master") ||
+                        User.IsInRole("Head Nurse") ||
+                        User.IsInRole("Nurse")
+                    )
+                )
                 {
-                    <a asp-action="Create" class="btn-header">
-                        <i class="bi bi-plus-circle"></i> Crear Bitácora
+                    <a asp-action="Create" class="btn">
+                        Crear Bitácora
                     </a>
                 }
 
@@ -25,7 +32,6 @@
                     <i class="bi bi-journal-medical"></i> Ver Bitácoras
                 </a>
 
-                @* Reporte — todos los que acceden *@
                 <a asp-action="Reporte" class="btn-header">
                     <i class="bi bi-file-earmark-bar-graph"></i> Reporte
                 </a>
@@ -68,27 +74,38 @@
                             <td>
                                 <div class="d-flex gap-2">
 
-                                    @* Ver — todos *@
-                                    <a asp-action="Details" asp-route-id="@item.Id"
-                                       class="btn btn-sm"
-                                       style="background:#38b6ff;color:white;border:none;"
-                                       title="Ver">
-                                        <i class="bi bi-eye-fill"></i>
-                                    </a>
+                                    @if (
+                                        User.IsInRole("Master") ||
+                                        User.IsInRole("Coordinator") ||
+                                        User.IsInRole("Head Nurse") ||
+                                        (permisos != null && permisos.Ver)
+                                    )
+                                    {
+                                        <a asp-action="Details" asp-route-id="@item.Id"
+                                           class="btn btn-sm"
+                                           style="background:#38b6ff;color:white;border:none;">
+                                            <i class="bi bi-eye-fill"></i>
+                                        </a>
+                                    }
 
-                                    @* Editar — Master, Head Nurse y Coordinator *@
-                                    @if (User.IsInRole("Master") || User.IsInRole("Head Nurse"))
+                                    @if (
+                                        User.IsInRole("Master") ||
+                                        User.IsInRole("Head Nurse") ||
+                                        (permisos != null && permisos.Modificar)
+                                    )
                                     {
                                         <a asp-action="Edit" asp-route-id="@item.Id"
                                            class="btn btn-sm"
-                                           style="background:#ffde59;color:white;border:none;"
-                                           title="Editar">
+                                           style="background:#ffde59;color:white;border:none;">
                                             <i class="bi bi-pencil-square"></i>
                                         </a>
                                     }
 
-                                    @* Eliminar — SOLO Master *@
-                                    @if (User.IsInRole("Master"))
+                                    @if (
+                                        User.IsInRole("Master") ||
+                                        User.IsInRole("Head Nurse") ||
+                                        (User.IsInRole("Nurse") && ViewBag.Permisos?.Borrar == true)
+                                    )
                                     {
                                         <a asp-action="Delete" asp-route-id="@item.Id"
                                            class="btn btn-sm"
