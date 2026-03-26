@@ -28,6 +28,10 @@
                     {
                         <text>Bienvenido Docente</text>
                     }
+                    else if (User.IsInRole("Coordinator"))
+                    {
+                        <text>Bienvenido Coordinador</text>
+                    }
                     else if (User.IsInRole("Master"))
                     {
                         <text>Bienvenido Master</text>
@@ -116,7 +120,20 @@
                     <div class="col-md-6">
                         <a asp-area="SocialService" asp-controller="Coordinator" asp-action="Dashboard" class="ss-role-card">
                             <div class="ss-role-card-inner">
-                                <h3 class="ss-role-title">Administrador</h3>
+                                <h3 class="ss-role-title">
+                                    @if (User.IsInRole("Master") && User.IsInRole("Coordinator"))
+                                    {
+                                        <text>Master o Coordinador</text>
+                                    }
+                                    else if (User.IsInRole("Master"))
+                                    {
+                                        <text>Master</text>
+                                    }
+                                    else if (User.IsInRole("Coordinator"))
+                                    {
+                                        <text>Coordinador</text>
+                                    }
+                                </h3>
                                 <p class="ss-role-description">Supervisa maestros, alumnos, bitácoras, asistencias y grupos de asesores</p>
                                 <div class="ss-role-features">
                                     <div class="ss-feature-item">

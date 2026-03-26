@@ -1,0 +1,58 @@
+@model IEnumerable<SchoolManager.Areas.SocialService.ViewModels.AvailableStudentViewModel>
+
+@{
+    ViewData["Title"] = "Agregar Alumnos al Asesor";
+    int teacherId = ViewBag.TeacherId ?? 0;
+}
+
+<div class="mb-3">
+    <a asp-area="SocialService" asp-controller="Coordinator" asp-action="Maestros" class="btn btn-secondary">
+        <i class="bi bi-arrow-left"></i> Regresar a Maestros
+    </a>
+</div>
+
+<h3 class="text-center my-3">Agregar Alumnos al Asesor</h3>
+
+<div class="card">
+    <div class="card-body">
+        @if (Model != null && Model.Any())
+        {
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Nombre</th>
+                            <th class="text-center">Semestre</th>
+                            <th class="text-center">Grupo</th>
+                            <th class="text-center">Acción</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var s in Model)
+                        {
+                            <tr>
+                                <td>@s.FullName</td>
+                                <td class="text-center">@(s.SemesterName ?? "N/A")</td>
+                                <td class="text-center">@(s.GroupName ?? "N/A")</td>
+                                <td class="text-center">
+                                    <form method="post" asp-area="SocialService" asp-controller="Coordinator" asp-action="AsignarAlumnoAAsesor">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="teacherId" value="@teacherId" />
+                                        <input type="hidden" name="studentId" value="@s.UserId" />
+                                        <button type="submit" class="btn btn-success btn-sm">
+                                            <i class="bi bi-plus-circle"></i> Agregar
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        else
+        {
+            <div class="alert alert-info">No hay alumnos disponibles para asignar a este asesor.</div>
+        }
+    </div>
+</div>

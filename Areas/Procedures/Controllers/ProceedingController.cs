@@ -1,22 +1,22 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using SchoolManager.Areas.Procedures.Controllers;
 using SchoolManager.Areas.Procedures.ViewModels;
 using SchoolManager.Data;
 using SchoolManager.Models;
 using static SchoolManager.Areas.Procedures.ViewModels.ProceedingDetailViewModel;
 
 [Area("Procedures")]
-public class ProceedingController : Controller
+public class ProceedingController : _ProceduresBaseController
 {
-    private readonly AppDbContext _context;
-
-    public ProceedingController(AppDbContext context)
-    {
-        _context = context;
-    }
+    public ProceedingController(AppDbContext context) : base(context) { }
 
     public async Task<IActionResult> Index()
     {
+        await LoadPermissions("Expedientes");
+
         var expedientes = await _context.Persons
             .Include(p => p.User)
                 .ThenInclude(u => u.UserRoles)
@@ -34,7 +34,7 @@ public class ProceedingController : Controller
                 Username = p.User.Username,
 
                 CareerName = p.User.Preenrollments.Any()
-                      ? p.User.Preenrollments.FirstOrDefault()!.Career.name_career
+                      ? p.User!.Preenrollments!.FirstOrDefault()!.Career!.name_career
                       : "Sin asignar",
 
                 Matricula = p.User.Preenrollments.Any()
@@ -54,13 +54,16 @@ public class ProceedingController : Controller
     [HttpGet]
     public IActionResult QuickAddStudent()
     {
+        LoadPermissions("Expedientes");
         return PartialView("_CreateModal");
     }
 
+
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> QuickCreateStudent(string FirstName, string LastNamePaternal, string LastNameMaternal, string Curp, string Email, string Username, string Matricula)
+    public async Task<IActionResult> QuickCreateStudent(string FirstName, string LastNamePaternal, string LastNameMaternal, string Curp, string Email, string Username, string Matricula, string Password)
     {
+        await LoadPermissions("Expedientes");
         using var transaction = await _context.Database.BeginTransactionAsync();
         try
         {
@@ -84,7 +87,7 @@ public class ProceedingController : Controller
                 PersonId = person.PersonId,
                 Username = Username.ToLower(),
                 Email = Email,
-                PasswordHash = "HASH_ESTUDIANTE_TEST",
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword(Password),
                 IsLocked = false,
                 LockReason = "",
                 CreatedDate = DateTime.Now,
@@ -123,6 +126,7 @@ public class ProceedingController : Controller
                 neighborhood = "Centro",
                 state = "Tamaulipas",
                 city = "Reynosa",
+                //phone = "8991234567"
             });
 
             _context.PreenrollmentInfos.Add(new preenrollment_infos
@@ -202,6 +206,7 @@ public class ProceedingController : Controller
     [HttpGet]
     public async Task<IActionResult> Edit(int id)
     {
+        await LoadPermissions("Expedientes");
         var data = await _context.Persons
             .Include(p => p.User)
                 .ThenInclude(u => u.Preenrollments)
@@ -227,6 +232,7 @@ public class ProceedingController : Controller
 
     public async Task<IActionResult> Details(int id)
     {
+        await LoadPermissions("Expedientes");
         var data = await _context.Persons
             .Include(p => p.User)
                 .ThenInclude(u => u.Preenrollments)
@@ -297,17 +303,6 @@ public class ProceedingController : Controller
             CityState = $"{(addr?.city ?? "N/A")}, {(addr?.state ?? "N/A")}"
         };
 
-        //if (data.User?.ProcedureRequests != null)
-        //{
-        //    viewModel.DigitalFiles = data.User.ProcedureRequests
-        //        .SelectMany(pr => pr.ProcedureDocuments)
-        //        .Select(d => new ProceedingDetailViewModel.EnrollmentDocumentDetail
-        //        {
-        //            FileName = d.Name,
-        //            FilePath = d.FilePath
-        //        }).ToList();
-        //}
-
         return View("Proceeding", viewModel);
     }
 
@@ -315,6 +310,7 @@ public class ProceedingController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> UpdateProceeding(ProceedingDetailViewModel model)
     {
+        await LoadPermissions("Expedientes");
         using var transaction = await _context.Database.BeginTransactionAsync();
         try
         {
@@ -338,9 +334,9 @@ public class ProceedingController : Controller
             preEnrollment.MaritalStatus = !string.IsNullOrEmpty(model.MaritalStatus)
                                           ? model.MaritalStatus
                                           : "SOLTERO(A)";
-            var address = preEnrollment.Addresses.FirstOrDefault();
-            var info = preEnrollment.Infos.FirstOrDefault();
-            var school = preEnrollment.Schools.FirstOrDefault();
+            var address = preEnrollment?.Addresses?.FirstOrDefault();
+            var info = preEnrollment?.Infos?.FirstOrDefault();
+            var school = preEnrollment?.Schools?.FirstOrDefault();
 
             person.FirstName = model.FirstName;
             person.LastNamePaternal = model.LastNamePaternal;
@@ -350,7 +346,12 @@ public class ProceedingController : Controller
             string genderInput = model.Gender?.Trim() ?? "";
             person.Gender = (genderInput == "Masculino" || genderInput == "M") ? "M" : "F";
 
-            preEnrollment.BloodType = model.BloodType;
+            if (preEnrollment?.User != null && !string.IsNullOrWhiteSpace(model.NewPassword))
+            {
+                preEnrollment.User.PasswordHash = BCrypt.Net.BCrypt.HashPassword(model.NewPassword);
+            }
+
+            preEnrollment!.BloodType = model.BloodType;
             preEnrollment.MaritalStatus = model.MaritalStatus;
 
             if (address != null)
@@ -422,6 +423,7 @@ public class ProceedingController : Controller
     [HttpGet]
     public async Task<IActionResult> Activate(int? id)
     {
+        await LoadPermissions("Expedientes");
         if (id == null) return NotFound();
 
         var person = await _context.Persons
@@ -436,6 +438,7 @@ public class ProceedingController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> ActivateConfirmed(int id)
     {
+        await LoadPermissions("Expedientes");
         using var transaction = await _context.Database.BeginTransactionAsync();
         try
         {
@@ -470,6 +473,7 @@ public class ProceedingController : Controller
     [HttpGet]
     public async Task<IActionResult> Deactivate(int? id)
     {
+        await LoadPermissions("Expedientes");
         if (id == null)
         {
             return NotFound();
@@ -490,6 +494,7 @@ public class ProceedingController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> DeactivateConfirmed(int id)
     {
+        await LoadPermissions("Expedientes");
         using var transaction = await _context.Database.BeginTransactionAsync();
         try
         {
@@ -518,6 +523,74 @@ public class ProceedingController : Controller
         {
             await transaction.RollbackAsync();
             return Json(new { success = false, message = "Error al procesar la baja: " + ex.Message });
+        }
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> BulkDelete(List<int> ids)
+    {
+        await LoadPermissions("Expedientes");
+
+        if (ids == null || !ids.Any())
+            return Json(new { success = false, message = "No se seleccionaron expedientes para eliminar." });
+
+        using var transaction = await _context.Database.BeginTransactionAsync();
+        try
+        {
+            var persons = await _context.Persons
+                .Include(p => p.User)
+                    .ThenInclude(u => u.UserRoles)
+                .Include(p => p.User)
+                    .ThenInclude(u => u.Preenrollments)
+                        .ThenInclude(pg => pg.Addresses)
+                .Include(p => p.User)
+                    .ThenInclude(u => u.Preenrollments)
+                        .ThenInclude(pg => pg.Infos)
+                .Include(p => p.User)
+                    .ThenInclude(u => u.Preenrollments)
+                        .ThenInclude(pg => pg.Schools)
+                .Include(p => p.User)
+                    .ThenInclude(u => u.ProcedureRequests)
+                        .ThenInclude(pr => pr.ProcedureDocuments)
+                .Where(p => ids.Contains(p.PersonId))
+                .ToListAsync();
+
+            foreach (var person in persons)
+            {
+                if (person.User != null)
+                {
+                    foreach (var request in person.User.ProcedureRequests)
+                    {
+                        _context.ProcedureDocuments.RemoveRange(request.ProcedureDocuments);
+                    }
+                    _context.ProcedureRequest.RemoveRange(person.User.ProcedureRequests);
+
+                    foreach (var pre in person.User.Preenrollments)
+                    {
+                        _context.PreenrollmentAddresses.RemoveRange(pre!.Addresses!);
+                        _context.PreenrollmentInfos.RemoveRange(pre!.Infos!);
+                        _context.PreenrollmentSchools.RemoveRange(pre!.Schools!);
+                    }
+                    _context.PreenrollmentGenerals.RemoveRange(person.User.Preenrollments);
+
+                    _context.UserRoles.RemoveRange(person.User.UserRoles);
+
+                    _context.Users.Remove(person.User);
+                }
+
+                _context.Persons.Remove(person);
+            }
+
+            await _context.SaveChangesAsync();
+            await transaction.CommitAsync();
+
+            return Json(new { success = true, message = $"{persons.Count} expediente(s) eliminado(s) permanentemente." });
+        }
+        catch (Exception ex)
+        {
+            await transaction.RollbackAsync();
+            return Json(new { success = false, message = "Error crítico al eliminar: " + ex.Message });
         }
     }
 }

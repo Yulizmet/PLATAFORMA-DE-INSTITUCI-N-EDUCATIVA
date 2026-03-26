@@ -23,25 +23,27 @@
     }
 }
 
-<h3><i class="bi bi-mortarboard-fill me-2"></i>Todos los Alumnos</h3>
-
 <div class="mb-3 d-flex gap-2">
-    <a asp-area="SocialService" asp-controller="Coordinator" asp-action="Dashboard" class="btn btn-secondary">
+    <a asp-area="SocialService" asp-controller="Coordinator" asp-action="Dashboard" class="btn btn-secondary me-auto">
         <i class="bi bi-arrow-left"></i> Regresar al Dashboard
     </a>
+
     <a asp-area="SocialService" asp-controller="Coordinator" asp-action="ExportAlumnosExcel"
-       asp-route-searchName="@searchName" asp-route-teacherFilter="@teacherFilter"
-       asp-route-semesterFilter="@semesterFilter" asp-route-groupFilter="@groupFilter"
-       class="btn btn-success">
+           asp-route-searchName="@searchName" asp-route-teacherFilter="@teacherFilter"
+           asp-route-semesterFilter="@semesterFilter" asp-route-groupFilter="@groupFilter"
+           class="btn btn-success">
         <i class="bi bi-file-earmark-excel me-1"></i> Exportar a Excel
     </a>
+
     <a asp-area="SocialService" asp-controller="Coordinator" asp-action="ExportAlumnosPdf"
-       asp-route-searchName="@searchName" asp-route-teacherFilter="@teacherFilter"
-       asp-route-semesterFilter="@semesterFilter" asp-route-groupFilter="@groupFilter"
-       class="btn btn-danger">
+           asp-route-searchName="@searchName" asp-route-teacherFilter="@teacherFilter"
+           asp-route-semesterFilter="@semesterFilter" asp-route-groupFilter="@groupFilter"
+           class="btn btn-danger">
         <i class="bi bi-file-earmark-pdf me-1"></i> Exportar en PDF
     </a>
 </div>
+
+<h3 class="text-center">Avance de Alumnos</h3>
 
 <!-- Filtros -->
 <div class="card mb-3">
@@ -185,7 +187,7 @@
 
                     <tr>
                         <td>@(rowNum++)</td>
-                        <td><strong>@student.StudentName</strong></td>
+                        <td>@student.StudentName</td>
                         <td>@(student.SemesterName ?? "N/A")</td>
                         <td>@(student.GroupName ?? "N/A")</td>
                         <td>@student.TeacherName</td>

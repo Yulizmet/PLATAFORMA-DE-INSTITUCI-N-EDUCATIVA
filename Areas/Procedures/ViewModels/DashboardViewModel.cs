@@ -10,6 +10,9 @@ namespace SchoolManager.Areas.Procedures.ViewModels
         public int InProgress { get; set; }
         public int Done { get; set; }
         public int Cancelled { get; set; }
+        public int OverdueCount { get; set; }
+        public int NearDueCount { get; set; }
+        public int OnTimeCount { get; set; }
 
         public List<procedure_request> Recientes { get; set; } = new();
 

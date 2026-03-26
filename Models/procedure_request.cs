@@ -26,8 +26,8 @@ namespace SchoolManager.Models
         [Required]
         public string Message { get; set; } = null!;
 
-        [Required]
-        public int IdUser { get; set; }
+       
+        public int? IdUser { get; set; }
 
         [Required]
         public int IdTypeProcedure { get; set; }

@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.StaticFiles;
+using Microsoft.EntityFrameworkCore;
 using System.IO;
 using System.Security.Claims;
 using SchoolManager.Data;
@@ -36,7 +37,7 @@ namespace SchoolManager.Areas.SocialService.Controllers
             if (!IsStudentAssigned(currentStudentId))
             {
                 TempData["Error"] = "No tienes acceso a Servicio Social. Debes estar asignado a un maestro asesor.";
-                return RedirectToAction("SistemaEscolar", "MainScreen", new { area = "MainScreen" });
+                return RedirectToAction("Extension", "MainScreen", new { area = "MainScreen" });
             }
 
             var approvedLogs = _context.SocialServiceLogs
@@ -125,7 +126,7 @@ namespace SchoolManager.Areas.SocialService.Controllers
             if (!IsStudentAssigned(currentStudentId))
             {
                 TempData["Error"] = "No tienes acceso a Servicio Social. Debes estar asignado a un maestro asesor.";
-                return RedirectToAction("SistemaEscolar", "MainScreen", new { area = "MainScreen" });
+                return RedirectToAction("Extension", "MainScreen", new { area = "MainScreen" });
             }
 
             var bitacoras = _context.SocialServiceLogs
@@ -169,7 +170,7 @@ namespace SchoolManager.Areas.SocialService.Controllers
             if (!IsStudentAssigned(currentStudentId))
             {
                 TempData["Error"] = "No tienes acceso a Servicio Social. Debes estar asignado a un maestro asesor.";
-                return RedirectToAction("SistemaEscolar", "MainScreen", new { area = "MainScreen" });
+                return RedirectToAction("Extension", "MainScreen", new { area = "MainScreen" });
             }
 
             var approvedLogs = _context.SocialServiceLogs
@@ -259,6 +260,19 @@ namespace SchoolManager.Areas.SocialService.Controllers
                     Observations = vm.Observations,
                     CreatedAt = DateTime.Now
                 };
+
+                // Tomar una instantánea del semestre/grupo del estudiante al crear la bitácora
+                var currentEnrollment = _context.grades_Enrollments
+                    .Include(e => e.Group)
+                        .ThenInclude(g => g.GradeLevel)
+                    .FirstOrDefault(e => e.StudentId == currentStudentId && e.IsActive);
+
+                if (currentEnrollment != null)
+                {
+                    log.EnrollmentId = currentEnrollment.EnrollmentId;
+                    log.SnapshotSemesterName = currentEnrollment.Group?.GradeLevel?.Name;
+                    log.SnapshotGroupName = currentEnrollment.Group?.Name;
+                }
 
                 // Guardar archivo PDF si se proporcionó
                 if (vm.PdfFile != null && vm.PdfFile.Length > 0)
@@ -406,7 +420,7 @@ namespace SchoolManager.Areas.SocialService.Controllers
             if (!IsStudentAssigned(currentStudentId))
             {
                 TempData["Error"] = "No tienes acceso a Servicio Social. Debes estar asignado a un maestro asesor.";
-                return RedirectToAction("SistemaEscolar", "MainScreen", new { area = "MainScreen" });
+                return RedirectToAction("Extension", "MainScreen", new { area = "MainScreen" });
             }
 
             var approvedLogs = _context.SocialServiceLogs

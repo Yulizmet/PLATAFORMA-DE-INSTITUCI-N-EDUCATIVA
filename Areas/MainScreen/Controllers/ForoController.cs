@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SchoolManager.Data;
 using SchoolManager.Models;
@@ -63,6 +64,7 @@ namespace SchoolManager.Areas.MainScreen.Controllers
         }
 
         // FORO PÚBLICO
+        [AllowAnonymous]
         public async Task<IActionResult> ForoPublico()
         {
             var ahora = DateTime.Now;

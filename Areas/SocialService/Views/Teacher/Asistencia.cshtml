@@ -1,6 +1,12 @@
 @model SchoolManager.Areas.SocialService.ViewModels.AttendanceListViewModel
 
-<h3>Tomar Lista - Servicio Social</h3>
+<div class="mb-3 d-flex justify-content-between align-items-center">
+    <a href="/SocialService/Teacher/Dashboard" class="btn btn-secondary">
+        <i class="bi bi-arrow-left"></i> Regresar al Dashboard
+    </a>
+</div>
+
+<h3 class="text-center">Lista de Asistencia</h3>
 
 @if (TempData["Success"] != null)
 {
@@ -17,12 +23,6 @@
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
 }
-
-<div class="mb-3 d-flex justify-content-between align-items-center">
-    <a href="/SocialService/Teacher/Dashboard" class="btn btn-secondary">
-        <i class="bi bi-arrow-left"></i> Regresar al Dashboard
-    </a>
-</div>
 
 <!-- Filtros -->
 <div class="card mb-3">
