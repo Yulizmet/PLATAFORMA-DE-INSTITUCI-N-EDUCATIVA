@@ -1,19 +1,24 @@
 @model List<SchoolManager.Areas.SocialService.ViewModels.AsignarHorasViewModel>
 
 @{
-    ViewData["Title"] = "Resumen de Horas Pendientes";
-}
+    ViewData["Title"] = "Avance del Alumno";
+    string currentSort = ViewBag.CurrentSort ?? "name";
+    string currentOrder = ViewBag.CurrentOrder ?? "asc";
+    string searchName = ViewBag.SearchName ?? "";
+    int pageSizeVal = ViewBag.PageSize ?? 10;
 
-<!-- Hero -->
-<div class="ss-hero fade-in">
-    <div class="container">
-        <h2 class="mb-2">
-            <i class="bi bi-hourglass-split me-2"></i>
-            Resumen de Horas Pendientes de Aprobación
-        </h2>
-        <p>Alumnos con bitácoras pendientes de revisar y aprobar</p>
-    </div>
-</div>
+    string SortUrl(string column)
+    {
+        string newOrder = (currentSort == column && currentOrder == "asc") ? "desc" : "asc";
+        return $"?searchName={searchName}&pageSize={pageSizeVal}&sortBy={column}&sortOrder={newOrder}&page=1";
+    }
+
+    string SortIcon(string column)
+    {
+        if (currentSort != column) return "bi-arrow-down-up";
+        return currentOrder == "asc" ? "bi-sort-up" : "bi-sort-down";
+    }
+}
 
 @if (TempData["Success"] != null)
 {
@@ -31,10 +36,98 @@
     </div>
 }
 
-<div class="mb-3">
+<div class="mb-3 d-flex gap-2">
     <a href="/SocialService/Teacher/Dashboard" class="btn btn-secondary">
         <i class="bi bi-arrow-left"></i> Regresar al Dashboard
     </a>
+    <a href="/SocialService/Teacher/ExportAvanceExcel?searchName=@Uri.EscapeDataString(searchName)" class="btn btn-success">
+        <i class="bi bi-file-earmark-excel me-1"></i> Exportar a Excel
+    </a>
+    <a href="/SocialService/Teacher/ExportAvancePdf?searchName=@Uri.EscapeDataString(searchName)" class="btn btn-danger">
+        <i class="bi bi-file-earmark-pdf me-1"></i> Exportar en PDF
+    </a>
+</div>
+
+<!-- Filtros -->
+<div class="card mb-3">
+    <div class="card-body py-3">
+        <form method="get" action="/SocialService/Teacher/AsignarHoras" id="filterForm">
+            <div class="row g-3 align-items-end">
+                <div class="col-md-3">
+                    <label for="searchName" class="form-label">
+                        <i class="bi bi-search"></i> Buscar Alumno
+                    </label>
+                    <input type="text" class="form-control" id="searchName" name="searchName"
+                           value="@ViewBag.SearchName" placeholder="Escribe para buscar...">
+                </div>
+
+                <div class="col-md-2">
+                    <label for="semesterFilter" class="form-label mb-2">Semestre</label>
+                    <select class="form-select" id="semesterFilter" name="semesterFilter" onchange="this.form.submit()">
+                        <option value="">Todos los semestres</option>
+                        @if (ViewBag.Semesters != null)
+                        {
+                            foreach (var semester in ViewBag.Semesters)
+                            {
+                                <option value="@semester" selected="@(ViewBag.SemesterFilter == semester)">@semester</option>
+                            }
+                        }
+                    </select>
+                </div>
+
+                <div class="col-md-2">
+                    <label for="groupFilter" class="form-label mb-2">Grupo</label>
+                    <select class="form-select" id="groupFilter" name="groupFilter" onchange="this.form.submit()">
+                        <option value="">Todos los grupos</option>
+                        @if (ViewBag.Groups != null)
+                        {
+                            foreach (var group in ViewBag.Groups)
+                            {
+                                <option value="@group" selected="@(ViewBag.GroupFilter == group)">@group</option>
+                            }
+                        }
+                    </select>
+                </div>
+
+                <div class="col-md-2">
+                    <label for="pageSize" class="form-label">
+                        <i class="bi bi-list-ol"></i> Registros por página
+                    </label>
+                    <select id="pageSize" name="pageSize" class="form-select" onchange="this.form.submit()">
+                        @foreach (var size in new[] { 10, 25, 50, 100 })
+                        {
+                            <option value="@size" selected="@(ViewBag.PageSize == size)">@size</option>
+                        }
+                    </select>
+                </div>
+
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="bi bi-search"></i> Buscar
+                    </button>
+                </div>
+
+                <div class="col-md-1">
+                    @if (!string.IsNullOrWhiteSpace(ViewBag.SearchName as string) || !string.IsNullOrWhiteSpace(ViewBag.SemesterFilter as string) || !string.IsNullOrWhiteSpace(ViewBag.GroupFilter as string))
+                    {
+                        <a href="/SocialService/Teacher/AsignarHoras" class="btn btn-secondary w-100">
+                            <i class="bi bi-x-circle"></i> Limpiar
+                        </a>
+                    }
+                </div>
+            </div>
+            <input type="hidden" name="page" value="1" />
+        </form>
+
+        @if (ViewBag.TotalRecords != null)
+        {
+            <div class="mt-2">
+                <small class="text-muted">
+                    Mostrando @Model.Count de @ViewBag.TotalRecords registro(s)
+                </small>
+            </div>
+        }
+    </div>
 </div>
 
 @if (Model != null && Model.Any())
@@ -44,55 +137,110 @@
             <div class="card shadow-custom">
                 <div class="card-header">
                     <h5 class="mb-0">
-                        <i class="bi bi-people-fill me-2"></i>
-                        Alumnos con Bitácoras Pendientes
+                        <i class="bi bi-graph-up-arrow me-2"></i>
+                        Avance del Alumno
                     </h5>
                 </div>
                 <div class="card-body">
                     <div class="table-responsive">
-                        <table class="table table-hover">
+                        <table class="table table-hover ss-table-cards">
                             <thead>
                                 <tr>
-                                    <th style="width: 35%">Alumno</th>
-                                    <th class="text-center">Grupo</th>
-                                    <th class="text-center">Bitácoras Pendientes</th>
-                                    <th class="text-center">Horas Prácticas</th>
-                                    <th class="text-center">Horas Servicio Social</th>
-                                    <th class="text-center">Acción</th>
+                                    <th>
+                                        <a href="@SortUrl("name")" class="text-decoration-none">
+                                            Alumno <i class="bi @SortIcon("name")"></i>
+                                        </a>
+                                    </th>
+                                    <th class="text-center">
+                                        <a href="@SortUrl("semester")" class="text-decoration-none">
+                                            Semestre <i class="bi @SortIcon("semester")"></i>
+                                        </a>
+                                    </th>
+                                    <th class="text-center">
+                                        <a href="@SortUrl("group")" class="text-decoration-none">
+                                            Grupo <i class="bi @SortIcon("group")"></i>
+                                        </a>
+                                    </th>
+                                    <th class="text-center">
+                                        <a href="@SortUrl("totalbitacoras")" class="text-decoration-none">
+                                            Total Bitácoras <i class="bi @SortIcon("totalbitacoras")"></i>
+                                        </a>
+                                    </th>
+                                    <th class="text-center">
+                                        <a href="@SortUrl("pendientes")" class="text-decoration-none">
+                                            Bitácoras Pendientes <i class="bi @SortIcon("pendientes")"></i>
+                                        </a>
+                                    </th>
+                                    <th class="text-center">
+                                        <a href="@SortUrl("practicas")" class="text-decoration-none">
+                                            Horas Prácticas <i class="bi @SortIcon("practicas")"></i>
+                                        </a>
+                                    </th>
+                                    <th class="text-center">
+                                        <a href="@SortUrl("servicio")" class="text-decoration-none">
+                                            Horas Servicio Social <i class="bi @SortIcon("servicio")"></i>
+                                        </a>
+                                    </th>
+                                    <th class="text-center">
+                                        <a href="@SortUrl("validacion")" class="text-decoration-none">
+                                            Validación <i class="bi @SortIcon("validacion")"></i>
+                                        </a>
+                                    </th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @foreach (var alumno in Model)
                                 {
                                     <tr>
-                                        <td>
+                                        <td data-label="Alumno">
                                             <strong>@alumno.StudentName</strong>
                                         </td>
-                                        <td class="text-center">
+                                        <td class="text-center" data-label="Semestre">
+                                            @(alumno.SemesterName ?? "N/A")
+                                        </td>
+                                        <td class="text-center" data-label="Grupo">
                                             @(alumno.GroupName ?? "N/A")
                                         </td>
-                                        <td class="text-center">
-                                            <span class="badge bg-warning">
-                                                @alumno.BitacorasPendientes.Count
-                                            </span>
+                                        <td class="text-center" data-label="Total Bitácoras">
+                                            @alumno.TotalBitacoras
                                         </td>
-                                        <td class="text-center">
-                                            <span class="badge bg-primary">
-                                                @alumno.TotalHorasPracticasPendientes h
-                                            </span>
+                                        <td class="text-center" data-label="Bitácoras Pendientes">
+                                            @if (alumno.BitacorasPendientesCount > 0)
+                                            {
+                                                @alumno.BitacorasPendientesCount
+                                            }
+                                            else
+                                            {
+                                                <text>0</text>
+                                            }
                                         </td>
-                                        <td class="text-center">
-                                            <span class="badge bg-info">
-                                                @alumno.TotalHorasServicioSocialPendientes h
-                                            </span>
+                                        <td class="text-center" data-label="Horas Prácticas">
+                                            @alumno.TotalHorasPracticas h
                                         </td>
-                                        <td class="text-center">
-                                            <a href="/SocialService/Teacher/RevisarBitacorasAlumno/@alumno.StudentId" 
-                                               class="btn btn-primary btn-sm">
-                                                <i class="bi bi-eye-fill me-1"></i> Revisar y Aprobar
-                                            </a>
+                                        <td class="text-center" data-label="Horas Servicio Social">
+                                            @alumno.TotalHorasServicioSocial h
                                         </td>
-                                    </tr>
+                                        <td class="text-center" data-label="Validación">
+                                            @{
+                                                int totalHoras = alumno.TotalHorasPracticas + alumno.TotalHorasServicioSocial;
+                                                double porcentaje = (totalHoras / 720.0) * 100;
+                                            }
+                                            <div class="d-flex justify-content-center gap-1 flex-nowrap validation-badges">
+                                                <span class="badge @(porcentaje >= 25 ? "bg-success" : "bg-danger")">
+                                                    25%
+                                                </span>
+                                                <span class="badge @(porcentaje >= 50 ? "bg-success" : "bg-danger")">
+                                                    50%
+                                                </span>
+                                                <span class="badge @(porcentaje >= 75 ? "bg-success" : "bg-danger")">
+                                                    75%
+                                                </span>
+                                                <span class="badge @(porcentaje >= 100 ? "bg-success" : "bg-danger")">
+                                                    100%
+                                                </span>
+                                            </div>
+                                        </td>
+                                        </tr>
                                 }
                             </tbody>
                         </table>
@@ -102,114 +250,72 @@
         </div>
     </div>
 
-    <!-- Resumen de totales -->
-    <div class="row">
-        <div class="col-md-12 mb-4">
-            <div class="card">
-                <div class="card-header bg-info text-white">
-                    <h5 class="mb-0">
-                        <i class="bi bi-bar-chart-fill me-2"></i>
-                        Resumen Total
-                    </h5>
-                </div>
-                <div class="card-body">
-                    <div class="row text-center">
-                        <div class="col-md-4">
-                            <div class="stat-card">
-                                <h2 class="text-warning">@Model.Sum(a => a.BitacorasPendientes.Count)</h2>
-                                <p>Bitácoras Pendientes</p>
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="stat-card">
-                                <h2 class="text-primary">@Model.Sum(a => a.TotalHorasPracticasPendientes)</h2>
-                                <p>Horas Prácticas Totales</p>
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="stat-card">
-                                <h2 class="text-info">@Model.Sum(a => a.TotalHorasServicioSocialPendientes)</h2>
-                                <p>Horas Servicio Social Totales</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+    <!-- Paginación -->
+    @if (ViewBag.TotalPages > 1)
+    {
+        <nav aria-label="Navegación de páginas" class="mt-4 mb-4">
+            <ul class="pagination justify-content-center">
+                <li class="page-item @(ViewBag.CurrentPage == 1 ? "disabled" : "")">
+                    <a class="page-link"
+                       href="?searchName=@ViewBag.SearchName&pageSize=@ViewBag.PageSize&sortBy=@ViewBag.CurrentSort&sortOrder=@ViewBag.CurrentOrder&page=@(ViewBag.CurrentPage - 1)"
+                       aria-label="Anterior">
+                        <span aria-hidden="true">&laquo; Anterior</span>
+                    </a>
+                </li>
 
-    <!-- Desglose por alumno -->
-    <div class="row">
-        @foreach (var alumno in Model)
-        {
-            <div class="col-md-6 mb-4">
-                <div class="card border-primary">
-                    <div class="card-header bg-primary text-white">
-                        <h6 class="mb-0">
-                            <i class="bi bi-person-fill me-2"></i>
-                            @alumno.StudentName
-                        </h6>
-                    </div>
-                    <div class="card-body">
-                        <p class="mb-2">
-                            <strong>Grupo:</strong> @(alumno.GroupName ?? "N/A")
-                        </p>
-                        <hr />
-                        <h6 class="text-muted mb-3">Bitácoras Pendientes:</h6>
-                        <div class="table-responsive">
-                            <table class="table table-sm">
-                                <thead>
-                                    <tr>
-                                        <th>Semana</th>
-                                        <th class="text-center">Prácticas</th>
-                                        <th class="text-center">Servicio Social</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach (var bitacora in alumno.BitacorasPendientes)
-                                    {
-                                        <tr>
-                                            <td>@bitacora.Week</td>
-                                            <td class="text-center">
-                                                <span class="badge bg-primary">@bitacora.HoursPracticas h</span>
-                                            </td>
-                                            <td class="text-center">
-                                                <span class="badge bg-info">@bitacora.HoursServicioSocial h</span>
-                                            </td>
-                                        </tr>
-                                    }
-                                </tbody>
-                                <tfoot>
-                                    <tr class="table-active">
-                                        <td><strong>Total:</strong></td>
-                                        <td class="text-center">
-                                            <strong>@alumno.TotalHorasPracticasPendientes h</strong>
-                                        </td>
-                                        <td class="text-center">
-                                            <strong>@alumno.TotalHorasServicioSocialPendientes h</strong>
-                                        </td>
-                                    </tr>
-                                </tfoot>
-                            </table>
-                        </div>
-                        <div class="text-end mt-3">
-                            <a href="/SocialService/Teacher/RevisarBitacorasAlumno/@alumno.StudentId" 
-                               class="btn btn-success">
-                                <i class="bi bi-check-circle-fill me-1"></i> Revisar y Aprobar
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        }
-    </div>
+                @{
+                    int currentPage = ViewBag.CurrentPage;
+                    int totalPages = ViewBag.TotalPages;
+                    int startPage = Math.Max(1, currentPage - 2);
+                    int endPage = Math.Min(totalPages, currentPage + 2);
+
+                    if (startPage > 1)
+                    {
+                        <li class="page-item">
+                            <a class="page-link" href="?searchName=@ViewBag.SearchName&pageSize=@ViewBag.PageSize&sortBy=@ViewBag.CurrentSort&sortOrder=@ViewBag.CurrentOrder&page=1">1</a>
+                        </li>
+                        if (startPage > 2)
+                        {
+                            <li class="page-item disabled"><span class="page-link">...</span></li>
+                        }
+                    }
+
+                    for (int i = startPage; i <= endPage; i++)
+                    {
+                        <li class="page-item @(i == currentPage ? "active" : "")">
+                            <a class="page-link" href="?searchName=@ViewBag.SearchName&pageSize=@ViewBag.PageSize&sortBy=@ViewBag.CurrentSort&sortOrder=@ViewBag.CurrentOrder&page=@i">@i</a>
+                        </li>
+                    }
+
+                    if (endPage < totalPages)
+                    {
+                        if (endPage < totalPages - 1)
+                        {
+                            <li class="page-item disabled"><span class="page-link">...</span></li>
+                        }
+                        <li class="page-item">
+                            <a class="page-link" href="?searchName=@ViewBag.SearchName&pageSize=@ViewBag.PageSize&sortBy=@ViewBag.CurrentSort&sortOrder=@ViewBag.CurrentOrder&page=@totalPages">@totalPages</a>
+                        </li>
+                    }
+                }
+
+                <li class="page-item @(ViewBag.CurrentPage >= ViewBag.TotalPages ? "disabled" : "")">
+                    <a class="page-link"
+                       href="?searchName=@ViewBag.SearchName&pageSize=@ViewBag.PageSize&sortBy=@ViewBag.CurrentSort&sortOrder=@ViewBag.CurrentOrder&page=@(ViewBag.CurrentPage + 1)"
+                       aria-label="Siguiente">
+                        <span aria-hidden="true">Siguiente &raquo;</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    }
 }
 else
 {
     <div class="alert alert-info">
         <i class="bi bi-info-circle-fill me-2"></i>
-        <strong>No hay bitácoras pendientes de aprobar.</strong>
-        <p class="mb-0 mt-2">Todos tus alumnos tienen sus bitácoras aprobadas o no han registrado ninguna aún.</p>
+        <strong>No hay alumnos asignados.</strong>
+        <p class="mb-0 mt-2">Agrega alumnos desde la sección de Alumnos para ver su avance aquí.</p>
     </div>
     <div class="text-center mt-4">
         <a href="/SocialService/Teacher/Alumnos" class="btn btn-primary">

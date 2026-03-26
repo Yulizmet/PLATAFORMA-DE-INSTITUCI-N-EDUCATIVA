@@ -112,7 +112,6 @@ namespace SchoolManager.Areas.Grades.Controllers
         {
             var model = GetModelFromTempData();
 
-            // 👇 DEPURACIÓN
             System.Diagnostics.Debug.WriteLine($"=== STEP3 GET ===");
             System.Diagnostics.Debug.WriteLine($"Materias recuperadas: {model.Subjects.Count}");
             System.Diagnostics.Debug.WriteLine($"Grupos: {model.Groups?.Count ?? 0}");

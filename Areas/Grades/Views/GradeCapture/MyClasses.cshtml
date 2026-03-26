@@ -1,9 +1,14 @@
-﻿@model SchoolManager.Areas.Grades.ViewModels.GradeCapture.TeacherClassSelectionViewModel
+﻿@using SchoolManager.Areas.Grades.ViewModels.Breadcrumbs;
+@model SchoolManager.Areas.Grades.ViewModels.GradeCapture.TeacherClassSelectionViewModel
 
 @{
     ViewData["Title"] = "Mis Clases";
     Layout = "~/Areas/MainScreen/Views/Shared/_Layout.cshtml";
+    var breadcrumbs = new BreadcrumbViewModel();
+    breadcrumbs.AddItem("Calificaciones", "/CalificacionesDocente");
+    breadcrumbs.AddItem("Mis Clases");
 }
+<partial name="_Breadcrumb" model="breadcrumbs" />
 
 <div class="container-fluid py-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
@@ -32,15 +37,43 @@
     }
     else
     {
-        <div class="row">
+        <!-- Filtros -->
+        <div class="d-flex flex-wrap gap-3 mb-4 align-items-center">
+            <div style="min-width: 200px;">
+                <select id="filterGradeLevel" class="form-select">
+                    <option value="">Todos los niveles</option>
+                    @foreach (var level in Model.Classes.Select(c => c.GradeLevelName).Distinct().OrderBy(x => x))
+                    {
+                        <option value="@level">@level</option>
+                    }
+                </select>
+            </div>
+            <div style="min-width: 200px;">
+                <select id="filterGroup" class="form-select">
+                    <option value="">Todos los grupos</option>
+                    @foreach (var group in Model.Classes.Select(c => c.GroupName).Distinct().OrderBy(x => x))
+                    {
+                        <option value="@group">@group</option>
+                    }
+                </select>
+            </div>
+            <span id="filterCount" class="text-muted small"></span>
+            <button type="button" id="btnClearFilters" class="btn btn-outline-secondary btn-sm d-none">
+                <i class="bi bi-x-circle me-1"></i>Limpiar filtros
+            </button>
+        </div>
+
+        <!-- Cards -->
+        <div class="row" id="classesGrid">
             @foreach (var item in Model.Classes)
             {
-                <div class="col-md-6 col-lg-4 mb-4">
+                <div class="col-md-6 col-lg-4 mb-4 class-card"
+                     data-gradelevel="@item.GradeLevelName"
+                     data-group="@item.GroupName">
                     <div class="sistema-card border-calificaciones h-100">
                         <div class="sistema-icon icon-calificaciones mb-4">
                             <i class="bi bi-book"></i>
                         </div>
-
                         <h4 class="fw-bold mb-2" style="color: #1f2937;">@item.SubjectName</h4>
                         <p class="text-muted mb-1">
                             <i class="bi bi-people me-1"></i>Grupo: @item.GroupName
@@ -48,7 +81,6 @@
                         <p class="text-muted mb-3">
                             <i class="bi bi-layers me-1"></i>@item.GradeLevelName
                         </p>
-
                         <div class="mt-3">
                             <a asp-action="SelectUnit" asp-route-teacherSubjectGroupId="@item.TeacherSubjectGroupId"
                                class="btn btn-calificaciones w-100">
@@ -59,5 +91,66 @@
                 </div>
             }
         </div>
+
+        <!-- Empty state al filtrar -->
+        <div id="noResults" class="text-center py-5 d-none">
+            <i class="bi bi-search" style="font-size: 3rem; color: #B1A596;"></i>
+            <h5 class="text-muted mt-3">Sin resultados</h5>
+            <p class="text-muted">Ninguna clase coincide con los filtros seleccionados.</p>
+        </div>
     }
 </div>
+
+@section Scripts {
+    <script>
+        const cards      = document.querySelectorAll('.class-card');
+        const selLevel   = document.getElementById('filterGradeLevel');
+        const selGroup   = document.getElementById('filterGroup');
+        const count      = document.getElementById('filterCount');
+        const noResults  = document.getElementById('noResults');
+        const btnClear   = document.getElementById('btnClearFilters');
+
+        function applyFilters() {
+            const level = selLevel.value;
+            const group = selGroup.value;
+            let visible = 0;
+
+            cards.forEach(card => {
+                const matchLevel = !level || card.dataset.gradelevel === level;
+                const matchGroup = !group || card.dataset.group === group;
+                const show = matchLevel && matchGroup;
+                card.classList.toggle('d-none', !show);
+                if (show) visible++;
+            });
+
+            count.textContent = visible < cards.length ? `${visible} de ${cards.length} clases` : '';
+            noResults.classList.toggle('d-none', visible > 0);
+            btnClear.classList.toggle('d-none', !level && !group);
+
+            // Al filtrar por nivel, actualizar opciones de grupo disponibles
+            if (level) {
+                document.querySelectorAll('#filterGroup option').forEach(opt => {
+                    if (!opt.value) return;
+                    const existe = [...cards].some(c =>
+                        c.dataset.gradelevel === level && c.dataset.group === opt.value);
+                    opt.disabled = !existe;
+                    opt.style.color = existe ? '' : '#ccc';
+                });
+            } else {
+                document.querySelectorAll('#filterGroup option').forEach(opt => {
+                    opt.disabled = false;
+                    opt.style.color = '';
+                });
+            }
+        }
+
+        selLevel.addEventListener('change', applyFilters);
+        selGroup.addEventListener('change', applyFilters);
+
+        btnClear.addEventListener('click', function () {
+            selLevel.value = '';
+            selGroup.value = '';
+            applyFilters();
+        });
+    </script>
+}

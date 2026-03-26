@@ -75,6 +75,14 @@ namespace SchoolManager.Data
         public DbSet<social_service_assignment> SocialServiceAssignments { get; set; } = default!;
         public DbSet<social_service_attendance> SocialServiceAttendances { get; set; } = default!;
         public DbSet<social_service_log> SocialServiceLogs { get; set; } = default!;
+        public DbSet<social_service_rejection> SocialServiceRejections { get; set; } = default!;
+
+        // Medical (Bitácoras médicas)
+        public DbSet<medical_student> MedicalStudents { get; set; }
+        public DbSet<medical_logbook> MedicalLogbooks { get; set; }
+        public DbSet<medical_pychology> MedicalPsychology { get; set; }
+        public DbSet<medical_staff> MedicalStaff { get; set; }
+        public DbSet<medical_permissions> MedicalPermissions { get; set; }
 
         // Foro (Noticias y Publicaciones)
         public DbSet<ForoPublicacion> ForoPublicaciones { get; set; }
@@ -177,8 +185,11 @@ namespace SchoolManager.Data
             modelBuilder.Entity<users_session>().ToTable("users_session").HasKey(s => s.SessionId);
             modelBuilder.Entity<users_auditlog>().ToTable("users_auditlog").HasKey(a => a.AuditId);
 
-            modelBuilder.Entity<users_person>().HasOne(p => p.User).WithOne(u => u.Person).HasForeignKey<users_user>(u => u.PersonId).OnDelete(DeleteBehavior.Cascade);
-            modelBuilder.Entity<users_userrole>().HasOne(ur => ur.User).WithMany(u => u.UserRoles).HasForeignKey(ur => ur.UserId);
+            modelBuilder.Entity<users_user>()
+                .HasOne(u => u.Person)
+                .WithOne(p => p.User)
+                .HasForeignKey<users_user>(u => u.PersonId)
+                .OnDelete(DeleteBehavior.Cascade); modelBuilder.Entity<users_userrole>().HasOne(ur => ur.User).WithMany(u => u.UserRoles).HasForeignKey(ur => ur.UserId);
             modelBuilder.Entity<users_userrole>().HasOne(ur => ur.Role).WithMany(r => r.UserRoles).HasForeignKey(ur => ur.RoleId);
             modelBuilder.Entity<users_rolepermission>().HasOne(rp => rp.Role).WithMany(r => r.RolePermissions).HasForeignKey(rp => rp.RoleId);
             modelBuilder.Entity<users_session>().HasOne(s => s.User).WithMany(u => u.Sessions).HasForeignKey(s => s.UserId);
@@ -195,6 +206,17 @@ namespace SchoolManager.Data
             modelBuilder.Entity<preenrollment_tutors>().ToTable("preenrollment_tutors");
             modelBuilder.Entity<preenrollment_generations>().ToTable("preenrollment_generations");
             modelBuilder.Entity<preenrollment_docs>().ToTable("preenrollment_docs");
+
+            // Índices únicos
+            //modelBuilder.Entity<preenrollment_general>()
+            //    .HasIndex(p => p.Curp)
+            //   .IsUnique();
+
+            //modelBuilder.Entity<preenrollment_general>()
+            //    .HasIndex(p => p.Email)
+            //    .IsUnique();
+
+      
 
             // Relación: preenrollment_general -> preenrollment_careers
             modelBuilder.Entity<preenrollment_general>()
@@ -226,17 +248,11 @@ namespace SchoolManager.Data
 
             // Relación: preenrollment_addresses -> preenrollment_general
             modelBuilder.Entity<preenrollment_addresses>()
-                .HasOne(a => a.preenrollment_general)
-                .WithMany(g => g.Addresses)
-                .HasForeignKey(a => a.id_data)
-                .OnDelete(DeleteBehavior.Cascade);
+                .HasOne(a => a.General);
 
             // Relación: preenrollment_schools -> preenrollment_general
             modelBuilder.Entity<preenrollment_schools>()
-                .HasOne(s => s.preenrollment_general)
-                .WithMany(g => g.Schools)
-                .HasForeignKey(s => s.id_data)
-                .OnDelete(DeleteBehavior.Cascade);
+                .HasOne(s => s.General);
 
             modelBuilder.Entity<preenrollment_schools>()
                 .Property(p => p.average)
@@ -244,17 +260,11 @@ namespace SchoolManager.Data
 
             // Relación: preenrollment_infos -> preenrollment_general
             modelBuilder.Entity<preenrollment_infos>()
-                .HasOne(i => i.preenrollment_general)
-                .WithMany(g => g.Infos)
-                .HasForeignKey(i => i.id_data)
-                .OnDelete(DeleteBehavior.Cascade);
+                .HasOne(i => i.General);
 
             // Relación: preenrollment_tutors -> preenrollment_general
             modelBuilder.Entity<preenrollment_tutors>()
-                .HasOne(t => t.preenrollment_general)
-                .WithMany(g => g.Tutors)
-                .HasForeignKey(t => t.id_data)
-                .OnDelete(DeleteBehavior.Cascade);
+                .HasOne(t => t.General);
 
             // Relación: preenrollment_docs -> preenrollment_general
             modelBuilder.Entity<preenrollment_docs>()
@@ -587,6 +597,14 @@ namespace SchoolManager.Data
             modelBuilder.Entity<social_service_log>()
                 .HasIndex(l => new { l.StudentId, l.Week })
                 .IsUnique();
+
+            #endregion
+
+            #region 8. Medical Configuration
+            modelBuilder.Entity<medical_student>().ToTable("medical_students");
+            modelBuilder.Entity<medical_logbook>().ToTable("medical_records");
+            modelBuilder.Entity<medical_pychology>().ToTable("medical_psychology_appointments");
+            modelBuilder.Entity<medical_staff>().ToTable("medical_staff");
 
             #endregion
 

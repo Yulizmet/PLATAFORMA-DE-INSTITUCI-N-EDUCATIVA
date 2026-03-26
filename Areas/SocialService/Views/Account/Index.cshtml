@@ -28,13 +28,17 @@
                     {
                         <text>Bienvenido Docente</text>
                     }
+                    else if (User.IsInRole("Master"))
+                    {
+                        <text>Bienvenido Master</text>
+                    }
                     else
                     {
                         <text>Selecciona tu rol</text>
                     }
                 </h2>
                 <p class="ss-section-description">
-                    @if (User.IsInRole("Student") || User.IsInRole("Teacher"))
+                    @if (User.IsInRole("Student") || User.IsInRole("Teacher") || User.IsInRole("Master"))
                     {
                         <text>Accede a tu panel de control</text>
                     }
@@ -47,14 +51,11 @@
 
             <div class="row g-4 justify-content-center">
                 <!-- Student Card -->
-                @if (User.IsInRole("Student"))
+                @if (User.IsInRole("Student") && !User.IsInRole("Coordinator") && !User.IsInRole("Master"))
                 {
                     <div class="col-md-8">
                         <a asp-area="SocialService" asp-controller="Student" asp-action="Dashboard" class="ss-role-card">
                             <div class="ss-role-card-inner">
-                                <div class="ss-role-icon student-icon">
-                                    <i class="bi bi-mortarboard-fill"></i>
-                                </div>
                                 <h3 class="ss-role-title">Alumno</h3>
                                 <p class="ss-role-description">Registra tus bitácoras semanales y consulta tus horas acumuladas</p>
                                 <div class="ss-role-features">
@@ -82,12 +83,9 @@
                 <!-- Teacher Card -->
                 @if (User.IsInRole("Teacher"))
                 {
-                    <div class="col-md-8">
+                    <div class="col-md-6">
                         <a asp-area="SocialService" asp-controller="Teacher" asp-action="Dashboard" class="ss-role-card">
                             <div class="ss-role-card-inner">
-                                <div class="ss-role-icon teacher-icon">
-                                    <i class="bi bi-person-workspace"></i>
-                                </div>
                                 <h3 class="ss-role-title">Docente</h3>
                                 <p class="ss-role-description">Gestiona alumnos, revisa bitácoras y aprueba horas de servicio social</p>
                                 <div class="ss-role-features">
@@ -112,15 +110,46 @@
                     </div>
                 }
 
+                <!-- Master Card (visible para Master y Coordinador) -->
+                @if (User.IsInRole("Master") || User.IsInRole("Coordinator"))
+                {
+                    <div class="col-md-6">
+                        <a asp-area="SocialService" asp-controller="Coordinator" asp-action="Dashboard" class="ss-role-card">
+                            <div class="ss-role-card-inner">
+                                <h3 class="ss-role-title">Administrador</h3>
+                                <p class="ss-role-description">Supervisa maestros, alumnos, bitácoras, asistencias y grupos de asesores</p>
+                                <div class="ss-role-features">
+                                    <div class="ss-feature-item">
+                                        <i class="bi bi-person-badge"></i>
+                                        <span>Ver maestros</span>
+                                    </div>
+                                    <div class="ss-feature-item">
+                                        <i class="bi bi-people"></i>
+                                        <span>Ver alumnos</span>
+                                    </div>
+                                    <div class="ss-feature-item">
+                                        <i class="bi bi-journal-text"></i>
+                                        <span>Revisar bitácoras</span>
+                                    </div>
+                                    <div class="ss-feature-item">
+                                        <i class="bi bi-clipboard-data"></i>
+                                        <span>Consultar asistencias</span>
+                                    </div>
+                                </div>
+                                <div class="ss-role-arrow">
+                                    <i class="bi bi-arrow-right-circle-fill"></i>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                }
+
                 <!-- Show both cards if user is not authenticated or has no specific role -->
-                @if (!User.IsInRole("Student") && !User.IsInRole("Teacher"))
+                @if (!User.IsInRole("Student") && !User.IsInRole("Teacher") && !User.IsInRole("Master") && !User.IsInRole("Coordinator"))
                 {
                     <div class="col-md-6">
                         <a asp-area="SocialService" asp-controller="Student" asp-action="Dashboard" class="ss-role-card">
                             <div class="ss-role-card-inner">
-                                <div class="ss-role-icon student-icon">
-                                    <i class="bi bi-mortarboard-fill"></i>
-                                </div>
                                 <h3 class="ss-role-title">Alumno</h3>
                                 <p class="ss-role-description">Registra tus bitácoras semanales y consulta tus horas acumuladas</p>
                                 <div class="ss-role-features">
@@ -147,9 +176,6 @@
                     <div class="col-md-6">
                         <a asp-area="SocialService" asp-controller="Teacher" asp-action="Dashboard" class="ss-role-card">
                             <div class="ss-role-card-inner">
-                                <div class="ss-role-icon teacher-icon">
-                                    <i class="bi bi-person-workspace"></i>
-                                </div>
                                 <h3 class="ss-role-title">Docente</h3>
                                 <p class="ss-role-description">Gestiona alumnos, revisa bitácoras y aprueba horas de servicio social</p>
                                 <div class="ss-role-features">

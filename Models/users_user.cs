@@ -8,7 +8,7 @@ namespace SchoolManager.Models
     {
         public int UserId { get; set; }
         public int PersonId { get; set; }
-        public string Username { get; set; } = null!;
+        public string Username { get; set; } = null!;   
         public string Email { get; set; } = null!;
         public string PasswordHash { get; set; } = null!;
         public bool IsLocked { get; set; }

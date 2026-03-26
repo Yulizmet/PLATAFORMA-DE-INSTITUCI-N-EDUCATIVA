@@ -1,0 +1,193 @@
+﻿@model SchoolManager.Models.ForoPublicacion
+
+@{
+    ViewData["Title"] = "Administrador - Foro";
+    Layout = "~/Areas/MainScreen/Views/Shared/_Layout.cshtml";
+}
+
+
+<section class="admin-section">
+    <div class="container">
+
+        <div class="admin-card">
+            <h2 class="admin-title mb-4">Nueva Publicación</h2>
+
+            @if (!ViewData.ModelState.IsValid)
+            {
+                <div class="alert alert-danger">
+                    <ul class="mb-0">
+                        @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                        {
+                            <li>@error.ErrorMessage</li>
+                        }
+                    </ul>
+                </div>
+            }
+
+            <form asp-area="MainScreen"
+                  asp-controller="Foro"
+                  asp-action="Create"
+                  method="post"
+                  enctype="multipart/form-data">
+
+                @Html.AntiForgeryToken()
+
+                <div class="mb-4">
+                    <label class="form-label fw-semibold">Selecciona el Diseño</label>
+
+                    <div class="design-buttons">
+                        <button type="button" class="design-btn active" data-style="clasico">Clásico</button>
+                        <button type="button" class="design-btn" data-style="destacado">Destacado</button>
+                        <button type="button" class="design-btn" data-style="minimalista">Minimalista</button>
+                        <button type="button" class="design-btn" data-style="banner">Banner</button>
+                        <button type="button" class="design-btn" data-style="horizontal">Horizontal</button>
+                    </div>
+
+                    <input type="hidden" id="EstiloVisual" name="EstiloVisual" value="clasico" />
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label fw-semibold">Título *</label>
+                    <input type="text"
+                           class="form-control"
+                           id="tituloInput"
+                           name="Titulo"
+                           placeholder="Ingresa el título de la publicación"
+                           required>
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label fw-semibold">Descripción *</label>
+                    <textarea class="form-control"
+                              id="descInput"
+                              name="Descripcion"
+                              rows="5"
+                              placeholder="Escribe el contenido completo..."
+                              required></textarea>
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label fw-semibold">Link Externo</label>
+                    <input type="url"
+                           class="form-control"
+                           name="LinkExterno"
+                           placeholder="https://...">
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label fw-semibold">Imagen</label>
+                    <input type="file"
+                           class="form-control"
+                           id="imagenInput"
+                           name="imagenArchivo"
+                           accept="image/*">
+                </div>
+
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Fecha Inicio</label>
+                        <input type="datetime-local"
+                               class="form-control"
+                               name="FechaInicio"
+                               value="@DateTime.Now.ToString("yyyy-MM-ddTHH:mm")"
+                               required>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Fecha Fin</label>
+                        <input type="datetime-local"
+                               class="form-control"
+                               name="FechaFin">
+                    </div>
+                </div>
+
+                <div class="form-check mb-4">
+                    <input class="form-check-input"
+                           type="checkbox"
+                           name="Activo"
+                           value="true"
+                           checked>
+                    <label class="form-check-label">Activo</label>
+                </div>
+
+                <div class="d-flex gap-3">
+                    <button type="submit" class="btn btn-calificaciones">Publicar</button>
+                    <a asp-area="MainScreen"
+                       asp-controller="Foro"
+                       asp-action="Index"
+                       class="btn btn-outline-danger">
+                        Cancelar
+                    </a>
+                </div>
+            </form>
+        </div>
+
+        <div class="preview-section mt-5">
+            <h4 class="mb-4">Vista Previa</h4>
+
+            <div id="previewContainer" class="preview-card clasico-style">
+                <img id="previewImage"
+                     src=""
+                     alt="Vista previa"
+                     class="img-fluid rounded mb-3 d-none"
+                     style="max-height:250px; object-fit:cover; width:100%;">
+
+                <h3 id="previewTitle">Título de ejemplo</h3>
+                <p id="previewDesc">
+                    Aquí se mostrará una simulación de cómo los alumnos verán esta publicación.
+                </p>
+                <a href="#" class="btn btn-calificaciones btn-sm">Leer más</a>
+            </div>
+        </div>
+
+        <script>
+            const buttons = document.querySelectorAll('.design-btn');
+            const preview = document.getElementById('previewContainer');
+            const estiloHidden = document.getElementById('EstiloVisual');
+
+            const tituloInput = document.getElementById('tituloInput');
+            const descInput = document.getElementById('descInput');
+            const imagenInput = document.getElementById('imagenInput');
+
+            const previewTitle = document.getElementById('previewTitle');
+            const previewDesc = document.getElementById('previewDesc');
+            const previewImage = document.getElementById('previewImage');
+
+            buttons.forEach(btn => {
+                btn.addEventListener('click', function () {
+                    buttons.forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+
+                    const style = this.dataset.style;
+                    estiloHidden.value = style;
+                    preview.className = "preview-card " + style + "-style";
+                });
+            });
+
+            tituloInput.addEventListener('input', () => {
+                previewTitle.textContent = tituloInput.value || "Título de ejemplo";
+            });
+
+            descInput.addEventListener('input', () => {
+                previewDesc.textContent = descInput.value || "Aquí se mostrará una simulación de cómo los alumnos verán esta publicación.";
+            });
+
+            imagenInput.addEventListener('change', function () {
+                const file = this.files[0];
+
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function (e) {
+                        previewImage.src = e.target.result;
+                        previewImage.classList.remove('d-none');
+                    };
+                    reader.readAsDataURL(file);
+                } else {
+                    previewImage.src = "";
+                    previewImage.classList.add('d-none');
+                }
+            });
+        </script>
+
+    </div>
+</section>
