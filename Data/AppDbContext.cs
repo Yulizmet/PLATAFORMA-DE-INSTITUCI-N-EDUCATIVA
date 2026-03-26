@@ -168,7 +168,7 @@ namespace SchoolManager.Data
             #endregion
 
             #region 2. Users Configuration
-        modelBuilder.Entity<users_person>().ToTable("users_person").HasKey(p => p.PersonId);
+            modelBuilder.Entity<users_person>().ToTable("users_person").HasKey(p => p.PersonId);
             modelBuilder.Entity<users_user>().ToTable("users_user").HasKey(u => u.UserId);
             modelBuilder.Entity<users_role>().ToTable("users_role").HasKey(r => r.RoleId);
             modelBuilder.Entity<users_permission>().ToTable("users_permission").HasKey(p => p.PermissionId);
