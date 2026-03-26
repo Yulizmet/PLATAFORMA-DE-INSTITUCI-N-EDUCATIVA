@@ -53,7 +53,6 @@
     <None Include="wwwroot\templates\Notification.html" />
     <Folder Include="Areas\Procedures\Controllers\" />
     <Folder Include="Areas\Procedures\Views\" />
-    <Folder Include="Areas\Procedures\Templates\" />
     <Folder Include="Areas\Tutorship\Controllers\" />
     <Folder Include="wwwroot\uploads\interview\" />
     <Folder Include="wwwroot\uploads\seguimiento\" />
