@@ -98,7 +98,7 @@
                         </td>
                         <td>@(attendance.Notes ?? "-")</td>
                         <td class="text-center">
-                            @if (ViewBag.EsCoordinador == true)
+                            @if ((ViewBag.EsCoordinador == true) || (ViewBag.EsMaster == true))
                             {
                                 <button type="button" class="btn btn-warning btn-sm" 
                                         data-bs-toggle="modal" 
@@ -132,6 +132,7 @@
     <div class="modal-dialog">
         <div class="modal-content">
             <form method="post" asp-area="SocialService" asp-controller="Coordinator" asp-action="EditarAsistencia">
+                @Html.AntiForgeryToken()
                 <div class="modal-header">
                     <h5 class="modal-title" id="editarAsistenciaModalLabel">
                         <i class="bi bi-pencil-square me-1"></i> Editar Asistencia

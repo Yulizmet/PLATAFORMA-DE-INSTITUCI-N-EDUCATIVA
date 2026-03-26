@@ -166,6 +166,320 @@ namespace SchoolManager.Areas.SocialService.Controllers
             return View(paginated);
         }
 
+        private int GetCurrentUserId()
+        {
+            var userIdClaim = User.FindFirst("UserId")?.Value;
+
+            if (string.IsNullOrEmpty(userIdClaim))
+            {
+                return 0;
+            }
+
+            return int.Parse(userIdClaim);
+        }
+
+        // GET: Mostrar formulario para agregar alumnos a un asesor (solo Master)
+        public async Task<IActionResult> AgregarAlumnosAsesor(int teacherId, string searchName = "", string semesterFilter = "", string groupFilter = "", int page = 1, int pageSize = 10)
+        {
+            if (!User.IsInRole("Master"))
+            {
+                TempData["Error"] = "Solo un usuario Master puede acceder a esta sección.";
+                return RedirectToAction("Maestros");
+            }
+
+            // Obtener alumnos que no estén asignados a este maestro (activos)
+            var assignedStudentIds = await _context.SocialServiceAssignments
+                .Where(a => a.TeacherId == teacherId && a.IsActive)
+                .Select(a => a.StudentId)
+                .ToListAsync();
+
+            var availableStudentsQuery = _context.Users
+                .Include(u => u.Person)
+                .Include(u => u.UserRoles)
+                .Where(u => u.UserRoles.Any(ur => ur.Role.Name == "Student" && ur.IsActive)
+                    && !assignedStudentIds.Contains(u.UserId)
+                    && u.IsActive);
+
+            var availableStudents = await availableStudentsQuery
+                .OrderBy(u => u.Person.LastNamePaternal)
+                .ThenBy(u => u.Person.LastNameMaternal)
+                .ThenBy(u => u.Person.FirstName)
+                .ToListAsync();
+
+            var studentIds = availableStudents.Select(s => s.UserId).ToList();
+            var enrollments = await _context.grades_Enrollments
+                .Include(e => e.Group)
+                    .ThenInclude(g => g.GradeLevel)
+                .Where(e => studentIds.Contains(e.StudentId))
+                .ToListAsync();
+
+            var viewModel = new List<AvailableStudentViewModel>();
+            foreach (var s in availableStudents)
+            {
+                var enrollment = enrollments.FirstOrDefault(e => e.StudentId == s.UserId);
+                viewModel.Add(new AvailableStudentViewModel
+                {
+                    UserId = s.UserId,
+                    FullName = $"{s.Person.LastNamePaternal} {s.Person.LastNameMaternal} {s.Person.FirstName}",
+                    Email = s.Email,
+                    SemesterName = enrollment?.Group?.GradeLevel?.Name,
+                    GroupName = enrollment?.Group?.Name
+                });
+            }
+
+            ViewBag.TeacherId = teacherId;
+            return View(viewModel);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AsignarAlumnoAAsesor(int teacherId, int studentId)
+        {
+            if (!User.IsInRole("Master"))
+            {
+                TempData["Error"] = "Solo un usuario Master puede realizar esta acción.";
+                return RedirectToAction("Maestros");
+            }
+
+            var existingAssignment = await _context.SocialServiceAssignments
+                .FirstOrDefaultAsync(a => a.TeacherId == teacherId && a.StudentId == studentId);
+
+            if (existingAssignment != null)
+            {
+                if (!existingAssignment.IsActive)
+                {
+                    existingAssignment.IsActive = true;
+                    existingAssignment.AssignedDate = DateTime.Now;
+                    await _context.SaveChangesAsync();
+                    TempData["Success"] = "Alumno reasignado al asesor exitosamente.";
+                }
+                else
+                {
+                    TempData["Error"] = "Este alumno ya está asignado a este asesor.";
+                }
+
+                return RedirectToAction("AgregarAlumnosAsesor", new { teacherId = teacherId });
+            }
+
+            var assignment = new social_service_assignment
+            {
+                TeacherId = teacherId,
+                StudentId = studentId,
+                AssignedDate = DateTime.Now,
+                IsActive = true
+            };
+
+            _context.SocialServiceAssignments.Add(assignment);
+            await _context.SaveChangesAsync();
+
+            TempData["Success"] = "Alumno asignado al asesor exitosamente.";
+            return RedirectToAction("AgregarAlumnosAsesor", new { teacherId = teacherId });
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> EliminarAsignacionAlumno(int studentId, int teacherId)
+        {
+            if (!User.IsInRole("Master"))
+            {
+                TempData["Error"] = "Solo un usuario Master puede realizar esta acción.";
+                return RedirectToAction("VerAlumnosAsesor", new { id = teacherId });
+            }
+
+            var assignment = await _context.SocialServiceAssignments
+                .FirstOrDefaultAsync(a => a.TeacherId == teacherId && a.StudentId == studentId && a.IsActive);
+
+            if (assignment == null)
+            {
+                TempData["Error"] = "No se encontró la asignación activa para este alumno y maestro.";
+                return RedirectToAction("VerAlumnosAsesor", new { id = teacherId });
+            }
+
+            assignment.IsActive = false;
+            await _context.SaveChangesAsync();
+
+            TempData["Success"] = "El alumno fue eliminado del maestro exitosamente.";
+            return RedirectToAction("VerAlumnosAsesor", new { id = teacherId });
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AprobarBitacoraAdmin(int logId, int approvedHoursPracticas, int approvedHoursServicioSocial, string teacherComments)
+        {
+            if (!User.IsInRole("Master"))
+            {
+                TempData["Error"] = "No tienes permiso para aprobar esta bitácora.";
+                return RedirectToAction("Alumnos");
+            }
+
+            var bitacora = await _context.SocialServiceLogs
+                .FirstOrDefaultAsync(b => b.LogId == logId);
+
+            if (bitacora == null)
+            {
+                TempData["Error"] = "Bitácora no encontrada.";
+                return RedirectToAction("Alumnos");
+            }
+
+            if (approvedHoursPracticas > bitacora.HoursPracticas || approvedHoursServicioSocial > bitacora.HoursServicioSocial)
+            {
+                TempData["Error"] = "Las horas aprobadas no pueden exceder las horas registradas.";
+                return RedirectToAction("VerBitacorasAlumno", new { id = bitacora.StudentId });
+            }
+
+            // Lógica de límite: calcular horas acumuladas para no exceder 240/480
+            var approvedLogs = await _context.SocialServiceLogs
+                .Where(log => log.StudentId == bitacora.StudentId && log.IsApproved && log.LogId != logId)
+                .ToListAsync();
+
+            int currentTotalPracticas = approvedLogs.Sum(log => log.ApprovedHoursPracticas);
+            int currentTotalServicioSocial = approvedLogs.Sum(log => log.ApprovedHoursServicioSocial);
+
+            const int requiredHoursPracticas = 240;
+            const int requiredHoursServicioSocial = 480;
+
+            int remainingHoursPracticas = Math.Max(0, requiredHoursPracticas - currentTotalPracticas);
+            int remainingHoursServicioSocial = Math.Max(0, requiredHoursServicioSocial - currentTotalServicioSocial);
+
+            int finalApprovedPracticas = Math.Min(approvedHoursPracticas, remainingHoursPracticas);
+            int finalApprovedServicioSocial = Math.Min(approvedHoursServicioSocial, remainingHoursServicioSocial);
+
+            List<string> adjustmentMessages = new List<string>();
+
+            if (finalApprovedPracticas < approvedHoursPracticas)
+            {
+                if (remainingHoursPracticas == 0)
+                {
+                    adjustmentMessages.Add($"El alumno ya completó las 240 horas de Prácticas Profesionales. No se sumaron las {approvedHoursPracticas} horas de esta categoría.");
+                }
+                else
+                {
+                    adjustmentMessages.Add($"Prácticas Profesionales: Solo se aprobaron {finalApprovedPracticas} de {approvedHoursPracticas} horas porque el alumno solo necesitaba {remainingHoursPracticas} horas para completar.");
+                }
+            }
+
+            if (finalApprovedServicioSocial < approvedHoursServicioSocial)
+            {
+                if (remainingHoursServicioSocial == 0)
+                {
+                    adjustmentMessages.Add($"El alumno ya completó las 480 horas de Servicio Social. No se sumaron las {approvedHoursServicioSocial} horas de esta categoría.");
+                }
+                else
+                {
+                    adjustmentMessages.Add($"Servicio Social: Solo se aprobaron {finalApprovedServicioSocial} de {approvedHoursServicioSocial} horas porque el alumno solo necesitaba {remainingHoursServicioSocial} horas para completar.");
+                }
+            }
+
+            // Registrar aprobación
+            bitacora.IsApproved = true;
+            bitacora.ApprovedHoursPracticas = finalApprovedPracticas;
+            bitacora.ApprovedHoursServicioSocial = finalApprovedServicioSocial;
+            bitacora.ApprovedBy = GetCurrentUserId();
+            bitacora.ApprovedAt = DateTime.Now;
+            bitacora.TeacherComments = teacherComments;
+
+            await _context.SaveChangesAsync();
+
+            if (adjustmentMessages.Any())
+            {
+                string adjustmentInfo = string.Join(" ", adjustmentMessages);
+                TempData["Success"] = $"Bitácora aprobada. {adjustmentInfo}";
+            }
+            else
+            {
+                TempData["Success"] = "Bitácora aprobada exitosamente. Las horas se han sumado al alumno.";
+            }
+
+            return RedirectToAction("VerBitacorasAlumno", new { id = bitacora.StudentId });
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> RechazarBitacoraAdmin(int logId, string rejectionReason)
+        {
+            if (!User.IsInRole("Master"))
+            {
+                TempData["Error"] = "No tienes permiso para rechazar esta bitácora.";
+                return RedirectToAction("Alumnos");
+            }
+
+            var bitacora = await _context.SocialServiceLogs
+                .FirstOrDefaultAsync(b => b.LogId == logId);
+
+            if (bitacora == null)
+            {
+                TempData["Error"] = "Bitácora no encontrada.";
+                return RedirectToAction("Alumnos");
+            }
+
+            int studentId = bitacora.StudentId;
+
+            var rejection = new social_service_rejection
+            {
+                StudentId = bitacora.StudentId,
+                Week = bitacora.Week,
+                RejectionReason = rejectionReason,
+                RejectedBy = GetCurrentUserId(),
+                RejectedAt = DateTime.Now
+            };
+
+            _context.SocialServiceRejections.Add(rejection);
+
+            _context.SocialServiceLogs.Remove(bitacora);
+            await _context.SaveChangesAsync();
+
+            TempData["Success"] = "Bitácora rechazada y eliminada. El alumno deberá crear una nueva.";
+            return RedirectToAction("VerBitacorasAlumno", new { id = studentId });
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DesaprobarBitacoraAdmin(int logId, string adminComments)
+        {
+            if (!User.IsInRole("Master"))
+            {
+                TempData["Error"] = "No tienes permiso para desaprobar esta bitácora.";
+                return RedirectToAction("Alumnos");
+            }
+
+            var bitacora = await _context.SocialServiceLogs
+                .FirstOrDefaultAsync(b => b.LogId == logId);
+
+            if (bitacora == null)
+            {
+                TempData["Error"] = "Bitácora no encontrada.";
+                return RedirectToAction("Alumnos");
+            }
+
+            if (!bitacora.IsApproved)
+            {
+                TempData["Error"] = "La bitácora no está aprobada.";
+                return RedirectToAction("VerBitacorasAlumno", new { id = bitacora.StudentId });
+            }
+
+            // Revertir aprobación: quitar horas aprobadas y datos de aprobación
+            bitacora.IsApproved = false;
+            bitacora.ApprovedHoursPracticas = 0;
+            bitacora.ApprovedHoursServicioSocial = 0;
+            bitacora.ApprovedBy = null;
+            bitacora.ApprovedAt = null;
+
+            // Agregar comentario indicando quién y por qué se desaprobó
+            var currentUserId = GetCurrentUserId();
+            var note = string.IsNullOrWhiteSpace(adminComments)
+                ? $"[Desaprobada por Master (UserId={currentUserId})]"
+                : $"[Desaprobada por Master (UserId={currentUserId}): {adminComments}]";
+
+            bitacora.TeacherComments = string.IsNullOrWhiteSpace(bitacora.TeacherComments)
+                ? note
+                : bitacora.TeacherComments + " " + note;
+
+            await _context.SaveChangesAsync();
+
+            TempData["Success"] = "Bitácora desaprobada. Las horas aprobadas fueron removidas.";
+            return RedirectToAction("VerBitacorasAlumno", new { id = bitacora.StudentId });
+        }
+
         public async Task<IActionResult> Alumnos(string searchName = "", string searchEmail = "", string teacherFilter = "", string semesterFilter = "", string groupFilter = "", string sortBy = "name", string sortOrder = "asc", int page = 1, int pageSize = 10)
         {
             int[] allowedPageSizes = { 10, 25, 50, 100 };
@@ -368,6 +682,8 @@ namespace SchoolManager.Areas.SocialService.Controllers
             return View(bitacoras);
         }
 
+
+
         public async Task<IActionResult> VerAsistenciasAlumno(int id)
         {
             // Recibe el id del alumno y opcionalmente el id del maestro
@@ -412,12 +728,13 @@ namespace SchoolManager.Areas.SocialService.Controllers
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> EditarAsistencia(int attendanceId, bool isPresent, int studentId)
         {
-            // Solo permitir a Coordinador editar
-            if (!User.IsInRole("Coordinator"))
+            // Permitir a Coordinator o Master editar
+            if (!(User.IsInRole("Coordinator") || User.IsInRole("Master")))
             {
-                TempData["Error"] = "Solo el coordinador puede modificar la asistencia.";
+                TempData["Error"] = "Solo el coordinador o el Master pueden modificar la asistencia.";
                 return RedirectToAction("VerAsistenciasAlumno", new { id = studentId });
             }
 
