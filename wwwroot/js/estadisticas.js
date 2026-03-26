@@ -1369,7 +1369,7 @@ function applyExcelFor(tableId) {
         $('#pageInfoGrupo').text(vis > 0 ? `Mostrando 1-${Math.min(vis, PAGE_SIZE)} de ${vis}` : 'Sin resultados');
     }
 }
-
+//a
 function sortGeneric(tableId, col, asc) {
     const rows = $('#' + tableId + ' tbody tr').get();
     rows.sort(function (a, b) {
