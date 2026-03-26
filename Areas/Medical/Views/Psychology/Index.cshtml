@@ -12,15 +12,24 @@
         <div>
             <h2 class="text-white">BITÁCORAS PSICOLÓGICAS</h2>
             <div class="buttons-left">
-                <a asp-action="Create" class="btn-header">
-                    <i class="bi bi-plus-circle"></i> Crear Registro
-                </a>
+
+                @* Crear — Psychologist, Head of Psychology, Master *@
+                @if (User.IsInRole("Psychologist") || User.IsInRole("Head of Psychology") || User.IsInRole("Master"))
+                {
+                    <a asp-action="Create" class="btn-header">
+                        <i class="bi bi-plus-circle"></i> Crear Registro
+                    </a>
+                }
+
                 <a asp-action="Index" class="btn-header">
                     <i class="bi bi-journal-medical"></i> Ver Registros
                 </a>
+
+                @* Reporte — todos los que acceden *@
                 <a asp-action="Reporte" class="btn-header">
                     <i class="bi bi-file-earmark-bar-graph"></i> Reporte
                 </a>
+
             </div>
         </div>
         <div class="buttons-right">
@@ -76,29 +85,35 @@
                             <td>
                                 <div class="d-flex gap-2">
 
-                                    <a asp-action="Details"
-                                       asp-route-id="@item.Id"
+                                    @* Ver — todos *@
+                                    <a asp-action="Details" asp-route-id="@item.Id"
                                        class="btn btn-sm"
                                        style="background:#38b6ff;color:white;border:none;"
                                        title="Ver">
                                         <i class="bi bi-eye-fill"></i>
                                     </a>
 
-                                    <a asp-action="Edit"
-                                       asp-route-id="@item.Id"
-                                       class="btn btn-sm"
-                                       style="background:#ffde59;color:white;border:none;"
-                                       title="Editar">
-                                        <i class="bi bi-pencil-square"></i>
-                                    </a>
+                                    @* Editar — solo Master *@
+                                    @if (User.IsInRole("Master") || User.IsInRole("Head of Psychology"))
+                                    {
+                                        <a asp-action="Edit" asp-route-id="@item.Id"
+                                           class="btn btn-sm"
+                                           style="background:#ffde59;color:white;border:none;"
+                                           title="Editar">
+                                            <i class="bi bi-pencil-square"></i>
+                                        </a>
+                                    }
 
-                                    <a asp-action="Delete"
-                                       asp-route-id="@item.Id"
-                                       class="btn btn-sm"
-                                       style="background:#ff3131;color:white;border:none;"
-                                       title="Eliminar">
-                                        <i class="bi bi-trash-fill"></i>
-                                    </a>
+                                    @* Eliminar — solo Master *@
+                                    @if (User.IsInRole("Master"))
+                                    {
+                                        <a asp-action="Delete" asp-route-id="@item.Id"
+                                           class="btn btn-sm"
+                                           style="background:#ff3131;color:white;border:none;"
+                                           title="Eliminar">
+                                            <i class="bi bi-trash-fill"></i>
+                                        </a>
+                                    }
 
                                 </div>
                             </td>
@@ -118,13 +133,9 @@
         var $jq = jQuery.noConflict(true);
         $jq(document).ready(function () {
             $jq('#tablaPsicologia').DataTable({
-                "language": {
-                    "url": "https://cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json"
-                },
-                "order": [[3, "desc"]],
-                "columnDefs": [
-                    { "orderable": false, "targets": 5 }
-                ]
+                language: { url: "https://cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json" },
+                order: [[3, "desc"]],
+                columnDefs: [{ orderable: false, targets: 5 }]
             });
         });
     </script>
