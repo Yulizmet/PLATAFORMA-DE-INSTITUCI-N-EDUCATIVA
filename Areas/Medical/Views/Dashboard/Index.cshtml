@@ -8,7 +8,7 @@
             <h2 class="text-white">Bienvenido, @(User.FindFirst("NombreCompleto")?.Value ?? User.Identity?.Name)</h2>
             <small>Sistema Médico - Panel de Control</small>
         </div>
-        <a asp-area="MainScreen" asp-controller="MainScreen" asp-action="Index" class="home-btn">
+        <a asp-area="MainScreen" asp-controller="MainScreen" asp-action="Index" class="btn-header">
             <i class="bi bi-house-door-fill"></i> Inicio
         </a>
     </div>
@@ -22,7 +22,7 @@
                 <div class="dashboard-card">
                     <div>
                         <div class="card-icon-box"><i class="bi bi-heart-pulse-fill"></i></div>
-                        <h5>MÓDULO ENFERMERÍA</h5>
+                        <h5>MÓDULO DE ENFERMERÍA</h5>
                         <p>Registro y control de consultas clínicas</p>
                     </div>
                     <span class="status-badge">IR AL MÓDULO →</span>
@@ -38,7 +38,7 @@
                 <div class="dashboard-card">
                     <div>
                         <div class="card-icon-box"><i class="bi bi-clipboard-check-fill"></i></div>
-                        <h5>MÓDULO PSICOLOGÍA</h5>
+                        <h5>MÓDULO DE PSICOLOGÍA</h5>
                         <p>Registro y seguimiento psicológico</p>
                     </div>
                     <span class="status-badge">IR AL MÓDULO →</span>
