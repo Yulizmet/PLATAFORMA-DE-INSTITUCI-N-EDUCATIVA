@@ -83,6 +83,8 @@ namespace SchoolManager.Pages.Estadisticas
                            from finalGrade in gradeJoin.DefaultIfEmpty()
                            join subject in _context.grades_Subjects on (finalGrade != null ? finalGrade.SubjectId : -1) equals subject.SubjectId into subjectJoin
                            from subject in subjectJoin.DefaultIfEmpty()
+                           join gradeGroup in _context.grades_GradeGroups on (finalGrade != null ? finalGrade.GroupId : -1) equals gradeGroup.GroupId into gradeGroupJoin
+                           from gradeGroup in gradeGroupJoin.DefaultIfEmpty()
                            where role != null && role.Name == "Student"
                            select new
                            {
@@ -92,6 +94,7 @@ namespace SchoolManager.Pages.Estadisticas
                                Genero = (string?)person.Gender,
                                Curso = (string?)subject.Name,
                                Semestre = finalGrade != null ? finalGrade.GroupId : 0,
+                               GrupoNombre = (string?)gradeGroup.Name,
                                Nota = finalGrade != null ? (double)finalGrade.Value : 0.0,
                                FechaInscripcion = user.CreatedDate,
                                HasGrade = finalGrade != null,
@@ -114,6 +117,7 @@ namespace SchoolManager.Pages.Estadisticas
                             Curso = string.IsNullOrWhiteSpace(s.Curso) ? "Sin asignar" : s.Curso,
                             Semestre = s.Semestre,
                             Nota = s.Nota,
+                            Grupo = string.IsNullOrWhiteSpace(s.GrupoNombre) ? "Sin grupo" : s.GrupoNombre,
                             FechaInscripcion = s.FechaInscripcion,
                             Estado = !s.HasGrade ? "Inscrito"
                                              : s.Passed ? "Aprobado"
