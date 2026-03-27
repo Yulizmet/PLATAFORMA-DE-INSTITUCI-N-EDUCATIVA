@@ -179,7 +179,7 @@ namespace SchoolManager.Areas.SocialService.Controllers
         }
 
         // GET: Mostrar formulario para agregar alumnos a un asesor (solo Master)
-        public async Task<IActionResult> AgregarAlumnosAsesor(int teacherId, string searchName = "", string semesterFilter = "", string groupFilter = "", int page = 1, int pageSize = 10)
+        public async Task<IActionResult> AgregarAlumnosAsesor(int teacherId, string searchName = "", string sortBy = "name", string sortOrder = "asc", string semesterFilter = "", string groupFilter = "", int page = 1, int pageSize = 10)
         {
             if (!User.IsInRole("Master"))
             {
@@ -227,8 +227,63 @@ namespace SchoolManager.Areas.SocialService.Controllers
                 });
             }
 
+            // Guardar listas completas para los selects
+            var allList = viewModel.ToList();
+            var semesters = allList.Where(s => !string.IsNullOrEmpty(s.SemesterName)).Select(s => s.SemesterName).Distinct().OrderBy(s => s).ToList();
+            var groups = allList.Where(s => !string.IsNullOrEmpty(s.GroupName)).Select(s => s.GroupName).Distinct().OrderBy(g => g).ToList();
+
+            // Aplicar filtros
+            var filtered = viewModel.AsEnumerable();
+            if (!string.IsNullOrWhiteSpace(searchName))
+            {
+                string sn = RemoveAccents(searchName.ToLower());
+                filtered = filtered.Where(u => RemoveAccents((u.FullName ?? string.Empty).ToLower()).Contains(sn));
+                ViewBag.SearchName = searchName;
+            }
+
+            if (!string.IsNullOrWhiteSpace(semesterFilter))
+            {
+                filtered = filtered.Where(u => u.SemesterName == semesterFilter);
+                ViewBag.SemesterFilter = semesterFilter;
+            }
+
+            if (!string.IsNullOrWhiteSpace(groupFilter))
+            {
+                filtered = filtered.Where(u => u.GroupName == groupFilter);
+                ViewBag.GroupFilter = groupFilter;
+            }
+
+            // Aplicar ordenamiento
+            filtered = (sortBy ?? "name").ToLower() switch
+            {
+                "name" => sortOrder == "asc" ? filtered.OrderBy(u => u.FullName) : filtered.OrderByDescending(u => u.FullName),
+                "semester" => sortOrder == "asc" ? filtered.OrderBy(u => u.SemesterName ?? "") : filtered.OrderByDescending(u => u.SemesterName ?? ""),
+                "group" => sortOrder == "asc" ? filtered.OrderBy(u => u.GroupName ?? "") : filtered.OrderByDescending(u => u.GroupName ?? ""),
+                _ => sortOrder == "asc" ? filtered.OrderBy(u => u.FullName) : filtered.OrderByDescending(u => u.FullName),
+            };
+
+            // Paginación
+            int[] allowedPageSizes = { 10, 25, 50, 100 };
+            if (!allowedPageSizes.Contains(pageSize)) pageSize = 10;
+            int totalRecords = filtered.Count();
+            int totalPages = (int)Math.Ceiling(totalRecords / (double)pageSize);
+            if (page < 1) page = 1;
+            if (page > totalPages && totalPages > 0) page = totalPages;
+
+            var paginated = filtered.Skip((page - 1) * pageSize).Take(pageSize).ToList();
+
             ViewBag.TeacherId = teacherId;
-            return View(viewModel);
+            ViewBag.Semesters = semesters;
+            ViewBag.Groups = groups;
+            ViewBag.CurrentSort = sortBy;
+            ViewBag.CurrentOrder = sortOrder;
+            ViewBag.NextOrder = sortOrder == "asc" ? "desc" : "asc";
+            ViewBag.PageSize = pageSize;
+            ViewBag.CurrentPage = page;
+            ViewBag.TotalPages = totalPages;
+            ViewBag.TotalRecords = totalRecords;
+
+            return View(paginated);
         }
 
         [HttpPost]
@@ -646,14 +701,14 @@ namespace SchoolManager.Areas.SocialService.Controllers
             return View(paginated);
         }
 
-        public async Task<IActionResult> VerBitacorasAlumno(int id)
+        public async Task<IActionResult> VerBitacorasAlumno(int id, string status = "", string semester = "", string dateFrom = "", string dateTo = "", string sortBy = "created", string sortOrder = "desc")
         {
-            var bitacoras = await _context.SocialServiceLogs
+            var query = _context.SocialServiceLogs
                 .Include(b => b.Student)
                     .ThenInclude(s => s.Person)
-                .Where(b => b.StudentId == id)
-                .OrderByDescending(b => b.CreatedAt)
-                .ToListAsync();
+                .Where(b => b.StudentId == id);
+
+            var allBitacoras = await query.OrderByDescending(b => b.CreatedAt).ToListAsync();
 
             var student = await _context.Users
                 .Include(u => u.Person)
@@ -678,13 +733,59 @@ namespace SchoolManager.Areas.SocialService.Controllers
                 teacherId = assignment.TeacherId;
             }
 
+            // Preparar lista de semestres presentes en las bitácoras para el select
+            var semesters = allBitacoras
+                .Where(b => !string.IsNullOrEmpty(b.SnapshotSemesterName))
+                .Select(b => b.SnapshotSemesterName)
+                .Distinct()
+                .OrderBy(s => s)
+                .ToList();
+
+            // Aplicar filtros en memoria
+            var filtered = allBitacoras.AsEnumerable();
+
+            if (!string.IsNullOrWhiteSpace(status))
+            {
+                if (status.ToLower() == "approved") filtered = filtered.Where(b => b.IsApproved);
+                else if (status.ToLower() == "pending") filtered = filtered.Where(b => !b.IsApproved);
+            }
+
+            if (!string.IsNullOrWhiteSpace(semester))
+            {
+                filtered = filtered.Where(b => b.SnapshotSemesterName == semester);
+            }
+
+            DateTime? from = null, to = null;
+            if (DateTime.TryParse(dateFrom, out var pf)) from = pf.Date;
+            if (DateTime.TryParse(dateTo, out var pt)) to = pt.Date;
+            if (from.HasValue) filtered = filtered.Where(b => b.CreatedAt.Date >= from.Value);
+            if (to.HasValue) filtered = filtered.Where(b => b.CreatedAt.Date <= to.Value);
+
+            // Ordenamiento
+            filtered = (sortBy ?? "created").ToLower() switch
+            {
+                "week" => sortOrder == "asc" ? filtered.OrderBy(b => b.Week) : filtered.OrderByDescending(b => b.Week),
+                "created" => sortOrder == "asc" ? filtered.OrderBy(b => b.CreatedAt) : filtered.OrderByDescending(b => b.CreatedAt),
+                _ => sortOrder == "asc" ? filtered.OrderBy(b => b.CreatedAt) : filtered.OrderByDescending(b => b.CreatedAt),
+            };
+
+            ViewBag.Semesters = semesters;
+            ViewBag.FilterStatus = status;
+            ViewBag.FilterSemester = semester;
+            ViewBag.FilterDateFrom = dateFrom;
+            ViewBag.FilterDateTo = dateTo;
+            ViewBag.CurrentSort = sortBy;
+            ViewBag.CurrentOrder = sortOrder;
             ViewBag.TeacherId = teacherId;
-            return View(bitacoras);
+            ViewBag.EsCoordinador = User.IsInRole("Coordinator");
+            ViewBag.EsMaster = User.IsInRole("Master");
+
+            return View(filtered.ToList());
         }
 
 
 
-        public async Task<IActionResult> VerAsistenciasAlumno(int id)
+        public async Task<IActionResult> VerAsistenciasAlumno(int id, string dateFrom = "", string dateTo = "", string status = "", string sortBy = "date", string sortOrder = "desc")
         {
             // Recibe el id del alumno y opcionalmente el id del maestro
             int? teacherId = null;
@@ -709,17 +810,53 @@ namespace SchoolManager.Areas.SocialService.Controllers
 
             var attendances = await _context.SocialServiceAttendances
                 .Where(att => att.StudentId == id)
-                .OrderByDescending(att => att.Date)
                 .ToListAsync();
+
+            // Aplicar filtros por fecha y estado
+            DateTime? from = null, to = null;
+            if (DateTime.TryParse(dateFrom, out var parsedFrom)) from = parsedFrom.Date;
+            if (DateTime.TryParse(dateTo, out var parsedTo)) to = parsedTo.Date;
+
+            var filtered = attendances.AsEnumerable();
+            if (from.HasValue)
+            {
+                filtered = filtered.Where(a => a.Date.Date >= from.Value);
+            }
+            if (to.HasValue)
+            {
+                filtered = filtered.Where(a => a.Date.Date <= to.Value);
+            }
+
+            if (!string.IsNullOrWhiteSpace(status))
+            {
+                if (status.ToLower() == "present") filtered = filtered.Where(a => a.IsPresent);
+                else if (status.ToLower() == "absent") filtered = filtered.Where(a => !a.IsPresent);
+            }
+
+            // Aplicar ordenamiento
+            filtered = (sortBy ?? "date").ToLower() switch
+            {
+                "date" => sortOrder == "asc" ? filtered.OrderBy(a => a.Date) : filtered.OrderByDescending(a => a.Date),
+                "day" => sortOrder == "asc" ? filtered.OrderBy(a => a.Date.DayOfWeek) : filtered.OrderByDescending(a => a.Date.DayOfWeek),
+                "estado" => sortOrder == "asc" ? filtered.OrderBy(a => a.IsPresent) : filtered.OrderByDescending(a => a.IsPresent),
+                _ => sortOrder == "asc" ? filtered.OrderBy(a => a.Date) : filtered.OrderByDescending(a => a.Date),
+            };
 
             var viewModel = new CoordinatorAttendanceDetailViewModel
             {
                 StudentId = id,
                 StudentName = $"{student.Person.LastNamePaternal} {student.Person.LastNameMaternal} {student.Person.FirstName}",
-                Attendances = attendances,
-                TotalPresent = attendances.Count(a => a.IsPresent),
-                TotalAbsent = attendances.Count(a => !a.IsPresent)
+                Attendances = filtered.ToList(),
+                TotalPresent = filtered.Count(a => a.IsPresent),
+                TotalAbsent = filtered.Count(a => !a.IsPresent)
             };
+
+            // Pasar parámetros de filtro/orden a la vista
+            ViewBag.FilterDateFrom = dateFrom;
+            ViewBag.FilterDateTo = dateTo;
+            ViewBag.FilterStatus = status;
+            ViewBag.CurrentSort = sortBy;
+            ViewBag.CurrentOrder = sortOrder;
 
             ViewBag.TeacherId = teacherId;
             ViewBag.EsCoordinador = User.IsInRole("Coordinator");

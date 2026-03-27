@@ -26,6 +26,81 @@
     }
 </div>
 
+@{
+    // Preparar URL e icono para ordenar por semana
+    var sortWeekOrder = (ViewBag.CurrentSort == "week") ? (ViewBag.CurrentOrder == "asc" ? "desc" : "asc") : "asc";
+    var sortWeekUrl = Url.Action("VerBitacorasAlumno", new { id = ViewBag.StudentId, status = ViewBag.FilterStatus, semester = ViewBag.FilterSemester, dateFrom = ViewBag.FilterDateFrom, dateTo = ViewBag.FilterDateTo, sortBy = "week", sortOrder = sortWeekOrder });
+    var sortWeekIcon = ViewBag.CurrentSort == "week" ? (ViewBag.CurrentOrder == "asc" ? "bi-sort-up" : "bi-sort-down") : "bi-arrow-down-up";
+}
+<!-- Ordenar por semana se mostrará junto al filtro de fecha -->
+
+<div class="card mb-3">
+    <div class="card-body">
+        <form method="get" class="row g-3 align-items-end" id="filterForm">
+            <input type="hidden" name="id" value="@ViewBag.StudentId" />
+            <input type="hidden" name="sortBy" value="@ViewBag.CurrentSort" />
+            <input type="hidden" name="sortOrder" value="@ViewBag.CurrentOrder" />
+
+            <div class="col-md-3">
+                <label class="form-label">Estado</label>
+                <select name="status" class="form-select">
+                    <option value="">Todos</option>
+                    @if (ViewBag.FilterStatus == "approved")
+                    {
+                        <option value="approved" selected>Aprobadas</option>
+                    }
+                    else
+                    {
+                        <option value="approved">Aprobadas</option>
+                    }
+
+                    @if (ViewBag.FilterStatus == "pending")
+                    {
+                        <option value="pending" selected>Pendientes</option>
+                    }
+                    else
+                    {
+                        <option value="pending">Pendientes</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Semestre</label>
+                <select name="semester" class="form-select">
+                    <option value="">Todos</option>
+                    @if (ViewBag.Semesters != null)
+                    {
+                        foreach (var s in (List<string>)ViewBag.Semesters)
+                        {
+                            if (ViewBag.FilterSemester == s)
+                            {
+                                <option value="@s" selected>@s</option>
+                            }
+                            else
+                            {
+                                <option value="@s">@s</option>
+                            }
+                        }
+                    }
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Desde</label>
+                <div class="d-flex">
+                    <input type="date" name="dateFrom" class="form-control me-2" value="@ViewBag.FilterDateFrom" />
+                    <a href="@sortWeekUrl" class="btn btn-outline-secondary btn-sm align-self-center" title="Ordenar por semana">
+                        <i class="bi @sortWeekIcon"></i>
+                    </a>
+                </div>
+            </div>
+            <div class="col-md-3 d-flex gap-2">
+                <button type="submit" class="btn btn-primary w-100"><i class="bi bi-search"></i> Buscar</button>
+                <a href="@Url.Action("VerBitacorasAlumno", new { id = ViewBag.StudentId })" class="btn btn-secondary">Limpiar</a>
+            </div>
+        </form>
+    </div>
+</div>
+
 @if (Model != null && Model.Count > 0)
 {
     <div class="teacher-bitacora-grid">

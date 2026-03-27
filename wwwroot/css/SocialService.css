@@ -220,6 +220,13 @@ h1, h2, h3, h4, h5, h6 {
         vertical-align: middle;
     }
 
+    /* Ensure table body cells use dark text for readability */
+    .table tbody td,
+    .table.table-hover tbody td,
+    .table-hover tbody td {
+        color: var(--ss-gray-800) !important;
+    }
+
     .table thead th a {
         cursor: pointer;
         user-select: none;
@@ -282,6 +289,24 @@ h1, h2, h3, h4, h5, h6 {
     .ss-table-cards tbody td {
         padding: 0.75rem 0.5rem;
         font-size: 0.95rem;
+    }
+
+    /* Asegurar contraste adecuado: encabezados en blanco sobre fondo rojo oscuro
+       y celdas del cuerpo con texto oscuro para legibilidad. Se usan !important
+       para evitar que estilos generales (site.css u otros) sobreescriban estos. */
+    .ss-table-cards thead th {
+        background-color: var(--rojo-oscuro) !important;
+        color: #ffffff !important;
+    }
+
+    .ss-table-cards thead th a,
+    .ss-table-cards thead th a.text-dark,
+    .ss-table-cards thead th .text-dark {
+        color: #ffffff !important;
+    }
+
+    .ss-table-cards tbody td {
+        color: var(--ss-gray-800) !important;
     }
 
     .ss-table-cards .badge {
