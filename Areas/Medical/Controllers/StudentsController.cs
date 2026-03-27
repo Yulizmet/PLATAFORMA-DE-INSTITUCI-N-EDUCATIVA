@@ -1,12 +1,16 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SchoolManager.Data;
 using SchoolManager.Models;
+using SchoolManager.ViewModels; // Asegúrate de tener este namespace para las VM
+
 #nullable disable
 
 namespace SchoolManager.Areas.Medical.Controllers
 {
     [Area("Medical")]
+    [Authorize(Roles = "Nurse,Psychologist,Head Nurse,Head of Psychology,Coordinator,Master")]
     public class StudentsController : Controller
     {
         private readonly AppDbContext _context;
@@ -16,6 +20,7 @@ namespace SchoolManager.Areas.Medical.Controllers
             _context = context;
         }
 
+        // ✅ Ver lista — Todos los roles autorizados
         public async Task<IActionResult> Index()
         {
             var alumnos = await (
@@ -34,54 +39,7 @@ namespace SchoolManager.Areas.Medical.Controllers
             return View(alumnos);
         }
 
-        public IActionResult Create() => View();
-
-        [HttpGet]
-        public async Task<IActionResult> BuscarPorMatricula(string matricula)
-        {
-            var data = await (
-                from pre in _context.PreenrollmentGenerals
-                join per in _context.Persons on pre.UserId equals per.PersonId
-                where pre.Matricula == matricula
-                select new
-                {
-                    nombre = per.FirstName,
-                    paterno = per.LastNamePaternal,
-                    materno = per.LastNameMaternal,
-                    sangre = pre.BloodType,
-                    preenrollmentId = pre.IdData
-                }
-            ).FirstOrDefaultAsync();
-
-            if (data == null) return Json(null);
-            return Json(data);
-        }
-
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(medical_student alumno)
-        {
-            if (alumno.PreenrollmentId == 0)
-            {
-                ModelState.AddModelError("", "Debe buscar una matrícula válida");
-                return View(alumno);
-            }
-
-            bool existe = await _context.MedicalStudents.AnyAsync(a => a.PreenrollmentId == alumno.PreenrollmentId);
-            if (existe)
-            {
-                ModelState.AddModelError("", "Este alumno ya tiene registro médico");
-                return View(alumno);
-            }
-
-            alumno.FechaCreacion = DateTime.Now;
-            _context.MedicalStudents.Add(alumno);
-            await _context.SaveChangesAsync();
-            TempData["Mensaje"] = "Registro médico del alumno creado correctamente.";
-            TempData["Tipo"] = "success";
-            return RedirectToAction(nameof(Index));
-        }
-
+        // ✅ Details — Todos los roles autorizados
         public async Task<IActionResult> Details(int id)
         {
             var alumno = await (
@@ -108,6 +66,39 @@ namespace SchoolManager.Areas.Medical.Controllers
             return View(alumno);
         }
 
+        // 🔒 Crear — Personal operativo y jefes (No Coordinator)
+        [Authorize(Roles = "Nurse,Psychologist,Head Nurse,Head of Psychology,Master")]
+        public IActionResult Create() => View();
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Nurse,Psychologist,Head Nurse,Head of Psychology,Master")]
+        public async Task<IActionResult> Create(medical_student alumno)
+        {
+            if (alumno.PreenrollmentId == 0)
+            {
+                ModelState.AddModelError("", "Debe buscar una matrícula válida");
+                return View(alumno);
+            }
+
+            bool existe = await _context.MedicalStudents.AnyAsync(a => a.PreenrollmentId == alumno.PreenrollmentId);
+            if (existe)
+            {
+                ModelState.AddModelError("", "Este alumno ya tiene registro médico");
+                return View(alumno);
+            }
+
+            alumno.FechaCreacion = DateTime.Now;
+            _context.MedicalStudents.Add(alumno);
+            await _context.SaveChangesAsync();
+
+            TempData["Mensaje"] = "Registro médico del alumno creado correctamente.";
+            TempData["Tipo"] = "success";
+            return RedirectToAction(nameof(Index));
+        }
+
+        // 🔒 Editar — Solo Master
+        [Authorize(Roles = "Head Nurse,Head of Psychology,Master")]
         public async Task<IActionResult> Edit(int id)
         {
             var alumno = await _context.MedicalStudents.FindAsync(id);
@@ -117,6 +108,7 @@ namespace SchoolManager.Areas.Medical.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Head Nurse,Head of Psychology,Master")]
         public async Task<IActionResult> Edit(int id, medical_student alumno)
         {
             if (id != alumno.Id) return NotFound();
@@ -128,11 +120,14 @@ namespace SchoolManager.Areas.Medical.Controllers
             alumno.FechaCreacion = alumnoBD.FechaCreacion;
             _context.Update(alumno);
             await _context.SaveChangesAsync();
-            TempData["Mensaje"] = "Registro del alumno actualizado correctamente.";
+
+            TempData["Mensaje"] = "Registro actualizado correctamente.";
             TempData["Tipo"] = "warning";
             return RedirectToAction(nameof(Index));
         }
 
+        // 🔒 Eliminar — Solo Master
+        [Authorize(Roles = "Master")]
         public async Task<IActionResult> Delete(int id)
         {
             var data = await (
@@ -148,9 +143,6 @@ namespace SchoolManager.Areas.Medical.Controllers
                     Paterno = per.LastNamePaternal,
                     Materno = per.LastNameMaternal,
                     Sangre = pre.BloodType,
-                    Peso = s.Peso,
-                    Alergias = s.Alergias,
-                    CondicionesCronicas = s.CondicionesCronicas,
                     FechaCreacion = s.FechaCreacion
                 }
             ).FirstOrDefaultAsync();
@@ -161,6 +153,7 @@ namespace SchoolManager.Areas.Medical.Controllers
 
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Master")]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var alumno = await _context.MedicalStudents.FindAsync(id);
@@ -168,10 +161,31 @@ namespace SchoolManager.Areas.Medical.Controllers
             {
                 _context.MedicalStudents.Remove(alumno);
                 await _context.SaveChangesAsync();
-                TempData["Mensaje"] = "Registro médico del alumno eliminado correctamente.";
+                TempData["Mensaje"] = "Registro eliminado correctamente.";
                 TempData["Tipo"] = "danger";
             }
             return RedirectToAction(nameof(Index));
+        }
+
+        // ✅ Auxiliar para búsqueda (AJAX)
+        [HttpGet]
+        public async Task<IActionResult> BuscarPorMatricula(string matricula)
+        {
+            var data = await (
+                from pre in _context.PreenrollmentGenerals
+                join per in _context.Persons on pre.UserId equals per.PersonId
+                where pre.Matricula == matricula
+                select new
+                {
+                    nombre = per.FirstName,
+                    paterno = per.LastNamePaternal,
+                    materno = per.LastNameMaternal,
+                    sangre = pre.BloodType,
+                    preenrollmentId = pre.IdData
+                }
+            ).FirstOrDefaultAsync();
+
+            return data == null ? Json(null) : Json(data);
         }
     }
 }

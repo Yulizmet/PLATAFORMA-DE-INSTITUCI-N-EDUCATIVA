@@ -205,6 +205,16 @@
                                         </a>
                                     </li>
                                 }
+                                @if (CanSeeModule("Vigencias"))
+                                {
+                                    <li class="nav-item">
+                                        <a class="nav-link @(currentController == "ProgrammingDates" ? "active-item" : "")"
+                                           asp-area="Procedures" asp-controller="ProgrammingDates" asp-action="Index">
+                                            <i class="bi bi-calendar3"></i>
+                                            <span>Vigencias</span>
+                                        </a>
+                                    </li>
+                                }
                             </ul>
                         </div>
                     }

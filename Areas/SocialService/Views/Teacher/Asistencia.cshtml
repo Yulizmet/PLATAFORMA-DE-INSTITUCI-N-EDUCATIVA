@@ -81,10 +81,13 @@
                     </select>
                 </div>
 
-                <div class="col-md-2">
+                <div class="col-md-2 d-flex gap-2">
                     <button type="submit" class="btn btn-primary w-100">
                         <i class="bi bi-search"></i> Buscar
                     </button>
+                    <a href="/SocialService/Teacher/Asistencia" class="btn btn-secondary">
+                        <i class="bi bi-x-circle"></i> Limpiar
+                    </a>
                 </div>
             </div>
 
@@ -102,6 +105,7 @@
             <input type="hidden" name="sortOrder" value="@ViewBag.SortOrder" />
             <input type="hidden" name="page" value="1" />
         </form>
+        <script src="~/js/SocialServiceAutoSearch.js"></script>
 
         @if (ViewBag.TotalRecords != null)
         {

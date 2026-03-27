@@ -46,7 +46,7 @@
 
         @if (roleId == 1)
         {
-            <div class="col-md-6 col-lg-4">
+            <div class="col-12 col-md-6">
                 <a asp-area="Gestion" asp-controller="Tutorship" asp-action="EntrevistaInicial" class="text-decoration-none">
                     <div class="card dashboard-card shadow-sm p-4 text-center h-100">
                         <div class="card-icon-box">
@@ -65,7 +65,7 @@
 
         @if (roleId == 2)
         {
-            <div class="col-md-6 col-lg-4">
+            <div class="col-12 col-md-6">
                 <a asp-area="Gestion" asp-controller="Tutorship" asp-action="Asistencia" class="text-decoration-none">
                     <div class="card dashboard-card shadow-sm p-4 text-center h-100">
                         <div class="card-icon-box">
@@ -81,7 +81,7 @@
                 </a>
             </div>
 
-            <div class="col-md-6 col-lg-4">
+            <div class="col-12 col-md-6">
                 <a asp-area="Gestion" asp-controller="Tutorship" asp-action="Seguimiento" class="text-decoration-none">
                     <div class="card dashboard-card shadow-sm p-4 text-center h-100">
                         <div class="card-icon-box">
@@ -97,7 +97,7 @@
                 </a>
             </div>
 
-            <div class="col-md-6 col-lg-4">
+            <div class="col-12 col-md-6">
                 <a asp-area="Gestion" asp-controller="Tutorship" asp-action="ListaDeAlumnos" class="text-decoration-none">
                     <div class="card dashboard-card shadow-sm p-4 text-center h-100">
                         <div class="card-icon-box">
@@ -113,10 +113,10 @@
                 </a>
             </div>
 
-            <div class="col-md-6 col-lg-4 mt-3">
+            <div class="col-12 col-md-6">
                 <a asp-area="Gestion" asp-controller="Tutorship" asp-action="ReporteEntrevistas" class="text-decoration-none">
                     <div class="card dashboard-card shadow-sm p-4 text-center h-100">
-                        <div class="card-icon-box" style="background-color: var(--utt-beige); color: var(--utt-dark-red);">
+                        <div class="card-icon-box">
                             <i class="bi bi-file-earmark-person-fill"></i>
                         </div>
                         <h5 class="fw-bold mt-3" style="color: var(--utt-red);">ESTATUS ENTREVISTAS</h5>
@@ -132,7 +132,7 @@
 
         @if (roleId == 3)
         {
-            <div class="col-md-6 col-lg-4">
+            <div class="col-12 col-md-6">
                 <a asp-area="Gestion" asp-controller="Tutorship" asp-action="ListaDeAlumnos" class="text-decoration-none">
                     <div class="card dashboard-card shadow-sm p-4 text-center h-100">
                         <div class="card-icon-box" style="background-color: var(--utt-beige); color: var(--utt-dark-red);">
@@ -148,7 +148,7 @@
                 </a>
             </div>
 
-            <div class="col-md-6 col-lg-4">
+            <div class="col-12 col-md-6">
                 <a asp-area="Gestion" asp-controller="Tutorship" asp-action="Asistencia" class="text-decoration-none">
                     <div class="card dashboard-card shadow-sm p-4 text-center h-100">
                         <div class="card-icon-box" style="background-color: var(--utt-beige); color: var(--utt-dark-red);">
@@ -164,7 +164,7 @@
                 </a>
             </div>
 
-            <div class="col-md-6 col-lg-4">
+            <div class="col-12 col-md-6">
                 <a asp-area="Gestion" asp-controller="Tutorship" asp-action="AsignarTutores" class="text-decoration-none">
                     <div class="card dashboard-card shadow-sm p-4 text-center h-100">
                         <div class="card-icon-box" style="background-color: var(--utt-beige); color: var(--utt-dark-red);">
@@ -180,7 +180,7 @@
                 </a>
             </div>
 
-            <div class="col-md-6 col-lg-4 mt-3">
+            <div class="col-12 col-md-6">
                 <a asp-area="Gestion" asp-controller="Tutorship" asp-action="ReporteEntrevistas" class="text-decoration-none">
                     <div class="card dashboard-card shadow-sm p-4 text-center h-100">
                         <div class="card-icon-box" style="background-color: var(--utt-beige); color: var(--utt-dark-red);">
@@ -196,7 +196,7 @@
                 </a>
             </div>
 
-            <div class="col-md-6 col-lg-4 mt-3">
+            <div class="col-12 col-md-6">
                 <div class="card dashboard-card shadow-sm p-4 text-center h-100">
                     <div class="card-icon-box" style="background-color: var(--utt-beige); color: var(--utt-dark-red);">
                         <i class="bi bi-arrow-clockwise"></i>
@@ -253,5 +253,5 @@
 </div>
 
 <div class="text-center mt-5 text-muted small">
-    Innovación tecnológica impulsada por la Universidad Tecnológica de Tamaulipas Norte
-</div>
+@*     Innovación tecnológica impulsada por la Universidad Tecnológica de Tamaulipas Norte
+ *@</div>

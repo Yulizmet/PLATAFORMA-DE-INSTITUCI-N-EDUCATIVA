@@ -71,5 +71,20 @@ namespace SchoolManager.Models
 
         [ForeignKey("ApprovedBy")]
         public virtual users_user? Approver { get; set; }
+
+        // Snapshot of student's enrollment/semester at the moment the log was created
+        [Column("EnrollmentId")]
+        public int? EnrollmentId { get; set; }
+
+        [MaxLength(100)]
+        [Column("SnapshotSemesterName")]
+        public string? SnapshotSemesterName { get; set; }
+
+        [MaxLength(100)]
+        [Column("SnapshotGroupName")]
+        public string? SnapshotGroupName { get; set; }
+
+        [ForeignKey("EnrollmentId")]
+        public virtual grades_enrollment? Enrollment { get; set; }
     }
 }

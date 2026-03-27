@@ -26,6 +26,7 @@ namespace SchoolManager.Models
         [Required]
         public string Message { get; set; } = null!;
 
+       
         public int? IdUser { get; set; }
 
         [Required]

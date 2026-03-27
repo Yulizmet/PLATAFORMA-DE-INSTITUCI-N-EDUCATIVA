@@ -26,8 +26,8 @@
                 <form id="formDeactivateStaff">
                     @Html.AntiForgeryToken()
                     <input type="hidden" name="id" value="@Model.Id" />
-                    <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="button" onclick="confirmDeactivateLogic()" class="btn btn-danger px-4">Confirmar Inactivación</button>
+                    <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" onclick="confirmDeactivateLogic()" class="btn btn-danger rounded-pill px-4">Confirmar Inactivación</button>
                 </form>
             </div>
         </div>

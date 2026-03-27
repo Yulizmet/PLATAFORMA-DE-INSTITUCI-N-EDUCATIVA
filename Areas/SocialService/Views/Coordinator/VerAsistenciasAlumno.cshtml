@@ -60,14 +60,71 @@
 </div>
 
 <!-- Tabla de asistencias -->
+<div class="card mb-3">
+    <div class="card-body">
+        <form method="get" class="row g-3 align-items-end" id="filterForm">
+            <input type="hidden" name="id" value="@Model.StudentId" />
+            <input type="hidden" name="sortBy" value="@ViewBag.CurrentSort" />
+            <input type="hidden" name="sortOrder" value="@ViewBag.CurrentOrder" />
+
+            <div class="col-md-3">
+                <label class="form-label">Desde</label>
+                <input type="date" name="dateFrom" class="form-control" value="@ViewBag.FilterDateFrom" />
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Hasta</label>
+                <input type="date" name="dateTo" class="form-control" value="@ViewBag.FilterDateTo" />
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Estado</label>
+                <select name="status" class="form-select">
+                    <option value="">Todos</option>
+                    @if (ViewBag.FilterStatus == "present")
+                    {
+                        <option value="present" selected>Presente</option>
+                    }
+                    else
+                    {
+                        <option value="present">Presente</option>
+                    }
+
+                    @if (ViewBag.FilterStatus == "absent")
+                    {
+                        <option value="absent" selected>Ausente</option>
+                    }
+                    else
+                    {
+                        <option value="absent">Ausente</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-3 d-flex gap-2">
+                <button type="submit" class="btn btn-primary w-100"><i class="bi bi-search"></i> Buscar</button>
+                <a href="@Url.Action("VerAsistenciasAlumno", new { id = Model.StudentId })" class="btn btn-secondary">Limpiar</a>
+            </div>
+        </form>
+    </div>
+</div>
 <div class="table-responsive">
     <table class="table table-hover align-middle">
         <thead>
             <tr>
                 <th>#</th>
-                <th>Fecha</th>
-                <th>Día</th>
-                <th class="text-center">Estado</th>
+                <th>
+                    <a href="@Url.Action("VerAsistenciasAlumno", new { id = Model.StudentId, dateFrom = ViewBag.FilterDateFrom, dateTo = ViewBag.FilterDateTo, status = ViewBag.FilterStatus, sortBy = "date", sortOrder = ViewBag.CurrentSort == "date" ? (ViewBag.CurrentOrder == "asc" ? "desc" : "asc") : "desc" })" class="text-decoration-none text-white">Fecha
+                        <i class="bi @(ViewBag.CurrentSort == "date" ? (ViewBag.CurrentOrder == "asc" ? "bi-sort-up" : "bi-sort-down") : "bi-arrow-down-up")"></i>
+                    </a>
+                </th>
+                <th>
+                    <a href="@Url.Action("VerAsistenciasAlumno", new { id = Model.StudentId, dateFrom = ViewBag.FilterDateFrom, dateTo = ViewBag.FilterDateTo, status = ViewBag.FilterStatus, sortBy = "day", sortOrder = ViewBag.CurrentSort == "day" ? (ViewBag.CurrentOrder == "asc" ? "desc" : "asc") : "asc" })" class="text-decoration-none text-white">Día
+                        <i class="bi @(ViewBag.CurrentSort == "day" ? (ViewBag.CurrentOrder == "asc" ? "bi-sort-up" : "bi-sort-down") : "bi-arrow-down-up")"></i>
+                    </a>
+                </th>
+                <th class="text-center">
+                    <a href="@Url.Action("VerAsistenciasAlumno", new { id = Model.StudentId, dateFrom = ViewBag.FilterDateFrom, dateTo = ViewBag.FilterDateTo, status = ViewBag.FilterStatus, sortBy = "estado", sortOrder = ViewBag.CurrentSort == "estado" ? (ViewBag.CurrentOrder == "asc" ? "desc" : "asc") : "asc" })" class="text-decoration-none text-white">Estado
+                        <i class="bi @(ViewBag.CurrentSort == "estado" ? (ViewBag.CurrentOrder == "asc" ? "bi-sort-up" : "bi-sort-down") : "bi-arrow-down-up")"></i>
+                    </a>
+                </th>
                 <th>Notas</th>
                 <th class="text-center">Acciones</th>
             </tr>
@@ -98,7 +155,7 @@
                         </td>
                         <td>@(attendance.Notes ?? "-")</td>
                         <td class="text-center">
-                            @if (ViewBag.EsCoordinador == true)
+                            @if ((ViewBag.EsCoordinador == true) || (ViewBag.EsMaster == true))
                             {
                                 <button type="button" class="btn btn-warning btn-sm" 
                                         data-bs-toggle="modal" 
@@ -132,6 +189,7 @@
     <div class="modal-dialog">
         <div class="modal-content">
             <form method="post" asp-area="SocialService" asp-controller="Coordinator" asp-action="EditarAsistencia">
+                @Html.AntiForgeryToken()
                 <div class="modal-header">
                     <h5 class="modal-title" id="editarAsistenciaModalLabel">
                         <i class="bi bi-pencil-square me-1"></i> Editar Asistencia
