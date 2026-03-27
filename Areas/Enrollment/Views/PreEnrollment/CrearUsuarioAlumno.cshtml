@@ -313,10 +313,7 @@
 
     <script>
         function closeSuccessModal() {
-            const modal = document.getElementById('successModal');
-            if (modal) {
-                modal.style.display = 'none';
-            }
+            window.location.href = '@Url.Action("Login", "Account", new { area = "UserMng" })';
         }
     </script>
 }

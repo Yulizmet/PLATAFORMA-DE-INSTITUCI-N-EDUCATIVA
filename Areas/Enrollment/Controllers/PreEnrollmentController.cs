@@ -414,6 +414,17 @@ namespace SchoolManager.Areas.Enrollment.Controllers
                 _context.Users.Add(user);
                 await _context.SaveChangesAsync();
 
+                var userRole = new users_userrole
+                {
+                    UserId = user.UserId,
+                    RoleId = 1,
+                    CreatedDate = DateTime.Now,
+                    IsActive = true
+                };
+
+                _context.UserRoles.Add(userRole);
+                await _context.SaveChangesAsync();
+
                 pre.UserId = user.UserId;
                 pre.PersonId = pre.Person.PersonId;
 
@@ -459,10 +470,16 @@ namespace SchoolManager.Areas.Enrollment.Controllers
         // =====================================================================
 
         // GET: Enrollment/PreEnrollment/SubirDocumentos
+        // =====================================================================
+        // Documentos
+        // =====================================================================
+
+        // GET: Enrollment/PreEnrollment/SubirDocumentos
         [HttpGet]
-        public IActionResult SubirDocumentos()
+        public IActionResult SubirDocumentos(int id)
         {
             ViewData["PasoActual"] = 2;
+            ViewBag.IdData = id;
             return View();
         }
 
