@@ -574,6 +574,31 @@ namespace SchoolManager.Data
             modelBuilder.Entity<social_service_log>().ToTable("social_service_log");
 
             // Configuraciones específicas
+
+            modelBuilder.Entity<social_service_assignment>(entity =>
+            {
+                entity.HasOne(e => e.Student)
+                    .WithMany()
+                    .HasForeignKey(e => e.StudentId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(e => e.Teacher)
+                    .WithMany()
+                    .HasForeignKey(e => e.TeacherId)
+                    .OnDelete(DeleteBehavior.Restrict);
+            });
+            modelBuilder.Entity<social_service_rejection>(entity =>
+            {
+                entity.HasOne<users_user>()
+                    .WithMany()
+                    .HasForeignKey(e => e.RejectedBy)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(e => e.Student)
+                    .WithMany()
+                    .HasForeignKey(e => e.StudentId)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
             modelBuilder.Entity<social_service_assignment>()
                 .HasIndex(a => new { a.TeacherId, a.StudentId })
                 .IsUnique();
