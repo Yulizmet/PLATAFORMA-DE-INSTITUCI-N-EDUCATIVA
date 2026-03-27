@@ -7,6 +7,7 @@
     const procedures = (typeof raw.procedures === 'string') ? JSON.parse(raw.procedures) : (raw.procedures || []);
     const psychologyLogs = (typeof raw.psychologyLogs === 'string') ? JSON.parse(raw.psychologyLogs) : (raw.psychologyLogs || []);
     const medicalLogs = (typeof raw.medicalLogs === 'string') ? JSON.parse(raw.medicalLogs) : (raw.medicalLogs || []);
+    const tutorshipStats = (typeof raw.tutorshipStats === 'string') ? JSON.parse(raw.tutorshipStats) : (raw.tutorshipStats || []);
 
     let filteredSocial = [...socialServices];
     let filteredProcs = [...procedures];
@@ -14,6 +15,7 @@
     let filteredMed = [...medicalLogs];
     let filteredStudents = [...students];
     let filteredGroups = [...students];
+    let filteredTut = [...tutorshipStats];
 
     // ── Tamaños de página dinámicos por sección ───────────────────────────────
     // Cada sección mantiene su propio PAGE_SIZE independiente
@@ -23,10 +25,11 @@
         social: 15,
         procs: 15,
         psy: 15,
-        med: 15
+        med: 15,
+        tut: 15
     };
 
-    let pageSocial = 1, pageProcs = 1, pagePsy = 1, pageMed = 1, pageStudents = 1, pageGroups = 1;
+    let pageSocial = 1, pageProcs = 1, pagePsy = 1, pageMed = 1, pageStudents = 1, pageGroups = 1, pageTut = 1;
 
     let charts = {};
 
@@ -149,6 +152,7 @@
         const viewSocialServices = document.getElementById('viewSocialServices');
         const viewProcedures = document.getElementById('viewProcedures');
         const viewBitacoras = document.getElementById('viewBitacoras');
+        const viewTutorias = document.getElementById('viewTutorias');
         const subViewSemestre = document.getElementById('subViewSemestre');
         const subViewPsicologia = document.getElementById('subViewPsicologia');
 
@@ -164,6 +168,7 @@
             if (subViewPsicologia && !subViewPsicologia.classList.contains('d-none')) return 'psicologia';
             return 'enfermeria';
         }
+        if (viewTutorias && !viewTutorias.classList.contains('d-none')) return 'tutorias';
         return null;
     }
 
@@ -765,6 +770,120 @@
     }
 
     // ════════════════════════════════════════════════════════════════════════
+    // TUTORÍAS
+    // ════════════════════════════════════════════════════════════════════════
+    function getTutStatusBadge(s) {
+        const m = {
+            'Completado': '<span class="badge bg-success">Completado</span>',
+            'Pendiente': '<span class="badge bg-warning text-dark">Pendiente</span>',
+            'En proceso': '<span class="badge bg-info text-dark">En proceso</span>',
+            'Sin entrevista': '<span class="badge bg-secondary">Sin entrevista</span>'
+        };
+        return m[s] || `<span class="badge bg-secondary">${escHtml(s || 'Sin estado')}</span>`;
+    }
+    function getTutPerfBadge(s) {
+        const m = {
+            'Alto': '<span class="badge bg-success">Alto</span>',
+            'Medio': '<span class="badge bg-warning text-dark">Medio</span>',
+            'Bajo': '<span class="badge bg-danger">Bajo</span>',
+            'Sin monitoreo': '<span class="badge bg-secondary">Sin monitoreo</span>'
+        };
+        return m[s] || `<span class="badge bg-secondary">${escHtml(s || 'Sin nivel')}</span>`;
+    }
+    function populateTutTable(list) {
+        const tbody = $('#tutorshipTable tbody'); if (!tbody.length) return;
+        tbody.empty();
+        if (!list || !list.length) { tbody.html('<tr><td colspan="8" class="text-center text-muted py-4">Sin datos disponibles</td></tr>'); $('#pageInfoTut').text('Sin resultados'); return; }
+        const { items, from, to, total } = paginate(list, pageTut, pageSizes.tut);
+        items.forEach(item => {
+            const ld = item.LastDate ? new Date(item.LastDate).toLocaleDateString('es-MX') : 'Sin registro';
+            tbody.append(`<tr><td>${escHtml(item.StudentName || 'Sin nombre')}</td><td>${escHtml(item.TeacherName || 'Sin asignar')}</td><td>${getTutStatusBadge(item.InterviewStatus)}</td><td>${getTutPerfBadge(item.PerformanceLevel)}</td><td>${item.TotalSessions || 0}</td><td>${item.TotalInterviews || 0}</td><td>${item.TotalMonitorings || 0}</td><td>${ld}</td></tr>`);
+        });
+        $('#pageInfoTut').text(pagText(from, to, total));
+    }
+    function updateTutCards(list) {
+        if (!list || !list.length) { $('#statTutTotal,#statTutInterviews,#statTutMonitorings,#statTutSessions').text('0'); return; }
+        $('#statTutTotal').text(list.length);
+        $('#statTutInterviews').text(list.reduce((s, i) => s + (i.TotalInterviews || 0), 0));
+        $('#statTutMonitorings').text(list.reduce((s, i) => s + (i.TotalMonitorings || 0), 0));
+        $('#statTutSessions').text(list.reduce((s, i) => s + (i.TotalSessions || 0), 0));
+    }
+    function renderTutStatusPie(list) {
+        const cnt = {};
+        list.forEach(i => { const s = i.InterviewStatus || 'Sin entrevista'; cnt[s] = (cnt[s] || 0) + 1; });
+        const keys = Object.keys(cnt).filter(k => cnt[k] > 0);
+        if (!keys.length) { emptyChart('tutStatusPie'); return; }
+        const colorMap = { 'Completado': '#198754', 'Pendiente': '#ffc107', 'En proceso': '#0dcaf0', 'Sin entrevista': '#6c757d' };
+        makeChart('tutStatusPie', {
+            type: 'doughnut',
+            data: { labels: keys, datasets: [{ data: keys.map(k => cnt[k]), backgroundColor: keys.map(k => colorMap[k] || '#adb5bd') }] },
+            plugins: [valueLabelPlugin],
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' }, ...vlOpts('#fff') } }
+        });
+    }
+    function renderTutPerfBar(list) {
+        const cnt = {};
+        list.forEach(i => { const p = i.PerformanceLevel || 'Sin monitoreo'; cnt[p] = (cnt[p] || 0) + 1; });
+        const keys = Object.keys(cnt).filter(k => cnt[k] > 0);
+        if (!keys.length) { emptyChart('tutPerfBar'); return; }
+        const colorMap = { 'Alto': '#198754', 'Medio': '#ffc107', 'Bajo': '#dc3545', 'Sin monitoreo': '#6c757d' };
+        makeChart('tutPerfBar', {
+            type: 'bar',
+            data: { labels: keys, datasets: [{ label: 'Alumnos', data: keys.map(k => cnt[k]), backgroundColor: keys.map(k => colorMap[k] || '#0d6efd') }] },
+            plugins: [valueLabelPlugin],
+            options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }, plugins: { legend: { display: false }, ...vlOpts('#fff') } }
+        });
+    }
+    function renderTutMonthBar(list) {
+        if (!list.length) { emptyChart('tutMonthBar'); return; }
+        const byM = {};
+        list.forEach(i => {
+            const d = i.LastDate; if (!d) return;
+            const dt = new Date(d);
+            const key = `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, '0')}`;
+            byM[key] = (byM[key] || 0) + 1;
+        });
+        const labels = Object.keys(byM).sort();
+        if (!labels.length) { emptyChart('tutMonthBar'); return; }
+        makeChart('tutMonthBar', {
+            type: 'bar',
+            data: { labels, datasets: [{ label: 'Actividad', data: labels.map(l => byM[l]), backgroundColor: '#0d6efd' }] },
+            plugins: [valueLabelPlugin],
+            options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }, plugins: { legend: { display: false }, ...vlOpts('#fff') } }
+        });
+    }
+    function renderTutStudentBar(list) {
+        if (!list.length) { emptyChart('tutStudentBar'); return; }
+        const sorted = [...list].sort((a, b) => ((b.TotalSessions || 0) + (b.TotalInterviews || 0) + (b.TotalMonitorings || 0)) - ((a.TotalSessions || 0) + (a.TotalInterviews || 0) + (a.TotalMonitorings || 0))).slice(0, 10);
+        makeChart('tutStudentBar', {
+            type: 'bar',
+            data: { labels: sorted.map(i => (i.StudentName || '?').split(' ').slice(0, 2).join(' ')), datasets: [{ label: 'Actividad total', data: sorted.map(i => (i.TotalSessions || 0) + (i.TotalInterviews || 0) + (i.TotalMonitorings || 0)), backgroundColor: '#6f42c1' }] },
+            plugins: [valueLabelPlugin],
+            options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, scales: { x: { beginAtZero: true, ticks: { precision: 0 } } }, plugins: { legend: { display: false }, ...vlOpts('#fff') } }
+        });
+    }
+    function renderAllTutCharts(list) { renderTutStatusPie(list); renderTutPerfBar(list); renderTutMonthBar(list); renderTutStudentBar(list); }
+
+    function applyTutFilters() {
+        const name = ($('#filterTutName').val() || '').toLowerCase().trim();
+        const status = $('#filterTutStatus').val() || '';
+        const perf = $('#filterTutPerformance').val() || '';
+        const teacher = ($('#filterTutTeacher').val() || '').toLowerCase().trim();
+        filteredTut = tutorshipStats.filter(i =>
+            (!name || (i.StudentName || '').toLowerCase().includes(name)) &&
+            (!status || (i.InterviewStatus || '') === status) &&
+            (!perf || (i.PerformanceLevel || '') === perf) &&
+            (!teacher || (i.TeacherName || '').toLowerCase().includes(teacher))
+        );
+        pageTut = 1; populateTutTable(filteredTut); updateTutCards(filteredTut); renderAllTutCharts(filteredTut);
+    }
+    function resetTutFilters() {
+        $('#filterTutName,#filterTutTeacher').val(''); $('#filterTutStatus,#filterTutPerformance').val('');
+        tutExcelFilters = {}; filteredTut = [...tutorshipStats];
+        pageTut = 1; populateTutTable(filteredTut); updateTutCards(filteredTut); renderAllTutCharts(filteredTut);
+    }
+
+    // ════════════════════════════════════════════════════════════════════════
     // GENERAL — Dashboard ejecutivo
     // ════════════════════════════════════════════════════════════════════════
     function renderGeneralCharts() {
@@ -963,6 +1082,11 @@
             tableId = 'medicalTable';
             chartIds = ['medPieChart', 'medReasonBar', 'medMonthBar', 'medStudentBar'];
             filename = `enfermeria_${new Date().toISOString().slice(0, 10)}.pdf`;
+        } else if (section === 'tutorias') {
+            title = 'Estadísticas de Tutorías';
+            tableId = 'tutorshipTable';
+            chartIds = ['tutStatusPie', 'tutPerfBar', 'tutMonthBar', 'tutStudentBar'];
+            filename = `tutorias_${new Date().toISOString().slice(0, 10)}.pdf`;
         } else {
             alert('Selecciona una sección antes de exportar el PDF.');
             return;
@@ -1112,6 +1236,13 @@
                 { label: 'Pendientes', value: $('#statMedPending').text() },
                 { label: 'Otros', value: $('#statMedOther').text() }
             ];
+        if (section === 'tutorias')
+            return [
+                { label: 'Total alumnos', value: $('#statTutTotal').text() },
+                { label: 'Entrevistas', value: $('#statTutInterviews').text() },
+                { label: 'Monitoreos', value: $('#statTutMonitorings').text() },
+                { label: 'Sesiones', value: $('#statTutSessions').text() }
+            ];
         return [];
     }
 
@@ -1130,6 +1261,7 @@
         filteredProcs = [...procedures]; populateProcsTable(filteredProcs); updateProcCards(filteredProcs); renderAllTramitesCharts(filteredProcs);
         filteredPsy = [...psychologyLogs]; populatePsyTable(filteredPsy); updatePsyCards(filteredPsy); renderAllPsyCharts(filteredPsy);
         filteredMed = [...medicalLogs]; populateMedTable(filteredMed); updateMedCards(filteredMed); renderAllMedCharts(filteredMed);
+        filteredTut = [...tutorshipStats]; populateTutTable(filteredTut); updateTutCards(filteredTut); renderAllTutCharts(filteredTut);
 
         // Calificaciones — Por Semestre
         $('#filterName').on('input', applyStudentFilters);
@@ -1227,6 +1359,22 @@
             populateMedTable(filteredMed);
         });
 
+        // Tutorías
+        $('#filterTutName,#filterTutTeacher').on('input', applyTutFilters);
+        $('#filterTutStatus,#filterTutPerformance').on('change', applyTutFilters);
+        $('#applyTutFilters').on('click', applyTutFilters);
+        $('#resetTutFilters').on('click', resetTutFilters);
+        $('#firstPageTut').on('click', () => { pageTut = 1; populateTutTable(filteredTut); });
+        $('#prevPageTut').on('click', () => { if (pageTut > 1) { pageTut--; populateTutTable(filteredTut); } });
+        $('#nextPageTut').on('click', () => { const m = Math.ceil(filteredTut.length / pageSizes.tut); if (pageTut < m) { pageTut++; populateTutTable(filteredTut); } });
+
+        // Selector de filas — Tutorías
+        $('#pageSizeTut').on('change', function () {
+            pageSizes.tut = parseInt($(this).val(), 10);
+            pageTut = 1;
+            populateTutTable(filteredTut);
+        });
+
         // PDF
         $('#btnExportPDF').on('click', exportToPDF);
 
@@ -1259,6 +1407,11 @@
                     ['Folio', 'Alumno', 'Matrícula', 'Fecha registro', 'Motivo', 'Signos vitales', 'Observaciones', 'Acción', 'Estado'],
                     ['Folio', 'StudentName', 'EnrollmentOrMatricula', 'RecordDate', 'ConsultationReason', 'VitalSigns', 'Observations', 'TreatmentAction', 'Status'],
                     `enfermeria_${d}.csv`);
+            } else if (section === 'tutorias') {
+                exportDataToCSV(filteredTut,
+                    ['Alumno', 'Tutor', 'Estado entrevista', 'Nivel desempeño', 'Sesiones', 'Entrevistas', 'Monitoreos', 'Última fecha'],
+                    ['StudentName', 'TeacherName', 'InterviewStatus', 'PerformanceLevel', 'TotalSessions', 'TotalInterviews', 'TotalMonitorings', 'LastDate'],
+                    `tutorias_${d}.csv`);
             }
         });
     });
@@ -1275,6 +1428,7 @@ let tramiteExcelFilters = {};
 let psyExcelFilters = {};
 let medExcelFilters = {};
 let grupoExcelFilters = {};
+let tutExcelFilters = {};
 
 function getExcelFilters(tableId) {
     if (tableId === 'studentsTable') return studentExcelFilters;
@@ -1283,6 +1437,7 @@ function getExcelFilters(tableId) {
     if (tableId === 'psychologyTable') return psyExcelFilters;
     if (tableId === 'medicalTable') return medExcelFilters;
     if (tableId === 'grupoTable') return grupoExcelFilters;
+    if (tableId === 'tutorshipTable') return tutExcelFilters;
     return {};
 }
 function setExcelFilters(tableId, obj) {
@@ -1292,6 +1447,7 @@ function setExcelFilters(tableId, obj) {
     if (tableId === 'psychologyTable') { psyExcelFilters = obj; return; }
     if (tableId === 'medicalTable') { medExcelFilters = obj; return; }
     if (tableId === 'grupoTable') { grupoExcelFilters = obj; return; }
+    if (tableId === 'tutorshipTable') { tutExcelFilters = obj; return; }
 }
 
 let currentPage = 1;
