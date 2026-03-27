@@ -306,7 +306,7 @@ a {
 
     .table thead {
         background-color: var(--brand-dark);
-        color: white;
+        color: black;
         text-transform: uppercase;
         font-size: 13px;
         letter-spacing: 1px;
