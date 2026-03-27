@@ -12,12 +12,19 @@
         <div>
             <h2 class="text-white">GESTIÓN DE PERSONAL MÉDICO</h2>
             <div class="buttons-left">
-                <a asp-action="Create" class="btn-header">
-                    <i class="bi bi-person-plus"></i> Crear Personal
-                </a>
+
+                @* Crear — Heads y Master, NO Coordinator *@
+                @if (User.IsInRole("Head Nurse") || User.IsInRole("Head of Psychology") || User.IsInRole("Master"))
+                {
+                    <a asp-action="Create" class="btn-header">
+                        <i class="bi bi-person-plus"></i> Crear Personal
+                    </a>
+                }
+
                 <a asp-action="Index" class="btn-header">
                     <i class="bi bi-person-badge"></i> Ver Personal
                 </a>
+
             </div>
         </div>
         <div class="buttons-right">
@@ -56,9 +63,11 @@
                                             <span>Enfermero</span>
                                             break;
                                         case "Psychologist":
+
                                             <span>Psicólogo</span>
                                             break;
                                         default:
+
                                             <span>@item.Rol</span>
                                             break;
                                     }
@@ -70,31 +79,48 @@
                             <td data-sort="@item.FechaCreacion.ToString("yyyyMMddHHmmss")">
                                 @item.FechaCreacion.ToString("dd/MM/yyyy")
                             </td>
-                            <td>
-                                <div class="d-flex gap-2">
-                                    <a asp-action="Details"
-                                       asp-route-id="@item.Id"
-                                       class="btn btn-sm"
-                                       style="background:#0d6efd;color:white;border:none;"
-                                       title="Ver">
-                                        <i class="bi bi-eye-fill"></i>
-                                    </a>
-                                    <a asp-action="Edit"
-                                       asp-route-id="@item.Id"
-                                       class="btn btn-sm"
-                                       style="background:#ffc107;color:white;border:none;"
-                                       title="Editar">
-                                        <i class="bi bi-pencil-fill"></i>
-                                    </a>
-                                    <a asp-action="Delete"
-                                       asp-route-id="@item.Id"
-                                       class="btn btn-sm"
-                                       style="background:#620900;color:white;border:none;"
-                                       title="Eliminar">
-                                        <i class="bi bi-trash-fill"></i>
-                                    </a>
-                                </div>
-                            </td>
+                                <td>
+                                    <div class="d-flex gap-2">
+
+                                        <a asp-action="Details" asp-route-id="@item.Id"
+                                           class="btn btn-sm"
+                                           style="background:#38b6ff;color:white;border:none;"
+                                           title="Ver">
+                                            <i class="bi bi-eye-fill"></i>
+                                        </a>
+
+                                        @if (
+                                            (User.IsInRole("Head Nurse") && item.Rol == "Nurse") ||
+                                            (User.IsInRole("Head of Psychology") && item.Rol == "Psychologist") ||
+                                            (User.IsInRole("Coordinator") && (item.Rol == "Nurse" || item.Rol == "Psychologist" || item.Rol == "Head Nurse" || item.Rol == "Head of Psychology")) ||
+                                            User.IsInRole("Master")
+                                        )
+                                        {
+                                            <a asp-action="Edit" asp-route-id="@item.Id"
+                                               class="btn btn-sm"
+                                               style="background:#ffde59;color:white;border:none;"
+                                               title="Editar">
+                                                <i class="bi bi-pencil-fill"></i>
+                                            </a>
+                                        }
+
+                                        @if (
+                                            (User.IsInRole("Head Nurse") && item.Rol == "Nurse") ||
+                                            (User.IsInRole("Head of Psychology") && item.Rol == "Psychologist") ||
+                                            (User.IsInRole("Coordinator") && (item.Rol == "Nurse" || item.Rol == "Psychologist" || item.Rol == "Head Nurse" || item.Rol == "Head of Psychology")) ||
+                                            User.IsInRole("Master")
+                                        )
+                                        {
+                                            <a asp-action="Delete" asp-route-id="@item.Id"
+                                               class="btn btn-sm"
+                                               style="background:#ff3131;color:white;border:none;"
+                                               title="Eliminar">
+                                                <i class="bi bi-trash-fill"></i>
+                                            </a>
+                                        }
+
+                                    </div>
+                                </td>
                         </tr>
                     }
                 </tbody>
@@ -111,14 +137,10 @@
         var $jq = jQuery.noConflict(true);
         $jq(document).ready(function () {
             $jq('#tablaStaff').DataTable({
-                language: {
-                    url: "https://cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json"
-                },
+                language: { url: "https://cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json" },
                 order: [[5, "desc"]],
                 autoWidth: false,
-                columnDefs: [
-                    { orderable: false, targets: 6 }
-                ]
+                columnDefs: [{ orderable: false, targets: 6 }]
             });
         });
     </script>

@@ -24,15 +24,18 @@
     }
 }
 
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <div>
-        <h3 class="mb-0">
-            <i class="bi bi-people-fill me-2"></i>Alumnos de @ViewBag.TeacherName
-        </h3>
-    </div>
+<!-- Botón -->
+<div class="mb-2">
     <a asp-area="SocialService" asp-controller="Coordinator" asp-action="Maestros" class="btn btn-secondary">
-        <i class="bi bi-arrow-left me-1"></i> Volver a Maestros
+        <i class="bi bi-arrow-left"></i> Volver a Maestros
     </a>
+</div>
+
+<!-- Título -->
+<div class="mb-4 text-center">
+    <h3 class="mb-0">
+        Alumnos de @ViewBag.TeacherName
+    </h3>
 </div>
 
 <!-- Filtros de búsqueda -->
@@ -107,6 +110,7 @@
                 </div>
             </div>
         </form>
+        <script src="~/js/SocialServiceAutoSearch.js"></script>
     </div>
 </div>
 
@@ -167,7 +171,7 @@
                 {
                     <tr>
                         <td>@(rowNum++)</td>
-                        <td><strong>@student.StudentName</strong></td>
+                        <td>@student.StudentName</td>
                         <td>@student.Email</td>
                         <td>@(student.SemesterName ?? "N/A")</td>
                         <td>@(student.GroupName ?? "N/A")</td>
@@ -191,11 +195,25 @@
                                    class="btn btn-outline-primary" title="Ver bitácoras">
                                     <i class="bi bi-journal-text"></i>
                                 </a>
+                                @* Botón para que Master abra modal con bitácoras aprobadas y pueda desaprobar *@
+
                                 <a asp-area="SocialService" asp-controller="Coordinator"
                                    asp-action="VerAsistenciasAlumno" asp-route-id="@student.StudentId" asp-route-teacherId="@teacherId"
                                    class="btn btn-outline-info" title="Ver asistencias">
                                     <i class="bi bi-calendar-check"></i>
                                 </a>
+                                @if (User.IsInRole("Master"))
+                                {
+                                    <button type="button" class="btn btn-outline-danger btn-sm btn-eliminar-asignacion" data-student-id="@student.StudentId" data-student-name="@student.StudentName" title="Eliminar del maestro">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+
+                                    <form id="eliminarForm_@student.StudentId" method="post" asp-area="SocialService" asp-controller="Coordinator" asp-action="EliminarAsignacionAlumno" style="display:none;">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="studentId" value="@student.StudentId" />
+                                        <input type="hidden" name="teacherId" value="@teacherId" />
+                                    </form>
+                                }
                             </div>
                         </td>
                     </tr>
@@ -213,6 +231,8 @@
         </tbody>
     </table>
 </div>
+
+
 
 <!-- Paginación -->
 @if ((int)(ViewBag.TotalPages ?? 0) > 1)
@@ -270,4 +290,45 @@
     Mostrando @Model?.Count de @ViewBag.TotalRecords registros
 </p>
 
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const eliminarBtns = document.querySelectorAll('.btn-eliminar-asignacion');
+            eliminarBtns.forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const form = this.closest('form');
+                    const studentName = this.getAttribute('data-student-name');
 
+                    Swal.fire({
+                        title: '¿Eliminar alumno del maestro?',
+                        html: `¿Estás seguro que deseas eliminar a <strong>${studentName}</strong> de este maestro?<br><br><small class='text-muted'>Esta acción desactivará la asignación pero conservará todo el historial de bitácoras y asistencias del alumno.</small>`,
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonText: 'Sí, eliminar',
+                        cancelButtonText: 'Cancelar',
+                        customClass: {
+                            confirmButton: 'btn btn-danger',
+                            cancelButton: 'btn btn-secondary'
+                        },
+                        buttonsStyling: false
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            // If we have a hidden form with an id for this student, submit it; otherwise submit the visible form
+                            var studentId = btn.getAttribute('data-student-id');
+                            var hiddenForm = document.getElementById('eliminarForm_' + studentId);
+                            if (hiddenForm) {
+                                hiddenForm.submit();
+                            } else {
+                                form.submit();
+                            }
+                        }
+                    });
+
+
+                });
+            });
+        });
+    </script>
+}

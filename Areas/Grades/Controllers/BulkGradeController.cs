@@ -1,4 +1,5 @@
 ﻿// Areas/Grades/Controllers/BulkGradeController.cs
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MiniExcelLibs;
@@ -10,6 +11,7 @@ using SchoolManager.Models;
 namespace SchoolManager.Areas.Grades.Controllers
 {
     [Area("Grades")]
+    [Authorize(Roles = "Teacher")]
     public class BulkGradeController : Controller
     {
         private readonly AppDbContext _context;

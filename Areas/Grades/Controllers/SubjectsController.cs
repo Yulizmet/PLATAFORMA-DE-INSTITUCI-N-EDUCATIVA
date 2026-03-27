@@ -1,13 +1,16 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using SchoolManager.Areas.Grades.ViewModels;
 using SchoolManager.Areas.Grades.ViewModels.Subjects;
 using SchoolManager.Data;
 using SchoolManager.Models;
-using SchoolManager.Areas.Grades.ViewModels;
 
 namespace SchoolManager.Areas.Grades.Controllers
 {
     [Area("Grades")]
+    [Authorize(Roles = "Teacher,Administrator")]
+
     public class SubjectsController : Controller
     {
         private readonly AppDbContext _context;

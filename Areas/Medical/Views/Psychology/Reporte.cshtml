@@ -14,7 +14,7 @@
                 <a asp-action="Index" class="btn-header">
                     <i class="bi bi-journal-medical"></i> Ver Registros
                 </a>
-                <a asp-action="Reporte" class="btn-header ">
+                <a asp-action="Reporte" class="btn-header">
                     <i class="bi bi-file-earmark-bar-graph"></i> Reporte
                 </a>
             </div>
@@ -36,10 +36,10 @@
             <button class="btn" id="btn-dia" onclick="cargarReporte('dia')">Hoy</button>
             <button class="btn" id="btn-semana" onclick="cargarReporte('semana')">Última semana</button>
             <button class="btn" id="btn-mes" onclick="cargarReporte('mes')">Último mes</button>
-            <button class="btn" id="btn-personalizado" onclick="toggleFechas()">Personalizado</button>
+            <button class="btn" id="btn-personalizado" onclick="mostrarFechas()">Personalizado</button>
         </div>
 
-        <div id="div-fechas" style="display:none;" class="d-flex gap-3 align-items-end mb-4">
+        <div id="div-fechas" style="display:none; gap:1rem; align-items:flex-end; margin-bottom:1rem;">
             <div class="info-block">
                 <label class="fw-bold text-uppercase">Fecha inicio</label>
                 <input type="date" id="fechaInicio" class="form-control" />
@@ -48,13 +48,12 @@
                 <label class="fw-bold text-uppercase">Fecha fin</label>
                 <input type="date" id="fechaFin" class="form-control" />
             </div>
-            <button class="btn btn-dark" onclick="cargarReporte('personalizado')">Buscar</button>
+            <button class="btn btn-dark" onclick="buscarPersonalizado()">Buscar</button>
         </div>
 
         <hr class="section-divider" />
 
         <div id="div-resumen" style="display:none;">
-
             <div class="row g-4 mb-4">
                 <div class="col-md-3">
                     <div class="info-block">
@@ -89,14 +88,13 @@
             <hr class="section-divider" />
 
             <div class="d-flex justify-content-end gap-2 mt-4">
-                <button class="btn" id="btn-csv" onclick="descargarCSV()" style="border: 1.5px solid #6c757d;">
+                <button class="btn" onclick="descargarCSV()" style="border:1.5px solid #6c757d;">
                     <i class="bi bi-filetype-csv"></i> DESCARGAR CSV
                 </button>
-                <button class="btn" id="btn-pdf" onclick="descargarPDF()" style="border: 1.5px solid #6c757d;">
+                <button class="btn" onclick="descargarPDF()" style="border:1.5px solid #6c757d;">
                     <i class="bi bi-file-earmark-pdf"></i> DESCARGAR PDF
                 </button>
             </div>
-
         </div>
 
         <div id="div-vacio" class="text-center text-muted py-4" style="display:none;">
@@ -116,88 +114,117 @@
         var fechaInicioActual = null;
         var fechaFinActual = null;
 
-        function toggleFechas() {
-            var div = document.getElementById('div-fechas');
-            div.style.display = div.style.display === 'none' ? 'flex' : 'none';
+        function ocultarFechas() {
+            document.getElementById('div-fechas').style.display = 'none';
+        }
+
+        function mostrarFechas() {
             marcarFiltro('personalizado');
+            document.getElementById('div-fechas').style.display = 'flex';
+
+            document.getElementById('div-resumen').style.display = 'none';
+            document.getElementById('div-vacio').style.display = 'none';
+            document.getElementById('div-inicial').style.display = 'block';
         }
 
         function marcarFiltro(filtro) {
             ['dia', 'semana', 'mes', 'personalizado'].forEach(function (f) {
                 var btn = document.getElementById('btn-' + f);
-                btn.style.background = f === filtro ? '#620900' : '';
-                btn.style.color = f === filtro ? '#fff' : '';
+                if (f === filtro) {
+                    btn.style.background = '#620900';
+                    btn.style.color = '#fff';
+                    btn.style.border = 'none';
+                } else {
+                    btn.style.background = '';
+                    btn.style.color = '';
+                    btn.style.border = '';
+                }
             });
         }
 
         function cargarReporte(filtro) {
             filtroActual = filtro;
             marcarFiltro(filtro);
+            ocultarFechas();
 
-            if (filtro !== 'personalizado')
-                document.getElementById('div-fechas').style.display = 'none';
+            fetch('@Url.Action("ObtenerDatosReporte", "Psychology")?filtro=' + filtro)
+                .then(r => r.json())
+                .then(data => mostrarResultados(data));
+        }
 
-            var url = '@Url.Action("ObtenerDatosReporte", "Psychology")?filtro=' + filtro;
+        function buscarPersonalizado() {
+            fechaInicioActual = document.getElementById('fechaInicio').value;
+            fechaFinActual = document.getElementById('fechaFin').value;
 
-            if (filtro === 'personalizado') {
-                fechaInicioActual = document.getElementById('fechaInicio').value;
-                fechaFinActual = document.getElementById('fechaFin').value;
-                if (!fechaInicioActual || !fechaFinActual) {
-                    alert('Selecciona las fechas de inicio y fin.');
-                    return;
-                }
-                url += '&fechaInicio=' + fechaInicioActual + '&fechaFin=' + fechaFinActual;
+            if (!fechaInicioActual || !fechaFinActual) {
+                alert('Selecciona las fechas de inicio y fin.');
+                return;
             }
 
-            fetch(url)
+            filtroActual = 'personalizado';
+
+            fetch('@Url.Action("ObtenerDatosReporte", "Psychology")?filtro=personalizado&fechaInicio=' + fechaInicioActual + '&fechaFin=' + fechaFinActual)
                 .then(r => r.json())
-                .then(data => {
-                    document.getElementById('div-inicial').style.display = 'none';
-                    document.getElementById('txt-total').textContent = data.total;
+                .then(data => mostrarResultados(data));
+        }
 
-                    var divAsistencia = document.getElementById('div-asistencia');
-                    divAsistencia.innerHTML = '';
-                    data.porAsistencia.forEach(function (e) {
-                        var clase = e.asistencia === 'Asistió' ? 'asistencia-asistio' :
-                                    e.asistencia === 'No asistió' ? 'asistencia-no' :
-                                    e.asistencia === 'Justificado' ? 'asistencia-justificado' : 'bg-secondary';
-                        divAsistencia.innerHTML += `<span class="badge ${clase} d-inline-block px-3 py-2 fs-6">
-                            ${e.asistencia}: ${e.cantidad}
-                        </span>`;
-                    });
+        function mostrarResultados(data) {
+            document.getElementById('div-inicial').style.display = 'none';
+            document.getElementById('txt-total').textContent = data.total;
 
-                    var tbody = document.getElementById('tbody-reporte');
-                    tbody.innerHTML = '';
-                    data.lista.forEach(function (item) {
-                        var clase = item.asistencia === 'Asistió' ? 'asistencia-asistio' :
-                                    item.asistencia === 'No asistió' ? 'asistencia-no' :
-                                    item.asistencia === 'Justificado' ? 'asistencia-justificado' : 'bg-secondary';
-                        tbody.innerHTML += `<tr>
-                            <td><strong>${item.folio}</strong></td>
-                            <td>${item.matricula}</td>
-                            <td>${item.nombreCompleto}</td>
-                            <td><span class="badge ${clase}">${item.asistencia}</span></td>
-                            <td>${new Date(item.fecha).toLocaleDateString('es-MX')}</td>
-                        </tr>`;
-                    });
+            var divAsistencia = document.getElementById('div-asistencia');
+            divAsistencia.innerHTML = '';
+            data.porAsistencia.forEach(function (e) {
+                var clase = e.asistencia === 'Asistió' ? 'asistencia-asistio' :
+                            e.asistencia === 'No asistió' ? 'asistencia-no' :
+                            e.asistencia === 'Justificado' ? 'asistencia-justificado' : 'bg-secondary';
 
-                    document.getElementById('div-resumen').style.display = data.total > 0 ? 'block' : 'none';
-                    document.getElementById('div-vacio').style.display = data.total === 0 ? 'block' : 'none';
-                });
+                divAsistencia.innerHTML += `<span class="badge ${clase} d-inline-block px-3 py-2 fs-6">
+                    ${e.asistencia}: ${e.cantidad}
+                </span>`;
+            });
+
+            var tbody = document.getElementById('tbody-reporte');
+            tbody.innerHTML = '';
+            data.lista.forEach(function (item) {
+                var clase = item.asistencia === 'Asistió' ? 'asistencia-asistio' :
+                            item.asistencia === 'No asistió' ? 'asistencia-no' :
+                            item.asistencia === 'Justificado' ? 'asistencia-justificado' : 'bg-secondary';
+
+                tbody.innerHTML += `<tr>
+                    <td><strong>${item.folio}</strong></td>
+                    <td>${item.matricula}</td>
+                    <td>${item.nombreCompleto}</td>
+                    <td><span class="badge ${clase}">${item.asistencia}</span></td>
+                    <td>${new Date(item.fecha).toLocaleDateString('es-MX')}</td>
+                </tr>`;
+            });
+
+            document.getElementById('div-resumen').style.display = data.total > 0 ? 'block' : 'none';
+            document.getElementById('div-vacio').style.display = data.total === 0 ? 'block' : 'none';
         }
 
         function descargarCSV() {
             var url = '@Url.Action("DescargarCSV", "Psychology")?filtro=' + filtroActual;
-            if (filtroActual === 'personalizado')
+            if (filtroActual === 'personalizado') {
                 url += '&fechaInicio=' + fechaInicioActual + '&fechaFin=' + fechaFinActual;
+            }
             window.location.href = url;
         }
 
         function descargarPDF() {
             var url = '@Url.Action("DescargarPDF", "Psychology")?filtro=' + filtroActual;
-            if (filtroActual === 'personalizado')
+            if (filtroActual === 'personalizado') {
                 url += '&fechaInicio=' + fechaInicioActual + '&fechaFin=' + fechaFinActual;
+            }
             window.location.href = url;
         }
+
+        document.addEventListener("DOMContentLoaded", function () {
+            ocultarFechas();
+            document.getElementById('div-resumen').style.display = 'none';
+            document.getElementById('div-vacio').style.display = 'none';
+            document.getElementById('div-inicial').style.display = 'block';
+        });
     </script>
 }

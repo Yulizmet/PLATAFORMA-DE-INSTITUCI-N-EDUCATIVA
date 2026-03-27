@@ -2,7 +2,15 @@
 @using Microsoft.EntityFrameworkCore
 @using Microsoft.Extensions.DependencyInjection
 
-<h3>Alumnos Asignados</h3>
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <a href="/SocialService/Teacher/Dashboard" class="btn btn-secondary btn-responsive-sm">
+        <i class="bi bi-arrow-left"></i> Regresar al Dashboard
+    </a>
+    <h3 class="mb-0 flex-grow-1 text-center">Alumnos Asignados</h3>
+    <a href="/SocialService/Teacher/AgregarAlumnos" class="btn btn-success btn-responsive-sm">
+        <i class="bi bi-plus-circle"></i> Agregar Alumnos
+    </a>
+</div>
 
 @if (TempData["Success"] != null)
 {
@@ -19,15 +27,6 @@
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
 }
-
-<div class="mb-3">
-    <a href="/SocialService/Teacher/AgregarAlumnos" class="btn btn-success">
-        <i class="bi bi-plus-circle"></i> Agregar Alumnos
-    </a>
-    <a href="/SocialService/Teacher/Dashboard" class="btn btn-secondary">
-        <i class="bi bi-arrow-left"></i> Regresar al Dashboard
-    </a>
-</div>
 
 <!-- Filtros de búsqueda -->
 <div class="card mb-3">
@@ -106,6 +105,7 @@
             <input type="hidden" name="sortBy" value="@ViewBag.CurrentSort" />
             <input type="hidden" name="sortOrder" value="@ViewBag.CurrentOrder" />
         </form>
+        <script src="~/js/SocialServiceAutoSearch.js"></script>
 
         @if (ViewBag.TotalRecords != null)
         {

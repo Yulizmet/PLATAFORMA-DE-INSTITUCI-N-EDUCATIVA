@@ -25,6 +25,7 @@ namespace SchoolManager.Pages.Estadisticas
         public List<ProcedureStatisticsVM> ProcedureStats { get; private set; } = new();
         public List<PsychologyLogStatisticsVM> PsychologyLogs { get; private set; } = new();
         public List<MedicalLogStatisticsVM> MedicalLogs { get; private set; } = new();
+        public List<TutorshipStatisticsVM> TutorshipStats { get; private set; } = new();
 
         public string JsonStudents { get; private set; } = "[]";
         public string JsonEmployees { get; private set; } = "[]";
@@ -32,6 +33,7 @@ namespace SchoolManager.Pages.Estadisticas
         public string JsonProcedureStats { get; private set; } = "[]";
         public string JsonPsychologyLogs { get; private set; } = "[]";
         public string JsonMedicalLogs { get; private set; } = "[]";
+        public string JsonTutorshipStats { get; private set; } = "[]";
 
         // Temporal: captura diagnóstico de la carga de Bitácoras
         public string BitacorasDebugInfo { get; private set; } = string.Empty;
@@ -57,6 +59,7 @@ namespace SchoolManager.Pages.Estadisticas
             LoadProcedureStatistics();
             LoadPsychologyLogs();
             LoadMedicalLogs();
+            LoadTutorshipStatistics();
 
             JsonStudents = JsonSerializer.Serialize(Students);
             JsonEmployees = JsonSerializer.Serialize(Employees);
@@ -64,6 +67,7 @@ namespace SchoolManager.Pages.Estadisticas
             JsonProcedureStats = JsonSerializer.Serialize(ProcedureStats);
             JsonPsychologyLogs = JsonSerializer.Serialize(PsychologyLogs);
             JsonMedicalLogs = JsonSerializer.Serialize(MedicalLogs);
+            JsonTutorshipStats = JsonSerializer.Serialize(TutorshipStats);
 
             return Page();
         }
@@ -83,6 +87,8 @@ namespace SchoolManager.Pages.Estadisticas
                            from finalGrade in gradeJoin.DefaultIfEmpty()
                            join subject in _context.grades_Subjects on (finalGrade != null ? finalGrade.SubjectId : -1) equals subject.SubjectId into subjectJoin
                            from subject in subjectJoin.DefaultIfEmpty()
+                           join gradeGroup in _context.grades_GradeGroups on (finalGrade != null ? finalGrade.GroupId : -1) equals gradeGroup.GroupId into gradeGroupJoin
+                           from gradeGroup in gradeGroupJoin.DefaultIfEmpty()
                            where role != null && role.Name == "Student"
                            select new
                            {
@@ -92,6 +98,7 @@ namespace SchoolManager.Pages.Estadisticas
                                Genero = (string?)person.Gender,
                                Curso = (string?)subject.Name,
                                Semestre = finalGrade != null ? finalGrade.GroupId : 0,
+                               GrupoNombre = (string?)gradeGroup.Name,
                                Nota = finalGrade != null ? (double)finalGrade.Value : 0.0,
                                FechaInscripcion = user.CreatedDate,
                                HasGrade = finalGrade != null,
@@ -114,6 +121,7 @@ namespace SchoolManager.Pages.Estadisticas
                             Curso = string.IsNullOrWhiteSpace(s.Curso) ? "Sin asignar" : s.Curso,
                             Semestre = s.Semestre,
                             Nota = s.Nota,
+                            Grupo = string.IsNullOrWhiteSpace(s.GrupoNombre) ? "Sin grupo" : s.GrupoNombre,
                             FechaInscripcion = s.FechaInscripcion,
                             Estado = !s.HasGrade ? "Inscrito"
                                              : s.Passed ? "Aprobado"
@@ -592,6 +600,137 @@ namespace SchoolManager.Pages.Estadisticas
             {
                 System.Diagnostics.Debug.WriteLine($"Error cargando logs de enfermería: {ex.Message}");
                 MedicalLogs = new List<MedicalLogStatisticsVM>();
+            }
+        }
+
+        private void LoadTutorshipStatistics()
+        {
+            try
+            {
+                // Step 1 — collect all distinct student IDs across interviews and monitorings
+                var interviewStudentIds = _context.TutorshipInterviews
+                    .Select(i => i.StudentId)
+                    .Distinct().ToList();
+
+                var monitoringStudentIds = _context.TutorshipMonitorings
+                    .Select(m => m.StudentId)
+                    .Distinct().ToList();
+
+                var allStudentIds = interviewStudentIds
+                    .Union(monitoringStudentIds)
+                    .Distinct().ToList();
+
+                if (!allStudentIds.Any())
+                {
+                    TutorshipStats = new List<TutorshipStatisticsVM>();
+                    return;
+                }
+
+                // Step 2 — batch-load person info
+                var personDict = (from u in _context.Users
+                                  join p in _context.Persons on u.PersonId equals p.PersonId
+                                  where allStudentIds.Contains(u.UserId)
+                                  select new { u.UserId, p.FirstName, p.LastNamePaternal })
+                                 .ToDictionary(x => x.UserId);
+
+                // Step 3 — aggregate interviews per student (most recent status)
+                var interviews = _context.TutorshipInterviews
+                    .Where(i => allStudentIds.Contains(i.StudentId))
+                    .Select(i => new { i.StudentId, i.Status, i.DateCompleted })
+                    .ToList();
+
+                var interviewByStudent = interviews
+                    .GroupBy(i => i.StudentId)
+                    .ToDictionary(g => g.Key, g => new
+                    {
+                        Count = g.Count(),
+                        LatestStatus = g.OrderByDescending(i => i.DateCompleted).First().Status,
+                        LatestDate = g.Max(i => (DateTime?)i.DateCompleted)
+                    });
+
+                // Step 4 — aggregate monitorings per student (most recent performance level)
+                var monitorings = _context.TutorshipMonitorings
+                    .Where(m => allStudentIds.Contains(m.StudentId))
+                    .Select(m => new { m.StudentId, m.TeacherId, m.PerformanceLevel, m.Date })
+                    .ToList();
+
+                var monitoringByStudent = monitorings
+                    .GroupBy(m => m.StudentId)
+                    .ToDictionary(g => g.Key, g => new
+                    {
+                        Count = g.Count(),
+                        LatestPerformance = g.OrderByDescending(m => m.Date).First().PerformanceLevel,
+                        LatestTeacherId = g.OrderByDescending(m => m.Date).First().TeacherId,
+                        LatestDate = g.Max(m => (DateTime?)m.Date)
+                    });
+
+                // Step 5 — count tutorship sessions per student
+                var sessions = _context.Tutorships
+                    .Where(t => allStudentIds.Contains(t.StudentId))
+                    .GroupBy(t => t.StudentId)
+                    .Select(g => new { StudentId = g.Key, Count = g.Count() })
+                    .ToDictionary(x => x.StudentId, x => x.Count);
+
+                // Step 6 — batch-load teacher names from monitorings
+                var teacherIds = monitorings
+                    .Select(m => m.TeacherId)
+                    .Distinct().ToList();
+
+                var teacherDict = (from u in _context.Users
+                                   join p in _context.Persons on u.PersonId equals p.PersonId
+                                   where teacherIds.Contains(u.UserId)
+                                   select new { u.UserId, p.FirstName, p.LastNamePaternal })
+                                  .ToDictionary(x => x.UserId);
+
+                // Step 7 — combine in memory
+                TutorshipStats = allStudentIds.Select(studentId =>
+                {
+                    var studentName = "Sin nombre";
+                    if (personDict.TryGetValue(studentId, out var sp))
+                    {
+                        var full = $"{sp.FirstName ?? ""} {sp.LastNamePaternal ?? ""}".Trim();
+                        if (!string.IsNullOrWhiteSpace(full)) studentName = full;
+                    }
+
+                    var iv = interviewByStudent.TryGetValue(studentId, out var ivData) ? ivData : null;
+                    var mon = monitoringByStudent.TryGetValue(studentId, out var monData) ? monData : null;
+
+                    var teacherName = "Sin asignar";
+                    if (mon != null && teacherDict.TryGetValue(mon.LatestTeacherId, out var tp))
+                    {
+                        var full = $"{tp.FirstName ?? ""} {tp.LastNamePaternal ?? ""}".Trim();
+                        if (!string.IsNullOrWhiteSpace(full)) teacherName = full;
+                    }
+
+                    var interviewStatus = iv?.LatestStatus ?? "Sin entrevista";
+                    var performanceLevel = mon?.LatestPerformance ?? "Sin monitoreo";
+
+                    DateTime? lastDate = null;
+                    if (iv?.LatestDate != null && mon?.LatestDate != null)
+                        lastDate = iv.LatestDate > mon.LatestDate ? iv.LatestDate : mon.LatestDate;
+                    else
+                        lastDate = iv?.LatestDate ?? mon?.LatestDate;
+
+                    return new TutorshipStatisticsVM
+                    {
+                        StudentId = studentId,
+                        StudentName = studentName,
+                        TeacherName = teacherName,
+                        InterviewStatus = interviewStatus,
+                        PerformanceLevel = performanceLevel,
+                        TotalSessions = sessions.TryGetValue(studentId, out var sc) ? sc : 0,
+                        TotalInterviews = iv?.Count ?? 0,
+                        TotalMonitorings = mon?.Count ?? 0,
+                        LastDate = lastDate
+                    };
+                })
+                .OrderBy(t => t.StudentName)
+                .ToList();
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error cargando estadísticas de tutorías: {ex.Message}");
+                TutorshipStats = new List<TutorshipStatisticsVM>();
             }
         }
     }

@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SchoolManager.Areas.Grades.ViewModels.Enrollment;
 using SchoolManager.Areas.MainScreen.ViewModels;
@@ -8,6 +9,8 @@ using SchoolManager.Models;
 namespace SchoolManager.Areas.Grades.Controllers
 {
     [Area("Grades")]
+    [Authorize(Roles = "Administrator")]
+
     public class EnrollmentController : Controller
     {
         private readonly AppDbContext _context;

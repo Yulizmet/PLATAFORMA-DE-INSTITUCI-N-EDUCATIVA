@@ -10,12 +10,22 @@
     let isSearching = false;
 
     function init() {
+        // Buscar el input de búsqueda y su formulario asociado.
+        // Algunos archivos usan id="searchForm" y otros id="filterForm".
         const searchInput = document.getElementById('searchName');
-        const searchForm = document.getElementById('searchForm');
+        let searchForm = null;
         const searchingIndicator = document.getElementById('searchingIndicator');
 
+        if (searchInput) {
+            // Preferir el formulario más cercano al input
+            searchForm = searchInput.closest('form') || document.getElementById('searchForm') || document.getElementById('filterForm');
+        } else {
+            // Intentar encontrar por id si no existe el input con id searchName
+            searchForm = document.getElementById('searchForm') || document.getElementById('filterForm');
+        }
+
         if (!searchInput || !searchForm) {
-            console.warn('SocialServiceAutoSearch: Elementos de búsqueda no encontrados');
+            console.warn('SocialServiceAutoSearch: Elementos de búsqueda no encontrados (input#searchName y/o form)');
             return;
         }
         lastSearchValue = searchInput.value.trim();

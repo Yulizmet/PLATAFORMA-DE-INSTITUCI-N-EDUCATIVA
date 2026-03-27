@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SchoolManager.Data;
 using SchoolManager.Models;
@@ -6,6 +7,8 @@ using SchoolManager.Models;
 namespace SchoolManager.Areas.UserMng.Controllers
 {
     [Area("UserMng")]
+    [AllowAnonymous]
+
     public class DevToolsController : Controller
     {
         private readonly AppDbContext _context;
