@@ -15,15 +15,103 @@
 
 <div class="card">
     <div class="card-body">
+        <form method="get" class="mb-4" id="filterForm">
+            <input type="hidden" name="teacherId" value="@teacherId" />
+            <input type="hidden" name="sortBy" value="@ViewBag.CurrentSort" />
+            <input type="hidden" name="sortOrder" value="@ViewBag.CurrentOrder" />
+            <input type="hidden" name="pageSize" value="@ViewBag.PageSize" />
+
+            <div class="row g-3 align-items-end">
+                <div class="col-md-4">
+                    <label class="form-label">Buscar por nombre</label>
+                    <input type="text" class="form-control" id="searchName" name="searchName" value="@ViewBag.SearchName" placeholder="Escribe para buscar..." />
+                </div>
+
+                <div class="col-md-3">
+                    <label class="form-label">Semestre</label>
+                    <select class="form-select" name="semesterFilter" onchange="this.form.submit()">
+                        <option value="">Todos los semestres</option>
+                        @if (ViewBag.Semesters != null)
+                        {
+                            foreach (var sem in (List<string>)ViewBag.Semesters)
+                            {
+                                <option value="@sem" selected="@(ViewBag.SemesterFilter == sem)">@sem</option>
+                            }
+                        }
+                    </select>
+                </div>
+
+                <div class="col-md-3">
+                    <label class="form-label">Grupo</label>
+                    <select class="form-select" name="groupFilter" onchange="this.form.submit()">
+                        <option value="">Todos los grupos</option>
+                        @if (ViewBag.Groups != null)
+                        {
+                            foreach (var g in (List<string>)ViewBag.Groups)
+                            {
+                                <option value="@g" selected="@(ViewBag.GroupFilter == g)">@g</option>
+                            }
+                        }
+                    </select>
+                </div>
+
+                <div class="col-md-2 d-flex gap-2">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="bi bi-search"></i> Buscar
+                    </button>
+                    <a href="@Url.Action("AgregarAlumnosAsesor", new { teacherId = teacherId })" class="btn btn-secondary">
+                        <i class="bi bi-x-circle"></i> Limpiar
+                    </a>
+                </div>
+            </div>
+        </form>
+        <script src="~/js/SocialServiceAutoSearch.js"></script>
+
         @if (Model != null && Model.Any())
         {
             <div class="table-responsive">
-                <table class="table table-hover">
+                <table class="table table-hover ss-table-cards">
                     <thead>
                         <tr>
-                            <th>Nombre</th>
-                            <th class="text-center">Semestre</th>
-                            <th class="text-center">Grupo</th>
+                            <th>
+                                <a href="@Url.Action("AgregarAlumnosAsesor", new { teacherId = teacherId, sortBy = "name", sortOrder = ViewBag.CurrentSort == "name" ? ViewBag.NextOrder : "asc", searchName = ViewBag.SearchName, semesterFilter = ViewBag.SemesterFilter, groupFilter = ViewBag.GroupFilter, page = 1, pageSize = ViewBag.PageSize })" class="text-decoration-none text-dark">
+                                    NOMBRE
+                                    @if (ViewBag.CurrentSort == "name")
+                                    {
+                                        <i class="bi bi-@(ViewBag.CurrentOrder == "asc" ? "sort-alpha-down" : "sort-alpha-up")"></i>
+                                    }
+                                    else
+                                    {
+                                        <i class="bi bi-filter text-muted"></i>
+                                    }
+                                </a>
+                            </th>
+                            <th class="text-center">
+                                <a href="@Url.Action("AgregarAlumnosAsesor", new { teacherId = teacherId, sortBy = "semester", sortOrder = ViewBag.CurrentSort == "semester" ? ViewBag.NextOrder : "asc", searchName = ViewBag.SearchName, semesterFilter = ViewBag.SemesterFilter, groupFilter = ViewBag.GroupFilter, page = 1, pageSize = ViewBag.PageSize })" class="text-decoration-none text-dark">
+                                    SEMESTRE
+                                    @if (ViewBag.CurrentSort == "semester")
+                                    {
+                                        <i class="bi bi-@(ViewBag.CurrentOrder == "asc" ? "sort-down" : "sort-up")"></i>
+                                    }
+                                    else
+                                    {
+                                        <i class="bi bi-filter text-muted"></i>
+                                    }
+                                </a>
+                            </th>
+                            <th class="text-center">
+                                <a href="@Url.Action("AgregarAlumnosAsesor", new { teacherId = teacherId, sortBy = "group", sortOrder = ViewBag.CurrentSort == "group" ? ViewBag.NextOrder : "asc", searchName = ViewBag.SearchName, semesterFilter = ViewBag.SemesterFilter, groupFilter = ViewBag.GroupFilter, page = 1, pageSize = ViewBag.PageSize })" class="text-decoration-none text-dark">
+                                    GRUPO
+                                    @if (ViewBag.CurrentSort == "group")
+                                    {
+                                        <i class="bi bi-@(ViewBag.CurrentOrder == "asc" ? "sort-down" : "sort-up")"></i>
+                                    }
+                                    else
+                                    {
+                                        <i class="bi bi-filter text-muted"></i>
+                                    }
+                                </a>
+                            </th>
                             <th class="text-center">Acción</th>
                         </tr>
                     </thead>

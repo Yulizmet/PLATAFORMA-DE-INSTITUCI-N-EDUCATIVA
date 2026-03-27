@@ -326,6 +326,10 @@ namespace SchoolManager.Areas.SocialService.Controllers
                     ? viewModel.OrderBy(s => s.SemesterName ?? "").ToList()
                     : viewModel.OrderByDescending(s => s.SemesterName ?? "").ToList(),
 
+                "group" => sortOrder == "asc"
+                    ? viewModel.OrderBy(s => s.GroupName ?? "").ToList()
+                    : viewModel.OrderByDescending(s => s.GroupName ?? "").ToList(),
+
                 _ => viewModel.OrderBy(s => s.FullName).ToList()
             };
 

@@ -108,12 +108,9 @@
                 </div>
 
                 <div class="col-md-1">
-                    @if (!string.IsNullOrWhiteSpace(ViewBag.SearchName as string) || !string.IsNullOrWhiteSpace(ViewBag.SemesterFilter as string) || !string.IsNullOrWhiteSpace(ViewBag.GroupFilter as string))
-                    {
-                        <a href="/SocialService/Teacher/AsignarHoras" class="btn btn-secondary w-100">
-                            <i class="bi bi-x-circle"></i> Limpiar
-                        </a>
-                    }
+                    <a href="/SocialService/Teacher/AsignarHoras" class="btn btn-secondary w-100">
+                        <i class="bi bi-x-circle"></i> Limpiar
+                    </a>
                 </div>
             </div>
             <input type="hidden" name="page" value="1" />
@@ -126,6 +123,7 @@
                     Mostrando @Model.Count de @ViewBag.TotalRecords registro(s)
                 </small>
             </div>
+    <script src="~/js/SocialServiceAutoSearch.js"></script>
         }
     </div>
 </div>
