@@ -766,3 +766,2068 @@ p {
 .foro-post {
     margin-bottom: 40px;
 }
+
+/* ==========================================================
+   GRADE CAPTURE
+   Solo aplica a MyClasses, SelectUnit y Capture
+   ========================================================== */
+
+.grades-capture-page {
+    --gc-primary: #8C1B1B;
+    --gc-primary-light: #D42D2D;
+    --gc-dark: #620900;
+    --gc-accent: #B1A596;
+    --gc-bg: #f4f4f4;
+    --gc-card: #ffffff;
+    --gc-text: #1f2937;
+    --gc-muted: #6b7280;
+    --gc-border: rgba(177, 165, 150, 0.45);
+    --gc-shadow: 0 10px 28px rgba(0,0,0,0.06);
+    --gc-shadow-hover: 0 16px 34px rgba(0,0,0,0.10);
+}
+
+    .grades-capture-page,
+    .grades-capture-page p,
+    .grades-capture-page span,
+    .grades-capture-page a,
+    .grades-capture-page label,
+    .grades-capture-page input,
+    .grades-capture-page select,
+    .grades-capture-page textarea,
+    .grades-capture-page table,
+    .grades-capture-page .table,
+    .grades-capture-page .btn,
+    .grades-capture-page .badge,
+    .grades-capture-page .text-muted {
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+    }
+
+        .grades-capture-page h1,
+        .grades-capture-page h2,
+        .grades-capture-page h3,
+        .grades-capture-page h4,
+        .grades-capture-page h5,
+        .grades-capture-page h6,
+        .grades-capture-page .users-title {
+            font-family: 'Merriweather', serif !important;
+        }
+
+.grades-capture-page {
+    background: transparent;
+}
+
+    /* títulos */
+    .grades-capture-page .users-title {
+        color: var(--gc-text);
+        font-size: clamp(2rem, 3vw, 2.5rem);
+        margin-bottom: 0;
+    }
+
+    .grades-capture-page .sistema-card {
+        background: var(--gc-card);
+        border-radius: 22px;
+        border: 1px solid rgba(0,0,0,0.04);
+        box-shadow: var(--gc-shadow);
+        padding: 2rem;
+        transition: transform .25s ease, box-shadow .25s ease;
+    }
+
+        .grades-capture-page .sistema-card:hover {
+            box-shadow: var(--gc-shadow-hover);
+        }
+
+    /* iconos de sistema */
+    .grades-capture-page .sistema-icon {
+        width: 72px;
+        height: 72px;
+        border-radius: 18px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(177,165,150,0.18);
+        color: var(--gc-primary);
+        font-size: 1.8rem;
+    }
+
+    /* filtros */
+    .grades-capture-page .form-select,
+    .grades-capture-page .form-control {
+        border-radius: 14px;
+        border: 1px solid var(--gc-border);
+        min-height: 46px;
+        box-shadow: none;
+        color: var(--gc-text);
+    }
+
+        .grades-capture-page .form-select:focus,
+        .grades-capture-page .form-control:focus {
+            border-color: var(--gc-primary);
+            box-shadow: 0 0 0 .2rem rgba(140, 27, 27, 0.12);
+        }
+
+    .grades-capture-page .text-muted {
+        color: var(--gc-muted) !important;
+    }
+
+    /* botones */
+    .grades-capture-page .btn {
+        border-radius: 14px;
+        font-weight: 700;
+        transition: all .2s ease;
+    }
+
+        .grades-capture-page .btn:hover {
+            transform: translateY(-1px);
+        }
+
+    .grades-capture-page .btn-outline-secondary {
+        border-color: var(--gc-border);
+        color: var(--gc-text);
+    }
+
+        .grades-capture-page .btn-outline-secondary:hover {
+            background: rgba(177,165,150,0.18);
+            border-color: var(--gc-accent);
+            color: var(--gc-dark);
+        }
+
+    .grades-capture-page .btn-outline-primary {
+        border-color: var(--gc-primary);
+        color: var(--gc-primary);
+    }
+
+        .grades-capture-page .btn-outline-primary:hover {
+            background: var(--gc-primary);
+            color: #fff;
+        }
+
+    .grades-capture-page .btn-secondary {
+        background: #6c757d;
+        border-color: #6c757d;
+    }
+
+    .grades-capture-page .btn-calificaciones {
+        background: linear-gradient(135deg, var(--gc-primary), var(--gc-primary-light));
+        color: #fff;
+        border: none;
+    }
+
+        .grades-capture-page .btn-calificaciones:hover {
+            background: linear-gradient(135deg, var(--gc-dark), var(--gc-primary));
+            color: #fff;
+        }
+
+    .grades-capture-page .btn-warning {
+        background: #ffde59;
+        border-color: #ffde59;
+        color: #000;
+    }
+
+        .grades-capture-page .btn-warning:hover {
+            background: #f4d33e;
+            border-color: #f4d33e;
+            color: #000;
+        }
+
+    .grades-capture-page .btn-outline-danger {
+        border-color: #ff3131;
+        color: #ff3131;
+    }
+
+        .grades-capture-page .btn-outline-danger:hover {
+            background: #ff3131;
+            color: #fff;
+        }
+
+    /* badges */
+    .grades-capture-page .badge.bg-success {
+        background-color: #7ed957 !important;
+        color: #000 !important;
+    }
+
+    .grades-capture-page .badge.bg-secondary {
+        background-color: var(--gc-accent) !important;
+        color: #000 !important;
+    }
+
+    .grades-capture-page .badge.bg-info {
+        background-color: #38b6ff !important;
+        color: #fff !important;
+    }
+
+    /* tablas */
+    .grades-capture-page .table-responsive {
+        border-radius: 18px;
+        overflow: hidden;
+        background: #fff;
+    }
+
+    .grades-capture-page .table {
+        margin-bottom: 0;
+    }
+
+        .grades-capture-page .table thead,
+        .grades-capture-page .table-light {
+            background: var(--gc-dark) !important;
+            color: #fff !important;
+        }
+
+            .grades-capture-page .table thead th {
+                background: var(--gc-dark) !important;
+                color: #fff !important;
+                border-bottom: none;
+                font-weight: 700;
+                letter-spacing: .2px;
+                padding: 1rem .9rem;
+            }
+
+        .grades-capture-page .table tbody td {
+            padding: .95rem .9rem;
+            vertical-align: middle;
+            color: var(--gc-text);
+        }
+
+    .grades-capture-page .table-hover tbody tr:hover {
+        background-color: rgba(177,165,150,.10);
+    }
+
+    .grades-capture-page .grade-input {
+        max-width: 110px;
+        border-radius: 12px;
+        text-align: center;
+        font-weight: 600;
+    }
+
+
+
+
+
+
+    .grades-capture-page .list-group {
+        gap: 0;
+    }
+
+    .grades-capture-page .list-group-item {
+        border-radius: 16px !important;
+        border: 1px solid var(--gc-border) !important;
+        margin-bottom: 12px;
+        padding: 1rem 1.1rem !important;
+        transition: all .2s ease;
+        background: #fff;
+    }
+
+        .grades-capture-page .list-group-item:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--gc-shadow);
+            border-color: rgba(140,27,27,.28) !important;
+        }
+
+        .grades-capture-page .list-group-item h6 {
+            color: var(--gc-text);
+            font-family: 'Merriweather', serif !important;
+            margin-bottom: .45rem;
+        }
+
+    /* alerts */
+    .grades-capture-page .alert {
+        border: none;
+        border-radius: 16px;
+        box-shadow: 0 6px 16px rgba(0,0,0,0.05);
+    }
+
+    .grades-capture-page .alert-success {
+        background: #edf9e8;
+        color: #204b19;
+        border-left: 4px solid #7ed957;
+    }
+
+    .grades-capture-page .alert-danger {
+        background: #ffe9e9;
+        color: #7a1f1f;
+        border-left: 4px solid #ff3131;
+    }
+
+    /* modal */
+    .grades-capture-page .modal-content {
+        border-radius: 22px !important;
+        border: none;
+        overflow: hidden;
+    }
+
+    .grades-capture-page .modal-header {
+        background: linear-gradient(135deg, var(--gc-primary), var(--gc-primary-light)) !important;
+        color: #fff !important;
+        border-bottom: none;
+    }
+
+    .grades-capture-page .modal-title {
+        color: #fff;
+    }
+
+    /* estados vacíos */
+    .grades-capture-page #noResults,
+    .grades-capture-page .text-center.py-5 {
+        background: transparent;
+    }
+
+/* responsive */
+@media (max-width: 991.98px) {
+    .grades-capture-page .sistema-card {
+        padding: 1.5rem;
+    }
+}
+
+@media (max-width: 767.98px) {
+    .grades-capture-page .users-title {
+        font-size: 1.7rem;
+    }
+
+    .grades-capture-page .d-flex.justify-content-between,
+    .grades-capture-page .d-flex.justify-content-between.align-items-start,
+    .grades-capture-page .d-flex.justify-content-between.align-items-center {
+        flex-direction: column;
+        align-items: stretch !important;
+        gap: 1rem;
+    }
+
+    .grades-capture-page .d-flex.align-items-center,
+    .grades-capture-page .d-flex.gap-2.justify-content-end {
+        flex-wrap: wrap;
+        width: 100%;
+    }
+
+    .grades-capture-page .btn,
+    .grades-capture-page .btn-calificaciones,
+    .grades-capture-page .btn-secondary,
+    .grades-capture-page .btn-outline-primary {
+        width: 100%;
+        text-align: center;
+    }
+
+    .grades-capture-page .table thead th,
+    .grades-capture-page .table tbody td {
+        padding: .75rem .65rem;
+        font-size: .92rem;
+    }
+
+    .grades-capture-page .grade-input {
+        max-width: 100%;
+    }
+}
+
+
+/* ==========================================================
+   GRADE LEVELS
+   Solo aplica a Index, Create, Edit y Details
+   ========================================================== */
+
+.grades-levels-page {
+    --gl-primary: #8C1B1B;
+    --gl-primary-light: #D42D2D;
+    --gl-dark: #620900;
+    --gl-accent: #B1A596;
+    --gl-bg: #f4f4f4;
+    --gl-card: #ffffff;
+    --gl-text: #1f2937;
+    --gl-muted: #6b7280;
+    --gl-border: rgba(177, 165, 150, 0.45);
+    --gl-shadow: 0 10px 28px rgba(0, 0, 0, 0.06);
+    --gl-shadow-hover: 0 16px 34px rgba(0, 0, 0, 0.10);
+}
+
+    .grades-levels-page,
+    .grades-levels-page p,
+    .grades-levels-page span,
+    .grades-levels-page a,
+    .grades-levels-page label,
+    .grades-levels-page input,
+    .grades-levels-page select,
+    .grades-levels-page textarea,
+    .grades-levels-page table,
+    .grades-levels-page .table,
+    .grades-levels-page .btn,
+    .grades-levels-page .badge,
+    .grades-levels-page .text-muted,
+    .grades-levels-page small {
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+    }
+
+        .grades-levels-page h1,
+        .grades-levels-page h2,
+        .grades-levels-page h3,
+        .grades-levels-page h4,
+        .grades-levels-page h5,
+        .grades-levels-page h6,
+        .grades-levels-page .users-title {
+            font-family: 'Merriweather', serif !important;
+        }
+
+        /* cards base */
+        .grades-levels-page .card,
+        .grades-levels-page .sistema-card {
+            border-radius: 22px !important;
+            border: 1px solid rgba(0,0,0,0.04);
+            box-shadow: var(--gl-shadow);
+            overflow: hidden;
+            background: var(--gl-card);
+        }
+
+        .grades-levels-page .card-header {
+            background: #ffffff !important;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+            padding: 1rem 1.25rem;
+        }
+
+            .grades-levels-page .card-header h5,
+            .grades-levels-page .card-header h6 {
+                color: var(--gl-text);
+                margin-bottom: 0;
+            }
+
+        .grades-levels-page .card-body {
+            padding: 1.5rem;
+        }
+
+        .grades-levels-page .card-footer {
+            background: #ffffff !important;
+        }
+
+        /* títulos de index */
+        .grades-levels-page .users-title {
+            color: var(--gl-text);
+            font-size: clamp(2rem, 3vw, 2.5rem);
+        }
+
+        .grades-levels-page .sistema-card {
+            padding: 2rem;
+            transition: transform .25s ease, box-shadow .25s ease;
+        }
+
+            .grades-levels-page .sistema-card:hover {
+                box-shadow: var(--gl-shadow-hover);
+            }
+
+        .grades-levels-page .sistema-icon {
+            width: 72px;
+            height: 72px;
+            border-radius: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(177,165,150,0.18);
+            color: var(--gl-primary);
+            font-size: 1.8rem;
+        }
+
+        /* bordes de card de index */
+        .grades-levels-page .border-calificaciones {
+            border-top: 6px solid var(--gl-primary) !important;
+        }
+
+        .grades-levels-page .border-secondary {
+            border-top: 6px solid var(--gl-accent) !important;
+        }
+
+        /* formularios */
+        .grades-levels-page .form-control,
+        .grades-levels-page .form-select {
+            border-radius: 14px;
+            border: 1px solid var(--gl-border);
+            min-height: 46px;
+            box-shadow: none;
+        }
+
+            .grades-levels-page .form-control:focus,
+            .grades-levels-page .form-select:focus {
+                border-color: var(--gl-primary);
+                box-shadow: 0 0 0 .2rem rgba(140, 27, 27, 0.12);
+            }
+
+        .grades-levels-page .form-check-input:checked {
+            background-color: var(--gl-primary);
+            border-color: var(--gl-primary);
+        }
+
+        /* botones */
+        .grades-levels-page .btn {
+            border-radius: 14px;
+            font-weight: 700;
+            transition: all .2s ease;
+        }
+
+            .grades-levels-page .btn:hover {
+                transform: translateY(-1px);
+            }
+
+        .grades-levels-page .btn-primary,
+        .grades-levels-page .btn-calificaciones {
+            background: linear-gradient(135deg, var(--gl-primary), var(--gl-primary-light));
+            border: none;
+            color: #fff;
+        }
+
+            .grades-levels-page .btn-primary:hover,
+            .grades-levels-page .btn-calificaciones:hover {
+                background: linear-gradient(135deg, var(--gl-dark), var(--gl-primary));
+                color: #fff;
+            }
+
+        .grades-levels-page .btn-secondary {
+            background: #6c757d;
+            border-color: #6c757d;
+            color: #fff;
+        }
+
+            .grades-levels-page .btn-secondary:hover {
+                background: #5c636a;
+                border-color: #5c636a;
+                color: #fff;
+            }
+
+        .grades-levels-page .btn-outline-primary {
+            border-color: var(--gl-primary);
+            color: var(--gl-primary);
+        }
+
+            .grades-levels-page .btn-outline-primary:hover {
+                background: var(--gl-primary);
+                color: #fff;
+            }
+
+        .grades-levels-page .btn-sm {
+            border-radius: 10px;
+        }
+
+        /* badges */
+        .grades-levels-page .badge.bg-success {
+            background-color: #7ed957 !important;
+            color: #000 !important;
+        }
+
+        .grades-levels-page .badge.bg-secondary {
+            background-color: var(--gl-accent) !important;
+            color: #000 !important;
+        }
+
+        /* tablas */
+        .grades-levels-page .table-responsive {
+            border-radius: 18px;
+            overflow: hidden;
+            background: #fff;
+        }
+
+        .grades-levels-page .table {
+            margin-bottom: 0;
+        }
+
+            .grades-levels-page .table thead th {
+                background: var(--gl-dark) !important;
+                color: #fff !important;
+                border-bottom: none;
+                font-weight: 700;
+                padding: 1rem .9rem;
+            }
+
+            .grades-levels-page .table tbody td {
+                padding: .95rem .9rem;
+                vertical-align: middle;
+                color: var(--gl-text);
+            }
+
+        .grades-levels-page .table-hover tbody tr:hover {
+            background-color: rgba(177,165,150,.10);
+        }
+
+        /* breadcrumb */
+        .grades-levels-page .breadcrumb {
+            background: transparent;
+            margin-bottom: 0;
+        }
+
+        .grades-levels-page .breadcrumb-item a {
+            color: var(--gl-primary);
+            font-weight: 600;
+        }
+
+        .grades-levels-page .breadcrumb-item.active {
+            color: var(--gl-muted);
+        }
+
+        /* cajitas de stats details */
+        .grades-levels-page .border.rounded {
+            border-radius: 16px !important;
+            border-color: var(--gl-border) !important;
+            background: #fafafa;
+        }
+
+        /* listados internos details */
+        .grades-levels-page .col-md-6 .border.rounded.p-3 {
+            border-radius: 16px !important;
+            border-color: var(--gl-border) !important;
+            background: #fff;
+            transition: all .2s ease;
+        }
+
+            .grades-levels-page .col-md-6 .border.rounded.p-3:hover {
+                box-shadow: var(--gl-shadow);
+                transform: translateY(-2px);
+            }
+
+        /* alerts */
+        .grades-levels-page .alert {
+            border: none;
+            border-radius: 16px;
+            box-shadow: 0 6px 16px rgba(0,0,0,0.05);
+        }
+
+        /* modales */
+        .grades-levels-page .modal-content {
+            border-radius: 22px !important;
+            border: none;
+            overflow: hidden;
+        }
+
+        .grades-levels-page .modal-header {
+            background: linear-gradient(135deg, var(--gl-primary), var(--gl-primary-light)) !important;
+            color: #fff !important;
+            border-bottom: none;
+        }
+
+        .grades-levels-page .modal-title {
+            color: #fff;
+        }
+
+        /* enlaces de vacíos */
+        .grades-levels-page .text-center.py-5 a {
+            color: var(--gl-primary);
+            font-weight: 700;
+        }
+
+/* responsive */
+@media (max-width: 991.98px) {
+    .grades-levels-page .sistema-card,
+    .grades-levels-page .card-body {
+        padding: 1.25rem;
+    }
+}
+
+@media (max-width: 767.98px) {
+    .grades-levels-page .users-title {
+        font-size: 1.7rem;
+    }
+
+    .grades-levels-page .d-flex.justify-content-between,
+    .grades-levels-page .d-flex.justify-content-between.align-items-center,
+    .grades-levels-page .d-flex.justify-content-between.align-items-start {
+        flex-direction: column;
+        align-items: stretch !important;
+        gap: 1rem;
+    }
+
+    .grades-levels-page .d-flex.gap-2,
+    .grades-levels-page .card-footer .d-flex.gap-2 {
+        flex-wrap: wrap;
+    }
+
+    .grades-levels-page .btn,
+    .grades-levels-page .card-footer .btn,
+    .grades-levels-page .btn-calificaciones {
+        width: 100%;
+        text-align: center;
+    }
+
+    .grades-levels-page .table thead th,
+    .grades-levels-page .table tbody td {
+        padding: .75rem .65rem;
+        font-size: .92rem;
+    }
+}
+
+
+
+
+/* ==========================================================
+   GRADES EXTRAORDINARY GRADES
+   ========================================================== */
+
+.grades-extraordinary-page {
+    --ge-primary: #8C1B1B;
+    --ge-primary-light: #D42D2D;
+    --ge-dark: #620900;
+    --ge-accent: #B1A596;
+    --ge-card: #ffffff;
+    --ge-text: #1f2937;
+    --ge-muted: #6b7280;
+    --ge-border: rgba(177, 165, 150, 0.45);
+    --ge-shadow: 0 10px 28px rgba(0,0,0,0.06);
+    --ge-shadow-hover: 0 16px 34px rgba(0,0,0,0.10);
+}
+
+    .grades-extraordinary-page,
+    .grades-extraordinary-page p,
+    .grades-extraordinary-page span,
+    .grades-extraordinary-page a,
+    .grades-extraordinary-page label,
+    .grades-extraordinary-page input,
+    .grades-extraordinary-page select,
+    .grades-extraordinary-page textarea,
+    .grades-extraordinary-page table,
+    .grades-extraordinary-page .table,
+    .grades-extraordinary-page .btn,
+    .grades-extraordinary-page .badge,
+    .grades-extraordinary-page .text-muted,
+    .grades-extraordinary-page small {
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+    }
+
+        .grades-extraordinary-page h1,
+        .grades-extraordinary-page h2,
+        .grades-extraordinary-page h3,
+        .grades-extraordinary-page h4,
+        .grades-extraordinary-page h5,
+        .grades-extraordinary-page h6,
+        .grades-extraordinary-page .users-title {
+            font-family: 'Merriweather', serif !important;
+        }
+
+        .grades-extraordinary-page .users-title {
+            color: var(--ge-text);
+            font-size: clamp(2rem, 3vw, 2.5rem);
+        }
+
+        .grades-extraordinary-page .card {
+            border-radius: 22px !important;
+            border: 1px solid rgba(0,0,0,0.04);
+            box-shadow: var(--ge-shadow);
+            overflow: hidden;
+            background: var(--ge-card);
+        }
+
+        .grades-extraordinary-page .card-body {
+            padding: 1.5rem;
+        }
+
+        .grades-extraordinary-page .form-control,
+        .grades-extraordinary-page .form-select {
+            border-radius: 14px;
+            border: 1px solid var(--ge-border);
+            min-height: 46px;
+            box-shadow: none;
+        }
+
+            .grades-extraordinary-page .form-control:focus,
+            .grades-extraordinary-page .form-select:focus {
+                border-color: var(--ge-primary);
+                box-shadow: 0 0 0 .2rem rgba(140, 27, 27, 0.12);
+            }
+
+        .grades-extraordinary-page .form-label {
+            font-weight: 700;
+            color: var(--ge-text);
+        }
+
+        .grades-extraordinary-page .btn {
+            border-radius: 14px;
+            font-weight: 700;
+            transition: all .2s ease;
+        }
+
+            .grades-extraordinary-page .btn:hover {
+                transform: translateY(-1px);
+            }
+
+        .grades-extraordinary-page .btn-calificaciones,
+        .grades-extraordinary-page .btn-primary {
+            background: linear-gradient(135deg, var(--ge-primary), var(--ge-primary-light));
+            border: none;
+            color: #fff;
+        }
+
+            .grades-extraordinary-page .btn-calificaciones:hover,
+            .grades-extraordinary-page .btn-primary:hover {
+                background: linear-gradient(135deg, var(--ge-dark), var(--ge-primary));
+                color: #fff;
+            }
+
+        .grades-extraordinary-page .btn-secondary {
+            background: #6c757d;
+            border-color: #6c757d;
+            color: #fff;
+        }
+
+            .grades-extraordinary-page .btn-secondary:hover {
+                background: #5c636a;
+                border-color: #5c636a;
+                color: #fff;
+            }
+
+        .grades-extraordinary-page .btn-outline-primary {
+            border-color: var(--ge-primary);
+            color: var(--ge-primary);
+        }
+
+            .grades-extraordinary-page .btn-outline-primary:hover {
+                background: var(--ge-primary);
+                color: #fff;
+            }
+
+        .grades-extraordinary-page .btn-outline-secondary:hover {
+            background: rgba(177,165,150,0.18);
+            border-color: var(--ge-accent);
+            color: var(--ge-dark);
+        }
+
+        .grades-extraordinary-page .btn-outline-danger:hover {
+            background: #ff3131;
+            color: #fff;
+        }
+
+        .grades-extraordinary-page .table-responsive {
+            border-radius: 18px;
+            overflow: hidden;
+            background: #fff;
+        }
+
+        .grades-extraordinary-page .table thead th {
+            background: var(--ge-dark) !important;
+            color: #fff !important;
+            border-bottom: none;
+            font-weight: 700;
+            padding: 1rem .9rem;
+        }
+
+        .grades-extraordinary-page .table tbody td {
+            padding: .95rem .9rem;
+            vertical-align: middle;
+            color: var(--ge-text);
+        }
+
+        .grades-extraordinary-page .table-hover tbody tr:hover {
+            background-color: rgba(177,165,150,.10);
+        }
+
+        .grades-extraordinary-page .info-box {
+            background: #f8f8f8;
+            border: 1px solid var(--ge-border);
+            border-radius: 14px;
+            padding: 12px 14px;
+            color: var(--ge-text);
+            min-height: 46px;
+            display: flex;
+            align-items: center;
+        }
+
+        .grades-extraordinary-page .alert {
+            border: none;
+            border-radius: 16px;
+            box-shadow: 0 6px 16px rgba(0,0,0,0.05);
+        }
+
+@media (max-width: 767.98px) {
+    .grades-extraordinary-page .users-title {
+        font-size: 1.7rem;
+    }
+
+    .grades-extraordinary-page .d-flex.justify-content-between,
+    .grades-extraordinary-page .d-flex.justify-content-end {
+        flex-direction: column;
+        align-items: stretch !important;
+        gap: 1rem;
+    }
+
+    .grades-extraordinary-page .d-flex.gap-2 {
+        flex-wrap: wrap;
+    }
+
+    .grades-extraordinary-page .btn {
+        width: 100%;
+        text-align: center;
+    }
+
+    .grades-extraordinary-page .table thead th,
+    .grades-extraordinary-page .table tbody td {
+        padding: .75rem .65rem;
+        font-size: .92rem;
+    }
+}
+
+
+/* ==========================================================
+   GRADES SUBJECT UNIT
+   ========================================================== */
+
+.grades-subject-unit-page {
+    --gsu-primary: #8C1B1B;
+    --gsu-primary-light: #D42D2D;
+    --gsu-dark: #620900;
+    --gsu-accent: #B1A596;
+    --gsu-card: #ffffff;
+    --gsu-text: #1f2937;
+    --gsu-muted: #6b7280;
+    --gsu-border: rgba(177, 165, 150, 0.45);
+    --gsu-shadow: 0 10px 28px rgba(0,0,0,0.06);
+}
+
+    .grades-subject-unit-page,
+    .grades-subject-unit-page p,
+    .grades-subject-unit-page span,
+    .grades-subject-unit-page a,
+    .grades-subject-unit-page label,
+    .grades-subject-unit-page input,
+    .grades-subject-unit-page select,
+    .grades-subject-unit-page textarea,
+    .grades-subject-unit-page table,
+    .grades-subject-unit-page .table,
+    .grades-subject-unit-page .btn,
+    .grades-subject-unit-page .badge,
+    .grades-subject-unit-page .text-muted,
+    .grades-subject-unit-page small {
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+    }
+
+        .grades-subject-unit-page h1,
+        .grades-subject-unit-page h2,
+        .grades-subject-unit-page h3,
+        .grades-subject-unit-page h4,
+        .grades-subject-unit-page h5,
+        .grades-subject-unit-page h6,
+        .grades-subject-unit-page .users-title {
+            font-family: 'Merriweather', serif !important;
+        }
+
+        .grades-subject-unit-page .users-title {
+            color: var(--gsu-text);
+            font-size: clamp(2rem, 3vw, 2.5rem);
+        }
+
+        .grades-subject-unit-page .card {
+            border-radius: 22px !important;
+            border: 1px solid rgba(0,0,0,0.04);
+            box-shadow: var(--gsu-shadow);
+            overflow: hidden;
+            background: var(--gsu-card);
+        }
+
+        .grades-subject-unit-page .card-body {
+            padding: 1.5rem;
+        }
+
+        .grades-subject-unit-page .form-control,
+        .grades-subject-unit-page .form-select {
+            border-radius: 14px;
+            border: 1px solid var(--gsu-border);
+            min-height: 46px;
+            box-shadow: none;
+        }
+
+            .grades-subject-unit-page .form-control:focus,
+            .grades-subject-unit-page .form-select:focus {
+                border-color: var(--gsu-primary);
+                box-shadow: 0 0 0 .2rem rgba(140, 27, 27, 0.12);
+            }
+
+        .grades-subject-unit-page .form-label {
+            font-weight: 700;
+            color: var(--gsu-text);
+        }
+
+        .grades-subject-unit-page .form-check-input:checked {
+            background-color: var(--gsu-primary);
+            border-color: var(--gsu-primary);
+        }
+
+        .grades-subject-unit-page .btn {
+            border-radius: 14px;
+            font-weight: 700;
+            transition: all .2s ease;
+        }
+
+            .grades-subject-unit-page .btn:hover {
+                transform: translateY(-1px);
+            }
+
+        .grades-subject-unit-page .btn-calificaciones,
+        .grades-subject-unit-page .btn-primary {
+            background: linear-gradient(135deg, var(--gsu-primary), var(--gsu-primary-light));
+            border: none;
+            color: #fff;
+        }
+
+            .grades-subject-unit-page .btn-calificaciones:hover,
+            .grades-subject-unit-page .btn-primary:hover {
+                background: linear-gradient(135deg, var(--gsu-dark), var(--gsu-primary));
+                color: #fff;
+            }
+
+        .grades-subject-unit-page .btn-secondary {
+            background: #6c757d;
+            border-color: #6c757d;
+            color: #fff;
+        }
+
+            .grades-subject-unit-page .btn-secondary:hover {
+                background: #5c636a;
+                border-color: #5c636a;
+                color: #fff;
+            }
+
+        .grades-subject-unit-page .btn-outline-primary {
+            border-color: var(--gsu-primary);
+            color: var(--gsu-primary);
+        }
+
+            .grades-subject-unit-page .btn-outline-primary:hover {
+                background: var(--gsu-primary);
+                color: #fff;
+            }
+
+        .grades-subject-unit-page .btn-outline-secondary:hover {
+            background: rgba(177,165,150,0.18);
+            border-color: var(--gsu-accent);
+            color: var(--gsu-dark);
+        }
+
+        .grades-subject-unit-page .btn-outline-danger:hover {
+            background: #ff3131;
+            color: #fff;
+        }
+
+        .grades-subject-unit-page .table-responsive {
+            border-radius: 18px;
+            overflow: hidden;
+            background: #fff;
+        }
+
+        .grades-subject-unit-page .table thead th {
+            background: var(--gsu-dark) !important;
+            color: #fff !important;
+            border-bottom: none;
+            font-weight: 700;
+            padding: 1rem .9rem;
+        }
+
+        .grades-subject-unit-page .table tbody td {
+            padding: .95rem .9rem;
+            vertical-align: middle;
+            color: var(--gsu-text);
+        }
+
+        .grades-subject-unit-page .table-hover tbody tr:hover {
+            background-color: rgba(177,165,150,.10);
+        }
+
+        .grades-subject-unit-page .badge.bg-success {
+            background-color: #7ed957 !important;
+            color: #000 !important;
+        }
+
+        .grades-subject-unit-page .badge.bg-secondary {
+            background-color: var(--gsu-accent) !important;
+            color: #000 !important;
+        }
+
+        .grades-subject-unit-page .info-box {
+            background: #f8f8f8;
+            border: 1px solid var(--gsu-border);
+            border-radius: 14px;
+            padding: 12px 14px;
+            color: var(--gsu-text);
+            min-height: 46px;
+            display: flex;
+            align-items: center;
+        }
+
+        .grades-subject-unit-page .alert {
+            border: none;
+            border-radius: 16px;
+            box-shadow: 0 6px 16px rgba(0,0,0,0.05);
+        }
+
+@media (max-width: 767.98px) {
+    .grades-subject-unit-page .users-title {
+        font-size: 1.7rem;
+    }
+
+    .grades-subject-unit-page .d-flex.justify-content-between,
+    .grades-subject-unit-page .d-flex.justify-content-end {
+        flex-direction: column;
+        align-items: stretch !important;
+        gap: 1rem;
+    }
+
+    .grades-subject-unit-page .d-flex.gap-2 {
+        flex-wrap: wrap;
+    }
+
+    .grades-subject-unit-page .btn {
+        width: 100%;
+        text-align: center;
+    }
+
+    .grades-subject-unit-page .table thead th,
+    .grades-subject-unit-page .table tbody td {
+        padding: .75rem .65rem;
+        font-size: .92rem;
+    }
+}
+
+
+/* ==========================================================
+   GRADES SUBJECTS
+   ========================================================== */
+
+.grades-subjects-page {
+    --gs-primary: #8C1B1B;
+    --gs-primary-light: #D42D2D;
+    --gs-dark: #620900;
+    --gs-accent: #B1A596;
+    --gs-card: #ffffff;
+    --gs-text: #1f2937;
+    --gs-muted: #6b7280;
+    --gs-border: rgba(177, 165, 150, 0.45);
+    --gs-shadow: 0 10px 28px rgba(0,0,0,0.06);
+}
+
+    .grades-subjects-page,
+    .grades-subjects-page p,
+    .grades-subjects-page span,
+    .grades-subjects-page a,
+    .grades-subjects-page label,
+    .grades-subjects-page input,
+    .grades-subjects-page select,
+    .grades-subjects-page textarea,
+    .grades-subjects-page table,
+    .grades-subjects-page .table,
+    .grades-subjects-page .btn,
+    .grades-subjects-page .badge,
+    .grades-subjects-page .text-muted,
+    .grades-subjects-page small {
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+    }
+
+        .grades-subjects-page h1,
+        .grades-subjects-page h2,
+        .grades-subjects-page h3,
+        .grades-subjects-page h4,
+        .grades-subjects-page h5,
+        .grades-subjects-page h6,
+        .grades-subjects-page .users-title {
+            font-family: 'Merriweather', serif !important;
+        }
+
+        .grades-subjects-page .users-title {
+            color: var(--gs-text);
+            font-size: clamp(2rem, 3vw, 2.5rem);
+        }
+
+        .grades-subjects-page .card {
+            border-radius: 22px !important;
+            border: 1px solid rgba(0,0,0,0.04);
+            box-shadow: var(--gs-shadow);
+            overflow: hidden;
+            background: var(--gs-card);
+        }
+
+        .grades-subjects-page .card-body {
+            padding: 1.5rem;
+        }
+
+        .grades-subjects-page .form-control,
+        .grades-subjects-page .form-select {
+            border-radius: 14px;
+            border: 1px solid var(--gs-border);
+            min-height: 46px;
+            box-shadow: none;
+        }
+
+            .grades-subjects-page .form-control:focus,
+            .grades-subjects-page .form-select:focus {
+                border-color: var(--gs-primary);
+                box-shadow: 0 0 0 .2rem rgba(140, 27, 27, 0.12);
+            }
+
+        .grades-subjects-page .form-label {
+            font-weight: 700;
+            color: var(--gs-text);
+        }
+
+        .grades-subjects-page .btn {
+            border-radius: 14px;
+            font-weight: 700;
+            transition: all .2s ease;
+        }
+
+            .grades-subjects-page .btn:hover {
+                transform: translateY(-1px);
+            }
+
+        .grades-subjects-page .btn-calificaciones,
+        .grades-subjects-page .btn-primary {
+            background: linear-gradient(135deg, var(--gs-primary), var(--gs-primary-light));
+            border: none;
+            color: #fff;
+        }
+
+            .grades-subjects-page .btn-calificaciones:hover,
+            .grades-subjects-page .btn-primary:hover {
+                background: linear-gradient(135deg, var(--gs-dark), var(--gs-primary));
+                color: #fff;
+            }
+
+        .grades-subjects-page .btn-secondary {
+            background: #6c757d;
+            border-color: #6c757d;
+            color: #fff;
+        }
+
+            .grades-subjects-page .btn-secondary:hover {
+                background: #5c636a;
+                border-color: #5c636a;
+                color: #fff;
+            }
+
+        .grades-subjects-page .btn-outline-primary {
+            border-color: var(--gs-primary);
+            color: var(--gs-primary);
+        }
+
+            .grades-subjects-page .btn-outline-primary:hover {
+                background: var(--gs-primary);
+                color: #fff;
+            }
+
+        .grades-subjects-page .btn-outline-secondary:hover {
+            background: rgba(177,165,150,0.18);
+            border-color: var(--gs-accent);
+            color: var(--gs-dark);
+        }
+
+        .grades-subjects-page .btn-outline-danger:hover {
+            background: #ff3131;
+            color: #fff;
+        }
+
+        .grades-subjects-page .table-responsive {
+            border-radius: 18px;
+            overflow: hidden;
+            background: #fff;
+        }
+
+        .grades-subjects-page .table thead th {
+            background: var(--gs-dark) !important;
+            color: #fff !important;
+            border-bottom: none;
+            font-weight: 700;
+            padding: 1rem .9rem;
+        }
+
+        .grades-subjects-page .table tbody td {
+            padding: .95rem .9rem;
+            vertical-align: middle;
+            color: var(--gs-text);
+        }
+
+        .grades-subjects-page .table-hover tbody tr:hover {
+            background-color: rgba(177,165,150,.10);
+        }
+
+        .grades-subjects-page .info-box {
+            background: #f8f8f8;
+            border: 1px solid var(--gs-border);
+            border-radius: 14px;
+            padding: 12px 14px;
+            color: var(--gs-text);
+            min-height: 46px;
+            display: flex;
+            align-items: center;
+        }
+
+        .grades-subjects-page .alert {
+            border: none;
+            border-radius: 16px;
+            box-shadow: 0 6px 16px rgba(0,0,0,0.05);
+        }
+
+@media (max-width: 767.98px) {
+    .grades-subjects-page .users-title {
+        font-size: 1.7rem;
+    }
+
+    .grades-subjects-page .d-flex.justify-content-between,
+    .grades-subjects-page .d-flex.justify-content-end {
+        flex-direction: column;
+        align-items: stretch !important;
+        gap: 1rem;
+    }
+
+    .grades-subjects-page .d-flex.gap-2 {
+        flex-wrap: wrap;
+    }
+
+    .grades-subjects-page .btn {
+        width: 100%;
+        text-align: center;
+    }
+
+    .grades-subjects-page .table thead th,
+    .grades-subjects-page .table tbody td {
+        padding: .75rem .65rem;
+        font-size: .92rem;
+    }
+}
+
+
+/* ==========================================================
+   GRADES TEACHER SUBJECT
+   ========================================================== */
+
+.grades-teacher-subject-page {
+    --gts-primary: #8C1B1B;
+    --gts-primary-light: #D42D2D;
+    --gts-dark: #620900;
+    --gts-accent: #B1A596;
+    --gts-card: #ffffff;
+    --gts-text: #1f2937;
+    --gts-muted: #6b7280;
+    --gts-border: rgba(177, 165, 150, 0.45);
+    --gts-shadow: 0 10px 28px rgba(0,0,0,0.06);
+}
+
+    .grades-teacher-subject-page,
+    .grades-teacher-subject-page p,
+    .grades-teacher-subject-page span,
+    .grades-teacher-subject-page a,
+    .grades-teacher-subject-page label,
+    .grades-teacher-subject-page input,
+    .grades-teacher-subject-page select,
+    .grades-teacher-subject-page textarea,
+    .grades-teacher-subject-page table,
+    .grades-teacher-subject-page .table,
+    .grades-teacher-subject-page .btn,
+    .grades-teacher-subject-page .badge,
+    .grades-teacher-subject-page .text-muted,
+    .grades-teacher-subject-page small {
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+    }
+
+        .grades-teacher-subject-page h1,
+        .grades-teacher-subject-page h2,
+        .grades-teacher-subject-page h3,
+        .grades-teacher-subject-page h4,
+        .grades-teacher-subject-page h5,
+        .grades-teacher-subject-page h6,
+        .grades-teacher-subject-page .users-title {
+            font-family: 'Merriweather', serif !important;
+        }
+
+        .grades-teacher-subject-page .users-title {
+            color: var(--gts-text);
+            font-size: clamp(2rem, 3vw, 2.5rem);
+        }
+
+        .grades-teacher-subject-page .card {
+            border-radius: 22px !important;
+            border: 1px solid rgba(0,0,0,0.04);
+            box-shadow: var(--gts-shadow);
+            overflow: hidden;
+            background: var(--gts-card);
+        }
+
+        .grades-teacher-subject-page .card-body {
+            padding: 1.5rem;
+        }
+
+        .grades-teacher-subject-page .form-control,
+        .grades-teacher-subject-page .form-select {
+            border-radius: 14px;
+            border: 1px solid var(--gts-border);
+            min-height: 46px;
+            box-shadow: none;
+        }
+
+            .grades-teacher-subject-page .form-control:focus,
+            .grades-teacher-subject-page .form-select:focus {
+                border-color: var(--gts-primary);
+                box-shadow: 0 0 0 .2rem rgba(140, 27, 27, 0.12);
+            }
+
+        .grades-teacher-subject-page .form-label {
+            font-weight: 700;
+            color: var(--gts-text);
+        }
+
+        .grades-teacher-subject-page .btn {
+            border-radius: 14px;
+            font-weight: 700;
+            transition: all .2s ease;
+        }
+
+            .grades-teacher-subject-page .btn:hover {
+                transform: translateY(-1px);
+            }
+
+        .grades-teacher-subject-page .btn-calificaciones,
+        .grades-teacher-subject-page .btn-primary {
+            background: linear-gradient(135deg, var(--gts-primary), var(--gts-primary-light));
+            border: none;
+            color: #fff;
+        }
+
+            .grades-teacher-subject-page .btn-calificaciones:hover,
+            .grades-teacher-subject-page .btn-primary:hover {
+                background: linear-gradient(135deg, var(--gts-dark), var(--gts-primary));
+                color: #fff;
+            }
+
+        .grades-teacher-subject-page .btn-secondary {
+            background: #6c757d;
+            border-color: #6c757d;
+            color: #fff;
+        }
+
+            .grades-teacher-subject-page .btn-secondary:hover {
+                background: #5c636a;
+                border-color: #5c636a;
+                color: #fff;
+            }
+
+        .grades-teacher-subject-page .btn-outline-primary {
+            border-color: var(--gts-primary);
+            color: var(--gts-primary);
+        }
+
+            .grades-teacher-subject-page .btn-outline-primary:hover {
+                background: var(--gts-primary);
+                color: #fff;
+            }
+
+        .grades-teacher-subject-page .btn-outline-secondary:hover {
+            background: rgba(177,165,150,0.18);
+            border-color: var(--gts-accent);
+            color: var(--gts-dark);
+        }
+
+        .grades-teacher-subject-page .btn-outline-danger:hover {
+            background: #ff3131;
+            color: #fff;
+        }
+
+        .grades-teacher-subject-page .table-responsive {
+            border-radius: 18px;
+            overflow: hidden;
+            background: #fff;
+        }
+
+        .grades-teacher-subject-page .table thead th {
+            background: var(--gts-dark) !important;
+            color: #fff !important;
+            border-bottom: none;
+            font-weight: 700;
+            padding: 1rem .9rem;
+        }
+
+        .grades-teacher-subject-page .table tbody td {
+            padding: .95rem .9rem;
+            vertical-align: middle;
+            color: var(--gts-text);
+        }
+
+        .grades-teacher-subject-page .table-hover tbody tr:hover {
+            background-color: rgba(177,165,150,.10);
+        }
+
+        .grades-teacher-subject-page .info-box {
+            background: #f8f8f8;
+            border: 1px solid var(--gts-border);
+            border-radius: 14px;
+            padding: 12px 14px;
+            color: var(--gts-text);
+            min-height: 46px;
+            display: flex;
+            align-items: center;
+        }
+
+        .grades-teacher-subject-page .alert {
+            border: none;
+            border-radius: 16px;
+            box-shadow: 0 6px 16px rgba(0,0,0,0.05);
+        }
+
+@media (max-width: 767.98px) {
+    .grades-teacher-subject-page .users-title {
+        font-size: 1.7rem;
+    }
+
+    .grades-teacher-subject-page .d-flex.justify-content-between,
+    .grades-teacher-subject-page .d-flex.justify-content-end {
+        flex-direction: column;
+        align-items: stretch !important;
+        gap: 1rem;
+    }
+
+    .grades-teacher-subject-page .d-flex.gap-2 {
+        flex-wrap: wrap;
+    }
+
+    .grades-teacher-subject-page .btn {
+        width: 100%;
+        text-align: center;
+    }
+
+    .grades-teacher-subject-page .table thead th,
+    .grades-teacher-subject-page .table tbody td {
+        padding: .75rem .65rem;
+        font-size: .92rem;
+    }
+}
+
+
+
+
+/* ==========================================================
+   GRADES UNIT RECOVERY
+   ========================================================== */
+
+.grades-unit-recovery-page {
+    --gur-primary: #8C1B1B;
+    --gur-primary-light: #D42D2D;
+    --gur-dark: #620900;
+    --gur-accent: #B1A596;
+    --gur-card: #ffffff;
+    --gur-text: #1f2937;
+    --gur-muted: #6b7280;
+    --gur-border: rgba(177, 165, 150, 0.45);
+    --gur-shadow: 0 10px 28px rgba(0,0,0,0.06);
+}
+
+    .grades-unit-recovery-page,
+    .grades-unit-recovery-page p,
+    .grades-unit-recovery-page span,
+    .grades-unit-recovery-page a,
+    .grades-unit-recovery-page label,
+    .grades-unit-recovery-page input,
+    .grades-unit-recovery-page select,
+    .grades-unit-recovery-page textarea,
+    .grades-unit-recovery-page table,
+    .grades-unit-recovery-page .table,
+    .grades-unit-recovery-page .btn,
+    .grades-unit-recovery-page .badge,
+    .grades-unit-recovery-page .text-muted,
+    .grades-unit-recovery-page small {
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+    }
+
+        .grades-unit-recovery-page h1,
+        .grades-unit-recovery-page h2,
+        .grades-unit-recovery-page h3,
+        .grades-unit-recovery-page h4,
+        .grades-unit-recovery-page h5,
+        .grades-unit-recovery-page h6,
+        .grades-unit-recovery-page .users-title {
+            font-family: 'Merriweather', serif !important;
+        }
+
+        .grades-unit-recovery-page .users-title {
+            color: var(--gur-text);
+            font-size: clamp(2rem, 3vw, 2.5rem);
+        }
+
+        .grades-unit-recovery-page .card {
+            border-radius: 22px !important;
+            border: 1px solid rgba(0,0,0,0.04);
+            box-shadow: var(--gur-shadow);
+            overflow: hidden;
+            background: var(--gur-card);
+        }
+
+        .grades-unit-recovery-page .card-body {
+            padding: 1.5rem;
+        }
+
+        .grades-unit-recovery-page .form-control,
+        .grades-unit-recovery-page .form-select {
+            border-radius: 14px;
+            border: 1px solid var(--gur-border);
+            min-height: 46px;
+            box-shadow: none;
+        }
+
+            .grades-unit-recovery-page .form-control:focus,
+            .grades-unit-recovery-page .form-select:focus {
+                border-color: var(--gur-primary);
+                box-shadow: 0 0 0 .2rem rgba(140, 27, 27, 0.12);
+            }
+
+        .grades-unit-recovery-page .form-label {
+            font-weight: 700;
+            color: var(--gur-text);
+        }
+
+        .grades-unit-recovery-page .btn {
+            border-radius: 14px;
+            font-weight: 700;
+            transition: all .2s ease;
+        }
+
+            .grades-unit-recovery-page .btn:hover {
+                transform: translateY(-1px);
+            }
+
+        .grades-unit-recovery-page .btn-calificaciones,
+        .grades-unit-recovery-page .btn-primary {
+            background: linear-gradient(135deg, var(--gur-primary), var(--gur-primary-light));
+            border: none;
+            color: #fff;
+        }
+
+            .grades-unit-recovery-page .btn-calificaciones:hover,
+            .grades-unit-recovery-page .btn-primary:hover {
+                background: linear-gradient(135deg, var(--gur-dark), var(--gur-primary));
+                color: #fff;
+            }
+
+        .grades-unit-recovery-page .btn-secondary {
+            background: #6c757d;
+            border-color: #6c757d;
+            color: #fff;
+        }
+
+            .grades-unit-recovery-page .btn-secondary:hover {
+                background: #5c636a;
+                border-color: #5c636a;
+                color: #fff;
+            }
+
+        .grades-unit-recovery-page .btn-outline-primary {
+            border-color: var(--gur-primary);
+            color: var(--gur-primary);
+        }
+
+            .grades-unit-recovery-page .btn-outline-primary:hover {
+                background: var(--gur-primary);
+                color: #fff;
+            }
+
+        .grades-unit-recovery-page .btn-outline-secondary:hover {
+            background: rgba(177,165,150,0.18);
+            border-color: var(--gur-accent);
+            color: var(--gur-dark);
+        }
+
+        .grades-unit-recovery-page .btn-outline-danger:hover {
+            background: #ff3131;
+            color: #fff;
+        }
+
+        .grades-unit-recovery-page .table-responsive {
+            border-radius: 18px;
+            overflow: hidden;
+            background: #fff;
+        }
+
+        .grades-unit-recovery-page .table thead th {
+            background: var(--gur-dark) !important;
+            color: #fff !important;
+            border-bottom: none;
+            font-weight: 700;
+            padding: 1rem .9rem;
+        }
+
+        .grades-unit-recovery-page .table tbody td {
+            padding: .95rem .9rem;
+            vertical-align: middle;
+            color: var(--gur-text);
+        }
+
+        .grades-unit-recovery-page .table-hover tbody tr:hover {
+            background-color: rgba(177,165,150,.10);
+        }
+
+        .grades-unit-recovery-page .info-box {
+            background: #f8f8f8;
+            border: 1px solid var(--gur-border);
+            border-radius: 14px;
+            padding: 12px 14px;
+            color: var(--gur-text);
+            min-height: 46px;
+            display: flex;
+            align-items: center;
+        }
+
+        .grades-unit-recovery-page .alert {
+            border: none;
+            border-radius: 16px;
+            box-shadow: 0 6px 16px rgba(0,0,0,0.05);
+        }
+
+@media (max-width: 767.98px) {
+    .grades-unit-recovery-page .users-title {
+        font-size: 1.7rem;
+    }
+
+    .grades-unit-recovery-page .d-flex.justify-content-between,
+    .grades-unit-recovery-page .d-flex.justify-content-end {
+        flex-direction: column;
+        align-items: stretch !important;
+        gap: 1rem;
+    }
+
+    .grades-unit-recovery-page .d-flex.gap-2 {
+        flex-wrap: wrap;
+    }
+
+    .grades-unit-recovery-page .btn {
+        width: 100%;
+        text-align: center;
+    }
+
+    .grades-unit-recovery-page .table thead th,
+    .grades-unit-recovery-page .table tbody td {
+        padding: .75rem .65rem;
+        font-size: .92rem;
+    }
+}
+
+/* ==========================================================
+   GRADES GROUPS
+   ========================================================== */
+
+.grades-groups-page {
+    --gg-primary: #8C1B1B;
+    --gg-primary-light: #D42D2D;
+    --gg-dark: #620900;
+    --gg-accent: #B1A596;
+    --gg-card: #ffffff;
+    --gg-text: #1f2937;
+    --gg-muted: #6b7280;
+    --gg-border: rgba(177, 165, 150, 0.45);
+    --gg-shadow: 0 10px 28px rgba(0,0,0,0.06);
+}
+
+    .grades-groups-page,
+    .grades-groups-page p,
+    .grades-groups-page span,
+    .grades-groups-page a,
+    .grades-groups-page label,
+    .grades-groups-page input,
+    .grades-groups-page select,
+    .grades-groups-page textarea,
+    .grades-groups-page table,
+    .grades-groups-page .table,
+    .grades-groups-page .btn,
+    .grades-groups-page .badge,
+    .grades-groups-page .text-muted,
+    .grades-groups-page small {
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+    }
+
+        .grades-groups-page h1,
+        .grades-groups-page h2,
+        .grades-groups-page h3,
+        .grades-groups-page h4,
+        .grades-groups-page h5,
+        .grades-groups-page h6,
+        .grades-groups-page .users-title {
+            font-family: 'Merriweather', serif !important;
+        }
+
+        .grades-groups-page .users-title {
+            color: var(--gg-text);
+            font-size: clamp(2rem, 3vw, 2.5rem);
+        }
+
+        .grades-groups-page .card {
+            border-radius: 22px !important;
+            border: 1px solid rgba(0,0,0,0.04);
+            box-shadow: var(--gg-shadow);
+            overflow: hidden;
+            background: var(--gg-card);
+        }
+
+        .grades-groups-page .card-body {
+            padding: 1.5rem;
+        }
+
+        .grades-groups-page .form-control,
+        .grades-groups-page .form-select {
+            border-radius: 14px;
+            border: 1px solid var(--gg-border);
+            min-height: 46px;
+            box-shadow: none;
+        }
+
+            .grades-groups-page .form-control:focus,
+            .grades-groups-page .form-select:focus {
+                border-color: var(--gg-primary);
+                box-shadow: 0 0 0 .2rem rgba(140, 27, 27, 0.12);
+            }
+
+        .grades-groups-page .form-label {
+            font-weight: 700;
+            color: var(--gg-text);
+        }
+
+        .grades-groups-page .btn {
+            border-radius: 14px;
+            font-weight: 700;
+            transition: all .2s ease;
+        }
+
+            .grades-groups-page .btn:hover {
+                transform: translateY(-1px);
+            }
+
+        .grades-groups-page .btn-calificaciones,
+        .grades-groups-page .btn-primary {
+            background: linear-gradient(135deg, var(--gg-primary), var(--gg-primary-light));
+            border: none;
+            color: #fff;
+        }
+
+            .grades-groups-page .btn-calificaciones:hover,
+            .grades-groups-page .btn-primary:hover {
+                background: linear-gradient(135deg, var(--gg-dark), var(--gg-primary));
+                color: #fff;
+            }
+
+        .grades-groups-page .btn-secondary {
+            background: #6c757d;
+            border-color: #6c757d;
+            color: #fff;
+        }
+
+            .grades-groups-page .btn-secondary:hover {
+                background: #5c636a;
+                border-color: #5c636a;
+                color: #fff;
+            }
+
+        .grades-groups-page .btn-outline-primary {
+            border-color: var(--gg-primary);
+            color: var(--gg-primary);
+        }
+
+            .grades-groups-page .btn-outline-primary:hover {
+                background: var(--gg-primary);
+                color: #fff;
+            }
+
+        .grades-groups-page .btn-outline-secondary:hover {
+            background: rgba(177,165,150,0.18);
+            border-color: var(--gg-accent);
+            color: var(--gg-dark);
+        }
+
+        .grades-groups-page .table-responsive {
+            border-radius: 18px;
+            overflow: hidden;
+            background: #fff;
+        }
+
+        .grades-groups-page .table thead th {
+            background: var(--gg-dark) !important;
+            color: #fff !important;
+            border-bottom: none;
+            font-weight: 700;
+            padding: 1rem .9rem;
+        }
+
+        .grades-groups-page .table tbody td {
+            padding: .95rem .9rem;
+            vertical-align: middle;
+            color: var(--gg-text);
+        }
+
+        .grades-groups-page .table-hover tbody tr:hover {
+            background-color: rgba(177,165,150,.10);
+        }
+
+        .grades-groups-page .badge.bg-success {
+            background-color: #7ed957 !important;
+            color: #000 !important;
+        }
+
+        .grades-groups-page .badge.bg-secondary {
+            background-color: var(--gg-accent) !important;
+            color: #000 !important;
+        }
+
+        .grades-groups-page .info-box {
+            background: #f8f8f8;
+            border: 1px solid var(--gg-border);
+            border-radius: 14px;
+            padding: 12px 14px;
+            color: var(--gg-text);
+            min-height: 46px;
+            display: flex;
+            align-items: center;
+        }
+
+        .grades-groups-page .alert {
+            border: none;
+            border-radius: 16px;
+            box-shadow: 0 6px 16px rgba(0,0,0,0.05);
+        }
+
+@media (max-width: 767.98px) {
+    .grades-groups-page .users-title {
+        font-size: 1.7rem;
+    }
+
+    .grades-groups-page .d-flex.justify-content-between,
+    .grades-groups-page .d-flex.justify-content-end {
+        flex-direction: column;
+        align-items: stretch !important;
+        gap: 1rem;
+    }
+
+    .grades-groups-page .d-flex.gap-2 {
+        flex-wrap: wrap;
+    }
+
+    .grades-groups-page .btn {
+        width: 100%;
+        text-align: center;
+    }
+
+    .grades-groups-page .table thead th,
+    .grades-groups-page .table tbody td {
+        padding: .75rem .65rem;
+        font-size: .92rem;
+    }
+}
+
+/* ==========================================================
+   STUDENTS GRADE
+   ========================================================== */
+
+.grades-students-grade-page {
+    --gsg-primary: #8C1B1B;
+    --gsg-primary-light: #D42D2D;
+    --gsg-dark: #620900;
+    --gsg-accent: #B1A596;
+    --gsg-card: #ffffff;
+    --gsg-text: #1f2937;
+    --gsg-muted: #6b7280;
+    --gsg-border: rgba(177, 165, 150, 0.45);
+    --gsg-shadow: 0 10px 28px rgba(0,0,0,0.06);
+}
+
+    .grades-students-grade-page,
+    .grades-students-grade-page p,
+    .grades-students-grade-page span,
+    .grades-students-grade-page a,
+    .grades-students-grade-page label,
+    .grades-students-grade-page input,
+    .grades-students-grade-page select,
+    .grades-students-grade-page textarea,
+    .grades-students-grade-page table,
+    .grades-students-grade-page .table,
+    .grades-students-grade-page .btn,
+    .grades-students-grade-page .badge,
+    .grades-students-grade-page .text-muted,
+    .grades-students-grade-page small {
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+    }
+
+        .grades-students-grade-page h1,
+        .grades-students-grade-page h2,
+        .grades-students-grade-page h3,
+        .grades-students-grade-page h4,
+        .grades-students-grade-page h5,
+        .grades-students-grade-page h6,
+        .grades-students-grade-page .users-title {
+            font-family: 'Merriweather', serif !important;
+        }
+
+        .grades-students-grade-page .users-title {
+            color: var(--gsg-text);
+            font-size: clamp(2rem, 3vw, 2.5rem);
+        }
+
+        .grades-students-grade-page .card {
+            border-radius: 22px !important;
+            border: 1px solid rgba(0,0,0,0.04);
+            box-shadow: var(--gsg-shadow);
+            overflow: hidden;
+            background: var(--gsg-card);
+        }
+
+        .grades-students-grade-page .card-body {
+            padding: 1.5rem;
+        }
+
+        .grades-students-grade-page .form-label {
+            font-weight: 700;
+            color: var(--gsg-text);
+        }
+
+        .grades-students-grade-page .btn {
+            border-radius: 14px;
+            font-weight: 700;
+            transition: all .2s ease;
+        }
+
+            .grades-students-grade-page .btn:hover {
+                transform: translateY(-1px);
+            }
+
+        .grades-students-grade-page .btn-calificaciones,
+        .grades-students-grade-page .btn-primary {
+            background: linear-gradient(135deg, var(--gsg-primary), var(--gsg-primary-light));
+            border: none;
+            color: #fff;
+        }
+
+            .grades-students-grade-page .btn-calificaciones:hover,
+            .grades-students-grade-page .btn-primary:hover {
+                background: linear-gradient(135deg, var(--gsg-dark), var(--gsg-primary));
+                color: #fff;
+            }
+
+        .grades-students-grade-page .btn-secondary {
+            background: #6c757d;
+            border-color: #6c757d;
+            color: #fff;
+        }
+
+            .grades-students-grade-page .btn-secondary:hover {
+                background: #5c636a;
+                border-color: #5c636a;
+                color: #fff;
+            }
+
+        .grades-students-grade-page .info-box {
+            background: #f8f8f8;
+            border: 1px solid var(--gsg-border);
+            border-radius: 14px;
+            padding: 12px 14px;
+            color: var(--gsg-text);
+            min-height: 46px;
+            display: flex;
+            align-items: center;
+        }
+
+        .grades-students-grade-page .alert {
+            border: none;
+            border-radius: 16px;
+            box-shadow: 0 6px 16px rgba(0,0,0,0.05);
+        }
+
+@media (max-width: 767.98px) {
+    .grades-students-grade-page .users-title {
+        font-size: 1.7rem;
+    }
+
+    .grades-students-grade-page .d-flex.justify-content-end,
+    .grades-students-grade-page .d-flex.justify-content-center {
+        flex-direction: column;
+        align-items: stretch !important;
+        gap: 1rem;
+    }
+
+    .grades-students-grade-page .btn {
+        width: 100%;
+        text-align: center;
+    }
+}
