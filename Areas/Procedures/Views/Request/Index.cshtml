@@ -166,6 +166,8 @@
                 <i class="bi bi-info-circle me-1"></i> Para trámites administrativos avanzados, es necesario iniciar sesión con tu cuenta institucional.
             </small>
         </div>
+
+        <div id="modalContainer"></div>
     </div>
 </div>
 
@@ -173,9 +175,8 @@
     <script>
         async function btnPublicSearch() {
             const folioInput = $('#searchFolio');
-            const pfolioInput = $('#searchPFolio');
             const idInput = $('#searchId');
-            const btn = $('.btn-burgundy');
+            const btn = $('#searchPFolio');
 
             const folio = folioInput.val().trim();
             const id = idInput.val().trim();
@@ -190,12 +191,10 @@
             if (!/^\d+$/.test(folio)) {
                 showToast('error', 'Los folios deben contener solo números.');
                 folioInput.addClass('is-invalid');
-                pfolioInput.addClass('is-invalid');
                 return;
             }
-            folioInput.removeClass('is-invalid');
-            pfolioInput.removeClass('is-invalid');
 
+            folioInput.removeClass('is-invalid');
             btn.prop('disabled', true);
 
             try {
@@ -210,6 +209,7 @@
                 const response = await fetch(url);
 
                 if (!response.ok) throw new Error('Error en la comunicación con el servidor');
+
                 const html = await response.text();
                 Swal.close();
 
@@ -219,14 +219,15 @@
                 }
                 else {
                     const container = document.getElementById('modalContainer');
-                    container.innerHTML = html;
-                    const modalEl = container.querySelector('.modal');
-
-                    if (modalEl) {
-                        const myModal = new bootstrap.Modal(modalEl);
-                        myModal.show();
+                    if (container) {
+                        container.innerHTML = html;
+                        const modalEl = container.querySelector('.modal');
+                        if (modalEl) {
+                            const myModal = new bootstrap.Modal(modalEl);
+                            myModal.show();
+                        }
                     } else {
-                        throw new Error('No se pudo renderizar el resultado.');
+                        throw new Error('No se pudo encontrar el modalContainer.');
                     }
                 }
             } catch (error) {
@@ -238,8 +239,12 @@
             }
         }
 
-        $('#searchFolio, #searchId').on('keypress', function (e) {
-            if (e.which == 13) btnPublicSearch();
+        $(document).ready(function() {
+            $('#searchFolio, #searchId').on('keypress', function (e) {
+                if (e.which == 13) {
+                    btnPublicSearch();
+                }
+            });
         });
     </script>
 }
