@@ -1,14 +1,17 @@
 ﻿// Areas/Grades/Controllers/BulkGradeController.cs
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MiniExcelLibs;
 using SchoolManager.Areas.Grades.ViewModels.BulkGrade;
 using SchoolManager.Data;
+using SchoolManager.Helpers;
 using SchoolManager.Models;
 
 namespace SchoolManager.Areas.Grades.Controllers
 {
     [Area("Grades")]
+    [Authorize(Roles = "Teacher")]
     public class BulkGradeController : Controller
     {
         private readonly AppDbContext _context;
@@ -133,8 +136,7 @@ namespace SchoolManager.Areas.Grades.Controllers
 
         private int GetCurrentTeacherId()
         {
-            // Temporal para pruebas
-            return 4;
+            return User.GetUserId();
         }
     }
 }

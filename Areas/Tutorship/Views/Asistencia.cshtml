@@ -1,0 +1,314 @@
+﻿@model List<SchoolManager.Models.users_user>
+
+@{
+    ViewData["Title"] = "Registro de Asistencia";
+    int roleId = ViewBag.RoleId ?? 0;
+
+    var gruposDisp = ViewBag.GruposDisponibles as List<SchoolManager.Models.grades_group>;
+    var miGrupo = gruposDisp?.FirstOrDefault(g => g.GroupId == ViewBag.GrupoSeleccionado);
+    string nombreMiGrupo = miGrupo != null ? $"Grado {miGrupo.GradeLevelId} | {miGrupo.Name}" : "Sin asignar";
+}
+
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
+
+<style>
+    
+    .dataTables_wrapper {
+        font-family: inherit !important;
+        font-size: 0.95rem;
+    }
+
+    .dataTables_length label,
+    .dataTables_filter label {
+        font-weight: bold;
+        color: #444;
+    }
+
+    .dataTables_filter input,
+    .dataTables_length select {
+        border: 1px solid #ddd;
+        border-radius: 0.375rem;
+        padding: 0.25rem 0.5rem;
+        box-shadow: 0 .125rem .25rem rgba(0,0,0,.05);
+    }
+
+        .dataTables_filter input:focus,
+        .dataTables_length select:focus {
+            border-color: #620900;
+            outline: none;
+            box-shadow: 0 0 0 0.2rem rgba(98, 9, 0, 0.25);
+        }
+
+    .dataTables_info {
+        font-weight: 500;
+        color: #666;
+        padding-top: 1rem !important;
+    }
+
+    /* Paginación UTTN (Color Vino) */
+    .page-item.active .page-link {
+        background-color: #620900 !important;
+        border-color: #620900 !important;
+        color: white !important;
+    }
+
+    .page-link {
+        color: #620900;
+        font-weight: 500;
+    }
+
+        .page-link:hover {
+            background-color: #A89B8C;
+            color: white;
+            border-color: #A89B8C;
+        }
+
+    /* Botones rojo oscuro (Vino) */
+    .btn-vino {
+        background-color: #620900;
+        color: white;
+        border: none;
+    }
+
+        .btn-vino:hover {
+            background-color: #4a0700;
+            color: white;
+        }
+</style>
+
+<div class="container-fluid mt-4 mb-5">
+    <h2 class="text-center mb-4 fw-bold" style="color: #620900;">Registro de Asistencia</h2>
+
+    @if (TempData["Exito"] != null)
+    {
+        <div class="alert alert-success shadow-sm text-center fw-bold"><i class="bi bi-check-circle-fill"></i> @TempData["Exito"]</div>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger shadow-sm text-center fw-bold"><i class="bi bi-exclamation-triangle-fill"></i> @TempData["Error"]</div>
+    }
+
+    <div class="p-4 rounded shadow-sm mb-4" style="background-color: #f4f4f4; border-left: 5px solid #620900;">
+        <form asp-action="Asistencia" method="get" class="row g-3 align-items-end">
+
+            <div class="col-md-3">
+                <label class="form-label fw-bold text-muted small mb-1">Contar faltas desde:</label>
+                <input type="date" name="fechaInicio" value="@ViewBag.FechaInicio" class="form-control shadow-sm" style="border-color: #ddd;">
+            </div>
+            <div class="col-md-3">
+                <label class="form-label fw-bold text-muted small mb-1">Hasta:</label>
+                <input type="date" name="fechaFin" value="@ViewBag.FechaFin" class="form-control shadow-sm" style="border-color: #ddd;">
+            </div>
+
+            <div class="col-md-3">
+                <label class="form-label fw-bold mb-1" style="color: #620900;">Día a pasar lista:</label>
+                <input type="date" id="inputFechaVisual" name="fecha" value="@ViewBag.FechaSeleccionada" class="form-control shadow-sm border-2" style="border-color: #620900;" required>
+            </div>
+
+            <div class="col-md-3">
+                @if (roleId == 3)
+                {
+                    <label class="form-label fw-bold mb-1">Grupo:</label>
+                    <div class="d-flex gap-2">
+                        <select class="form-select shadow-sm" name="groupId" style="border-color: #ddd;" required>
+                            <option value="">Selecciona...</option>
+                            @if (ViewBag.GruposDisponibles != null)
+                            {
+                                foreach (var grupo in ViewBag.GruposDisponibles)
+                                {
+                                    <option value="@grupo.GroupId" selected="@(ViewBag.GrupoSeleccionado == grupo.GroupId)">
+                                        @grupo.GradeLevelId @grupo.Name
+                                    </option>
+                                }
+                            }
+                        </select>
+                        <button type="submit" class="btn btn-vino fw-bold shadow-sm" title="Cargar Grupo">
+                            <i class="bi bi-search"></i>
+                        </button>
+                    </div>
+                }
+                else if (roleId == 2)
+                {
+                    <label class="form-label fw-bold mb-1">Mi Grupo:</label>
+                    <div class="d-flex gap-2">
+                        <input type="hidden" name="groupId" value="@ViewBag.GrupoSeleccionado" />
+                        <input type="text" class="form-control shadow-sm bg-white text-muted fw-bold" value="@nombreMiGrupo" readonly disabled style="border-color: #ddd;">
+                        <button type="submit" class="btn btn-vino fw-bold shadow-sm" title="Actualizar Fechas">
+                            <i class="bi bi-arrow-clockwise"></i>
+                        </button>
+                    </div>
+                }
+            </div>
+        </form>
+    </div>
+
+    @if (Model != null && Model.Any())
+    {
+        <form id="formAsistencia" asp-action="GuardarAsistencia" method="post">
+
+            <input type="hidden" name="groupId" value="@ViewBag.GrupoSeleccionado" />
+            <input type="hidden" id="hiddenFecha" name="fecha" value="@ViewBag.FechaSeleccionada" />
+            <input type="hidden" name="fechaInicio" value="@ViewBag.FechaInicio" />
+            <input type="hidden" name="fechaFin" value="@ViewBag.FechaFin" />
+
+            <div class="alert text-center fw-bold shadow-sm mb-4" style="background-color: #ffffff; border: 2px dashed #620900; color: #444;">
+                <i class="bi bi-calendar-check text-success me-2" style="font-size: 1.2rem;"></i>
+                Estás visualizando/modificando la asistencia del día:
+                <span style="color: #620900; font-size: 1.2rem; text-decoration: underline;">
+                    @{
+                        DateTime fechaFormateada;
+                        if (DateTime.TryParse(ViewBag.FechaSeleccionada, out fechaFormateada))
+                        {
+                            @fechaFormateada.ToString("dd / MM / yyyy")
+                        }
+                    }
+                </span>
+            </div>
+
+            <div class="table-responsive shadow-sm rounded bg-white p-3 border">
+                <table id="tablaAsistencia" class="table table-hover mb-0 w-100">
+                    <thead style="background-color: #620900; color: white;" class="text-center">
+                        <tr>
+                            <th class="py-3">Matrícula</th>
+                            <th class="text-start py-3">Nombre del Alumno</th>
+                            <th class="py-3" title="Asistencias en el rango seleccionado">Asistencias</th>
+                            <th class="py-3" title="Faltas en el rango seleccionado">Faltas</th>
+                            <th class="py-3">Asistencia del Día</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @{
+                            var dictMatriculas = ViewBag.Matriculas as Dictionary<int, string> ?? new Dictionary<int, string>();
+                            var dictAsistenciaHoy = ViewBag.AsistenciaHoy as Dictionary<int, bool> ?? new Dictionary<int, bool>();
+                            
+                            // 👇 NUEVO: Traemos los diccionarios con las listas de fechas
+                            var dictDetalleFaltas = ViewBag.DetalleFaltas as Dictionary<int, List<string>> ?? new Dictionary<int, List<string>>();
+                            var dictDetalleAsistencias = ViewBag.DetalleAsistencias as Dictionary<int, List<string>> ?? new Dictionary<int, List<string>>();
+                            
+                            int index = 0;
+                            bool yaSePasoLista = dictAsistenciaHoy.Any();
+                        }
+
+                        @foreach (var alumno in Model)
+                        {
+                            string matricula = dictMatriculas.ContainsKey(alumno.UserId) ? dictMatriculas[alumno.UserId] : "S/N";
+                            bool asistio = yaSePasoLista ? (dictAsistenciaHoy.ContainsKey(alumno.UserId) ? dictAsistenciaHoy[alumno.UserId] : false) : true;
+
+                            var listaFaltas = dictDetalleFaltas.ContainsKey(alumno.UserId) ? dictDetalleFaltas[alumno.UserId] : new List<string>();
+                            int totalFaltas = listaFaltas.Count;
+                            string textoFaltas = totalFaltas > 0 ? "Faltó los días: " + string.Join(", ", listaFaltas) : "Sin faltas en el periodo";
+
+                            var listaAsistencias = dictDetalleAsistencias.ContainsKey(alumno.UserId) ? dictDetalleAsistencias[alumno.UserId] : new List<string>();
+                            int totalAsistencias = listaAsistencias.Count;
+                            string textoAsistencias = totalAsistencias > 0 ? "Asistió los días: " + string.Join(", ", listaAsistencias) : "Sin asistencias en el periodo";
+
+                            <tr>
+                                <td class="text-center align-middle fw-bold text-muted">@matricula</td>
+                                <td class="align-middle fw-bold text-dark">
+                                    @alumno.Person.FirstName @alumno.Person.LastNamePaternal @alumno.Person.LastNameMaternal
+                                </td>
+                                
+                                <td class="text-center align-middle">
+                                    <span class="badge shadow-sm" title="@textoAsistencias" style="background-color: #e8f5e9; color: #2e7d32; font-size: 0.95rem; border: 1px solid #2e7d32; cursor: help;">
+                                        @totalAsistencias
+                                    </span>
+                                </td>
+
+                                <td class="text-center align-middle">
+                                    <span class="badge shadow-sm" title="@textoFaltas" style="background-color: #A89B8C; color: white; font-size: 0.95rem; cursor: help;">
+                                        @totalFaltas
+                                    </span>
+                                </td>
+                                
+                                <td class="text-center align-middle">
+                                    <input type="hidden" name="studentIds[@index]" value="@alumno.UserId" />
+                                    <div class="form-check d-flex justify-content-center m-0">
+                                        <input class="form-check-input border-secondary chk-asistencia" type="checkbox" name="isPresent[@index]" value="true" @(asistio ? "checked" : "") style="transform: scale(1.4); cursor: pointer;" @(yaSePasoLista ? "disabled" : "") />
+                                        <input type="hidden" name="isPresent[@index]" value="false" />
+                                    </div>
+                                </td>
+                            </tr>
+                            index++;
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="d-flex justify-content-between align-items-center mt-4 mb-5">
+                @if (yaSePasoLista)
+                {
+                    <div class="text-muted fw-bold" id="mensajeBloqueado">
+                        <i class="bi bi-lock-fill text-warning me-1"></i> Asistencia bloqueada. Haz clic en editar para hacer cambios.
+                    </div>
+                    <div>
+                        <button type="button" id="btnEditar" class="btn btn-secondary px-5 btn-lg shadow text-white fw-bold">
+                            <i class="bi bi-unlock-fill me-2"></i> Editar Asistencia
+                        </button>
+                        <button type="submit" id="btnGuardar" class="btn btn-vino px-5 btn-lg shadow d-none fw-bold">
+                            <i class="bi bi-save me-2"></i> Guardar Cambios
+                        </button>
+                    </div>
+                }
+                else
+                {
+                    <div></div>
+                    <button type="submit" class="btn btn-vino px-5 btn-lg shadow fw-bold">
+                        <i class="bi bi-save me-2"></i> Guardar Asistencia
+                    </button>
+                }
+            </div>
+        </form>
+    }
+    else if (ViewBag.GrupoSeleccionado != null)
+    {
+        <div class="text-center p-5 text-muted mt-4 bg-white rounded shadow-sm border">
+            <i class="bi bi-people-fill" style="font-size: 3rem; color: #A89B8C;"></i>
+            <h4 class="mt-3 text-dark fw-bold">No hay alumnos asignados a este grupo.</h4>
+            <p class="mb-0">Verifica la asignación de tutores en el panel de administración.</p>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+
+    <script>
+        $(document).ready(function () {
+            // 1. INICIALIZAR LA TABLA
+            var table;
+            if ($('#tablaAsistencia').length) {
+                table = $('#tablaAsistencia').DataTable({
+                    "language": {
+                        "url": "//cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json"
+                    },
+                    "lengthMenu": [[10, 25, 50, 100, -1], [10, 25, 50, 100, "Todos"]],
+                    "pageLength": 25,
+        "columnDefs": [
+        { "orderable": false, "targets": 4 }, 
+        { "searchable": false, "targets": 4 } 
+        ],
+                    "order": [[1, 'asc']]
+                });
+            }
+
+            $('#btnEditar').click(function () {
+                table.$('.chk-asistencia').prop('disabled', false);
+
+                $(this).addClass('d-none');
+                $('#btnGuardar').removeClass('d-none');
+
+                $('#mensajeBloqueado').html('<i class="bi bi-unlock-fill text-success me-1"></i> Modo edición activado. Realiza los cambios y guarda.');
+            });
+
+            $('#formAsistencia').on('submit', function () {
+                var fechaReal = $('#inputFechaVisual').val();
+
+                $('#hiddenFecha').val(fechaReal);
+
+                table.destroy();
+            });
+        });
+    </script>
+}

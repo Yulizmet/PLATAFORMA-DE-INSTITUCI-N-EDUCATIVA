@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SchoolManager.Areas.MainScreen.ViewModels;
 using SchoolManager.Data;
@@ -14,6 +15,7 @@ namespace SchoolManager.Areas.MainScreen.Controllers
         public MainScreenController(AppDbContext context) {
             _context = context;
         }
+        [AllowAnonymous]
         [Route("/", Order = -1)]
         public IActionResult Index()
         {
@@ -124,13 +126,13 @@ namespace SchoolManager.Areas.MainScreen.Controllers
         {
             return View();
         }
-
+        [AllowAnonymous]
         [Route("/Tramites")]
         public IActionResult Tramites()
         {
             return View();
         }
-
+        [AllowAnonymous]
         [Route("/Foro")]
         public IActionResult Foro()
         {

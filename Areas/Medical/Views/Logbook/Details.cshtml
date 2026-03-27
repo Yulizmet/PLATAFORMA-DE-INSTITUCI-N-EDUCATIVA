@@ -1,0 +1,175 @@
+﻿@model SchoolManager.Models.medical_logbook
+
+@{
+    Layout = "~/Areas/Medical/Views/Shared/_LayoutDashboard.cshtml";
+    ViewData["Title"] = "Detalle de Atención Clínica";
+}
+
+<div class="dashboard-header">
+    <div class="header-content">
+        <h2 class="text-white">DETALLE DE ATENCIÓN CLÍNICA</h2>
+        <p class="mb-0">Sistema Médico - Bitácoras Clínicas</p>
+    </div>
+</div>
+
+<div class="container mt-4">
+    <div class="card p-4 shadow-sm">
+
+        <!-- SOLO ESTO SE CAPTURA EN EL PDF -->
+        <div id="documento-pdf">
+
+            <div id="encabezado-pdf" style="display:none; text-align:center; margin-bottom:20px;">
+                <h4 style="margin:0;">DEPARTAMENTO MÉDICO</h4>
+                <p style="margin:0; font-size:13px;">Reporte de Atención Clínica</p>
+                <hr style="border-top:2px solid #dc3545; margin-top:10px;">
+            </div>
+
+            <h5 class="section-title">DATOS DEL ALUMNO</h5>
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <div class="info-block">
+                        <label class="fw-bold text-uppercase">Matrícula</label>
+                        <div class="info-box">@Model.MatriculaTemp</div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="info-block">
+                        <label class="fw-bold text-uppercase">Folio</label>
+                        <div class="info-box fw-bold">@Model.Folio</div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="info-block">
+                        <label class="fw-bold text-uppercase">Fecha y Hora</label>
+                        <div class="info-box">@Model.FechaHora.ToString("dd/MM/yyyy hh:mm tt")</div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="info-block">
+                        <label class="fw-bold text-uppercase">Nombre del Alumno</label>
+                        <div class="info-box">@Model.NombreCompletoTemp</div>
+                    </div>
+                </div>
+            </div>
+
+            <hr class="section-divider" />
+
+            <h5 class="section-title">DATOS DE LA ATENCIÓN</h5>
+            <div class="row g-4">
+                <div class="col-md-6">
+                    <div class="info-block">
+                        <label class="fw-bold text-uppercase">Motivo de Consulta</label>
+                        <div class="info-box">@Model.MotivoConsulta</div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="info-block">
+                        <label class="fw-bold text-uppercase">Signos Vitales</label>
+                        <div class="info-box">@Model.SignosVitales</div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="info-block">
+                        <label class="fw-bold text-uppercase">Estado</label>
+                        <div class="mt-2">
+                            @switch (Model.Estado)
+                            {
+                                case "Estable":
+                                    <span class="estado-badge estado-estable">Estable</span>
+                                    break;
+                                case "Urgente":
+                                    <span class="estado-badge estado-urgente">Urgente</span>
+                                    break;
+                                case "Crítico":
+                                    <span class="estado-badge estado-critico">Crítico</span>
+                                    break;
+                                case "Observación":
+                                    <span class="estado-badge estado-observacion">Observación</span>
+                                    break;
+                                case "Alta":
+                                    <span class="estado-badge estado-alta">Alta</span>
+                                    break;
+                                default:
+                                    <span class="estado-badge estado-default">@Model.Estado</span>
+                                    break;
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-4">
+                <div class="info-block">
+                    <label class="fw-bold text-uppercase">Observaciones Clínicas</label>
+                    <div class="info-box">@Model.Observaciones</div>
+                </div>
+            </div>
+
+            <div class="mt-4">
+                <div class="info-block">
+                    <label class="fw-bold text-uppercase">Tratamiento / Acción realizada</label>
+                    <div class="info-box">@Model.Tratamiento</div>
+                </div>
+            </div>
+
+        </div>
+        <!-- FIN DOCUMENTO PDF -->
+
+        <hr class="section-divider" />
+
+        <div class="d-flex justify-content-between mt-4">
+            <a asp-action="Index" class="btn" style="border: 1.5px solid #6c757d;">
+                REGRESAR
+            </a>
+            <div class="d-flex gap-2">
+                <button onclick="descargarPDF()" class="btn" style="border: 1.5px solid #6c757d;">
+                    DESCARGAR PDF
+                </button>
+                <a asp-action="Edit"
+                   asp-route-id="@Model.Id"
+                   class="btn" style="border: 1.5px solid #6c757d;">
+                    EDITAR BITÁCORA
+                </a>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script>
+        function descargarPDF() {
+            var encabezado = document.getElementById('encabezado-pdf');
+            encabezado.style.display = 'block';
+            window.scrollTo(0, 0);
+
+            setTimeout(function () {
+                var opciones = {
+                    margin: 10,
+                    filename: 'Bitacora_' + '@Model.MatriculaTemp' + '.pdf',
+                    image: { type: 'jpeg', quality: 0.98 },
+                    html2canvas: {
+                        scale: 1.5,
+                        useCORS: true,
+                        scrollX: 0,
+                        scrollY: 0
+                    },
+                    jsPDF: {
+                        unit: 'mm',
+                        format: 'letter',
+                        orientation: 'portrait'
+                    }
+                };
+
+                html2pdf()
+                    .set(opciones)
+                    .from(document.getElementById('documento-pdf'))
+                    .save()
+                    .then(function () {
+                        encabezado.style.display = 'none';
+                    });
+            }, 300);
+        }
+    </script>
+}

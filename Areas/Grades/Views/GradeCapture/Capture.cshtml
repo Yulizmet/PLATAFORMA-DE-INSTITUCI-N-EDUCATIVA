@@ -1,20 +1,28 @@
 ﻿@using static SchoolManager.Areas.Grades.Controllers.GradeCaptureController
+@using SchoolManager.Areas.Grades.ViewModels.Breadcrumbs;
 @model SchoolManager.Areas.Grades.ViewModels.GradeCapture.GradeCaptureViewModel
 
 @{
     ViewData["Title"] = $"Capturar Calificaciones - {Model.SubjectName}";
     Layout = "~/Areas/MainScreen/Views/Shared/_Layout.cshtml";
-
+    var breadcrumbs = new BreadcrumbViewModel();
+    breadcrumbs.AddItem("Calificaciones", "/CalificacionesDocente");
+    breadcrumbs.AddItem("Mis Clases", "/Grades/GradeCapture/MyClasses");
+    breadcrumbs.AddItem(
+        @Model.SubjectName + " - " + @Model.GroupName,
+        $"/Grades/GradeCapture/SelectUnit?teacherSubjectGroupId={Model.TeacherSubjectGroupId}"
+    ); breadcrumbs.AddItem("Unidad" + @Model.UnitNumber);
 }
+<partial name="_Breadcrumb" model="breadcrumbs" />
 
 <div class="container-fluid py-4">
-    <nav aria-label="breadcrumb" class="mb-4">
+@*     <nav aria-label="breadcrumb" class="mb-4">
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a asp-action="MyClasses">Mis Clases</a></li>
             <li class="breadcrumb-item"><a asp-action="SelectUnit" asp-route-teacherSubjectGroupId="@Model.TeacherSubjectGroupId">@Model.SubjectName</a></li>
             <li class="breadcrumb-item active">Unidad @Model.UnitNumber</li>
         </ol>
-    </nav>
+    </nav> *@
 
     <div class="sistema-card">
         <!-- Botón de importación -->

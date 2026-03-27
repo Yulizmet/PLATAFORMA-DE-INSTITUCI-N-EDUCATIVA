@@ -1,6 +1,12 @@
 @model SchoolManager.Areas.SocialService.ViewModels.AttendanceListViewModel
 
-<h3>Tomar Lista - Servicio Social</h3>
+<div class="mb-3 d-flex justify-content-between align-items-center">
+    <a href="/SocialService/Teacher/Dashboard" class="btn btn-secondary">
+        <i class="bi bi-arrow-left"></i> Regresar al Dashboard
+    </a>
+</div>
+
+<h3 class="text-center">Lista de Asistencia</h3>
 
 @if (TempData["Success"] != null)
 {
@@ -18,18 +24,12 @@
     </div>
 }
 
-<div class="mb-3 d-flex justify-content-between align-items-center">
-    <a href="/SocialService/Teacher/Dashboard" class="btn btn-secondary">
-        <i class="bi bi-arrow-left"></i> Regresar al Dashboard
-    </a>
-</div>
-
 <!-- Filtros -->
 <div class="card mb-3">
     <div class="card-body py-3">
         <form method="get" action="/SocialService/Teacher/Asistencia" id="filterForm">
             <div class="row g-3 align-items-end">
-                <div class="col-md-4">
+                <div class="col-md-3">
                     <label for="searchName" class="form-label">
                         <i class="bi bi-search"></i> Buscar Alumno
                     </label>
@@ -37,12 +37,12 @@
                            value="@ViewBag.SearchName" placeholder="Escribe para buscar...">
                 </div>
 
-                <div class="col-md-3">
+                <div class="col-md-2">
                     <label for="groupFilter" class="form-label">
-                        <i class="bi bi-funnel"></i> Filtrar por Grupo
+                        <i class="bi bi-funnel"></i> Grupo
                     </label>
                     <select id="groupFilter" name="groupFilter" class="form-select" onchange="this.form.submit()">
-                        <option value="">Todos los grupos</option>
+                        <option value="">Todos</option>
                         @if (ViewBag.Groups != null)
                         {
                             foreach (var group in ViewBag.Groups)
@@ -53,9 +53,25 @@
                     </select>
                 </div>
 
-                <div class="col-md-3">
+                <div class="col-md-2">
+                    <label for="dateFrom" class="form-label">
+                        <i class="bi bi-calendar-event"></i> Desde
+                    </label>
+                    <input type="date" class="form-control" id="dateFrom" name="dateFrom"
+                           value="@ViewBag.DateFrom" />
+                </div>
+
+                <div class="col-md-2">
+                    <label for="dateTo" class="form-label">
+                        <i class="bi bi-calendar-event"></i> Hasta
+                    </label>
+                    <input type="date" class="form-control" id="dateTo" name="dateTo"
+                           value="@ViewBag.DateTo" />
+                </div>
+
+                <div class="col-md-1">
                     <label for="pageSize" class="form-label">
-                        <i class="bi bi-list-ol"></i> Registros
+                        <i class="bi bi-list-ol"></i> Reg.
                     </label>
                     <select id="pageSize" name="pageSize" class="form-select" onchange="this.form.submit()">
                         @foreach (var size in new[] { 10, 25, 50, 100 })
@@ -71,6 +87,17 @@
                     </button>
                 </div>
             </div>
+
+            @if (!string.IsNullOrEmpty(ViewBag.DateFrom?.ToString()) || !string.IsNullOrEmpty(ViewBag.DateTo?.ToString()))
+            {
+                <div class="mt-2">
+                    <a href="/SocialService/Teacher/Asistencia?sortBy=@ViewBag.CurrentSort&sortOrder=@ViewBag.SortOrder&groupFilter=@ViewBag.GroupFilter&searchName=@ViewBag.SearchName&pageSize=@ViewBag.PageSize&page=1"
+                       class="btn btn-outline-secondary btn-sm">
+                        <i class="bi bi-x-circle"></i> Limpiar filtros de fecha
+                    </a>
+                </div>
+            }
+
             <input type="hidden" name="sortBy" value="@ViewBag.CurrentSort" />
             <input type="hidden" name="sortOrder" value="@ViewBag.SortOrder" />
             <input type="hidden" name="page" value="1" />
@@ -104,6 +131,8 @@
                 <input type="hidden" name="searchName" value="@ViewBag.SearchName" />
                 <input type="hidden" name="page" value="@ViewBag.CurrentPage" />
                 <input type="hidden" name="pageSize" value="@ViewBag.PageSize" />
+                <input type="hidden" name="dateFrom" value="@ViewBag.DateFrom" />
+                <input type="hidden" name="dateTo" value="@ViewBag.DateTo" />
 
                 @foreach (var student in Model.Students)
                 {
@@ -121,7 +150,7 @@
                                     string SortUrl(string column)
                                     {
                                         string order = (currentSort == column && currentOrder == "asc") ? "desc" : "asc";
-                                        return $"?sortBy={column}&sortOrder={order}&groupFilter={ViewBag.GroupFilter}&searchName={ViewBag.SearchName}&pageSize={ViewBag.PageSize}&page=1";
+                                        return $"?sortBy={column}&sortOrder={order}&groupFilter={ViewBag.GroupFilter}&searchName={ViewBag.SearchName}&pageSize={ViewBag.PageSize}&page=1&dateFrom={ViewBag.DateFrom}&dateTo={ViewBag.DateTo}";
                                     }
 
                                     string SortIcon(string column)
@@ -281,7 +310,7 @@
         <ul class="pagination justify-content-center">
             <li class="page-item @(ViewBag.CurrentPage == 1 ? "disabled" : "")">
                 <a class="page-link"
-                   href="?sortBy=@ViewBag.CurrentSort&sortOrder=@ViewBag.SortOrder&groupFilter=@ViewBag.GroupFilter&searchName=@ViewBag.SearchName&pageSize=@ViewBag.PageSize&page=@(ViewBag.CurrentPage - 1)"
+                   href="?sortBy=@ViewBag.CurrentSort&sortOrder=@ViewBag.SortOrder&groupFilter=@ViewBag.GroupFilter&searchName=@ViewBag.SearchName&pageSize=@ViewBag.PageSize&page=@(ViewBag.CurrentPage - 1)&dateFrom=@ViewBag.DateFrom&dateTo=@ViewBag.DateTo"
                    aria-label="Anterior">
                     <span aria-hidden="true">&laquo; Anterior</span>
                 </a>
@@ -297,7 +326,7 @@
                 {
                     <li class="page-item">
                         <a class="page-link"
-                           href="?sortBy=@ViewBag.CurrentSort&sortOrder=@ViewBag.SortOrder&groupFilter=@ViewBag.GroupFilter&searchName=@ViewBag.SearchName&pageSize=@ViewBag.PageSize&page=1">1</a>
+                           href="?sortBy=@ViewBag.CurrentSort&sortOrder=@ViewBag.SortOrder&groupFilter=@ViewBag.GroupFilter&searchName=@ViewBag.SearchName&pageSize=@ViewBag.PageSize&page=1&dateFrom=@ViewBag.DateFrom&dateTo=@ViewBag.DateTo">1</a>
                     </li>
                     if (startPage > 2)
                     {
@@ -309,7 +338,7 @@
                 {
                     <li class="page-item @(i == currentPage ? "active" : "")">
                         <a class="page-link"
-                           href="?sortBy=@ViewBag.CurrentSort&sortOrder=@ViewBag.SortOrder&groupFilter=@ViewBag.GroupFilter&searchName=@ViewBag.SearchName&pageSize=@ViewBag.PageSize&page=@i">@i</a>
+                           href="?sortBy=@ViewBag.CurrentSort&sortOrder=@ViewBag.SortOrder&groupFilter=@ViewBag.GroupFilter&searchName=@ViewBag.SearchName&pageSize=@ViewBag.PageSize&page=@i&dateFrom=@ViewBag.DateFrom&dateTo=@ViewBag.DateTo">@i</a>
                     </li>
                 }
 
@@ -321,14 +350,14 @@
                     }
                     <li class="page-item">
                         <a class="page-link"
-                           href="?sortBy=@ViewBag.CurrentSort&sortOrder=@ViewBag.SortOrder&groupFilter=@ViewBag.GroupFilter&searchName=@ViewBag.SearchName&pageSize=@ViewBag.PageSize&page=@totalPages">@totalPages</a>
+                           href="?sortBy=@ViewBag.CurrentSort&sortOrder=@ViewBag.SortOrder&groupFilter=@ViewBag.GroupFilter&searchName=@ViewBag.SearchName&pageSize=@ViewBag.PageSize&page=@totalPages&dateFrom=@ViewBag.DateFrom&dateTo=@ViewBag.DateTo">@totalPages</a>
                     </li>
                 }
             }
 
             <li class="page-item @(ViewBag.CurrentPage >= ViewBag.TotalPages ? "disabled" : "")">
                 <a class="page-link"
-                   href="?sortBy=@ViewBag.CurrentSort&sortOrder=@ViewBag.SortOrder&groupFilter=@ViewBag.GroupFilter&searchName=@ViewBag.SearchName&pageSize=@ViewBag.PageSize&page=@(ViewBag.CurrentPage + 1)"
+                   href="?sortBy=@ViewBag.CurrentSort&sortOrder=@ViewBag.SortOrder&groupFilter=@ViewBag.GroupFilter&searchName=@ViewBag.SearchName&pageSize=@ViewBag.PageSize&page=@(ViewBag.CurrentPage + 1)&dateFrom=@ViewBag.DateFrom&dateTo=@ViewBag.DateTo"
                    aria-label="Siguiente">
                     <span aria-hidden="true">Siguiente &raquo;</span>
                 </a>

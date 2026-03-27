@@ -18,7 +18,6 @@
     <Content Remove="Areas\Procedures\Templates\**" />
     <EmbeddedResource Remove="Areas\Procedures\Templates\**" />
     <None Remove="Areas\Procedures\Templates\**" />
-    <None Remove="Migrations\**" />
   </ItemGroup>
 
 
@@ -27,6 +26,8 @@
     <PackageReference Include="BCrypt.Net-Next" Version="4.1.0" />
     <PackageReference Include="ClosedXML" Version="0.105.0" />
     <PackageReference Include="DinkToPdf" Version="1.0.8" />
+    <PackageReference Include="itext" Version="9.5.0" />
+    <PackageReference Include="itext.bouncy-castle-adapter" Version="9.5.0" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.ViewFeatures" Version="2.3.9" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.23">
       <PrivateAssets>all</PrivateAssets>
@@ -47,13 +48,14 @@
     <Folder Include="Areas\Grades\Controllers\" />
     <Folder Include="Areas\Grades\Views\" />
     <Folder Include="Areas\Grades\Views\" />
+    <Folder Include="Migrations\" />
     <None Include="wwwroot\templates\Notification.html" />
     <Folder Include="Areas\Procedures\Controllers\" />
     <Folder Include="Areas\Procedures\Views\" />
     <Folder Include="Areas\Procedures\Templates\" />
-    <Folder Include="Migrations\" />
     <Folder Include="Areas\Tutorship\Controllers\" />
-    <Folder Include="Areas\Tutorship\Views\" />
+    <Folder Include="wwwroot\uploads\interview\" />
+    <Folder Include="wwwroot\uploads\seguimiento\" />
 
 	  <None Update="libwkhtmltox.dll">
 		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>

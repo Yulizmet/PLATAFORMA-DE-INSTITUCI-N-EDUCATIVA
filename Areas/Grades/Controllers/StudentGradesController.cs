@@ -1,12 +1,16 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using SchoolManager.Data;
-using SchoolManager.Models;
 using SchoolManager.Areas.Grades.ViewModels.StudentGrades;
+using SchoolManager.Data;
+using SchoolManager.Helpers;
+using SchoolManager.Models;
 
 namespace SchoolManager.Areas.Grades.Controllers
 {
     [Area("Grades")]
+    [Authorize(Roles = "Student")]
+
     public class StudentGradesController : Controller
     {
         private readonly AppDbContext _context;
@@ -21,8 +25,7 @@ namespace SchoolManager.Areas.Grades.Controllers
         public async Task<IActionResult> MyGrades()
 #pragma warning restore CS1998 // El método asincrónico carece de operadores "await" y se ejecutará de forma sincrónica
         {
-            // ⚠️ TEMPORAL: ID del estudiante para pruebas (cambiar cuando haya autenticación)
-            int studentId = 11; // Cambia esto por un ID real de estudiante en tu BD
+            int studentId = User.GetUserId();
 
             return RedirectToAction(nameof(Details), new { studentId });
         }
