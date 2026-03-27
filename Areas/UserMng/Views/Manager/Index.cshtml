@@ -5,81 +5,223 @@
     ViewData["Title"] = "Panel de Control";
 }
 
-<div class="d-flex justify-content-between align-items-center mb-4 p-3 bg-white shadow-sm rounded">
-    <div>
-        <h2 class="mb-0 text-dark"><i class="bi bi-clipboard-data me-2"></i>Panel de Control</h2>
-        <p class="text-muted small mb-0">Vista general de usuarios y roles del sistema.</p>
-    </div>
-</div>
-
-<div class="row mb-4">
-    <div class="col-md-4">
-        <div class="card border-0 shadow-sm">
-            <div class="card-body d-flex align-items-center">
-                <div class="rounded-circle bg-primary bg-opacity-10 p-3 me-3">
-                    <i class="bi bi-people-fill fs-3 text-primary"></i>
-                </div>
-                <div>
-                    <h3 class="mb-0">@Model.TotalActiveUsers</h3>
-                    <small class="text-muted">Usuarios activos</small>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-4">
-        <div class="card border-0 shadow-sm">
-            <div class="card-body d-flex align-items-center">
-                <div class="rounded-circle bg-success bg-opacity-10 p-3 me-3">
-                    <i class="bi bi-person-vcard-fill fs-3 text-success"></i>
-                </div>
-                <div>
-                    <h3 class="mb-0">@Model.TotalActivePersons</h3>
-                    <small class="text-muted">Personas registradas</small>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-4">
-        <div class="card border-0 shadow-sm">
-            <div class="card-body d-flex align-items-center">
-                <div class="rounded-circle bg-warning bg-opacity-10 p-3 me-3">
-                    <i class="bi bi-diagram-3-fill fs-3 text-warning"></i>
-                </div>
-                <div>
-                    <h3 class="mb-0">@Model.Roles.Count</h3>
-                    <small class="text-muted">Roles activos</small>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<h5 class="text-muted mb-3"><i class="bi bi-grid-fill me-2"></i>Roles del sistema</h5>
-
-<div class="row">
-    @foreach (var role in Model.Roles)
-    {
-        <div class="col-md-4 col-lg-3 mb-3">
-            <div class="card border-0 shadow-sm h-100">
-                <div class="card-body text-center">
-                    <div class="rounded-circle bg-@(role.Color) bg-opacity-10 d-inline-flex p-3 mb-3">
-                        <i class="bi @role.Icon fs-2 text-@(role.Color)"></i>
-                    </div>
-                    <h6 class="fw-bold">@role.DisplayName</h6>
-                    <p class="text-muted small mb-2" style="min-height: 40px;">
-                        @role.Description
-                    </p>
-                    <div class="mb-3">
-                        <span class="badge bg-@(role.Color) bg-opacity-75 fs-6">
-                            @role.ActiveCount
-                        </span>
-                        <small class="text-muted d-block mt-1">usuarios activos</small>
-                    </div>
-                    <a href="@role.Url" class="btn btn-outline-@(role.Color) btn-sm w-100">
-                        Gestionar
-                    </a>
-                </div>
-            </div>
-        </div>
+<style>
+    .manager-dashboard-page {
+        --mgr-primary: #8C1B1B;
+        --mgr-primary-light: #D42D2D;
+        --mgr-dark: #620900;
+        --mgr-accent: #B1A596;
+        --mgr-page: #f4f4f4;
+        --mgr-card: #ffffff;
+        --mgr-text: #1f2937;
+        --mgr-muted: #6b7280;
+        --mgr-border: rgba(177,165,150,.35);
+        --mgr-shadow: 0 10px 28px rgba(0,0,0,.06);
+        --mgr-shadow-hover: 0 16px 34px rgba(0,0,0,.10);
     }
+
+        .manager-dashboard-page,
+        .manager-dashboard-page p,
+        .manager-dashboard-page span,
+        .manager-dashboard-page a,
+        .manager-dashboard-page .btn,
+        .manager-dashboard-page .badge,
+        .manager-dashboard-page small {
+            font-family: 'Inter', sans-serif !important;
+        }
+
+            .manager-dashboard-page h1,
+            .manager-dashboard-page h2,
+            .manager-dashboard-page h3,
+            .manager-dashboard-page h4,
+            .manager-dashboard-page h5,
+            .manager-dashboard-page h6 {
+                font-family: 'Merriweather', serif !important;
+            }
+
+    .manager-header {
+        background: linear-gradient(135deg, #8C1B1B, #D42D2D);
+        border-radius: 22px;
+        padding: 1.4rem 1.5rem;
+        color: #fff;
+        box-shadow: 0 10px 26px rgba(140,27,27,.18);
+    }
+
+        .manager-header h2,
+        .manager-header p,
+        .manager-header i {
+            color: #fff !important;
+        }
+
+    .manager-stat-card {
+        border: none !important;
+        border-radius: 22px !important;
+        box-shadow: var(--mgr-shadow) !important;
+        overflow: hidden;
+        background: var(--mgr-card);
+        transition: all .22s ease;
+    }
+
+        .manager-stat-card:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--mgr-shadow-hover) !important;
+        }
+
+    .manager-stat-icon {
+        width: 64px;
+        height: 64px;
+        border-radius: 18px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 1rem;
+    }
+
+    .manager-role-card {
+        border: none !important;
+        border-radius: 22px !important;
+        box-shadow: var(--mgr-shadow) !important;
+        background: #fff;
+        transition: all .22s ease;
+    }
+
+        .manager-role-card:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--mgr-shadow-hover) !important;
+        }
+
+    .manager-role-icon {
+        width: 74px;
+        height: 74px;
+        border-radius: 20px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .manager-role-card .badge {
+        border-radius: 999px;
+        padding: .65rem .85rem;
+        font-size: .95rem;
+        font-weight: 700;
+        background: #8C1B1B !important;
+        color: #fff !important;
+    }
+
+    .manager-role-card .btn {
+        border-radius: 14px;
+        font-weight: 700;
+    }
+
+    .manager-section-title {
+        color: var(--mgr-text);
+    }
+
+    .btn-manager-outline {
+        border: 1px solid #8C1B1B !important;
+        color: #8C1B1B !important;
+        background: transparent !important;
+    }
+
+        .btn-manager-outline:hover,
+        .btn-manager-outline:focus {
+            background: #8C1B1B !important;
+            color: #fff !important;
+            border-color: #8C1B1B !important;
+        }
+
+    @@media (max-width: 767.98px) {
+        .manager-header {
+            padding: 1.2rem;
+        }
+    }
+
+
+</style>
+
+<div class="manager-dashboard-page">
+    <div class="manager-header d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="mb-1"><i class="bi bi-clipboard-data me-2"></i>Panel de Control</h2>
+            <p class="small mb-0">Vista general de usuarios y roles del sistema.</p>
+        </div>
+    </div>
+
+    <div class="row mb-4 g-3">
+        <div class="col-md-4">
+            <div class="card manager-stat-card h-100">
+                <div class="card-body d-flex align-items-center">
+                    <div class="manager-stat-icon" style="background: rgba(140,27,27,.10); color:#8C1B1B;">
+                        <i class="bi bi-people-fill fs-3"></i>
+                    </div>
+                    <div>
+                        <h3 class="mb-0">@Model.TotalActiveUsers</h3>
+                        <small class="text-muted">Usuarios activos</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card manager-stat-card h-100">
+                <div class="card-body d-flex align-items-center">
+                    <div class="manager-stat-icon" style="background: rgba(177,165,150,.18); color:#620900;">
+                        <i class="bi bi-person-vcard-fill fs-3"></i>
+                    </div>
+                    <div>
+                        <h3 class="mb-0">@Model.TotalActivePersons</h3>
+                        <small class="text-muted">Personas registradas</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card manager-stat-card h-100">
+                <div class="card-body d-flex align-items-center">
+                    <div class="manager-stat-icon" style="background: rgba(212,45,45,.10); color:#D42D2D;">
+                        <i class="bi bi-diagram-3-fill fs-3"></i>
+                    </div>
+                    <div>
+                        <h3 class="mb-0">@Model.Roles.Count</h3>
+                        <small class="text-muted">Roles activos</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <h5 class="manager-section-title mb-3"><i class="bi bi-grid-fill me-2"></i>Roles del sistema</h5>
+
+    <div class="row">
+        @foreach (var role in Model.Roles)
+        {
+            <div class="col-md-4 col-lg-3 mb-3">
+                <div class="card manager-role-card h-100">
+                    <div class="card-body text-center">
+                        <div class="manager-role-icon mb-3" style="background: rgba(177,165,150,.18);">
+                            <i class="bi @role.Icon fs-2" style="color:#8C1B1B;"></i>
+                        </div>
+
+                        <h6 class="fw-bold">@role.DisplayName</h6>
+
+                        <p class="text-muted small mb-2" style="min-height: 40px;">
+                            @role.Description
+                        </p>
+
+                        <div class="mb-3">
+                            <span class="badge" style="background:#8C1B1B; color:#fff;">
+                                @role.ActiveCount
+                            </span>
+                            <small class="text-muted d-block mt-1">usuarios activos</small>
+                        </div>
+
+                        <a href="@role.Url" class="btn btn-manager-outline btn-sm w-100">
+                            Gestionar
+                        </a>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
 </div>
