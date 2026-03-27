@@ -4,14 +4,13 @@
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 shadow rounded-4">
             <div class="modal-body p-4 text-center">
+                <h3 class="fw-bold text-dark">@Model.ProcedureName</h3>
+                <p class="text-muted small mb-4">Folio: <span class="fw-bold">@Model.Folio</span></p>
                 <div class="mb-3">
-                    <span class="badge rounded-pill px-4 py-2" style="background-color: @Model.StatusColor; color: white;">
+                    <span class="badge rounded-pill px-4 py-2" style="background-color: @Model.BackgroundColor; color: @Model.TextColor;">
                         @Model.StatusName
                     </span>
                 </div>
-                <h3 class="fw-bold text-dark">@Model.ProcedureName</h3>
-                <p class="text-muted small mb-4">Folio: <span class="fw-bold">@Model.Folio</span></p>
-
                 <div class="bg-light p-3 rounded-3 mb-4 text-start">
                     <label class="small fw-bold text-muted text-uppercase d-block mb-1">Última actualización:</label>
                     <p class="mb-2">@Model.LastUpdate.ToString("dd/MM/yyyy hh:mm tt")</p>

@@ -102,7 +102,8 @@ namespace SchoolManager.Areas.Procedures.Controllers
                 Folio = request.Folio,
                 ProcedureName = request.ProcedureType?.Name!,
                 StatusName = request.ProcedureFlow?.ProcedureStatus?.Name!,
-                StatusColor = request.ProcedureFlow?.ProcedureStatus?.BackgroundColor!,
+                BackgroundColor = request.ProcedureFlow?.ProcedureStatus?.BackgroundColor!,
+                TextColor = request.ProcedureFlow?.ProcedureStatus?.TextColor!,
                 LastUpdate = request.DateUpdated ?? request.DateCreated,
                 AdminComment = request.ProcedureMonitorings?.OrderByDescending(m => m.DateUpdated!).Select(m => m.Comment!).FirstOrDefault()
             };
