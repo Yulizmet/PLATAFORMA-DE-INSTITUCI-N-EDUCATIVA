@@ -412,7 +412,7 @@ textarea {
 /* ==========================================================
    DASHBOARD
    ========================================================== */
-.dashboard-header {
+/*.dashboard-header {
     background: linear-gradient(135deg, var(--brand-primary), var(--brand-primary-light));
     color: var(--brand-white);
     border-radius: var(--radius-xl);
@@ -421,6 +421,16 @@ textarea {
     padding-bottom: 5rem;
     box-shadow: 0 8px 24px rgba(140, 27, 27, 0.26);
 }
+*/
+.dashboard-header {
+    background: linear-gradient(135deg, var(--brand-primary), var(--brand-primary-light));
+    color: var(--brand-white);
+    border-radius: var(--radius-xl);
+    padding: 1.5rem 2rem 3rem 2rem; /* Arriba, Derecha, Abajo (espacio para tarjetas), Izquierda */
+    margin-bottom: -1.5rem; /* Jalón hacia arriba más suave */
+    box-shadow: 0 8px 24px rgba(140, 27, 27, 0.26);
+}
+
 
 .search-input {
     border: none;
