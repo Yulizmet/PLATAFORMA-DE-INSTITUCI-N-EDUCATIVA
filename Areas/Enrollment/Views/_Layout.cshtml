@@ -332,6 +332,32 @@
                 padding: .9rem !important;
             }
         }
+
+        
+        .btn-regresar {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 10px 18px;
+            border-radius: 10px;
+            background: #B1A596;
+            border: 1px solid #B1A596;
+            color: #ffffff;
+            font-weight: 600;
+            text-decoration: none;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            transition: all 0.2s ease-in-out;
+        }
+
+            .btn-regresar:hover {
+                background: #9d9385; /* tono más oscuro */
+                border-color: #9d9385;
+                color: #ffffff;
+                transform: translateY(-1px);
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            }
+    
     </style>
 
     @RenderSection("Styles", required: false)
@@ -392,6 +418,17 @@
                                     <div class="step-vertical-title">Finalizar</div>
                                     <div class="step-vertical-desc">Enviar solicitud</div>
                                 </div>
+                            </div>
+
+
+                            <div class="mt-3 d-flex justify-content-center">
+                                <a asp-area="MainScreen"
+                                   asp-controller="MainScreen"
+                                   asp-action="Tramites"
+                                   class="btn-regresar">
+                                 
+                                  <span>Regresar</span>
+                                </a>
                             </div>
 
                         </div>

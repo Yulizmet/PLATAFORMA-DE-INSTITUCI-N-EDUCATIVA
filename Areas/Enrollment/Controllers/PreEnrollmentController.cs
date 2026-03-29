@@ -1,4 +1,6 @@
 ﻿using System.Security.Cryptography;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -6,12 +8,12 @@ using SchoolManager.Areas.Enrollment.ViewModels;
 using SchoolManager.Data;
 using SchoolManager.Models;
 using SchoolManager.Models.ViewModels;
-using Microsoft.AspNetCore.Cors;
 
 
 namespace SchoolManager.Areas.Enrollment.Controllers
 {
     [Area("Enrollment")]
+
     public class PreEnrollmentController : Controller
     {
         private readonly AppDbContext _context;
@@ -105,6 +107,8 @@ namespace SchoolManager.Areas.Enrollment.Controllers
         // =====================================================================
 
         // GET: Enrollment/PreEnrollment/Create
+       
+        [AllowAnonymous]
         public IActionResult Create()
         {
             ViewData["PasoActual"] = 1;
@@ -119,6 +123,7 @@ namespace SchoolManager.Areas.Enrollment.Controllers
         // POST: Enrollment/PreEnrollment/Create
         // Recibe un ViewModel con los datos del formulario de inscripción.
         // Guarda en preenrollment_general y tablas relacionadas, genera folio y matrícula.
+        [AllowAnonymous]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(PreEnrollmentCreateViewModel vm)
@@ -234,6 +239,7 @@ namespace SchoolManager.Areas.Enrollment.Controllers
 
         // GET: Enrollment/PreEnrollment/FolioGenerado/5
         // Muestra al usuario su folio de pago recién generado.
+        [AllowAnonymous]
         public async Task<IActionResult> FolioGenerado(int id)
         {
             var general = await _context.PreenrollmentGenerals
@@ -252,6 +258,7 @@ namespace SchoolManager.Areas.Enrollment.Controllers
         // =====================================================================
 
         // GET: Enrollment/PreEnrollment/ValidateFolio
+        [AllowAnonymous]
         [HttpGet]
         public IActionResult ValidateFolio()
         {
@@ -259,6 +266,7 @@ namespace SchoolManager.Areas.Enrollment.Controllers
         }
 
         // POST: Enrollment/PreEnrollment/ValidateFolio
+        [AllowAnonymous]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ValidateFolio(string folio)
@@ -303,6 +311,7 @@ namespace SchoolManager.Areas.Enrollment.Controllers
         }
 
         // GET: Enrollment/PreEnrollment/CrearUsuarioAlumno
+        [AllowAnonymous]
         [HttpGet]
         public async Task<IActionResult> CrearUsuarioAlumno(int id)
         {
@@ -332,7 +341,7 @@ namespace SchoolManager.Areas.Enrollment.Controllers
                 PersonId = pre.PersonId,
                 Folio = pre.Folio ?? "",
                 Matricula = pre.Matricula ?? "",
-                Username = pre.Matricula ?? "",
+               
                 Carrera = pre.Career?.name_career ?? "",
                 NombreCompleto = $"{pre.Person.FirstName} {pre.Person.LastNamePaternal} {pre.Person.LastNameMaternal}",
                 Email = pre.Person.Email ?? ""
@@ -342,6 +351,7 @@ namespace SchoolManager.Areas.Enrollment.Controllers
         }
 
         // POST: Enrollment/PreEnrollment/CrearUsuarioAlumno
+        [AllowAnonymous]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> CrearUsuarioAlumno(CreateStudentUserViewModel vm)
@@ -476,6 +486,7 @@ namespace SchoolManager.Areas.Enrollment.Controllers
         // =====================================================================
 
         // GET: Enrollment/PreEnrollment/SubirDocumentos
+        [AllowAnonymous]
         [HttpGet]
         public IActionResult SubirDocumentos(int id)
         {
@@ -502,6 +513,7 @@ namespace SchoolManager.Areas.Enrollment.Controllers
         // =====================================================================
 
         // GET: Enrollment/PreEnrollment/ConfirmarPreinscripcion
+        [AllowAnonymous]
         [HttpGet]
         public IActionResult ConfirmarPreinscripcion()
         {
@@ -515,6 +527,7 @@ namespace SchoolManager.Areas.Enrollment.Controllers
         }
 
         // POST: Enrollment/PreEnrollment/ConfirmarPreinscripcion
+        [AllowAnonymous]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ConfirmarPreinscripcion(PreEnrollmentViewModel vm)
@@ -701,7 +714,8 @@ namespace SchoolManager.Areas.Enrollment.Controllers
                 throw;
             }
         }
-
+        // vista de finalizar
+        [AllowAnonymous]
         [HttpGet]
         public async Task<IActionResult> Finalizar(int id)
         {
@@ -755,7 +769,7 @@ namespace SchoolManager.Areas.Enrollment.Controllers
         }
 
         // GET: Enrollment/PreEnrollment
-
+        [AllowAnonymous]
         public IActionResult Index()
         {
             return RedirectToAction(nameof(Create));
