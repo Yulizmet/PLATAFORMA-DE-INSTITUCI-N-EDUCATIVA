@@ -6,6 +6,8 @@
     var createdPassword = ViewBag.CreatedPassword as string;
 }
 
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+
 <div class="login-container">
     <div class="login-card">
         <div class="login-form">
@@ -13,6 +15,12 @@
             <p class="text-muted mb-4">
                 Completa los datos para generar tu usuario.
             </p>
+            <div class="alert-info-custom">
+                <i class="fa-solid fa-circle-info"></i>
+                <span>
+                    Por favor guarda tu matrícula, la necesitarás para futuros procesos.
+                </span>
+            </div>
 
             @if (!userCreated)
             {
@@ -42,31 +50,38 @@
                     </div>
 
                     <div class="form-group">
-                        <label>Usuario</label>
-                        <input asp-for="Username" class="form-control" readonly />
-                    </div>
-
-                    <div class="form-group">
-                        <label asp-for="Email">Correo</label>
+                        <label asp-for="Email">Usuario</label>
                         <input asp-for="Email" class="form-control" />
                         <span asp-validation-for="Email" class="text-danger"></span>
                     </div>
 
                     <div class="form-group">
                         <label asp-for="Password">Contraseña</label>
-                        <input asp-for="Password" type="password" class="form-control" />
+                        <div class="password-wrapper">
+                            <input asp-for="Password" type="password" class="form-control password-input" id="Password" />
+                            <span class="toggle-password" onclick="togglePassword('Password', this)">
+                                <i class="fa-solid fa-eye"></i>
+                            </span>
+                        </div>
                         <span asp-validation-for="Password" class="text-danger"></span>
                     </div>
 
                     <div class="form-group">
                         <label asp-for="ConfirmPassword">Confirmar contraseña</label>
-                        <input asp-for="ConfirmPassword" type="password" class="form-control" />
+                        <div class="password-wrapper">
+                            <input asp-for="ConfirmPassword" type="password" class="form-control password-input" id="ConfirmPassword" />
+                            <span class="toggle-password" onclick="togglePassword('ConfirmPassword', this)">
+                                <i class="fa-solid fa-eye"></i>
+                            </span>
+                        </div>
                         <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
                     </div>
 
-                    <button type="submit" class="btn-main w-100 mt-3">
-                        Crear usuario
-                    </button>
+                    <div class="btn-container">
+                        <button type="submit" class="btn-main btn-crear">
+                            Crear usuario
+                        </button>
+                    </div>
                 </form>
             }
             else
@@ -153,6 +168,7 @@
         margin-bottom: 18px;
         display: flex;
         flex-direction: column;
+        width: 100%;
     }
 
         .form-group label {
@@ -162,6 +178,7 @@
         }
 
     .form-control {
+        width: 100%;
         border-radius: 10px;
         height: 48px;
         padding: 10px 14px;
@@ -197,6 +214,20 @@
         .btn-main:hover {
             background-color: #4e091c;
         }
+
+    .btn-container {
+        display: flex;
+        justify-content: center;
+        margin-top: 24px;
+    }
+
+    .btn-crear {
+        width: 260px;
+        max-width: 100%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
 
     .success-placeholder {
         text-align: center;
@@ -293,6 +324,34 @@
         word-break: break-word;
     }
 
+    .password-wrapper {
+        position: relative;
+        width: 100%;
+    }
+
+    .password-input {
+        width: 100%;
+        padding-right: 45px;
+    }
+
+    .toggle-password {
+        position: absolute;
+        top: 50%;
+        right: 14px;
+        transform: translateY(-50%);
+        cursor: pointer;
+        color: #666;
+        font-size: 18px;
+        z-index: 2;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+        .toggle-password:hover {
+            color: #6a0d25;
+        }
+
     @@keyframes fadeInScale {
         from {
             opacity: 0;
@@ -304,19 +363,55 @@
             transform: scale(1);
         }
     }
+
+    .alert-info-custom {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        background: #eef4ff;
+        border: 1px solid #cddcff;
+        color: #2c3e75;
+        padding: 12px 14px;
+        border-radius: 10px;
+        font-size: 0.95rem;
+        margin-bottom: 20px;
+    }
+
+        .alert-info-custom i {
+            font-size: 18px;
+            color: #4a6cf7;
+        }
 </style>
+
+<script>
+    function closeSuccessModal() {
+        window.location.href = '@Url.Action("Login", "Account", new { area = "UserMng" })';
+    }
+
+    function togglePassword(inputId, element) {
+        const input = document.getElementById(inputId);
+        const icon = element.querySelector("i");
+
+        if (input.type === "password") {
+            input.type = "text";
+            icon.classList.remove("fa-eye");
+            icon.classList.remove("fa-solid");
+            icon.classList.add("fa-eye-slash");
+            icon.classList.add("fa-solid");
+        } else {
+            input.type = "password";
+            icon.classList.remove("fa-eye-slash");
+            icon.classList.remove("fa-solid");
+            icon.classList.add("fa-eye");
+            icon.classList.add("fa-solid");
+        }
+    }
+</script>
 
 @section Scripts {
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
 
-    <script>
-        function closeSuccessModal() {
-            const modal = document.getElementById('successModal');
-            if (modal) {
-                modal.style.display = 'none';
-            }
-        }
-    </script>
+  
 }
