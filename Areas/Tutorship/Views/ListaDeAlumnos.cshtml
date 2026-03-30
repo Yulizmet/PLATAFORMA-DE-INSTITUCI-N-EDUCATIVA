@@ -20,13 +20,21 @@
 <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
 
 <div class="container-fluid p-0 mt-4">
-    <h2 class="text-center fw-bold mb-4" style="color: var(--brand-dark);">Directorio de Alumnos</h2>
+    <div class="position-relative mb-4 text-center">
+        <div class="position-absolute top-50 start-0 translate-middle-y">
+            <button type="button" onclick="history.back()" class="btn btn-sm btn-outline-secondary fw-bold shadow-sm px-3" style="border-radius: 20px;">
+                <i class="bi bi-arrow-left me-1"></i> Regresar
+            </button>
+        </div>
+
+        <h2 class="fw-bold m-0" style="color: var(--brand-dark);">Directorio de Alumnos</h2>
+    </div>
     <div class="card border-0 shadow-sm mb-5" style="border-radius: 10px;">
         <div class="card-body p-4">
             
             @if (roleId == 3)
             {
-                <form class="row g-3 align-items-end" method="get" asp-action="ListaDeAlumnos">
+                <form class="row g-3 align-items-end" method="get"  asp-controller="Alumnos" asp-action="ListaDeAlumnos">
                     <div class="col-md-4">
                         <label class="form-label fw-bold text-dark">Grado</label>
                         <select class="form-select shadow-sm" name="grado" style="border-color: #ddd;">
@@ -123,10 +131,10 @@
 
                         <td class="text-end pe-3">
                             <div class="d-flex gap-2 justify-content-end">
-                                <a asp-area="Gestion" asp-controller="Tutorship" asp-action="VerEntrevistaAlumno" asp-route-id="@alumno.UserId" class="btn btn-action-seguimiento shadow-sm btn-sm px-3 py-2">
+                                <a asp-area="Gestion" asp-controller="Seguimiento" asp-action="VerEntrevistaAlumno" asp-route-id="@alumno.UserId" class="btn btn-action-seguimiento shadow-sm btn-sm px-3 py-2">
                                     <i class="bi bi-file-text"></i> Entrevista
                                 </a>
-                                <a asp-area="Gestion" asp-controller="Tutorship" asp-action="Seguimiento" asp-route-matriculaBuscar="@matriculaAlumno" class="btn btn-action-seguimiento shadow-sm btn-sm px-3 py-2">
+                                <a asp-area="Gestion" asp-controller="Seguimiento" asp-action="Seguimiento" asp-route-matriculaBuscar="@matriculaAlumno" class="btn btn-action-seguimiento shadow-sm btn-sm px-3 py-2">
                                     <i class="bi bi-graph-up"></i> Seguimiento
                                 </a>
                             </div>

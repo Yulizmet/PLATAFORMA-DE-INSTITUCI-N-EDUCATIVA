@@ -39,7 +39,7 @@
             </div>
         </nav>
     </header>
-
+    
     <div class="offcanvas offcanvas-start offcanvas-tutorship" tabindex="-1" id="menuLateral" aria-labelledby="menuLateralLabel">
         <div class="offcanvas-header">
             <h5 class="offcanvas-title fw-bold text-white" id="menuLateralLabel" style="font-family: var(--font-titulos);">
@@ -60,7 +60,7 @@
                 @if (roleId == 1)
                 {
                     <li class="nav-item">
-                        <a asp-area="Gestion" asp-controller="Tutorship" asp-action="EntrevistaInicial" class="nav-link">
+                        <a asp-area="Gestion" asp-controller="Entrevista" asp-action="EntrevistaInicial" class="nav-link">
                             <i class="bi bi-chat-text-fill me-2"></i> Entrevista Inicial
                         </a>
                     </li>
@@ -69,22 +69,22 @@
                 @if (roleId == 2)
                 {
                     <li class="nav-item">
-                        <a asp-area="Gestion" asp-controller="Tutorship" asp-action="Asistencia" class="nav-link">
+                        <a asp-area="Gestion" asp-controller="Asistencia" asp-action="Asistencia" class="nav-link">
                             <i class="bi bi-calendar-check-fill me-2"></i> Control de Asistencia
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a asp-area="Gestion" asp-controller="Tutorship" asp-action="Seguimiento" class="nav-link">
+                        <a asp-area="Gestion" asp-controller="Seguimiento" asp-action="Seguimiento" class="nav-link">
                             <i class="bi bi-clipboard-data-fill me-2"></i> Seguimiento
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a asp-area="Gestion" asp-controller="Tutorship" asp-action="ListaDeAlumnos" class="nav-link">
+                        <a asp-area="Gestion" asp-controller="Alumnos" asp-action="ListaDeAlumnos" class="nav-link">
                             <i class="bi bi-people-fill me-2"></i> Lista de Alumnos
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a asp-area="Gestion" asp-controller="Tutorship" asp-action="ReporteEntrevistas" class="nav-link">
+                        <a asp-area="Gestion" asp-controller="Entrevista" asp-action="ReporteEntrevistas" class="nav-link">
                             <i class="bi bi-file-earmark-person-fill me-2"></i> Estatus Entrevistas
                         </a>
                     </li>
@@ -93,22 +93,22 @@
                 @if (roleId == 3)
                 {
                     <li class="nav-item">
-                        <a asp-area="Gestion" asp-controller="Tutorship" asp-action="ListaDeAlumnos" class="nav-link">
+                        <a asp-area="Gestion" asp-controller="Alumnos" asp-action="ListaDeAlumnos" class="nav-link">
                             <i class="bi bi-people-fill me-2"></i> Lista de Alumnos
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a asp-area="Gestion" asp-controller="Tutorship" asp-action="Asistencia" class="nav-link">
+                        <a asp-area="Gestion" asp-controller="Asistencia" asp-action="Asistencia" class="nav-link">
                             <i class="bi bi-calendar-check-fill me-2"></i> Control de Asistencia
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a asp-area="Gestion" asp-controller="Tutorship" asp-action="AsignarTutores" class="nav-link">
+                        <a asp-area="Gestion" asp-controller="Alumnos" asp-action="AsignarTutores" class="nav-link">
                             <i class="bi bi-diagram-3-fill me-2"></i> Asignar Tutores
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a asp-area="Gestion" asp-controller="Tutorship" asp-action="ReporteEntrevistas" class="nav-link">
+                        <a asp-area="Gestion" asp-controller="Entrevista" asp-action="ReporteEntrevistas" class="nav-link">
                             <i class="bi bi-file-earmark-bar-graph-fill me-2"></i> Reporte General
                         </a>
                     </li>

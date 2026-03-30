@@ -14,8 +14,16 @@
 
 
 <div class="container-fluid mt-4 mb-5">
-    <h2 class="text-center mb-4 fw-bold" style="color: var(--brand-dark);">Registro de Asistencia</h2>
 
+    <div class="position-relative mb-4 text-center">
+        <div class="position-absolute top-50 start-0 translate-middle-y">
+            <button type="button" onclick="history.back()" class="btn btn-sm btn-outline-secondary fw-bold shadow-sm px-3" style="border-radius: 20px;">
+                <i class="bi bi-arrow-left me-1"></i> Regresar
+            </button>
+        </div>
+
+        <h2 class="fw-bold m-0" style="color: var(--brand-dark);">Registro de Asistencia</h2>
+    </div>
     @if (TempData["Exito"] != null)
     {
         <div class="alert alert-success shadow-sm text-center fw-bold"><i class="bi bi-check-circle-fill"></i> @TempData["Exito"]</div>
@@ -26,8 +34,7 @@
     }
 
     <div class="p-4 rounded shadow-sm mb-4" style="background-color: #f4f4f4; border-left: 5px;">
-        <form asp-action="Asistencia" method="get" class="row g-3 align-items-end">
-
+        <form asp-controller="Asistencia" asp-action="Asistencia" method="get" class="row g-3 align-items-end">
             <div class="col-md-3">
                 <label class="form-label fw-bold text-muted small mb-1">Contar faltas desde:</label>
                 <input type="date" name="fechaInicio" value="@ViewBag.FechaInicio" class="form-control shadow-sm" style="border-color: #ddd;">
@@ -81,8 +88,7 @@
 
     @if (Model != null && Model.Any())
     {
-        <form id="formAsistencia" asp-action="GuardarAsistencia" method="post">
-
+        <form id="formAsistencia" asp-controller="Asistencia" asp-action="GuardarAsistencia" method="post">
             <input type="hidden" name="groupId" value="@ViewBag.GrupoSeleccionado" />
             <input type="hidden" id="hiddenFecha" name="fecha" value="@ViewBag.FechaSeleccionada" />
             <input type="hidden" name="fechaInicio" value="@ViewBag.FechaInicio" />
