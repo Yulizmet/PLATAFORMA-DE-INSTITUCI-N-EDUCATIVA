@@ -37,9 +37,7 @@ namespace SchoolManager.Areas.Tutorship.Controllers
             return Content("No tienes permiso para ver esta pantalla. Tu rol actual es: " + LoggedRoleId);
         }
 
-        // =======================================================
-        // MÓDULO DE ALUMNOS (Directorio y Asignaciones)
-        // =======================================================
+     
 
         public async Task<IActionResult> ListaDeAlumnos(int? grado, string? grupo)
         {
@@ -139,7 +137,8 @@ namespace SchoolManager.Areas.Tutorship.Controllers
 
             if (!alumnosGrupo.Any())
             {
-                TempData["Error"] = "El grupo seleccionado no tiene alumnos inscritos actualmente.";
+                // CAMBIO AQUÍ: Usamos AsignacionError
+                TempData["AsignacionError"] = "El grupo seleccionado no tiene alumnos inscritos actualmente.";
                 return RedirectToAction(nameof(AsignarTutores));
             }
 
@@ -175,7 +174,8 @@ namespace SchoolManager.Areas.Tutorship.Controllers
             var grupoDb = await _context.grades_GradeGroups.FindAsync(groupId);
             string nombreGrupo = grupoDb != null ? $"{grupoDb.GradeLevelId}{grupoDb.Name}" : "seleccionado";
 
-            TempData["Exito"] = $"Tutor asignado correctamente a los {alumnosGrupo.Count} alumnos del grupo {nombreGrupo}.";
+            // CAMBIO AQUÍ: Usamos AsignacionExito
+            TempData["AsignacionExito"] = $"Tutor asignado correctamente a los {alumnosGrupo.Count} alumnos del grupo {nombreGrupo}.";
 
             return RedirectToAction(nameof(AsignarTutores));
         }
@@ -222,7 +222,6 @@ namespace SchoolManager.Areas.Tutorship.Controllers
                     query = query.Where(x => _context.Tutorships.Any(t => t.StudentId == x.UserId && t.TeacherId == LoggedUserId));
                 }
 
-                // 4. Aplicar Filtros del usuario
                 if (!string.IsNullOrEmpty(gradoFilter) && int.TryParse(gradoFilter, out int gradoId))
                 {
                     query = query.Where(x => x.Grado == gradoId);

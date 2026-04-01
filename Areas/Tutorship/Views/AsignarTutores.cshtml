@@ -12,21 +12,21 @@
                 <h2 class="fw-bold m-0" style="color: var(--utt-dark-red);">
                     <i class="bi bi-diagram-3-fill"></i> Asignación de Tutores a Grupos
                 </h2>
-                <a asp-action="Controlador" class="btn btn-outline-secondary btn-sm">
-                    <i class="bi bi-arrow-left"></i> Volver al panel
+                <a  asp-controller="Tutorship" asp-action="Controlador" class="btn btn-outline-secondary btn-sm">
+                    <i class="bi bi-arrow-left"></i> Regresar
                 </a>
             </div>
 
-            @if (TempData["Exito"] != null)
+            @if (TempData["AsignacionExito"] != null)
             {
                 <div class="alert alert-success shadow-sm">
-                    <i class="bi bi-check-circle-fill"></i> @TempData["Exito"]
+                    <i class="bi bi-check-circle-fill"></i> @TempData["AsignacionExito"]
                 </div>
             }
-            @if (TempData["Error"] != null)
+            @if (TempData["AsignacionError"] != null)
             {
                 <div class="alert alert-danger shadow-sm">
-                    <i class="bi bi-exclamation-triangle-fill"></i> @TempData["Error"]
+                    <i class="bi bi-exclamation-triangle-fill"></i> @TempData["AsignacionError"]
                 </div>
             }
 
