@@ -158,15 +158,51 @@
             });
         }
 
+        $(document).on("submit", "#formPermissions", async function (e) {
+            e.preventDefault();
+            const form = e.target;
+
+            Swal.fire({
+                title: 'Guardando matriz...',
+                text: 'Actualizando permisos y accesos, por favor espere.',
+                allowOutsideClick: false,
+                showConfirmButton: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            try {
+                const response = await fetch(form.action, {
+                    method: form.method,
+                    body: new FormData(form)
+                });
+
+                const result = await response.json();
+
+                Swal.close();
+
+                if (result.success) {
+                    showToast('success', result.message || '¡Matriz de permisos actualizada!');
+                    setTimeout(() => { location.reload(); }, 1500);
+                } else {
+                    showToast('warning', result.message || 'Error al guardar los permisos.');
+                }
+            } catch (error) {
+                Swal.close();
+                showToast('error', 'Error de comunicación con el servidor');
+            }
+        });
+
         function updateBulkBar() {
             const count = $('.row-checkbox:checked').length;
             const bar = $('#bulkActionsBar');
+
             if (count > 0) {
-                const text = count === 1 ? '1 seleccionado' : count + ' seleccionados';
-                $('#selectedCount').text(text);
-                bar.removeClass('d-none').fadeIn('fast');
+                $('#selectedCount').text(count === 1 ? '1 seleccionado' : count + ' seleccionados');
+                bar.removeClass('d-none').show();
             } else {
-                bar.fadeOut('fast', function() { $(this).addClass('d-none'); });
+                bar.hide().addClass('d-none');
                 $('#checkAll').prop('checked', false);
             }
         }
@@ -231,7 +267,7 @@
 <div class="container-fluid px-4 pt-5">
     <div class="mb-4">
         <h2 class="fw-bold text-dark mb-1 merriweather-font">
-            <i class="bi bi-shield-lock text-burgundy"></i> Matriz de Permisos
+            <i class="bi bi-shield-lock"></i> Matriz de Permisos
         </h2>
         <p class="text-muted small">Configura el catálogo global y asigna accesos específicos por departamento.</p>
     </div>
@@ -466,17 +502,12 @@
                     <i class="bi bi-shield-slash display-1 text-muted opacity-25"></i>
                     <h4 class="mt-3 fw-bold">Sin configuración de acceso</h4>
                     <p class="text-muted">El área seleccionada no tiene reglas de acceso definidas.</p>
-                    <button class="btn btn-burgundy mt-2" onclick="initModules(@ViewBag.SelectedAreaId)">
-
-                        <i class="bi bi-plus-circle me-1"></i> Crear matriz base para esta área
-
-                    </button>
-                    @* <button class="btn btn-burgundy mt-2"
+                    <button class="btn btn-burgundy mt-2"
                             onclick="@(HasPermission("btn-crear-matriz") ? $"initModules({ViewBag.SelectedAreaId})" : "")"
                             @(HasPermission("btn-crear-matriz") ? "" : "disabled")
                             title="@(HasPermission("btn-crear-matriz") ? "Crear matriz admin" : "Sin permiso para inicializar matrices")">
                         <i class="bi bi-plus-circle me-1"></i> Crear matriz admin para esta área
-                    </button> *@
+                    </button>
                 </div>
             }
 
@@ -497,12 +528,12 @@
         <div class="d-flex align-items-center justify-content-between px-3">
             <span id="selectedCount" class="fw-bold me-4">0 seleccionados</span>
             <div class="btn-group">
-                @* @if (HasPermission("btn-multiple-eliminar"))
-                { *@
+                @if (HasPermission("btn-multiple-eliminar"))
+                {
                     <button class="btn btn-sm btn-danger px-3 fw-bold rounded-pill" onclick="bulkDelete()">
                         <i class="bi bi-trash3-fill me-1"></i> Eliminar
                     </button>
-                @* } *@
+                }
             </div>
             <button type="button" class="btn-close btn-close-white ms-3" onclick="deselectAll()"></button>
         </div>

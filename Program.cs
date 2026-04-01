@@ -10,7 +10,7 @@ using SchoolManager.Services;
 var builder = WebApplication.CreateBuilder(args);
 
 // --- SERVICES ---
-builder.Services.AddScoped<ISearchService, SearchService > ();
+builder.Services.AddScoped<ISearchService, SearchService>();
 builder.Services.AddScoped<IStorageService, AzureStorageService>();
 builder.Services.AddTransient<IEmailSender, OutlookEmailSender>();
 builder.Services.AddScoped<ProcedureRouteAuthorizeAttribute>();
@@ -48,13 +48,14 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
         options.Cookie.SameSite = SameSiteMode.Strict;
     });
 
-// -- PROCEDURE REPORTS ---
+// --- CORS ---
+
+// --- PROCEDURE REPORTS ---
 builder.Services.AddSingleton(typeof(IConverter), new SynchronizedConverter(new PdfTools()));
 
 var app = builder.Build();
 
 // --- MIDDLEWARE ---
-
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Error");
@@ -64,6 +65,7 @@ if (!app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseRouting();
+app.UseCors("AllowAdmin");
 app.UseSession();
 app.UseAuthentication();
 app.UseAuthorization();

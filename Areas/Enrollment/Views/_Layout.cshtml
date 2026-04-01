@@ -11,192 +11,246 @@
 
     <title>@ViewData["Title"] - SchoolManager</title>
 
-    <!-- Preconnect Google Fonts -->
     <link rel="preconnect" href="https://fonts.gstatic.com">
-
-    <!-- Favicon -->
     <link rel="shortcut icon" href="~/enrollment/static/img/icons/icono-Itace.png" />
 
-    <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
-
-    <!-- AdminKit CSS -->
     <link rel="stylesheet" href="~/enrollment/static/css/app.css" />
 
-    <!-- FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@300;400;700;900&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet" />
 
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet" />
-
-    <!-- ===== ESTILOS DEL WIZARD ===== -->
     <style>
-        .steps-vertical {
-            position: relative;
-            padding: 12px 14px 12px 18px;
-            margin: 8px 10px;
+        :root {
+            --enr-primary: #8C1B1B;
+            --enr-primary-light: #D42D2D;
+            --enr-dark: #620900;
+            --enr-accent: #B1A596;
+            --enr-white: #ffffff;
+            --enr-page: #f4f4f4;
+            --enr-text: #1f2937;
+            --enr-muted: #6b7280;
+            --enr-border: rgba(177,165,150,.24);
+            --enr-shadow: 0 10px 28px rgba(0,0,0,.06);
+            --enr-shadow-brand: 0 10px 26px rgba(140,27,27,.22);
+            --enr-radius-md: 16px;
+            --enr-radius-lg: 22px;
+            --enr-radius-xl: 28px;
         }
 
-            .steps-vertical::before {
-                content: "";
-                position: absolute;
-                left: 12px;
-                top: 18px;
-                bottom: 18px;
-                width: 3px;
-                background: rgba(255,255,255,.18);
-                border-radius: 10px;
-            }
+        body {
+            background: var(--enr-page);
+            font-family: 'Inter', sans-serif;
+            color: var(--enr-text);
+        }
 
-            .steps-vertical::after {
-                content: "";
-                position: absolute;
-                left: 12px;
-                top: 18px;
-                width: 3px;
-                background: #ffffff;
-                border-radius: 10px;
-                transition: height .3s ease;
-                height: 0%;
-            }
+        .wrapper {
+            background: var(--enr-page);
+        }
 
-        .progress-1::after {
+        .sidebar {
+    background: linear-gradient(180deg, var(--enr-dark), var(--enr-primary)) !important;
+    border-top-right-radius: 0;
+    border-bottom-right-radius: var(--enr-radius-xl);
+    box-shadow: var(--enr-shadow-brand);
+}
+
+        .sidebar-content {
+            background: transparent !important;
+            border-top-right-radius: var(--enr-radius-xl);
+            border-bottom-right-radius: var(--enr-radius-xl);
+            overflow: hidden;
+        }
+
+        .sidebar-brand {
+            min-height: 220px;
+            padding: 1.5rem 1rem !important;
+            background: rgba(255,255,255,.05);
+            border-bottom-left-radius: var(--enr-radius-md);
+            border-bottom-right-radius: var(--enr-radius-md);
+            margin: 0 .75rem;
+        }
+
+        .sidebar-brand .user-box {
+            width: 100px;
+            height: 100px;
+            border-radius: 22px;
+            background: rgba(255,255,255,.10);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 4px 10px rgba(0,0,0,.25);
+        }
+
+        .sidebar-brand .user-box i {
+            font-size: 70px;
+            color: white;
+        }
+
+        .sidebar-nav {
+            padding-top: .75rem;
+        }
+
+        .steps-vertical {
+            position: relative;
+            padding: 14px 14px 14px 22px;
+            margin: 10px;
+            background: rgba(255,255,255,.05);
+            border: 1px solid rgba(255,255,255,.06);
+            border-radius: 22px;
+        }
+
+        .steps-vertical::before {
+            content: "";
+            position: absolute;
+            left: 14px;
+            top: 24px;
+            bottom: 24px;
+            width: 3px;
+            background: rgba(255,255,255,.16);
+            border-radius: 10px;
+        }
+
+        .steps-vertical::after {
+            content: "";
+            position: absolute;
+            left: 14px;
+            top: 24px;
+            width: 3px;
+            background: #ffffff;
+            border-radius: 10px;
+            transition: height .3s ease;
             height: 0%;
         }
 
-        .progress-2::after {
-            height: 33%;
-        }
-
-        .progress-3::after {
-            height: 66%;
-        }
-
-        .progress-4::after {
-            height: 100%;
-        }
+        .progress-1::after { height: 0%; }
+        .progress-2::after { height: 33%; }
+        .progress-3::after { height: 66%; }
+        .progress-4::after { height: 100%; }
 
         .step-vertical {
             position: relative;
             display: flex;
             gap: 12px;
-            padding: 10px;
-            margin-bottom: 12px;
-            border-radius: .4rem;
+            padding: 12px;
+            margin-bottom: 10px;
+            border-radius: 14px;
             text-decoration: none;
-            color: rgba(255,255,255,.9);
-            opacity: .55;
+            color: rgba(255,255,255,.92);
+            opacity: .58;
             transition: all .2s ease;
         }
 
-            .step-vertical:hover {
-                background: rgba(255,255,255,.05);
-                opacity: .85;
-            }
-
-            .step-vertical::before {
-                content: "";
-                position: absolute;
-                left: -11px;
-                top: 18px;
-                width: 12px;
-                height: 12px;
-                border-radius: 50%;
-                background: rgba(255,255,255,.3);
-                z-index: 2;
-            }
-
-        .step-vertical-icon {
-            width: 34px;
-            height: 34px;
-            display: grid;
-            place-items: center;
-            border-radius: .5rem;
-            background: rgba(255,255,255,.1);
-            flex: 0 0 34px;
+        .step-vertical:last-child {
+            margin-bottom: 0;
         }
 
-            .step-vertical-icon i {
-                font-size: 15px;
-                color: rgba(255,255,255,.95);
-            }
+        .step-vertical:hover {
+            background: rgba(255,255,255,.06);
+            opacity: .9;
+        }
+
+        .step-vertical::before {
+            content: "";
+            position: absolute;
+            left: -10px;
+            top: 20px;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: rgba(255,255,255,.28);
+            z-index: 2;
+        }
+
+        .step-vertical-icon {
+            width: 36px;
+            height: 36px;
+            display: grid;
+            place-items: center;
+            border-radius: 12px;
+            background: rgba(255,255,255,.10);
+            flex: 0 0 36px;
+        }
+
+        .step-vertical-icon i {
+            font-size: 15px;
+            color: rgba(255,255,255,.96);
+        }
 
         .step-vertical-title {
-            font-size: .95rem;
-            font-weight: 600;
+            font-size: .96rem;
+            font-weight: 700;
+            font-family: 'Merriweather', serif;
         }
 
         .step-vertical-desc {
             font-size: .78rem;
-            opacity: .8;
+            opacity: .82;
             margin-top: 2px;
+            font-family: 'Inter', sans-serif;
         }
 
         .step-vertical.active {
             opacity: 1;
-            background: rgba(255,255,255,.06);
+            background: rgba(255,255,255,.08);
             border: 1px solid rgba(255,255,255,.12);
         }
 
-            .step-vertical.active::before {
-                background: #4D0218;
-                box-shadow: 0 0 0 4px rgba(77,2,24,.2);
-            }
+        .step-vertical.active::before {
+            background: #ffffff;
+            box-shadow: 0 0 0 4px rgba(255,255,255,.16);
+        }
 
         .step-vertical.complete {
             opacity: 1;
         }
 
-            .step-vertical.complete::before {
-                background: #ffffff;
-                box-shadow: 0 0 0 4px rgba(255,255,255,.20);
-            }
+        .step-vertical.complete::before {
+            background: #ffffff;
+            box-shadow: 0 0 0 4px rgba(255,255,255,.12);
+        }
 
-            .step-vertical.complete .step-vertical-icon {
-                background: rgba(255,255,255,.15);
-            }
-
-                .step-vertical.complete .step-vertical-icon i {
-                    color: #ffffff;
-                }
+        .step-vertical.complete .step-vertical-icon {
+            background: rgba(255,255,255,.15);
+        }
 
         .step-vertical.locked {
             opacity: .55;
             cursor: default;
         }
 
-            .step-vertical.locked:hover {
-                background: rgba(255,255,255,.05);
-                opacity: .85;
-            }
+    .main {
+    min-width: 0;
+    width: 100%;
+    background: var(--enr-page);
+    border-top-left-radius: 0;
+    border-bottom-left-radius: var(--enr-radius-xl);
+}
 
-        @@media (max-width: 991.98px) {
-            .sidebar
-
-        {
-            width: 260px;
+        .navbar.navbar-bg {
+            background: linear-gradient(90deg, var(--enr-primary), var(--enr-primary-light)) !important;
+            box-shadow: var(--enr-shadow-brand);
         }
 
-        .sidebar-brand {
-            height: 160px !important;
+        .sidebar-toggle,
+        .sidebar-toggle:hover {
+            color: #fff !important;
         }
 
-        }
-
-        .main {
-            min-width: 0;
-            width: 100%;
+        .hamburger,
+        .hamburger:before,
+        .hamburger:after {
+            background: #fff !important;
         }
 
         .content {
             min-width: 0;
             overflow-x: hidden;
+            background: var(--enr-page);
         }
 
-        .container-fluid {
-            min-width: 0;
-        }
-
+        .container-fluid,
         .card,
         .card-body,
         form {
@@ -209,39 +263,62 @@
             max-width: 100%;
         }
 
-        .sidebar-brand .user-box {
-            width: 100px;
-            height: 100px;
-            border-radius: 20%;
-            background: rgba(255,255,255,.1);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            box-shadow: 0 4px 10px rgba(0,0,0,.3);
+        .container-fluid.p-4 {
+            padding: 1.5rem !important;
         }
-
-            .sidebar-brand .user-box i {
-                font-size: 70px;
-                color: white;
-            }
 
         @@media (max-width: 991.98px) {
             .sidebar {
                 width: 260px;
+                border-radius: 0 22px 22px 0;
             }
 
             .sidebar-brand {
-                height: 160px !important;
+                min-height: 170px;
             }
 
-                .sidebar-brand .user-box {
-                    width: 75px;
-                    height: 75px;
-                }
+            .sidebar-brand .user-box {
+                width: 78px;
+                height: 78px;
+            }
 
-                    .sidebar-brand .user-box i {
-                        font-size: 48px;
-                    }
+            .sidebar-brand .user-box i {
+                font-size: 50px;
+            }
+
+            .main {
+    border-radius: 0 22px 0 0;
+}
+        }
+
+        @@media (max-width: 767.98px) {
+            .sidebar-brand {
+                min-height: 145px;
+            }
+
+            .sidebar-brand .user-box {
+                width: 66px;
+                height: 66px;
+            }
+
+            .sidebar-brand .user-box i {
+                font-size: 40px;
+            }
+
+            .step-vertical {
+                gap: 10px;
+                padding: 9px;
+            }
+
+            .step-vertical-icon {
+                width: 30px;
+                height: 30px;
+                flex: 0 0 30px;
+            }
+
+            .step-vertical-icon i {
+                font-size: 13px;
+            }
 
             .step-vertical-title {
                 font-size: .88rem;
@@ -252,81 +329,57 @@
             }
 
             .container-fluid.p-4 {
-                padding: 1rem !important;
+                padding: .9rem !important;
             }
         }
 
-        @@media (max-width: 767.98px) {
-            .sidebar-brand {
-                height: 130px !important;
-            }
-
-                .sidebar-brand .user-box {
-                    width: 65px;
-                    height: 65px;
-                }
-
-                    .sidebar-brand .user-box i {
-                        font-size: 40px;
-                    }
-
-            .step-vertical {
-                gap: 10px;
-                padding: 8px;
-            }
-
-            .step-vertical-icon {
-                width: 30px;
-                height: 30px;
-                flex: 0 0 30px;
-            }
-
-                .step-vertical-icon i {
-                    font-size: 13px;
-                }
-
-            .container-fluid.p-4 {
-                padding: .75rem !important;
-            }
+        
+        .btn-regresar {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 10px 18px;
+            border-radius: 10px;
+            background: #B1A596;
+            border: 1px solid #B1A596;
+            color: #ffffff;
+            font-weight: 600;
+            text-decoration: none;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            transition: all 0.2s ease-in-out;
         }
+
+            .btn-regresar:hover {
+                background: #9d9385; /* tono más oscuro */
+                border-color: #9d9385;
+                color: #ffffff;
+                transform: translateY(-1px);
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            }
+    
     </style>
 
     @RenderSection("Styles", required: false)
-
 </head>
 
 <body>
     <div class="wrapper">
 
-        <!-- SIDEBAR -->
         <nav id="sidebar" class="sidebar js-sidebar">
             <div class="sidebar-content js-simplebar">
 
-                <!-- LOGO -->
                 <a class="sidebar-brand d-flex justify-content-center align-items-center"
-                   href="@Url.Action("Create", "PreEnrollment", new { area = "Enrollment" })"
-                   style="height:230px;">
-
-                    <div style="
-                        width:100px;
-                        height:100px;
-                        border-radius:20%;
-                        background: rgba(255,255,255,.1);
-                        display:flex;
-                        justify-content:center;
-                        align-items:center;
-                        box-shadow: 0 4px 10px rgba(0,0,0,.3);
-">
-                        <i class="fa-solid fa-user" style="font-size:70px; color:white;"></i>
+                   href="@Url.Action("Create", "PreEnrollment", new { area = "Enrollment" })">
+                    <div class="user-box">
+                        <i class="fa-solid fa-user"></i>
                     </div>
-
                 </a>
 
                 <ul class="sidebar-nav">
                     <li class="sidebar-item">
                         <div class="steps-vertical progress-@pasoActual">
 
-                            <!-- PREINSCRIPCIÓN -->
                             <div class="step-vertical @(pasoActual == 1 ? "active" : pasoActual > 1 ? "complete" : "")">
                                 <div class="step-vertical-icon">
                                     <i class="fa-solid fa-user-plus"></i>
@@ -337,7 +390,6 @@
                                 </div>
                             </div>
 
-                            <!-- DOCUMENTOS -->
                             <div class="step-vertical @(pasoActual == 2 ? "active" : pasoActual > 2 ? "complete" : "")">
                                 <div class="step-vertical-icon">
                                     <i class="fa-solid fa-file-lines"></i>
@@ -348,7 +400,6 @@
                                 </div>
                             </div>
 
-                            <!-- CONFIRMAR -->
                             <div class="step-vertical @(pasoActual == 3 ? "active" : pasoActual > 3 ? "complete" : "")">
                                 <div class="step-vertical-icon">
                                     <i class="fa-solid fa-user-check"></i>
@@ -359,7 +410,6 @@
                                 </div>
                             </div>
 
-                            <!-- FINALIZAR -->
                             <div class="step-vertical @(pasoActual == 4 ? "active" : "") @(pasoActual < 4 ? "locked" : "")">
                                 <div class="step-vertical-icon">
                                     <i class="fa-solid fa-flag-checkered"></i>
@@ -370,6 +420,17 @@
                                 </div>
                             </div>
 
+
+                            <div class="mt-3 d-flex justify-content-center">
+                                <a asp-area="MainScreen"
+                                   asp-controller="MainScreen"
+                                   asp-action="Tramites"
+                                   class="btn-regresar">
+                                 
+                                  <span>Regresar</span>
+                                </a>
+                            </div>
+
                         </div>
                     </li>
                 </ul>
@@ -377,7 +438,6 @@
         </nav>
 
         <div class="main">
-
             <nav class="navbar navbar-expand navbar-light navbar-bg">
                 <a class="sidebar-toggle js-sidebar-toggle">
                     <i class="hamburger align-self-center"></i>
@@ -389,29 +449,17 @@
                     @RenderBody()
                 </div>
             </main>
-
         </div>
     </div>
 
-    <!-- jQuery -->
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-
-    <!-- Bootstrap -->
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-
-    <!-- Validación -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.5/jquery.validate.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validation-unobtrusive/4.0.0/jquery.validate.unobtrusive.min.js"></script>
-
-    <!-- AdminKit -->
     <script src="~/enrollment/static/js/app.js"></script>
-
-    <!-- Scripts globales -->
     <script src="~/enrollment/src/js/modules/storage.js"></script>
     <script src="~/enrollment/src/js/modules/preinscripcion.js"></script>
 
-    <!-- 👇 IMPORTANTE: Renderiza scripts por vista -->
     @RenderSection("Scripts", required: false)
-
 </body>
 </html>

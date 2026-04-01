@@ -139,12 +139,12 @@ namespace SchoolManager.Areas.MainScreen.Controllers
             return View();
         }
 
+        [AllowAnonymous]
         [Route("/ProcesoInscripcion")]
         public IActionResult ProcesosInscripcion()
         {
             return View();
         }
-
 
     }
 }

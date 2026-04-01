@@ -1,22 +1,16 @@
-using iText.IO.Font.Constants;
-using iText.Kernel.Colors;
-using iText.Kernel.Font;
-using iText.Kernel.Pdf;
-using iText.Layout;
-using iText.Layout.Element;
-using iText.Layout.Properties;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SchoolManager.Data;
 using SchoolManager.Models;
+using SchoolManager.ViewModels;
+using System.Security.Claims;
 using System.Text;
-#nullable disable
 
 namespace SchoolManager.Areas.Medical.Controllers
 {
     [Area("Medical")]
-    [Authorize(Roles = "Nurse,Psychologist,Head Nurse,Head of Psychology,Coordinator,Master")]
+    [Authorize(Roles = "Nurse,Head Nurse,Coordinator,Master")]
     public class LogbookController : Controller
     {
         private readonly AppDbContext _context;
@@ -26,8 +20,36 @@ namespace SchoolManager.Areas.Medical.Controllers
             _context = context;
         }
 
+        private async Task<medical_permissions?> ObtenerPermisos()
+        {
+            var claim = User.FindFirst(ClaimTypes.NameIdentifier)
+                        ?? User.FindFirst("PersonId")
+                        ?? User.FindFirst("UserId");
+
+            if (claim == null) return null;
+
+            var userId = int.Parse(claim.Value);
+
+            var staff = await _context.MedicalStaff
+                .FirstOrDefaultAsync(s => s.PersonId == userId);
+
+            if (staff == null) return null;
+
+            return await _context.MedicalPermissions
+                .FirstOrDefaultAsync(p => p.StaffId == staff.Id);
+        }
+
         public async Task<IActionResult> Index(string matricula)
         {
+            var permisos = await ObtenerPermisos();
+            ViewBag.Permisos = permisos;
+
+            if (User.IsInRole("Nurse") || User.IsInRole("Psychologist"))
+            {
+                if (permisos == null || !permisos.Ver)
+                    return View("AccesoDenegado");
+            }
+
             ViewData["CurrentFilter"] = matricula;
             string searchString = (matricula ?? string.Empty).Trim();
 
@@ -53,156 +75,77 @@ namespace SchoolManager.Areas.Medical.Controllers
             return View(lista);
         }
 
-        public IActionResult Reporte() => View();
-
-        [HttpGet]
-        public async Task<IActionResult> ObtenerDatosReporte(string filtro, DateTime? fechaInicio, DateTime? fechaFin)
+        public IActionResult Reporte()
         {
-            var (desde, hasta) = ObtenerRango(filtro, fechaInicio, fechaFin);
-
-            var datos = await (
-                from b in _context.MedicalLogbooks
-                join a in _context.MedicalStudents on b.IdAlumno equals a.Id
-                join pre in _context.PreenrollmentGenerals on a.PreenrollmentId equals pre.IdData
-                join per in _context.Persons on pre.UserId equals per.PersonId
-                where b.FechaHora >= desde && b.FechaHora < hasta
-                select new LogBookListVM
-                {
-                    Id = b.Id,
-                    Folio = b.Folio,
-                    Matricula = pre.Matricula,
-                    NombreCompleto = per.FirstName + " " + per.LastNamePaternal + " " + per.LastNameMaternal,
-                    Motivo = b.MotivoConsulta,
-                    Estado = b.Estado,
-                    Fecha = b.FechaHora
-                }
-            ).OrderByDescending(x => x.Fecha).ToListAsync();
-
-            var resumen = new
-            {
-                total = datos.Count,
-                porEstado = datos.GroupBy(x => x.Estado).Select(g => new { estado = g.Key, cantidad = g.Count() }).ToList(),
-                lista = datos
-            };
-            return Json(resumen);
+            return View();
         }
 
-        [HttpGet]
-        public async Task<IActionResult> DescargarCSV(string filtro, DateTime? fechaInicio, DateTime? fechaFin)
+        [Authorize(Roles = "Nurse,Head Nurse,Master,Coordinator")]
+        public async Task<IActionResult> Create()
         {
-            var (desde, hasta) = ObtenerRango(filtro, fechaInicio, fechaFin);
+            var permisos = await ObtenerPermisos();
 
-            var datos = await (
-                from b in _context.MedicalLogbooks
-                join a in _context.MedicalStudents on b.IdAlumno equals a.Id
-                join pre in _context.PreenrollmentGenerals on a.PreenrollmentId equals pre.IdData
-                join per in _context.Persons on pre.UserId equals per.PersonId
-                where b.FechaHora >= desde && b.FechaHora < hasta
-                select new
-                {
-                    b.Folio,
-                    Matricula = pre.Matricula,
-                    NombreCompleto = per.FirstName + " " + per.LastNamePaternal + " " + per.LastNameMaternal,
-                    Motivo = b.MotivoConsulta,
-                    Estado = b.Estado,
-                    Fecha = b.FechaHora
-                }
-            ).OrderByDescending(x => x.Fecha).ToListAsync();
-
-            var sb = new StringBuilder();
-            sb.AppendLine("Folio,Matrícula,Nombre Completo,Motivo,Estado,Fecha");
-            foreach (var item in datos)
-                sb.AppendLine($"{item.Folio},{item.Matricula},\"{item.NombreCompleto}\",\"{item.Motivo}\",{item.Estado},{item.Fecha:dd/MM/yyyy HH:mm}");
-
-            var bytes = Encoding.UTF8.GetPreamble().Concat(Encoding.UTF8.GetBytes(sb.ToString())).ToArray();
-            return File(bytes, "text/csv", $"Reporte_Bitacoras_{DateTime.Now:yyyyMMdd}.csv");
-        }
-
-        [HttpGet]
-        public async Task<IActionResult> DescargarPDF(string filtro, DateTime? fechaInicio, DateTime? fechaFin)
-        {
-            var (desde, hasta) = ObtenerRango(filtro, fechaInicio, fechaFin);
-
-            var datos = await (
-                from b in _context.MedicalLogbooks
-                join a in _context.MedicalStudents on b.IdAlumno equals a.Id
-                join pre in _context.PreenrollmentGenerals on a.PreenrollmentId equals pre.IdData
-                join per in _context.Persons on pre.UserId equals per.PersonId
-                where b.FechaHora >= desde && b.FechaHora < hasta
-                select new
-                {
-                    b.Folio,
-                    Matricula = pre.Matricula,
-                    NombreCompleto = per.FirstName + " " + per.LastNamePaternal + " " + per.LastNameMaternal,
-                    Motivo = b.MotivoConsulta,
-                    Estado = b.Estado,
-                    Fecha = b.FechaHora
-                }
-            ).OrderByDescending(x => x.Fecha).ToListAsync();
-
-            using var ms = new MemoryStream();
-            var writer = new PdfWriter(ms);
-            var pdf = new PdfDocument(writer);
-            var document = new Document(pdf, iText.Kernel.Geom.PageSize.LETTER);
-            document.SetMargins(30, 30, 30, 30);
-
-            var fontBold = PdfFontFactory.CreateFont(StandardFonts.HELVETICA_BOLD);
-            var fontNormal = PdfFontFactory.CreateFont(StandardFonts.HELVETICA);
-            var colorHeader = new DeviceRgb(98, 9, 0);
-            var colorHeaderText = ColorConstants.WHITE;
-            var colorGris = new DeviceRgb(238, 238, 238);
-
-            document.Add(new Paragraph("DEPARTAMENTO MÉDICO").SetFont(fontBold).SetFontSize(16).SetTextAlignment(TextAlignment.CENTER));
-            document.Add(new Paragraph("Reporte de Atenciones Clínicas").SetFont(fontNormal).SetFontSize(11).SetTextAlignment(TextAlignment.CENTER).SetFontColor(new DeviceRgb(100, 100, 100)));
-            document.Add(new Paragraph($"Generado el {DateTime.Now:dd/MM/yyyy HH:mm}").SetFont(fontNormal).SetFontSize(9).SetTextAlignment(TextAlignment.CENTER).SetFontColor(new DeviceRgb(150, 150, 150)).SetMarginBottom(15));
-            document.Add(new Paragraph($"Total de atenciones: {datos.Count}").SetFont(fontBold).SetFontSize(11).SetMarginBottom(5));
-
-            var porEstado = datos.GroupBy(x => x.Estado).Select(g => $"{g.Key}: {g.Count()}").ToList();
-            document.Add(new Paragraph("Desglose por estado: " + string.Join("   |   ", porEstado)).SetFont(fontNormal).SetFontSize(10).SetMarginBottom(15));
-
-            var tabla = new Table(UnitValue.CreatePercentArray(new float[] { 10, 15, 25, 25, 15, 15 })).UseAllAvailableWidth();
-            foreach (var h in new[] { "Folio", "Matrícula", "Alumno", "Motivo", "Estado", "Fecha" })
-                tabla.AddHeaderCell(new Cell().Add(new Paragraph(h).SetFont(fontBold).SetFontSize(9).SetFontColor(colorHeaderText)).SetBackgroundColor(colorHeader).SetPadding(6));
-
-            bool par = false;
-            foreach (var item in datos)
+            if (User.IsInRole("Nurse") || User.IsInRole("Psychologist"))
             {
-                var bg = par ? colorGris : ColorConstants.WHITE;
-                tabla.AddCell(new Cell().Add(new Paragraph(item.Folio ?? "").SetFont(fontNormal).SetFontSize(9)).SetBackgroundColor(bg).SetPadding(5));
-                tabla.AddCell(new Cell().Add(new Paragraph(item.Matricula ?? "").SetFont(fontNormal).SetFontSize(9)).SetBackgroundColor(bg).SetPadding(5));
-                tabla.AddCell(new Cell().Add(new Paragraph(item.NombreCompleto ?? "").SetFont(fontNormal).SetFontSize(9)).SetBackgroundColor(bg).SetPadding(5));
-                tabla.AddCell(new Cell().Add(new Paragraph(item.Motivo ?? "").SetFont(fontNormal).SetFontSize(9)).SetBackgroundColor(bg).SetPadding(5));
-                tabla.AddCell(new Cell().Add(new Paragraph(item.Estado ?? "").SetFont(fontNormal).SetFontSize(9)).SetBackgroundColor(bg).SetPadding(5));
-                tabla.AddCell(new Cell().Add(new Paragraph(item.Fecha.ToString("dd/MM/yyyy")).SetFont(fontNormal).SetFontSize(9)).SetBackgroundColor(bg).SetPadding(5));
-                par = !par;
+                if (permisos != null && !permisos.Agregar)
+                    return View("AccesoDenegado");
             }
 
-            document.Add(tabla);
-            document.Close();
-            return File(ms.ToArray(), "application/pdf", $"Reporte_Bitacoras_{DateTime.Now:yyyyMMdd}.pdf");
+            return View();
         }
 
-        private (DateTime desde, DateTime hasta) ObtenerRango(string filtro, DateTime? fechaInicio, DateTime? fechaFin)
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Nurse,Head Nurse,Master,Coordinator")]
+        public async Task<IActionResult> Create(medical_logbook bitacora)
         {
-            var hoy = DateTime.Today;
-            DateTime desde;
-            DateTime hasta = hoy.AddDays(1);
-            switch (filtro)
+            var permisos = await ObtenerPermisos();
+
+            if (User.IsInRole("Nurse") || User.IsInRole("Psychologist"))
             {
-                case "dia": desde = hoy; break;
-                case "semana": desde = hoy.AddDays(-7); break;
-                case "mes": desde = hoy.AddDays(-30); break;
-                case "personalizado":
-                    desde = fechaInicio ?? hoy;
-                    hasta = (fechaFin ?? hoy).AddDays(1);
-                    break;
-                default: desde = hoy; break;
+                if (permisos != null && !permisos.Agregar)
+                    return View("AccesoDenegado");
             }
-            return (desde, hasta);
+
+            if (bitacora.IdAlumno == 0)
+            {
+                ModelState.AddModelError("", "Debe buscar un alumno válido");
+                return View(bitacora);
+            }
+
+            var ultimoFol = await _context.MedicalLogbooks
+                .OrderByDescending(x => x.Id)
+                .Select(x => x.Folio)
+                .FirstOrDefaultAsync();
+
+            int nuevoNumero = 1;
+            if (!string.IsNullOrEmpty(ultimoFol))
+            {
+                int.TryParse(ultimoFol, out nuevoNumero);
+                nuevoNumero++;
+            }
+
+            bitacora.Folio = nuevoNumero.ToString("D6");
+            bitacora.FechaHora = DateTime.Now;
+            bitacora.CreatedAt = DateTime.Now;
+
+            _context.MedicalLogbooks.Add(bitacora);
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction(nameof(Index));
         }
 
         public async Task<IActionResult> Details(int id)
         {
+            var permisos = await ObtenerPermisos();
+            ViewBag.Permisos = permisos;
+
+            if (User.IsInRole("Nurse") || User.IsInRole("Psychologist"))
+            {
+                if (permisos == null || !permisos.Ver)
+                    return View("AccesoDenegado");
+            }
+
             var bitacora = await (
                 from b in _context.MedicalLogbooks
                 join a in _context.MedicalStudents on b.IdAlumno equals a.Id
@@ -225,62 +168,71 @@ namespace SchoolManager.Areas.Medical.Controllers
             ).FirstOrDefaultAsync();
 
             if (bitacora == null) return NotFound();
+
             return View(bitacora);
         }
 
+        [Authorize(Roles = "Nurse,Master,Head Nurse,Coordinator")]
         public async Task<IActionResult> Edit(int id)
         {
+            var permisos = await ObtenerPermisos();
+
+            if (User.IsInRole("Coordinator"))
+                return View("AccesoDenegado");
+
+            if (User.IsInRole("Nurse") || User.IsInRole("Psychologist"))
+            {
+                if (permisos == null || !permisos.Modificar)
+                    return View("AccesoDenegado");
+            }
+
             var bitacora = await _context.MedicalLogbooks.FindAsync(id);
             if (bitacora == null) return NotFound();
+
             return View(bitacora);
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Nurse,Master,Head Nurse,Coordinator")]
         public async Task<IActionResult> Edit(int id, medical_logbook bitacora)
         {
+            var permisos = await ObtenerPermisos();
+
+            if (User.IsInRole("Coordinator"))
+                return View("AccesoDenegado");
+
+            if (User.IsInRole("Nurse") || User.IsInRole("Psychologist"))
+            {
+                if (permisos == null || !permisos.Modificar)
+                    return View("AccesoDenegado");
+            }
+
             if (id != bitacora.Id) return NotFound();
-            if (ModelState.IsValid)
-            {
-                _context.Update(bitacora);
-                await _context.SaveChangesAsync();
-                TempData["Mensaje"] = "Bitácora actualizada correctamente.";
-                TempData["Tipo"] = "warning";
-                return RedirectToAction(nameof(Index));
-            }
-            return View(bitacora);
-        }
 
-        public IActionResult Create() => View();
+            var bd = await _context.MedicalLogbooks.AsNoTracking()
+                .FirstOrDefaultAsync(x => x.Id == id);
 
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(medical_logbook bitacora)
-        {
-            if (bitacora.IdAlumno == 0)
-            {
-                ModelState.AddModelError("", "Debe buscar un alumno válido con la matrícula");
-                return View(bitacora);
-            }
+            bitacora.CreatedAt = bd.CreatedAt;
 
-            var ultimoFol = await _context.MedicalLogbooks.OrderByDescending(x => x.Id).Select(x => x.Folio).FirstOrDefaultAsync();
-            int nuevoNumero = 1;
-            if (!string.IsNullOrEmpty(ultimoFol)) { int.TryParse(ultimoFol, out nuevoNumero); nuevoNumero++; }
-
-            bitacora.Folio = nuevoNumero.ToString("D6");
-            bitacora.FechaHora = DateTime.Now;
-            bitacora.CreatedAt = DateTime.Now;
-            bitacora.IdPersonal = null;
-
-            _context.MedicalLogbooks.Add(bitacora);
+            _context.Update(bitacora);
             await _context.SaveChangesAsync();
-            TempData["Mensaje"] = "Bitácora creada correctamente.";
-            TempData["Tipo"] = "success";
+
             return RedirectToAction(nameof(Index));
         }
 
+        [Authorize(Roles = "Nurse,Head Nurse,Master")]
         public async Task<IActionResult> Delete(int id)
         {
+            var permisos = await ObtenerPermisos();
+
+            // Nurse necesita permiso
+            if (User.IsInRole("Nurse"))
+            {
+                if (permisos == null || !permisos.Borrar)
+                    return View("AccesoDenegado");
+            }
+
             var bitacora = await (
                 from b in _context.MedicalLogbooks
                 join a in _context.MedicalStudents on b.IdAlumno equals a.Id
@@ -294,32 +246,48 @@ namespace SchoolManager.Areas.Medical.Controllers
                     FechaHora = b.FechaHora,
                     Estado = b.Estado,
                     MotivoConsulta = b.MotivoConsulta,
+                    Observaciones = b.Observaciones,
+                    Tratamiento = b.Tratamiento,
+                    SignosVitales = b.SignosVitales,
+
                     MatriculaTemp = pre.Matricula,
                     NombreCompletoTemp = per.FirstName + " " + per.LastNamePaternal + " " + per.LastNameMaternal
                 }
             ).FirstOrDefaultAsync();
 
             if (bitacora == null) return NotFound();
+
             return View(bitacora);
         }
 
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Nurse,Head Nurse,Master")]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
+            var permisos = await ObtenerPermisos();
+
+            // Nurse necesita permiso
+            if (User.IsInRole("Nurse"))
+            {
+                if (permisos == null || !permisos.Borrar)
+                    return View("AccesoDenegado");
+            }
+
             var bitacora = await _context.MedicalLogbooks.FindAsync(id);
             if (bitacora == null) return NotFound();
+
             _context.MedicalLogbooks.Remove(bitacora);
             await _context.SaveChangesAsync();
-            TempData["Mensaje"] = "Bitácora eliminada correctamente.";
-            TempData["Tipo"] = "danger";
+
             return RedirectToAction(nameof(Index));
         }
 
         [HttpGet]
         public async Task<IActionResult> BuscarPorMatricula(string matricula)
         {
-            if (string.IsNullOrEmpty(matricula)) return Json(null);
+            if (string.IsNullOrEmpty(matricula))
+                return Json(null);
 
             var data = await (
                 from alumno in _context.MedicalStudents
@@ -340,6 +308,218 @@ namespace SchoolManager.Areas.Medical.Controllers
             ).FirstOrDefaultAsync();
 
             return Json(data);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> ObtenerDatosReporte(string filtro, DateTime? fechaInicio, DateTime? fechaFin)
+        {
+            var query = from b in _context.MedicalLogbooks
+                        join a in _context.MedicalStudents on b.IdAlumno equals a.Id
+                        join pre in _context.PreenrollmentGenerals on a.PreenrollmentId equals pre.IdData
+                        join per in _context.Persons on pre.UserId equals per.PersonId
+                        select new
+                        {
+                            b.Folio,
+                            pre.Matricula,
+                            NombreCompleto = per.FirstName + " " + per.LastNamePaternal + " " + per.LastNameMaternal,
+                            b.MotivoConsulta,
+                            b.Estado,
+                            b.FechaHora
+                        };
+
+            DateTime hoy = DateTime.Today;
+
+            if (filtro == "dia")
+                query = query.Where(x => x.FechaHora.Date == hoy);
+
+            else if (filtro == "semana")
+                query = query.Where(x => x.FechaHora >= hoy.AddDays(-7));
+
+            else if (filtro == "mes")
+                query = query.Where(x => x.FechaHora >= hoy.AddMonths(-1));
+
+            else if (filtro == "personalizado" && fechaInicio.HasValue && fechaFin.HasValue)
+                query = query.Where(x => x.FechaHora.Date >= fechaInicio.Value.Date && x.FechaHora.Date <= fechaFin.Value.Date);
+
+            var lista = await query.OrderByDescending(x => x.FechaHora).ToListAsync();
+
+            var total = lista.Count;
+
+            var porEstado = lista
+                .GroupBy(x => x.Estado)
+                .Select(g => new { estado = g.Key, cantidad = g.Count() })
+                .ToList();
+
+            return Json(new
+            {
+                total,
+                porEstado,
+                lista = lista.Select(x => new
+                {
+                    folio = x.Folio,
+                    matricula = x.Matricula,
+                    nombreCompleto = x.NombreCompleto,
+                    motivo = x.MotivoConsulta,
+                    estado = x.Estado,
+                    fecha = x.FechaHora
+                })
+            });
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> DescargarCSV(string filtro, DateTime? fechaInicio, DateTime? fechaFin)
+        {
+            var result = await ObtenerDatosReporte(filtro, fechaInicio, fechaFin) as JsonResult;
+
+            if (result?.Value == null)
+                return BadRequest();
+
+            dynamic data = result.Value;
+
+            var lista = data.lista;
+            int total = data.total;
+            var porEstado = data.porEstado;
+
+            var sb = new StringBuilder();
+
+            // ENCABEZADO
+            sb.AppendLine("DEPARTAMENTO DE ENFERMERÍA");
+            sb.AppendLine("Reporte de Atenciones Clínicas");
+            sb.AppendLine($"Generado el: {DateTime.Now:dd/MM/yyyy HH:mm}");
+            sb.AppendLine("");
+
+            // RESUMEN
+            sb.AppendLine($"Total de atenciones: {total}");
+
+            string desglose = "Desglose por estado: ";
+            foreach (var item in porEstado)
+            {
+                desglose += $"{item.estado}: {item.cantidad} | ";
+            }
+
+            sb.AppendLine(desglose.TrimEnd(' ', '|'));
+            sb.AppendLine("");
+
+            // ENCABEZADOS TABLA
+            sb.AppendLine("Folio;Matrícula;Alumno;Motivo;Estado;Fecha");
+
+            // DATOS
+            foreach (var item in lista)
+            {
+                string alumno = $"\"{item.nombreCompleto}\"";
+
+                sb.AppendLine($"{item.folio};{item.matricula};{alumno};{item.motivo};{item.estado};{Convert.ToDateTime(item.fecha):dd/MM/yyyy}");
+            }
+
+            return File(
+                Encoding.UTF8.GetPreamble().Concat(Encoding.UTF8.GetBytes(sb.ToString())).ToArray(),
+                "text/csv",
+                "reporte_enfermeria.csv"
+            );
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> DescargarPDF(string filtro, DateTime? fechaInicio, DateTime? fechaFin)
+        {
+            var json = await ObtenerDatosReporte(filtro, fechaInicio, fechaFin) as JsonResult;
+
+            if (json == null || json.Value == null)
+                return BadRequest();
+
+            dynamic result = json.Value;
+
+            if (result.lista == null)
+                return BadRequest();
+
+            var lista = result.lista;
+            int total = result.total;
+            var porEstado = result.porEstado;
+
+            using (var ms = new MemoryStream())
+            {
+                var writer = new iText.Kernel.Pdf.PdfWriter(ms);
+                var pdf = new iText.Kernel.Pdf.PdfDocument(writer);
+                var doc = new iText.Layout.Document(pdf);
+
+                var bold = iText.Kernel.Font.PdfFontFactory.CreateFont(iText.IO.Font.Constants.StandardFonts.HELVETICA_BOLD);
+                var normal = iText.Kernel.Font.PdfFontFactory.CreateFont(iText.IO.Font.Constants.StandardFonts.HELVETICA);
+
+                // TÍTULO
+                doc.Add(new iText.Layout.Element.Paragraph("DEPARTAMENTO DE ENFERMERÍA")
+                    .SetFont(bold)
+                    .SetFontSize(16)
+                    .SetTextAlignment(iText.Layout.Properties.TextAlignment.CENTER));
+
+                doc.Add(new iText.Layout.Element.Paragraph("Reporte de Atenciones Clínicas")
+                    .SetFont(normal)
+                    .SetFontSize(11)
+                    .SetTextAlignment(iText.Layout.Properties.TextAlignment.CENTER));
+
+                doc.Add(new iText.Layout.Element.Paragraph("Generado el " + DateTime.Now.ToString("dd/MM/yyyy HH:mm"))
+                    .SetFontSize(9)
+                    .SetTextAlignment(iText.Layout.Properties.TextAlignment.CENTER));
+
+                doc.Add(new iText.Layout.Element.Paragraph("\n"));
+
+                // TOTAL
+                doc.Add(new iText.Layout.Element.Paragraph($"Total de atenciones: {total}")
+                    .SetFont(bold)
+                    .SetFontSize(11));
+
+                // DESGLOSE
+                string desglose = "Desglose por estado: ";
+                foreach (var item in porEstado)
+                {
+                    desglose += $"{item.estado}: {item.cantidad}   |   ";
+                }
+
+                doc.Add(new iText.Layout.Element.Paragraph(desglose.TrimEnd(' ', '|'))
+                    .SetFont(normal)
+                    .SetFontSize(10));
+
+                doc.Add(new iText.Layout.Element.Paragraph("\n"));
+
+                // TABLA
+                var table = new iText.Layout.Element.Table(new float[] { 2, 3, 5, 4, 3, 3 })
+                    .UseAllAvailableWidth();
+
+                var rojo = new iText.Kernel.Colors.DeviceRgb(98, 9, 0);
+
+                void HeaderCell(string text)
+                {
+                    table.AddHeaderCell(
+                        new iText.Layout.Element.Cell()
+                        .Add(new iText.Layout.Element.Paragraph(text)
+                        .SetFont(bold)
+                        .SetFontColor(iText.Kernel.Colors.ColorConstants.WHITE))
+                        .SetBackgroundColor(rojo)
+                        .SetTextAlignment(iText.Layout.Properties.TextAlignment.CENTER)
+                    );
+                }
+
+                HeaderCell("Folio");
+                HeaderCell("Matrícula");
+                HeaderCell("Alumno");
+                HeaderCell("Motivo");
+                HeaderCell("Estado");
+                HeaderCell("Fecha");
+
+                foreach (var item in lista)
+                {
+                    table.AddCell(new iText.Layout.Element.Paragraph(item.folio).SetFont(normal));
+                    table.AddCell(new iText.Layout.Element.Paragraph(item.matricula).SetFont(normal));
+                    table.AddCell(new iText.Layout.Element.Paragraph(item.nombreCompleto).SetFont(normal));
+                    table.AddCell(new iText.Layout.Element.Paragraph(item.motivo).SetFont(normal));
+                    table.AddCell(new iText.Layout.Element.Paragraph(item.estado).SetFont(normal));
+                    table.AddCell(new iText.Layout.Element.Paragraph(Convert.ToDateTime(item.fecha).ToString("dd/MM/yyyy")).SetFont(normal));
+                }
+
+                doc.Add(table);
+
+                doc.Close();
+
+                return File(ms.ToArray(), "application/pdf", "reporte_enfermeria.pdf");
+            }
         }
     }
 }

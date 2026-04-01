@@ -9,6 +9,7 @@ namespace SchoolManager.Areas.SocialService.Controllers
         [HttpGet]
         public IActionResult Index()
         {
+            // Mostrar la vista de selección de dashboards del área Servicio Social
             return View();
         }
 

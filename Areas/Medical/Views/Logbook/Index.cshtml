@@ -3,24 +3,39 @@
 @{
     Layout = "~/Areas/Medical/Views/Shared/_LayoutDashboard.cshtml";
     ViewData["Title"] = "Bitácoras Clínicas";
+    var permisos = ViewBag.Permisos as SchoolManager.Models.medical_permissions;
 }
 
 <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
 
 <div class="dashboard-header">
-    <div class="header-content d-flex align-items-center justify-content-between flex-wrap">
+    <div class="header-content d-flex align-items-start justify-content-between flex-wrap">
         <div>
             <h2 class="text-white">BITÁCORAS CLÍNICAS</h2>
             <div class="buttons-left">
+
+                @if (
+                    !User.IsInRole("Coordinator") &&
+                    (
+                        User.IsInRole("Master") ||
+                        User.IsInRole("Head Nurse") ||
+                        User.IsInRole("Nurse")
+                    )
+                )
+                {
                 <a asp-action="Create" class="btn-header">
                     <i class="bi bi-plus-circle"></i> Crear Bitácora
                 </a>
+                }
+
                 <a asp-action="Index" class="btn-header">
                     <i class="bi bi-journal-medical"></i> Ver Bitácoras
                 </a>
+
                 <a asp-action="Reporte" class="btn-header">
                     <i class="bi bi-file-earmark-bar-graph"></i> Reporte
                 </a>
+
             </div>
         </div>
         <div class="buttons-right">
@@ -53,59 +68,52 @@
                             <td>@item.Matricula</td>
                             <td>@item.NombreCompleto</td>
                             <td>@item.Motivo</td>
-                            <td>
-                                @switch (item.Estado)
-                                {
-                                    case "Estable":
-                                        <span class="estado-badge estado-estable">Estable</span>
-                                        break;
-                                    case "Urgente":
-                                        <span class="estado-badge estado-urgente">Urgente</span>
-                                        break;
-                                    case "Crítico":
-                                        <span class="estado-badge estado-critico">Crítico</span>
-                                        break;
-                                    case "Observación":
-                                        <span class="estado-badge estado-observacion">Observación</span>
-                                        break;
-                                    case "Alta":
-                                        <span class="estado-badge estado-alta">Alta</span>
-                                        break;
-                                    default:
-                                        <span class="estado-badge estado-default">@item.Estado</span>
-                                        break;
-                                }
-                            </td>
+                            <td>@item.Estado</td>
                             <td><strong>@item.Folio</strong></td>
-                            <td data-sort="@item.Fecha.ToString("yyyyMMddHHmmss")">
-                                @item.Fecha.ToString("dd/MM/yyyy hh:mm tt")
-                            </td>
+                            <td>@item.Fecha.ToString("dd/MM/yyyy hh:mm tt")</td>
                             <td>
                                 <div class="d-flex gap-2">
 
-                                    <a asp-action="Details"
-                                       asp-route-id="@item.Id"
-                                       class="btn btn-sm"
-                                       style="background:#38b6ff;color:white;border:none;"
-                                       title="Ver">
-                                        <i class="bi bi-eye-fill"></i>
-                                    </a>
+                                    @if (
+                                        User.IsInRole("Master") ||
+                                        User.IsInRole("Coordinator") ||
+                                        User.IsInRole("Head Nurse") ||
+                                        (permisos != null && permisos.Ver)
+                                    )
+                                    {
+                                        <a asp-action="Details" asp-route-id="@item.Id"
+                                           class="btn btn-sm"
+                                           style="background:#38b6ff;color:white;border:none;">
+                                            <i class="bi bi-eye-fill"></i>
+                                        </a>
+                                    }
 
-                                    <a asp-action="Edit"
-                                       asp-route-id="@item.Id"
-                                       class="btn btn-sm"
-                                       style="background:#ffde59;color:white;border:none;"
-                                       title="Editar">
-                                        <i class="bi bi-pencil-square"></i>
-                                    </a>
+                                    @if (
+                                        User.IsInRole("Master") ||
+                                        User.IsInRole("Head Nurse") ||
+                                        (permisos != null && permisos.Modificar)
+                                    )
+                                    {
+                                        <a asp-action="Edit" asp-route-id="@item.Id"
+                                           class="btn btn-sm"
+                                           style="background:#ffde59;color:white;border:none;">
+                                            <i class="bi bi-pencil-square"></i>
+                                        </a>
+                                    }
 
-                                    <a asp-action="Delete"
-                                       asp-route-id="@item.Id"
-                                       class="btn btn-sm"
-                                       style="background:#ff3131;color:white;border:none;"
-                                       title="Eliminar">
-                                        <i class="bi bi-trash-fill"></i>
-                                    </a>
+                                    @if (
+                                        User.IsInRole("Master") ||
+                                        User.IsInRole("Head Nurse") ||
+                                        (User.IsInRole("Nurse") && ViewBag.Permisos?.Borrar == true)
+                                    )
+                                    {
+                                        <a asp-action="Delete" asp-route-id="@item.Id"
+                                           class="btn btn-sm"
+                                           style="background:#ff3131;color:white;border:none;"
+                                           title="Eliminar">
+                                            <i class="bi bi-trash-fill"></i>
+                                        </a>
+                                    }
 
                                 </div>
                             </td>
@@ -125,13 +133,9 @@
         var $jq = jQuery.noConflict(true);
         $jq(document).ready(function () {
             $jq('#tablaBitacoras').DataTable({
-                "language": {
-                    "url": "https://cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json"
-                },
-                "order": [[5, "desc"]],
-                "columnDefs": [
-                    { "orderable": false, "targets": 6 }
-                ]
+                language: { url: "https://cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json" },
+                order: [[5, "desc"]],
+                columnDefs: [{ orderable: false, targets: 6 }]
             });
         });
     </script>
