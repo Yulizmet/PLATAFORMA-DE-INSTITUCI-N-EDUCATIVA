@@ -12,5 +12,10 @@ namespace SchoolManager.ViewModels
         public double AttendanceRate { get; set; }
         public string Status { get; set; } = string.Empty;
         public DateTime? LastUpdate { get; set; }
+        public int TotalAttendances { get; set; }
+        public int TotalPresent { get; set; }
+        public int TotalAbsent { get; set; }
+        public int TotalJustified { get; set; }
+        public DateTime? LastAttendanceDate { get; set; }
     }
 }

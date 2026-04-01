@@ -1,9 +1,11 @@
-﻿@model IEnumerable<SchoolManager.Areas.Grades.ViewModels.Enrollment.EnrollmentViewModel>
+﻿@using SchoolManager.Areas.Grades.ViewModels.Breadcrumbs
+@model IEnumerable<SchoolManager.Areas.Grades.ViewModels.Enrollment.EnrollmentViewModel>
 
 @{
     ViewData["Title"] = $"Estudiantes del Grupo";
-    Layout = "~/Pages/Shared/_Layout.cshtml";
-    var groupName = ViewBag.GroupName;
+    Layout = "~/Areas/MainScreen/Views/Shared/_Layout.cshtml";
+    var breadcrumbs = new BreadcrumbViewModel();
+    breadcrumbs.AddItem("Panel Administrativo", "/PanelAdministrativo"); var groupName = ViewBag.GroupName;
     var gradeLevelName = ViewBag.GradeLevelName;
 }
 

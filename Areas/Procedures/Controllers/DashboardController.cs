@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using DocumentFormat.OpenXml.Spreadsheet;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SchoolManager.Areas.Procedures.ViewModels;
 using SchoolManager.Data;
@@ -6,37 +8,68 @@ using SchoolManager.Data;
 namespace SchoolManager.Areas.Procedures.Controllers
 {
     [Area("Procedures")]
-    public class DashboardController : Controller
+    public class DashboardController : _ProceduresBaseController
     {
-        private readonly AppDbContext _context;
+        public DashboardController(AppDbContext context) : base(context) { }
 
-        public DashboardController(AppDbContext context)
+        [AllowAnonymous]
+        public IActionResult DeniedAccessPage()
         {
-            _context = context;
+            Response.StatusCode = 403;
+            return View();
         }
 
-        public async Task<IActionResult> Index(int? year)
+        public async Task<IActionResult> Index(int? year, int? areaId)
         {
+            await LoadPermissions("Panel de control");
             int selectedYear = year ?? DateTime.Now.Year;
+            var now = DateTime.Now;
+
+            var stats = await _context.ProcedureRequest
+                .Include(r => r.ProcedureType)
+                .Include(r => r.ProcedureFlow).ThenInclude(f => f.ProcedureStatus)
+                .Select(r => new {
+                    IsTerminated = r.DateTerminated != null,
+                    IsCancelled = r.ProcedureFlow.ProcedureStatus.Name.Contains("Cancelado"),
+                    DateCreated = r.DateCreated,
+                    MaxDays = r.ProcedureType.MaxResolutionDays ?? 0
+                })
+                .ToListAsync();
+
+            ViewBag.Areas = await _context.ProcedureAreas.OrderBy(a => a.Name).ToListAsync();
+            ViewBag.SelectedArea = areaId;
 
             var solicitudesBase = _context.ProcedureRequest
-                .Include(r => r.ProcedureFlow)
-                    .ThenInclude(f => f.ProcedureStatus)
+                .Include(r => r.ProcedureType).ThenInclude(pt => pt.ProcedureArea)
+                .Include(r => r.ProcedureFlow).ThenInclude(f => f.ProcedureStatus)
                 .Where(r => r.DateCreated.Year == selectedYear);
+
+            var solicitudesFiltradas = solicitudesBase;
+            if (areaId.HasValue && areaId > 0)
+            {
+                solicitudesFiltradas = solicitudesBase.Where(r => r.ProcedureType.IdArea == areaId);
+            }
 
             var vm = new DashboardViewModel
             {
                 SelectedYear = selectedYear,
-                TotalRequests = await solicitudesBase.CountAsync(),
-                ActionRequired = await solicitudesBase.CountAsync(r => r.ProcedureFlow.ProcedureStatus.IsActionRequiredByUser),
-                Done = await solicitudesBase.CountAsync(r => r.ProcedureFlow.ProcedureStatus.IsTerminalState),
-                InProgress = await solicitudesBase.CountAsync(r =>
+                TotalRequests = await solicitudesFiltradas.CountAsync(),
+                ActionRequired = await solicitudesFiltradas.CountAsync(r => r.ProcedureFlow.ProcedureStatus.IsActionRequiredByUser),
+                Done = await solicitudesFiltradas.CountAsync(r => r.ProcedureFlow.ProcedureStatus.IsTerminalState),
+                InProgress = await solicitudesFiltradas.CountAsync(r =>
                     !r.ProcedureFlow.ProcedureStatus.IsTerminalState &&
                     !r.ProcedureFlow.ProcedureStatus.IsActionRequiredByUser),
-                Cancelled = await solicitudesBase.CountAsync(r => r.ProcedureFlow.ProcedureStatus.Name == "Cancelado")
+                Cancelled = await solicitudesFiltradas.CountAsync(r => r.ProcedureFlow.ProcedureStatus.Name == "Cancelado"),
+                OverdueCount = stats.Count(r => !r.IsTerminated && !r.IsCancelled && r.MaxDays > 0 &&
+                    (now - r.DateCreated).Days > r.MaxDays),
+                NearDueCount = stats.Count(r => !r.IsTerminated && !r.IsCancelled && r.MaxDays > 0 &&
+                    (r.MaxDays - (now - r.DateCreated).Days) <= 2 &&
+                    (r.MaxDays - (now - r.DateCreated).Days) >= 0),
+                OnTimeCount = stats.Count(r => !r.IsTerminated && !r.IsCancelled &&
+                    (r.MaxDays == 0 || (r.MaxDays - (now - r.DateCreated).Days) > 2))
             };
 
-            var closedStats = await solicitudesBase
+            var closedStats = await solicitudesFiltradas
                 .Where(r => r.DateTerminated != null)
                 .Select(r => EF.Functions.DateDiffMinute(r.DateCreated, r.DateTerminated!.Value))
                 .ToListAsync();
@@ -46,7 +79,7 @@ namespace SchoolManager.Areas.Procedures.Controllers
             vm.AvgResolutionTime = $"{(int)tsClosed.TotalDays}d {tsClosed.Hours}h {tsClosed.Minutes}m";
             vm.AvgResolutionHours = tsClosed.TotalHours;
 
-            var openStats = await solicitudesBase
+            var openStats = await solicitudesFiltradas
                 .Where(r => r.DateTerminated == null)
                 .Select(r => EF.Functions.DateDiffMinute(r.DateCreated, DateTime.Now))
                 .ToListAsync();
@@ -56,7 +89,7 @@ namespace SchoolManager.Areas.Procedures.Controllers
             vm.AvgWaitTime = $"{(int)tsOpen.TotalDays}d {tsOpen.Hours}h {tsOpen.Minutes}m";
             vm.AvgWaitHours = tsOpen.TotalHours;
 
-            var solicitudesMes = await solicitudesBase
+            var solicitudesMes = await solicitudesFiltradas
                 .GroupBy(r => r.DateCreated.Month)
                 .Select(g => new { Mes = g.Key, Total = g.Count() })
                 .ToListAsync();
@@ -72,7 +105,7 @@ namespace SchoolManager.Areas.Procedures.Controllers
                 .Select(g => new { Name = g.Key, Count = g.Count() })
                 .ToDictionaryAsync(x => x.Name, x => x.Count);
 
-            vm.RequestsByType = await solicitudesBase
+            vm.RequestsByType = await solicitudesFiltradas
                 .GroupBy(r => r.ProcedureType.Name)
                 .OrderByDescending(g => g.Count())
                 .Take(5)

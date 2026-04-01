@@ -1,0 +1,334 @@
+@model List<SchoolManager.Areas.SocialService.ViewModels.CoordinatorStudentViewModel>
+
+@{
+    ViewData["Title"] = "Alumnos del Asesor";
+    int teacherId = ViewBag.TeacherId ?? 0;
+    string currentSort = ViewBag.CurrentSort ?? "name";
+    string currentOrder = ViewBag.CurrentOrder ?? "asc";
+    string searchName = ViewBag.SearchName ?? "";
+    string searchEmail = ViewBag.SearchEmail ?? "";
+    string semesterFilter = ViewBag.SemesterFilter ?? "";
+    string groupFilter = ViewBag.GroupFilter ?? "";
+    int pageSizeVal = ViewBag.PageSize ?? 10;
+
+    string SortUrl(string column)
+    {
+        string newOrder = (currentSort == column && currentOrder == "asc") ? "desc" : "asc";
+        return $"?id={teacherId}&searchName={searchName}&searchEmail={searchEmail}&semesterFilter={semesterFilter}&groupFilter={groupFilter}&sortBy={column}&sortOrder={newOrder}&page=1&pageSize={pageSizeVal}";
+    }
+
+    string SortIcon(string column)
+    {
+        if (currentSort != column) return "bi-arrow-down-up";
+        return currentOrder == "asc" ? "bi-sort-up" : "bi-sort-down";
+    }
+}
+
+<!-- Botón -->
+<div class="mb-2">
+    <a asp-area="SocialService" asp-controller="Coordinator" asp-action="Maestros" class="btn btn-secondary">
+        <i class="bi bi-arrow-left"></i> Volver a Maestros
+    </a>
+</div>
+
+<!-- Título -->
+<div class="mb-4 text-center">
+    <h3 class="mb-0">
+        Alumnos de @ViewBag.TeacherName
+    </h3>
+</div>
+
+<!-- Filtros de búsqueda -->
+<div class="card mb-3">
+    <div class="card-header">
+        <i class="bi bi-funnel"></i> Filtros de Búsqueda
+    </div>
+    <div class="card-body py-4">
+        <form method="get" asp-action="VerAlumnosAsesor" id="filterForm">
+            <input type="hidden" name="id" value="@teacherId" />
+            <input type="hidden" name="sortBy" value="@currentSort" />
+            <input type="hidden" name="sortOrder" value="@currentOrder" />
+            <div class="row g-3 align-items-end">
+                <div class="col-md-3">
+                    <label for="searchName" class="form-label mb-2">Buscar por nombre</label>
+                    <input type="text" class="form-control" id="searchName" name="searchName"
+                           value="@searchName" placeholder="Nombre del alumno...">
+                </div>
+
+                <div class="col-md-3">
+                    <label for="searchEmail" class="form-label mb-2">Buscar por email</label>
+                    <input type="text" class="form-control" id="searchEmail" name="searchEmail"
+                           value="@searchEmail" placeholder="Email del alumno...">
+                </div>
+
+                <div class="col-md-2">
+                    <label for="semesterFilter" class="form-label mb-2">Semestre</label>
+                    <select class="form-select" id="semesterFilter" name="semesterFilter" onchange="this.form.submit()">
+                        <option value="">Todos</option>
+                        @if (ViewBag.Semesters != null)
+                        {
+                            foreach (var semester in (List<string>)ViewBag.Semesters)
+                            {
+                                <option value="@semester" selected="@(semesterFilter == semester)">@semester</option>
+                            }
+                        }
+                    </select>
+                </div>
+
+                <div class="col-md-2">
+                    <label for="groupFilter" class="form-label mb-2">Grupo</label>
+                    <select class="form-select" id="groupFilter" name="groupFilter" onchange="this.form.submit()">
+                        <option value="">Todos</option>
+                        @if (ViewBag.Groups != null)
+                        {
+                            foreach (var group in (List<string>)ViewBag.Groups)
+                            {
+                                <option value="@group" selected="@(groupFilter == group)">@group</option>
+                            }
+                        }
+                    </select>
+                </div>
+
+                <div class="col-md-2">
+                    <label for="pageSize" class="form-label mb-2"><i class="bi bi-list-ol"></i> Registros</label>
+                    <select class="form-select" id="pageSize" name="pageSize" onchange="this.form.submit()">
+                        @foreach (var size in new[] { 10, 25, 50, 100 })
+                        {
+                            <option value="@size" selected="@(pageSizeVal == size)">@size</option>
+                        }
+                    </select>
+                </div>
+            </div>
+            <div class="row g-3 mt-1">
+                <div class="col-md-12 d-flex gap-2">
+                    <button type="submit" class="btn btn-primary px-4">
+                        <i class="bi bi-search"></i> Buscar
+                    </button>
+                    <a asp-action="VerAlumnosAsesor" asp-route-id="@teacherId" class="btn btn-secondary px-4">
+                        <i class="bi bi-x-circle"></i> Limpiar
+                    </a>
+                </div>
+            </div>
+        </form>
+        <script src="~/js/SocialServiceAutoSearch.js"></script>
+    </div>
+</div>
+
+<!-- Tabla de alumnos del asesor -->
+<div class="table-responsive">
+    <table class="table table-hover align-middle">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>
+                    <a href="@SortUrl("name")" class="text-decoration-none">
+                        Alumno <i class="bi @SortIcon("name")"></i>
+                    </a>
+                </th>
+                <th>
+                    <a href="@SortUrl("email")" class="text-decoration-none">
+                        Email <i class="bi @SortIcon("email")"></i>
+                    </a>
+                </th>
+                <th>
+                    <a href="@SortUrl("semester")" class="text-decoration-none">
+                        Semestre <i class="bi @SortIcon("semester")"></i>
+                    </a>
+                </th>
+                <th>
+                    <a href="@SortUrl("group")" class="text-decoration-none">
+                        Grupo <i class="bi @SortIcon("group")"></i>
+                    </a>
+                </th>
+                <th class="text-center">
+                    <a href="@SortUrl("bitacoras")" class="text-decoration-none">
+                        Bitácoras <i class="bi @SortIcon("bitacoras")"></i>
+                    </a>
+                </th>
+                <th class="text-center">
+                    <a href="@SortUrl("pendientes")" class="text-decoration-none">
+                        Pendientes <i class="bi @SortIcon("pendientes")"></i>
+                    </a>
+                </th>
+                <th class="text-center">
+                    <a href="@SortUrl("practicas")" class="text-decoration-none">
+                        Hrs Prácticas <i class="bi @SortIcon("practicas")"></i>
+                    </a>
+                </th>
+                <th class="text-center">
+                    <a href="@SortUrl("servicio")" class="text-decoration-none">
+                        Hrs Servicio <i class="bi @SortIcon("servicio")"></i>
+                    </a>
+                </th>
+                <th class="text-center">Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model != null && Model.Count > 0)
+            {
+                int rowNum = ((int)(ViewBag.CurrentPage ?? 1) - 1) * pageSizeVal + 1;
+                @foreach (var student in Model)
+                {
+                    <tr>
+                        <td>@(rowNum++)</td>
+                        <td>@student.StudentName</td>
+                        <td>@student.Email</td>
+                        <td>@(student.SemesterName ?? "N/A")</td>
+                        <td>@(student.GroupName ?? "N/A")</td>
+                        <td class="text-center">@student.TotalBitacoras</td>
+                        <td class="text-center">
+                            @if (student.BitacorasPendientes > 0)
+                            {
+                                <span class="badge bg-warning text-dark">@student.BitacorasPendientes</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-success">0</span>
+                            }
+                        </td>
+                        <td class="text-center">@student.TotalHorasPracticas / 240</td>
+                        <td class="text-center">@student.TotalHorasServicioSocial / 480</td>
+                        <td class="text-center">
+                            <div class="btn-group btn-group-sm">
+                                <a asp-area="SocialService" asp-controller="Coordinator"
+                                   asp-action="VerBitacorasAlumno" asp-route-id="@student.StudentId" asp-route-teacherId="@teacherId"
+                                   class="btn btn-outline-primary" title="Ver bitácoras">
+                                    <i class="bi bi-journal-text"></i>
+                                </a>
+                                @* Botón para que Master abra modal con bitácoras aprobadas y pueda desaprobar *@
+
+                                <a asp-area="SocialService" asp-controller="Coordinator"
+                                   asp-action="VerAsistenciasAlumno" asp-route-id="@student.StudentId" asp-route-teacherId="@teacherId"
+                                   class="btn btn-outline-info" title="Ver asistencias">
+                                    <i class="bi bi-calendar-check"></i>
+                                </a>
+                                @if (User.IsInRole("Master"))
+                                {
+                                    <button type="button" class="btn btn-outline-danger btn-sm btn-eliminar-asignacion" data-student-id="@student.StudentId" data-student-name="@student.StudentName" title="Eliminar del maestro">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+
+                                    <form id="eliminarForm_@student.StudentId" method="post" asp-area="SocialService" asp-controller="Coordinator" asp-action="EliminarAsignacionAlumno" style="display:none;">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="studentId" value="@student.StudentId" />
+                                        <input type="hidden" name="teacherId" value="@teacherId" />
+                                    </form>
+                                }
+                            </div>
+                        </td>
+                    </tr>
+                }
+            }
+            else
+            {
+                <tr>
+                    <td colspan="10" class="text-center text-muted py-4">
+                        <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+                        Este asesor no tiene alumnos asignados.
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+
+
+<!-- Paginación -->
+@if ((int)(ViewBag.TotalPages ?? 0) > 1)
+{
+    <nav aria-label="Paginación">
+        <ul class="pagination justify-content-center">
+            <li class="page-item @((int)(ViewBag.CurrentPage ?? 1) <= 1 ? "disabled" : "")">
+                <a class="page-link" asp-action="VerAlumnosAsesor"
+                   asp-route-id="@teacherId"
+                   asp-route-searchName="@searchName"
+                   asp-route-searchEmail="@searchEmail"
+                   asp-route-semesterFilter="@semesterFilter"
+                   asp-route-groupFilter="@groupFilter"
+                   asp-route-sortBy="@currentSort"
+                   asp-route-sortOrder="@currentOrder"
+                   asp-route-page="@((int)(ViewBag.CurrentPage ?? 1) - 1)"
+                   asp-route-pageSize="@pageSizeVal">
+                    <i class="bi bi-chevron-left"></i>
+                </a>
+            </li>
+            @for (int i = 1; i <= (int)(ViewBag.TotalPages ?? 0); i++)
+            {
+                <li class="page-item @(i == (int)(ViewBag.CurrentPage ?? 1) ? "active" : "")">
+                    <a class="page-link" asp-action="VerAlumnosAsesor"
+                       asp-route-id="@teacherId"
+                       asp-route-searchName="@searchName"
+                       asp-route-searchEmail="@searchEmail"
+                       asp-route-semesterFilter="@semesterFilter"
+                       asp-route-groupFilter="@groupFilter"
+                       asp-route-sortBy="@currentSort"
+                       asp-route-sortOrder="@currentOrder"
+                       asp-route-page="@i"
+                       asp-route-pageSize="@pageSizeVal">@i</a>
+                </li>
+            }
+            <li class="page-item @((int)(ViewBag.CurrentPage ?? 1) >= (int)(ViewBag.TotalPages ?? 0) ? "disabled" : "")">
+                <a class="page-link" asp-action="VerAlumnosAsesor"
+                   asp-route-id="@teacherId"
+                   asp-route-searchName="@searchName"
+                   asp-route-searchEmail="@searchEmail"
+                   asp-route-semesterFilter="@semesterFilter"
+                   asp-route-groupFilter="@groupFilter"
+                   asp-route-sortBy="@currentSort"
+                   asp-route-sortOrder="@currentOrder"
+                   asp-route-page="@((int)(ViewBag.CurrentPage ?? 1) + 1)"
+                   asp-route-pageSize="@pageSizeVal">
+                    <i class="bi bi-chevron-right"></i>
+                </a>
+            </li>
+        </ul>
+    </nav>
+}
+
+<p class="text-muted text-center">
+    Mostrando @Model?.Count de @ViewBag.TotalRecords registros
+</p>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const eliminarBtns = document.querySelectorAll('.btn-eliminar-asignacion');
+            eliminarBtns.forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const form = this.closest('form');
+                    const studentName = this.getAttribute('data-student-name');
+
+                    Swal.fire({
+                        title: '¿Eliminar alumno del maestro?',
+                        html: `¿Estás seguro que deseas eliminar a <strong>${studentName}</strong> de este maestro?<br><br><small class='text-muted'>Esta acción desactivará la asignación pero conservará todo el historial de bitácoras y asistencias del alumno.</small>`,
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonText: 'Sí, eliminar',
+                        cancelButtonText: 'Cancelar',
+                        customClass: {
+                            confirmButton: 'btn btn-danger',
+                            cancelButton: 'btn btn-secondary'
+                        },
+                        buttonsStyling: false
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            // If we have a hidden form with an id for this student, submit it; otherwise submit the visible form
+                            var studentId = btn.getAttribute('data-student-id');
+                            var hiddenForm = document.getElementById('eliminarForm_' + studentId);
+                            if (hiddenForm) {
+                                hiddenForm.submit();
+                            } else {
+                                form.submit();
+                            }
+                        }
+                    });
+
+
+                });
+            });
+        });
+    </script>
+}

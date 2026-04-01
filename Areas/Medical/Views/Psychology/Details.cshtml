@@ -1,0 +1,154 @@
+﻿@model SchoolManager.Models.medical_pychology
+
+@{
+    Layout = "~/Areas/Medical/Views/Shared/_LayoutDashboard.cshtml";
+    ViewData["Title"] = "Detalle Psicológico";
+    var permisos = ViewBag.Permisos as SchoolManager.Models.medical_permissions;
+}
+
+<div class="dashboard-header">
+    <div class="header-content">
+        <h2 class="text-white">DETALLE DE REGISTRO PSICOLÓGICO</h2>
+        <p class="mb-0">Sistema Médico - Bitácoras Psicológicas</p>
+    </div>
+</div>
+
+<div class="container mt-4">
+    <div class="card p-4 shadow-sm" id="documento-pdf">
+
+        <div id="encabezado-pdf" style="display: none; text-align: center; margin-bottom: 25px;">
+            <img src="/rutadel/logo.png" alt="Logo Institución" style="max-height: 80px; margin-bottom: 10px;" />
+            <h4 style="margin: 0; color: #333;">DEPARTAMENTO DE PSICOLOGÍA</h4>
+            <p style="margin: 0; color: #666; font-size: 14px;">Reporte de Atención Estudiantil</p>
+            <hr style="border-top: 2px solid #0d6efd; margin-top: 15px;" />
+        </div>
+
+        <h5 class="section-title">DATOS DEL ALUMNO</h5>
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="info-block">
+                    <label class="fw-bold text-uppercase">Matrícula</label>
+                    <div class="info-box">@Model.MatriculaTemp</div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="info-block">
+                    <label class="fw-bold text-uppercase">Folio</label>
+                    <div class="info-box fw-bold">@Model.Fol</div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="info-block">
+                    <label class="fw-bold text-uppercase">Fecha de Cita</label>
+                    <div class="info-box">@Model.AppointmentDatetime.ToString("dd/MM/yyyy hh:mm tt")</div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="info-block">
+                    <label class="fw-bold text-uppercase">Nombre del Alumno</label>
+                    <div class="info-box">@Model.NombreCompletoTemp</div>
+                </div>
+            </div>
+        </div>
+
+        <hr class="section-divider" />
+
+        <h5 class="section-title">DATOS DE LA ATENCIÓN</h5>
+        <div class="row g-4">
+            <div class="col-md-6">
+                <div class="info-block">
+                    <label class="fw-bold text-uppercase">Asistencia</label>
+                    <div class="mt-2">
+                        @if (Model.AttendanceStatus == "Asistió")
+                        {
+                            <span class="badge asistencia-asistio d-inline-block px-3 py-2 fs-6">Asistió</span>
+                        }
+                        else if (Model.AttendanceStatus == "No asistió")
+                        {
+                            <span class="badge asistencia-no d-inline-block px-3 py-2 fs-6">No asistió</span>
+                        }
+                        else if (Model.AttendanceStatus == "Justificado")
+                        {
+                            <span class="badge asistencia-justificado d-inline-block px-3 py-2 fs-6">Justificado</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-secondary d-inline-block px-3 py-2 fs-6">@Model.AttendanceStatus</span>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-4">
+            <div class="info-block">
+                <label class="fw-bold text-uppercase">Observaciones Psicológicas</label>
+                <div class="info-box">@Model.PsychologyObservations</div>
+            </div>
+        </div>
+
+        <hr class="section-divider" data-html2canvas-ignore="true" />
+
+        <div class="d-flex justify-content-between mt-4" data-html2canvas-ignore="true">
+            <a asp-action="Index" class="btn" style="border: 1.5px solid #6c757d;">
+                REGRESAR
+            </a>
+
+            <div class="d-flex gap-2">
+                <button onclick="descargarPDF()" class="btn" style="border: 1.5px solid #6c757d;">
+                    DESCARGAR PDF
+                </button>
+
+                @if (
+                    User.IsInRole("Master") ||
+                    User.IsInRole("Head of Psychology") ||
+                    (permisos != null && permisos.Modificar)
+                )
+                {
+                    <a asp-action="Edit"
+                       asp-route-id="@Model.Id"
+                       class="btn" style="border: 1.5px solid #6c757d;">
+                        EDITAR REGISTRO
+                    </a>
+                }
+            </div>
+        </div>
+
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script>
+        function descargarPDF() {
+            var encabezado = document.getElementById('encabezado-pdf');
+            encabezado.style.display = 'block';
+            window.scrollTo(0, 0);
+
+            var opciones = {
+                margin: 10,
+                filename: 'Psicologia_' + '@Model.MatriculaTemp' + '.pdf',
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: {
+                    scale: 1.5,
+                    useCORS: true,
+                    scrollX: 0,
+                    scrollY: 0
+                },
+                jsPDF: {
+                    unit: 'mm',
+                    format: 'letter',
+                    orientation: 'portrait'
+                }
+            };
+
+            html2pdf()
+                .set(opciones)
+                .from(document.getElementById('documento-pdf'))
+                .save()
+                .then(function () {
+                    encabezado.style.display = 'none';
+                });
+        }
+    </script>
+}

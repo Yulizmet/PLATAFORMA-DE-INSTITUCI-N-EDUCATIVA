@@ -3,9 +3,16 @@
 @{
     ViewData["Title"] = "Gestión de Permisos";
     Layout = "_ProceduresLayout";
+
+    bool HasPermission(string buttonName) =>
+        ViewBag.UserPermissions != null && ((List<string>)ViewBag.UserPermissions).Contains(buttonName);
 }
 
 @section Scripts {
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+    <partial name="_DataTableConfig" />
+
     <script>
         $(document).ready(function() {
             let activeTab = localStorage.getItem('activeGestorTab');
@@ -15,6 +22,21 @@
 
             $('button[data-bs-toggle="pill"]').on('shown.bs.tab', function (e) {
                 localStorage.setItem('activeGestorTab', $(e.target).attr('data-bs-target'));
+            });
+
+            $(document).on('change', '#checkAll', function () {
+                const isChecked = $(this).is(':checked');
+                $('.row-checkbox').prop('checked', isChecked);
+                $('.row-checkbox').closest('tr').toggleClass('table-active', isChecked);
+                updateBulkBar();
+            });
+
+            $(document).on('change', '.row-checkbox', function () {
+                const total = $('.row-checkbox').length;
+                const selected = $('.row-checkbox:checked').length;
+                $('#checkAll').prop('checked', total === selected);
+                $(this).closest('tr').toggleClass('table-active', $(this).is(':checked'));
+                updateBulkBar();
             });
 
             refreshTables();
@@ -29,9 +51,80 @@
             });
 
             $("#jobsTableContainer").load(jobsUrl, function(response, status, xhr) {
-                if (status === "error") console.error("Error cargando Puestos:", xhr.status, xhr.statusText);
+                if (status === "success") {
+                    initGlobalDataTable('#mainTable');
+                } else {
+                    console.error("Error cargando Puestos:", xhr.status, xhr.statusText);
+                }
             });
         }
+
+        window.loadModal = async function(url) {
+            try {
+                const response = await fetch(url);
+                if (!response.ok) throw new Error(`Error: ${response.status}`);
+                const html = await response.text();
+                const container = document.getElementById('modalContainer');
+                container.innerHTML = html;
+
+                const modalElement = container.querySelector('.modal');
+                if (modalElement) {
+                    const myModal = new bootstrap.Modal(modalElement);
+                    myModal.show();
+                }
+            } catch (error) {
+                showToast('error', 'No se pudo cargar la ventana');
+            }
+        };
+
+        window.loadModuleModal = function(id = 0, moduleName = '') {
+            const cleanModuleName = encodeURIComponent(moduleName);
+            const url = `@Url.Action("GetModuleModal", "Permissions")?id=${id}&moduleName=${cleanModuleName}`;
+            loadModal(url);
+        };
+
+        window.loadJobModal = function(id = 0) {
+            const url = '@Url.Action("GetJobModal", "Permissions")?id=' + id;
+            loadModal(url);
+        };
+
+        window.loadAssignJobModal = function() {
+            const idArea = '@ViewBag.SelectedAreaId';
+            if (!idArea || idArea === '0') {
+                showToast('warning', 'Por favor, selecciona un área administrativa primero.');
+                return;
+            }
+            const url = '@Url.Action("GetAssignJobModal", "Permissions")?idArea=' + idArea;
+            loadModal(url);
+        };
+
+        window.openDeleteModal = function(id, type, groupName = '') {
+            const url = '@Url.Action("GetDeleteModal", "Permissions")';
+            const encodedGroupName = encodeURIComponent(groupName);
+            loadModal(`${url}?id=${id}&type=${type}&groupName=${encodedGroupName}`);
+        };
+
+        $(document).off("submit", ".modal form").on("submit", ".modal form", async function (e) {
+            e.preventDefault();
+            const form = e.target;
+            try {
+                const response = await fetch(form.action, {
+                    method: form.method,
+                    body: new FormData(form)
+                });
+                const result = await response.json();
+                if (result.success) {
+                    const modalInstance = bootstrap.Modal.getInstance(form.closest('.modal'));
+                    if(modalInstance) modalInstance.hide();
+                    showToast('success', result.message || '¡Cambios guardados!');
+                    setTimeout(() => { location.reload(); }, 1500);
+                } else {
+                    showToast('warning', result.message || 'No se puede procesar la solicitud.');
+                }
+            } catch (error) {
+                showToast('error', 'Error en el servidor');
+            }
+        });
 
         function filterByArea(idArea) {
             if (idArea) {
@@ -39,211 +132,130 @@
             }
         }
 
-        function loadModuleModal(id = 0, moduleName = '') {
-            const cleanModuleName = encodeURIComponent(moduleName);
-            const url = `@Url.Action("GetModuleModal", "Permissions")?id=${id}&moduleName=${cleanModuleName}`;
-
-            $("#modalContainer").load(url, function (response, status, xhr) {
-                if (status === "error") {
-                    Swal.fire('Error 500', 'El servidor no pudo procesar la solicitud del modal.', 'error');
-                } else {
-                    $("#modalModule").modal('show');
-                }
-            });
-        }
-
-        function loadJobModal(id = 0) {
-            const url = '@Url.Action("GetJobModal", "Permissions")?id=' + id;
-
-            $("#modalContainer").load(url, function (response, status, xhr) {
-                if (status === "error") {
-                    Swal.fire('Error', 'No se encontró el recurso del puesto.', 'error');
-                } else {
-                    $("#modalJob").modal('show');
-                }
-            });
-        }
-
-        function loadAssignJobModal() {
-            const idArea = '@ViewBag.SelectedAreaId';
-            if (!idArea || idArea === '0') {
-                Swal.fire('Atención', 'Por favor, selecciona un área administrativa primero.', 'warning');
-                return;
-            }
-
-            const url = '@Url.Action("GetAssignJobModal", "Permissions")?idArea=' + idArea;
-
-            $("#modalContainer").load(url, function (response, status, xhr) {
-                if (status === "error") {
-                    Swal.fire('Error', 'No se pudo cargar el selector de puestos.', 'error');
-                } else {
-                    $("#modalAssignJob").modal('show');
-                }
-            });
-        }
-
-        $(document).on('submit', '#formPermissions', function (e) {
-            e.preventDefault();
-            const form = $(this);
-
-            Swal.fire({
-                title: 'Guardando...',
-                text: 'Actualizando privilegios',
-                allowOutsideClick: false,
-                didOpen: () => { Swal.showLoading(); }
-            });
-
-            $.post(form.attr('action'), form.serialize(), function (r) {
-                if (r.success) {
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Matriz Actualizada',
-                        confirmButtonColor: '#620900'
-                    });
-                } else {
-                    Swal.fire('Error', r.message || 'Error desconocido', 'error');
-                }
-            }).fail(function() {
-                Swal.fire('Error Crítico', 'No se pudo conectar con el servidor.', 'error');
-            });
-        });
-
-        function openDeleteModal(id, type) {
-            const url = '@Url.Action("GetDeleteModal", "Permissions")';
-
-            $("#modalContainer").load(`${url}?id=${id}&type=${type}`, function (response, status, xhr) {
-                if (status === "error") {
-                    Swal.fire('Error', 'No se pudo cargar el modal de eliminación', 'error');
-                } else {
-                    $("#deleteModal").modal('show');
-                }
-            });
-        }
-
-        $(document).on('submit', '#formModuleCatalog, #formJobPosition', function (e) {
-            e.preventDefault();
-            const form = $(this);
-            const modalId = form.closest('.modal').attr('id');
-
-            $.post(form.attr('action'), form.serialize(), function (r) {
-                if (r.success) {
-                    $(`#${modalId}`).modal('hide');
-                    Swal.fire({
-                        icon: 'success',
-                        title: '¡Guardado!',
-                        text: r.message,
-                        timer: 1500,
-                        showConfirmButton: false
-                    });
-                    refreshTables();
-                } else {
-                    Swal.fire('Error', r.message, 'error');
-                }
-            });
-        });
-
-        $(document).on('submit', '#formDeleteGeneric', function (e) {
-            e.preventDefault();
-            const form = $(this);
-
-            $.post(form.attr('action'), form.serialize(), function (r) {
-                $("#deleteModal").modal('hide');
-
-                if (r.success) {
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Eliminado',
-                        text: r.message || 'El registro ha sido removido.',
-                        timer: 2000,
-                        showConfirmButton: false
-                    });
-                    refreshTables();
-                } else {
-                    Swal.fire('Error', r.message || 'No se pudo eliminar el registro', 'error');
-                }
-            }).fail(function() {
-                Swal.fire('Error Crítico', 'Comunicación fallida con el servidor', 'error');
-            });
-        });
-
         function initModules(idArea) {
             if (!idArea) {
-                Swal.fire('Error', 'No se ha detectado el ID del área.', 'error');
+                showToast('error', 'ID de área no válido.');
                 return;
             }
-
             Swal.fire({
                 title: '¿Generar matriz base?',
-                text: "Se crearán reglas de acceso para todos los módulos del catálogo en esta área.",
+                text: "Se crearán reglas de acceso para todos los módulos en esta área.",
                 icon: 'question',
                 showCancelButton: true,
                 confirmButtonColor: '#620900',
-                cancelButtonColor: '#6c757d',
-                confirmButtonText: 'Sí, generar',
-                cancelButtonText: 'Cancelar'
+                confirmButtonText: 'Sí, generar'
             }).then((result) => {
                 if (result.isConfirmed) {
-                    Swal.fire({ title: 'Procesando...', didOpen: () => { Swal.showLoading(); } });
-
                     $.post('@Url.Action("InitModules", "Permissions")', { idArea: idArea }, function (r) {
                         if (r.success) {
-                            Swal.fire({
-                                icon: 'success',
-                                title: '¡Listo!',
-                                text: r.message,
-                                confirmButtonColor: '#620900'
-                            }).then(() => {
-                                window.location.reload();
-                            });
+                            showToast('success', r.message);
+                            setTimeout(() => { location.reload(); }, 1500);
                         } else {
-                            Swal.fire('Atención', r.message, 'warning');
+                            showToast('warning', r.message);
                         }
-                    }).fail(function() {
-                        Swal.fire('Error', 'No se pudo completar la operación.', 'error');
                     });
                 }
             });
         }
 
-        $(document).on('submit', '#formAssignJob', function (e) {
+        $(document).on("submit", "#formPermissions", async function (e) {
             e.preventDefault();
-            const form = $(this);
+            const form = e.target;
 
             Swal.fire({
-                title: 'Generando matriz...',
-                text: 'Esto puede tardar unos segundos',
-                didOpen: () => { Swal.showLoading(); }
-            });
-
-            $.post(form.attr('action'), form.serialize(), function (r) {
-                if (r.success) {
-                    $("#modalAssignJob").modal('hide');
-                    Swal.fire({
-                        icon: 'success',
-                        title: '¡Éxito!',
-                        text: r.message,
-                        confirmButtonColor: '#620900'
-                    }).then(() => {
-                        window.location.reload();
-                    });
-                } else {
-                    Swal.fire('Error', r.message, 'error');
+                title: 'Guardando matriz...',
+                text: 'Actualizando permisos y accesos, por favor espere.',
+                allowOutsideClick: false,
+                showConfirmButton: false,
+                didOpen: () => {
+                    Swal.showLoading();
                 }
             });
+
+            try {
+                const response = await fetch(form.action, {
+                    method: form.method,
+                    body: new FormData(form)
+                });
+
+                const result = await response.json();
+
+                Swal.close();
+
+                if (result.success) {
+                    showToast('success', result.message || '¡Matriz de permisos actualizada!');
+                    setTimeout(() => { location.reload(); }, 1500);
+                } else {
+                    showToast('warning', result.message || 'Error al guardar los permisos.');
+                }
+            } catch (error) {
+                Swal.close();
+                showToast('error', 'Error de comunicación con el servidor');
+            }
         });
+
+        function updateBulkBar() {
+            const count = $('.row-checkbox:checked').length;
+            const bar = $('#bulkActionsBar');
+
+            if (count > 0) {
+                $('#selectedCount').text(count === 1 ? '1 seleccionado' : count + ' seleccionados');
+                bar.removeClass('d-none').show();
+            } else {
+                bar.hide().addClass('d-none');
+                $('#checkAll').prop('checked', false);
+            }
+        }
+
+        function deselectAll() {
+            $('.row-checkbox, #checkAll').prop('checked', false).closest('tr').removeClass('table-active');
+            updateBulkBar();
+        }
+
+        function bulkDelete() {
+            const selectedIds = $('.row-checkbox:checked').map(function() {
+                return parseInt($(this).val());
+            }).get();
+            if (selectedIds.length === 0) return;
+            Swal.fire({
+                title: '¿Eliminar puestos seleccionados?',
+                html: `Estás por eliminar <b>${selectedIds.length}</b> registros de forma permanente.`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#620900',
+                confirmButtonText: 'Sí, eliminar',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.ajax({
+                        url: '@Url.Action("BulkDeleteJobs", "Permissions")',
+                        type: 'POST',
+                        data: {
+                            ids: selectedIds,
+                            __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val()
+                        },
+                        success: function (r) {
+                            if (r.success) {
+                                showToast('success', r.message);
+                                setTimeout(() => { location.reload(); }, 1500);
+                            } else {
+                                showToast('error', r.message);
+                            }
+                        }
+                    });
+                }
+            });
+        }
 
         $(document).on('change', '.master-check', function () {
             const isChecked = $(this).is(':checked');
             const targetGroup = $(this).data('target-group');
-
-            $(`.child-check-${targetGroup}`).each(function () {
-                $(this).prop('checked', isChecked);
-            });
+            $(`.child-check-${targetGroup}`).prop('checked', isChecked);
         });
 
         $(document).on('change', '[class^="child-check-"]', function () {
             if ($(this).is(':checked')) {
-                const modId = $(this).attr('class').split('child-check-')[1];
+                const modId = $(this).attr('class').split('child-check-')[1].split(' ')[0];
                 $(`.master-check[data-target-group="${modId}"]`).prop('checked', true);
             }
         });
@@ -254,8 +266,8 @@
 
 <div class="container-fluid px-4 pt-5">
     <div class="mb-4">
-        <h2 class="fw-bold text-dark mb-1">
-            <i class="bi bi-shield-lock text-burgundy"></i> Matriz de Permisos
+        <h2 class="fw-bold text-dark mb-1 merriweather-font">
+            <i class="bi bi-shield-lock"></i> Matriz de Permisos
         </h2>
         <p class="text-muted small">Configura el catálogo global y asigna accesos específicos por departamento.</p>
     </div>
@@ -285,13 +297,16 @@
                 <div class="card-body bg-light" style="padding: 1.5rem !important">
                     <div class="row align-items-center">
                         <div class="col-md-7">
-                            <h5 class="mb-0 fw-bold text-dark">
-                                <i class="bi bi-collection-play me-2 text-burgundy"></i> Catálogo Global de Módulos
+                            <h5 class="mb-0 fw-bold text-dark merriweather-font">
+                                <i class="bi bi-collection-play me-2 text-burgundy"></i> Catálogo Global de Apartados
                             </h5>
                             <p class="text-muted small mb-0">Gestiona los elementos base que aparecerán en las matrices.</p>
                         </div>
                         <div class="col-md-5 text-end">
-                            <button class="btn btn-burgundy btn-sm px-4 shadow-sm" onclick="loadModuleModal(0)">
+                            <button class="btn btn-burgundy btn-sm px-4 shadow-sm"
+                                    onclick="@(HasPermission("btn-agregar-modulo") ? "loadModuleModal(0)" : "")"
+                                    @(HasPermission("btn-agregar-modulo") ? "" : "disabled")
+                                    title="@(HasPermission("btn-agregar-modulo") ? "Agregar Módulo" : "Sin permiso para crear módulos")">
                                 <i class="bi bi-plus-circle me-1"></i> Agregar Módulo
                             </button>
                         </div>
@@ -306,18 +321,22 @@
         </div>
 
         @* PESTAÑA 2 *@
+        <partial name="_TableTools" />
         <div class="tab-pane fade" id="jobs-pane" role="tabpanel">
             <div class="card border-0 shadow-sm mb-4 rounded-4 overflow-hidden border-start border-4 border-burgundy">
                 <div class="card-body bg-light" style="padding: 1.5rem !important">
                     <div class="row align-items-center">
                         <div class="col-md-7">
-                            <h5 class="mb-0 fw-bold text-dark">
+                            <h5 class="mb-0 fw-bold text-dark merriweather-font">
                                 <i class="bi bi-person-vcard me-2 text-burgundy"></i> Puestos Registrados
                             </h5> 
                             <p class="text-muted small mb-0">Define los perfiles laborales para la asignación de accesos.</p>
                         </div>
                         <div class="col-md-5 text-end">
-                            <button class="btn btn-burgundy btn-sm px-4 shadow-sm" onclick="loadJobModal()">
+                            <button class="btn btn-burgundy btn-sm px-4 shadow-sm"
+                                    onclick="@(HasPermission("btn-agregar-puesto") ? "loadJobModal()" : "")"
+                                    @(HasPermission("btn-agregar-puesto") ? "" : "disabled")
+                                    title="@(HasPermission("btn-agregar-puesto") ? "Nuevo Puesto" : "Sin permiso para crear puestos")">
                                 <i class="bi bi-person-plus me-1"></i> Nuevo Puesto
                             </button>
                         </div>
@@ -325,7 +344,7 @@
                 </div>
             </div>
 
-            <div class="border-0 shadow-sm overflow-hidden">
+            <div class="border-0 overflow-hidden">
                 <div class="card-body p-0" id="jobsTableContainer">
                 </div>
             </div>
@@ -347,10 +366,16 @@
                         <div class="col-md-5 text-end">
                             @if (ViewBag.SelectedAreaId != null)
                             {
-                                <button type="button" class="btn btn-burgundy btn-sm me-2" onclick="loadAssignJobModal()">
+                                <button type="button" class="btn btn-burgundy btn-sm me-2"
+                                        onclick="@(HasPermission("btn-asignar-puesto") ? "loadAssignJobModal()" : "")"
+                                        @(HasPermission("btn-asignar-puesto") ? "" : "disabled")
+                                        title="@(HasPermission("btn-asignar-puesto") ? "Asignar Puesto" : "Sin permiso para asignar puestos")">
                                     <i class="bi bi-person-add me-1"></i> Asignar Puesto
                                 </button>
-                                <button type="submit" form="formPermissions" class="btn btn-burgundy btn-sm shadow-sm">
+                                <button type="submit" form="formPermissions"
+                                        class="btn btn-burgundy btn-sm shadow-sm"
+                                        @(HasPermission("btn-guardar-permisos") ? "" : "disabled")
+                                        title="@(HasPermission("btn-guardar-permisos") ? "Guardar Todo" : "Sin permiso para guardar cambios")">
                                     <i class="bi bi-save2"></i> Guardar Todo
                                 </button>
                             }
@@ -415,8 +440,10 @@
                                                                         <span class="text-muted fw-bold" style="font-size: 0.65rem;">ACCESO</span><br />
                                                                         <input type="checkbox" name="permissions[@idx].CanView" value="true"
                                                                                @(mainModule.CanView ? "checked" : "")
+                                                                               @(HasPermission("chk-acceso-modulos") ? "" : "disabled")
                                                                                data-target-group="@modId"
-                                                                               class="form-check-input custom-check master-check mt-1" />
+                                                                               class="form-check-input custom-check master-check mt-1"
+                                                                               title="@(HasPermission("chk-acceso-modulos") ? "" : "No tienes permiso para modificar este acceso")" />
                                                                         <input type="hidden" name="permissions[@idx].CanView" value="false" />
                                                                     </div>
                                                                 </div>
@@ -438,9 +465,11 @@
                                                                             </div>
 
                                                                             <div class="form-check form-switch">
-                                                                                <input type="checkbox" name="permissions[@bIdx].CanView"
-                                                                                       value="true" @(btn.CanView ? "checked" : "")
-                                                                                       class="form-check-input child-check-@modId" />
+                                                                                <input type="checkbox" name="permissions[@bIdx].CanView" value="true"
+                                                                                       @(btn.CanView ? "checked" : "")
+                                                                                       @(HasPermission("chk-acceso-botones") ? "" : "disabled")
+                                                                                       class="form-check-input child-check-@modId"
+                                                                                       title="@(HasPermission("chk-acceso-botones") ? "" : "Sin permiso para cambiar permisos de botones")" />
 
                                                                                 <input type="hidden" name="permissions[@bIdx].CanView" value="false" />
                                                                             </div>
@@ -473,8 +502,11 @@
                     <i class="bi bi-shield-slash display-1 text-muted opacity-25"></i>
                     <h4 class="mt-3 fw-bold">Sin configuración de acceso</h4>
                     <p class="text-muted">El área seleccionada no tiene reglas de acceso definidas.</p>
-                    <button class="btn btn-burgundy mt-2" onclick="initModules(@ViewBag.SelectedAreaId)">
-                        <i class="bi bi-plus-circle me-1"></i> Crear matriz base para esta área
+                    <button class="btn btn-burgundy mt-2"
+                            onclick="@(HasPermission("btn-crear-matriz") ? $"initModules({ViewBag.SelectedAreaId})" : "")"
+                            @(HasPermission("btn-crear-matriz") ? "" : "disabled")
+                            title="@(HasPermission("btn-crear-matriz") ? "Crear matriz admin" : "Sin permiso para inicializar matrices")">
+                        <i class="bi bi-plus-circle me-1"></i> Crear matriz admin para esta área
                     </button>
                 </div>
             }
@@ -491,4 +523,19 @@
             }
         </div>
         </div>
+
+    <div id="bulkActionsBar" class="position-fixed bottom-0 start-50 translate-middle-x mb-4 shadow-lg bg-dark text-white p-3 rounded-pill d-none animate__animated animate__fadeInUp" style="z-index: 1050; min-width: 300px;">
+        <div class="d-flex align-items-center justify-content-between px-3">
+            <span id="selectedCount" class="fw-bold me-4">0 seleccionados</span>
+            <div class="btn-group">
+                @if (HasPermission("btn-multiple-eliminar"))
+                {
+                    <button class="btn btn-sm btn-danger px-3 fw-bold rounded-pill" onclick="bulkDelete()">
+                        <i class="bi bi-trash3-fill me-1"></i> Eliminar
+                    </button>
+                }
+            </div>
+            <button type="button" class="btn-close btn-close-white ms-3" onclick="deselectAll()"></button>
+        </div>
     </div>
+</div>

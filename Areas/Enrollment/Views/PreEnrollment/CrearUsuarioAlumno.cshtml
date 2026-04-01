@@ -1,0 +1,322 @@
+﻿@model SchoolManager.Areas.Enrollment.ViewModels.CreateStudentUserViewModel
+
+@{
+    ViewData["Title"] = "Crear usuario";
+    var userCreated = ViewBag.UserCreated != null && (bool)ViewBag.UserCreated;
+    var createdPassword = ViewBag.CreatedPassword as string;
+}
+
+<div class="login-container">
+    <div class="login-card">
+        <div class="login-form">
+            <h2>Crear cuenta</h2>
+            <p class="text-muted mb-4">
+                Completa los datos para generar tu usuario.
+            </p>
+
+            @if (!userCreated)
+            {
+                <form asp-action="CrearUsuarioAlumno" method="post">
+                    <input type="hidden" asp-for="IdData" />
+                    <input type="hidden" asp-for="PersonId" />
+                    <input type="hidden" asp-for="Folio" />
+                    <input type="hidden" asp-for="Matricula" />
+                    <input type="hidden" asp-for="NombreCompleto" />
+                    <input type="hidden" asp-for="Carrera" />
+
+                    <div asp-validation-summary="All" class="text-danger mb-3"></div>
+
+                    <div class="form-group">
+                        <label>Matrícula</label>
+                        <input class="form-control" value="@Model.Matricula" readonly />
+                    </div>
+
+                    <div class="form-group">
+                        <label>Nombre</label>
+                        <input class="form-control" value="@Model.NombreCompleto" readonly />
+                    </div>
+
+                    <div class="form-group">
+                        <label>Carrera</label>
+                        <input class="form-control" value="@Model.Carrera" readonly />
+                    </div>
+
+                    <div class="form-group">
+                        <label>Usuario</label>
+                        <input asp-for="Username" class="form-control" readonly />
+                    </div>
+
+                    <div class="form-group">
+                        <label asp-for="Email">Correo</label>
+                        <input asp-for="Email" class="form-control" />
+                        <span asp-validation-for="Email" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label asp-for="Password">Contraseña</label>
+                        <input asp-for="Password" type="password" class="form-control" />
+                        <span asp-validation-for="Password" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label asp-for="ConfirmPassword">Confirmar contraseña</label>
+                        <input asp-for="ConfirmPassword" type="password" class="form-control" />
+                        <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
+                    </div>
+
+                    <button type="submit" class="btn-main w-100 mt-3">
+                        Crear usuario
+                    </button>
+                </form>
+            }
+            else
+            {
+                <div class="success-placeholder">
+                    <div class="success-check">✓</div>
+                    <h4 class="success-title">Usuario creado con éxito</h4>
+                    <p class="text-muted text-center">
+                        Tus datos de acceso ya están listos.
+                    </p>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@if (userCreated)
+{
+    <div id="successModal" class="custom-modal-overlay">
+        <div class="custom-modal-box">
+            <button type="button" class="close-x" onclick="closeSuccessModal()">×</button>
+
+            <h3 class="modal-title">Usuario creado con éxito</h3>
+            <p class="modal-subtitle">Guarda esta información antes de cerrar.</p>
+
+            <div class="info-group">
+                <label>Matrícula</label>
+                <div class="info-box">@Model.Matricula</div>
+            </div>
+
+            <div class="info-group">
+                <label>Correo</label>
+                <div class="info-box">@Model.Email</div>
+            </div>
+
+            <div class="info-group">
+                <label>Contraseña</label>
+                <div class="info-box">@createdPassword</div>
+            </div>
+
+            <button type="button" class="btn-main w-100 mt-3" onclick="closeSuccessModal()">
+                Cerrar
+            </button>
+        </div>
+    </div>
+}
+
+<style>
+    .login-container {
+        min-height: 100vh;
+        background: #f5f6fa;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 30px 15px;
+    }
+
+    .login-card {
+        background: #fff;
+        padding: 40px 35px;
+        border-radius: 16px;
+        width: 100%;
+        max-width: 560px;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.10);
+    }
+
+    .login-form {
+        width: 100%;
+    }
+
+        .login-form h2 {
+            font-weight: 700;
+            margin-bottom: 10px;
+            text-align: center;
+            color: #222;
+        }
+
+        .login-form p {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+    .form-group {
+        margin-bottom: 18px;
+        display: flex;
+        flex-direction: column;
+    }
+
+        .form-group label {
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #333;
+        }
+
+    .form-control {
+        border-radius: 10px;
+        height: 48px;
+        padding: 10px 14px;
+        border: 1px solid #dcdfe6;
+        box-shadow: none;
+    }
+
+        .form-control:focus {
+            border-color: #6a0d25;
+            box-shadow: 0 0 0 0.15rem rgba(106, 13, 37, 0.15);
+        }
+
+        .form-control[readonly] {
+            background-color: #f8f9fb;
+            color: #555;
+        }
+
+    .text-danger {
+        font-size: 0.9rem;
+        margin-top: 5px;
+    }
+
+    .btn-main {
+        background-color: #6a0d25;
+        color: white;
+        border: none;
+        height: 48px;
+        border-radius: 10px;
+        font-weight: 600;
+        transition: 0.3s;
+    }
+
+        .btn-main:hover {
+            background-color: #4e091c;
+        }
+
+    .success-placeholder {
+        text-align: center;
+        padding: 20px 10px;
+    }
+
+    .success-check {
+        width: 70px;
+        height: 70px;
+        border-radius: 50%;
+        background: #eaf7ee;
+        color: #1f8b4c;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 32px;
+        margin: 0 auto 15px auto;
+        font-weight: bold;
+    }
+
+    .success-title {
+        font-weight: 700;
+        margin-bottom: 10px;
+    }
+
+    .custom-modal-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.45);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+        padding: 20px;
+    }
+
+    .custom-modal-box {
+        background: #fff;
+        width: 100%;
+        max-width: 480px;
+        border-radius: 16px;
+        padding: 30px 25px;
+        position: relative;
+        box-shadow: 0 15px 35px rgba(0,0,0,.18);
+        animation: fadeInScale .25s ease;
+    }
+
+    .close-x {
+        position: absolute;
+        top: 12px;
+        right: 14px;
+        border: none;
+        background: transparent;
+        font-size: 28px;
+        line-height: 1;
+        cursor: pointer;
+        color: #777;
+    }
+
+        .close-x:hover {
+            color: #000;
+        }
+
+    .modal-title {
+        text-align: center;
+        font-weight: 700;
+        margin-bottom: 8px;
+    }
+
+    .modal-subtitle {
+        text-align: center;
+        color: #666;
+        margin-bottom: 22px;
+    }
+
+    .info-group {
+        margin-bottom: 15px;
+    }
+
+        .info-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 6px;
+            color: #333;
+        }
+
+    .info-box {
+        background: #f8f9fb;
+        border: 1px solid #dcdfe6;
+        border-radius: 10px;
+        min-height: 46px;
+        padding: 12px 14px;
+        color: #444;
+        word-break: break-word;
+    }
+
+    @@keyframes fadeInScale {
+        from {
+            opacity: 0;
+            transform: scale(.95);
+        }
+
+        to {
+            opacity: 1;
+            transform: scale(1);
+        }
+    }
+</style>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+    <script>
+        function closeSuccessModal() {
+            const modal = document.getElementById('successModal');
+            if (modal) {
+                modal.style.display = 'none';
+            }
+        }
+    </script>
+}

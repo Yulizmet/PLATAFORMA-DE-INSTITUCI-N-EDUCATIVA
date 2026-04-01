@@ -1,0 +1,81 @@
+﻿@model SchoolManager.Models.StudentDetailVM
+@{
+    Layout = "~/Areas/Medical/Views/Shared/_LayoutDashboard.cshtml";
+    ViewData["Title"] = "Detalle Alumno";
+}
+<div class="dashboard-header">
+    <div class="header-content">
+        <h2 class="text-white">DETALLE DEL ALUMNO</h2>
+        <p class="mb-0">Sistema Médico - Registro de Alumnos</p>
+    </div>
+</div>
+<div class="container mt-4">
+    <div class="card p-4 shadow-sm">
+        <h5 class="section-title">DATOS DEL ALUMNO</h5>
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="info-block">
+                    <label class="fw-bold text-uppercase">Matrícula</label>
+                    <div class="info-box">@Model.Matricula</div>
+                </div>
+            </div>
+            <div class="col-md-8">
+                <div class="info-block">
+                    <label class="fw-bold text-uppercase">Nombre Completo</label>
+                    <div class="info-box">@Model.Nombre @Model.Paterno @Model.Materno</div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="info-block">
+                    <label class="fw-bold text-uppercase">Tipo de Sangre</label>
+                    <div class="info-box fw-bold text-danger">@Model.Sangre</div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="info-block">
+                    <label class="fw-bold text-uppercase">Fecha de Registro</label>
+                    <div class="info-box">@Model.FechaCreacion.ToString("dd/MM/yyyy hh:mm tt")</div>
+                </div>
+            </div>
+        </div>
+        <hr class="section-divider" />
+        <h5 class="section-title">INFORMACIÓN MÉDICA</h5>
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="info-block">
+                    <label class="fw-bold text-uppercase">Peso</label>
+                    <div class="info-box">
+                        @(Model.Peso.HasValue? Model.Peso + " kg" : "No registrado")
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="info-block">
+                    <label class="fw-bold text-uppercase">Alergias</label>
+                    <div class="info-box">
+                        @(string.IsNullOrEmpty(Model.Alergias) ? "Ninguna" : Model.Alergias)
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="info-block">
+                    <label class="fw-bold text-uppercase">Condiciones Crónicas</label>
+                    <div class="info-box">
+                        @(string.IsNullOrEmpty(Model.CondicionesCronicas) ? "Ninguna" : Model.CondicionesCronicas)
+                    </div>
+                </div>
+            </div>
+        </div>
+        <hr class="section-divider" />
+        <div class="d-flex justify-content-between mt-4">
+            <a asp-action="Index" class="btn" style="border: 1.5px solid #6c757d;">
+                REGRESAR
+            </a>
+            <a asp-action="Edit"
+               asp-route-id="@Model.Id"
+               class="btn" style="border: 1.5px solid #6c757d;">
+                EDITAR ALUMNO
+            </a>
+        </div>
+    </div>
+</div>

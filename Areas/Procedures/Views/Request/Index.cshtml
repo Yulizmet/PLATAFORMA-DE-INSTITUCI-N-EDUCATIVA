@@ -1,7 +1,10 @@
 ﻿@{
     ViewData["Title"] = "Centro de Trámites";
     Layout = "/Areas/MainScreen/Views/Shared/_Layout.cshtml";
-    //var isAuthenticated = false;
+    bool isAuthenticated = User!.Identity!.IsAuthenticated;
+    bool hasActivePayments = ViewBag.HasActivePayments ?? false;
+    DateTime? nextOpening = ViewBag.NextPaymentOpening;
+    bool hasActiveGeneral = ViewBag.HasActiveGeneralProcedures ?? false;
 }
 
 <link rel="stylesheet" href="~/css/tramites.css" asp-append-version="true" />
@@ -14,25 +17,89 @@
     </div>
 
     <div class="row g-4 justify-content-center">
+        
+        @if (!User.Identity.IsAuthenticated)
+        {
+            <div class="row mt-5 mb-3 justify-content-center animate__animated animate__fadeIn">
+                <div class="col-lg-10 col-xl-8">
+                    <div class="d-flex align-items-center bg-white shadow-sm rounded-pill p-2 border">
+                        <div class="px-3 d-none d-md-block border-end">
+                            <span class="small fw-bold text-burgundy text-nowrap">
+                                <i class="bi bi-search me-1"></i> Buscar status
+                            </span>
+                        </div>
+
+                        <input type="text" id="searchFolio" class="form-control border-0 bg-transparent form-control-sm px-3" placeholder="Folio de trámite">
+                        <div class="vr my-2 text-muted opacity-25"></div>
+                        <input type="text" id="searchId" class="form-control border-0 bg-transparent form-control-sm px-3" placeholder="Folio de Preinscripción">
+
+                        <button onclick="btnPublicSearch()" id="searchPFolio" class="btn btn-burgundy d-flex align-items-center justify-content-center ms-1 me-2" style="width: 34px; height: 34px; min-width: 34px;">
+                            <i class="bi bi-arrow-right"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        }
+
         <div class="col-xl-4 col-lg-6" id="card-payment">
-            <div class="card-horizontal">
+            <div class="card-horizontal @(hasActivePayments ? "" : "grayscale-filter opacity-75")">
                 <div class="img-side">
                     <img src="https://images.unsplash.com/photo-1554224155-6726b3ff858f?q=80&w=600&auto=format&fit=crop" alt="Registrar Pago">
                     <div class="img-overlay"></div>
                 </div>
                 <div class="content-side">
-                    <i class="bi bi-credit-card-2-front icon-float"></i>
-                    <h3 class="fw-bold h5 merriweather-font">Registrar Pago</h3>
-                    <p class="text-muted mb-3" style="font-size: 0.85rem;">Valida tu boucher de inscripción o preinscripción ante el área de Finanzas.</p>
-                    <a asp-action="PaymentRegistration" class="btn btn-burgundy">
-                        <i class="bi bi-cash-coin me-2"></i>Ir a Pagos
-                    </a>
+                    @if (hasActivePayments)
+                    {
+                        <i class="bi bi-credit-card-2-front icon-float"></i>
+                        <h3 class="fw-bold h5 merriweather-font">Registrar Pago</h3>
+                        <p class="text-muted mb-3" style="font-size: 0.85rem;">Valida tu boucher de inscripción o preinscripción ante el área de Finanzas.</p>
+
+                        <a asp-action="PaymentRegistration" class="btn btn-burgundy">
+                            <i class="bi bi-cash-coin me-2"></i>Ir a Pagos
+                        </a>
+                    }
+                    else
+                    {
+                        @if (nextOpening.HasValue)
+                        {
+                            <div class="py-2 text-center animate__animated animate__fadeIn">
+                                <i class="bi bi-calendar2-check text-burgundy mb-2 d-block" style="font-size: 2rem;"></i>
+
+                                <h3 class="fw-bold h6 merriweather-font mb-3">Registrar Pago</h3>
+
+                                <div class="p-2 rounded-4 border" style="background-color: rgba(98, 9, 0, 0.02); border: 1px dashed rgba(98, 9, 0, 0.3) !important;">
+                                    <small class="text-burgundy fw-bold d-block text-uppercase" style="font-size: 0.6rem; letter-spacing: 1px;">
+                                        Próxima Apertura
+                                    </small>
+                                    <span class="fw-bold text-dark d-block" style="font-size: 0.9rem;">
+                                        @nextOpening.Value.ToString("dd 'de' MMMM", new System.Globalization.CultureInfo("es-MX"))
+                                    </span>
+                                    <span class="text-muted small">
+                                        <i class="bi bi-clock me-1"></i>@nextOpening.Value.ToString("hh:mm tt", new System.Globalization.CultureInfo("es-MX"))
+                                    </span>
+                                </div>
+                            </div>
+                        }
+                        else
+                        {
+                            <i class="bi bi-credit-card-2-front icon-float"></i>
+                            <h3 class="fw-bold h5 merriweather-font">Registrar Pago</h3>
+                            <p class="text-muted mb-3" style="font-size: 0.85rem;">Valida tu boucher de inscripción o preinscripción ante el área de Finanzas.</p>
+
+                            <button class="btn btn-secondary w-100 rounded-pill py-2" disabled>
+                                <i class="bi bi-calendar-x me-2"></i>Fuera de periodo
+                            </button>
+                            <div class="text-muted mt-2 text-center" style="font-size: 0.7rem;">
+                                * Periodo no programado
+                            </div>
+                        }
+                    }
                 </div>
             </div>
         </div>
 
-        <div class="col-xl-4 col-lg-6 auth-only" id="card-new-request">
-            <div class="card-horizontal">
+        <div class="col-xl-4 col-lg-6 @(isAuthenticated ? "" : "opacity-75")" id="card-new-request">
+            <div class="card-horizontal shadow-sm">
                 <div class="img-side">
                     <img src="https://images.unsplash.com/photo-1586281380349-632531db7ed4?q=80&w=600&auto=format&fit=crop" alt="Nueva Solicitud">
                     <div class="img-overlay"></div>
@@ -41,14 +108,33 @@
                     <i class="bi bi-file-earmark-text icon-float"></i>
                     <h3 class="fw-bold h5 merriweather-font">Nueva Solicitud</h3>
                     <p class="text-muted mb-3" style="font-size: 0.85rem;">Trámites generales. Prepara tu documentación académica en formato PDF.</p>
-                    <a asp-action="Requests" class="btn btn-burgundy">
-                        <i class="bi bi-plus-circle me-2"></i>Comenzar
-                    </a>
+
+                    @if (isAuthenticated)
+                    {
+                        if (hasActiveGeneral)
+                        {
+                            <a asp-action="Requests" class="btn btn-burgundy">
+                                <i class="bi bi-plus-circle me-2"></i>Comenzar
+                            </a>
+                        }
+                        else
+                        {
+                            <a asp-action="Requests" class="btn btn-secondary text-white">
+                                <i class="bi bi-calendar-event me-2"></i>Ver periodos
+                            </a>
+                        }
+                    }
+                    else
+                    {
+                        <a asp-area="UserMng" asp-controller="Account" asp-action="Login" class="btn btn-disabled fw-bold">
+                            <i class="bi bi-lock-fill me-2"></i>Iniciar Sesión
+                        </a>
+                    }
                 </div>
             </div>
         </div>
 
-        <div class="col-xl-4 col-lg-6 auth-only" id="card-tracking">
+        <div class="col-xl-4 col-lg-6 @(isAuthenticated ? "" : "opacity-75")" id="card-tracking">
             <div class="card-horizontal shadow-sm">
                 <div class="img-side">
                     <img src="https://images.unsplash.com/photo-1507925921958-8a62f3d1a50d?auto=format&fit=crop&q=80&w=600" alt="Seguimiento">
@@ -58,35 +144,107 @@
                     <i class="bi bi-search icon-float"></i>
                     <h3 class="fw-bold h5 merriweather-font">Mis Trámites</h3>
                     <p class="text-muted mb-3" style="font-size: 0.85rem;">Monitorea estatus en tiempo real y descarga tus resultados oficiales.</p>
-                    <a asp-action="Tracking" class="btn btn-burgundy">
-                        <i class="bi bi-eye me-2"></i>Ver Estatus
-                    </a>
+
+                    @if (isAuthenticated)
+                    {
+                        <a asp-action="Tracking" class="btn btn-burgundy">
+                            <i class="bi bi-eye me-2"></i>Ver Estatus
+                        </a>
+                    }
+                    else
+                    {
+                        <a asp-area="UserMng" asp-controller="Account" asp-action="Login" class="btn btn-disabled fw-bold">
+                            <i class="bi bi-lock-fill me-2"></i>Iniciar Sesión
+                        </a>
+                    }
                 </div>
             </div>
         </div>
-    </div>
 
-    <div class="mt-5 text-center">
-        <small class="text-muted">
-            <i class="bi bi-info-circle me-1"></i> Para trámites administrativos avanzados, es necesario iniciar sesión con tu cuenta institucional.
-        </small>
+        <div class="mt-5 text-center">
+            <small class="text-muted">
+                <i class="bi bi-info-circle me-1"></i> Para trámites administrativos avanzados, es necesario iniciar sesión con tu cuenta institucional.
+            </small>
+        </div>
+
+        <div id="modalContainer"></div>
     </div>
 </div>
 
 @section Scripts {
     <script>
-        $(document).ready(function() {
-            checkUserSession();
-        });
+        async function btnPublicSearch() {
+            const folioInput = $('#searchFolio');
+            const idInput = $('#searchId');
+            const btn = $('#searchPFolio');
 
-        function checkUserSession() {
-            let userId = 1;
+            const folio = folioInput.val().trim();
+            const id = idInput.val().trim();
 
-            if (userId != null && userId > 0) {
-                $('.auth-only').fadeIn(600);
-            } else {
-                $('.auth-only').hide();
+            if (!folio || !id) {
+                showToast('warning', 'Por favor, completa ambos campos.');
+                if(!folio) folioInput.focus();
+                else idInput.focus();
+                return;
+            }
+
+            if (!/^\d+$/.test(folio)) {
+                showToast('error', 'Los folios deben contener solo números.');
+                folioInput.addClass('is-invalid');
+                return;
+            }
+
+            folioInput.removeClass('is-invalid');
+            btn.prop('disabled', true);
+
+            try {
+                Swal.fire({
+                    title: 'Buscando solicitud...',
+                    html: 'Espera un momento, por favor.',
+                    allowOutsideClick: false,
+                    didOpen: () => { Swal.showLoading(); }
+                });
+
+                const url = `/Procedures/Request/PublicSearch?folio=${encodeURIComponent(folio)}&identifier=${encodeURIComponent(id)}`;
+                const response = await fetch(url);
+
+                if (!response.ok) throw new Error('Error en la comunicación con el servidor');
+
+                const html = await response.text();
+                Swal.close();
+
+                if (html.includes('"success":false')) {
+                    const res = JSON.parse(html);
+                    showToast('error', res.message || 'No se encontraron coincidencias.');
+                }
+                else {
+                    const container = document.getElementById('modalContainer');
+                    if (container) {
+                        container.innerHTML = html;
+                        const modalEl = container.querySelector('.modal');
+                        if (modalEl) {
+                            const myModal = new bootstrap.Modal(modalEl);
+                            myModal.show();
+                        }
+                    } else {
+                        throw new Error('No se pudo encontrar el modalContainer.');
+                    }
+                }
+            } catch (error) {
+                Swal.close();
+                console.error("Search Error:", error);
+                showToast('error', 'Hubo un problema al consultar. Inténtalo de nuevo más tarde.');
+            } finally {
+                btn.prop('disabled', false);
             }
         }
+
+        $(document).ready(function() {
+            $('#searchFolio, #searchId').on('keypress', function (e) {
+                if (e.which == 13) {
+                    btnPublicSearch();
+                }
+            });
+        });
     </script>
 }

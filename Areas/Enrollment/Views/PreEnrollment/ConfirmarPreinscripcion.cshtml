@@ -6,14 +6,17 @@
     ViewData["ModoConfirmacion"] = true;
 }
 
-<main class="content">
-    <div class="container-fluid p-0">
-        <h1 class="h3 mb-3"><strong>Confirmar Datos del Aspirante</strong></h1>
-        <p class="text-muted mb-0">Revisa la información. Si necesitas cambiar algo, usa <strong>Editar</strong> en la sección correspondiente.</p>
+<div class="px-3 px-md-4 mb-4">
+    <div class="mx-auto" style="max-width: 1100px;">
+        <h1 class="h3 mb-2"><strong>Confirmar Datos del Aspirante</strong></h1>
+        <p class="mb-0 text-secondary">
+            Revisa la información. Si necesitas cambiar algo, usa <strong>Editar</strong> en la sección correspondiente.
+        </p>
     </div>
+</div>
 
-    <div class="container my-5">
-
+<div class="px-3 px-md-4 px-lg-4 my-4 my-md-5">
+    <div class="mx-auto" style="max-width: 1100px;">
         <form id="confirmacionForm"
               method="post"
               asp-action="ConfirmarPreinscripcion"
@@ -22,13 +25,19 @@
 
             <div asp-validation-summary="All" class="text-danger mb-3"></div>
 
-            <!-- Carrera solicitada (card) -->
+            <!-- CARD CARRERA -->
             <div class="card mb-4" data-section="Carrera">
-                <div class="card-header fw-bold text-uppercase d-flex justify-content-between align-items-center">
-                    Carrera solicitada
-                    <button type="button" class="btn btn-outline-secondary btn-sm btn-editar" data-target="Carrera">
-                        Editar
+                <div class="card-header fw-bold text-uppercase d-flex justify-content-between align-items-center flex-wrap gap-2">
+
+                    <span>Carrera</span>
+
+                    <button type="button"
+                            class="btn btn-outline-secondary btn-sm btn-editar d-flex align-items-center gap-2 px-3"
+                            data-target="Carrera">
+                        <i class="fa-solid fa-pen-to-square"></i>
+                        <span>Editar</span>
                     </button>
+
                 </div>
 
                 <div class="card-body">
@@ -39,27 +48,27 @@
                             required>
                         <option value="" selected disabled>Sin selección</option>
                     </select>
-                    <span asp-validation-for="DatosGenerales.IdCareer" class="text-danger"></span>
                 </div>
             </div>
 
-            <!-- Tus partials (ya tienen card) -->
+            <!-- PARTIALS -->
             <partial name="Partials/_DatosGenerales" model="Model" />
             <partial name="Partials/_DatosEscolares" model="Model" />
             <partial name="Partials/_Domicilio" model="Model" />
             <partial name="Partials/_Tutor" model="Model" />
             <partial name="Partials/_OtrosDatos" model="Model" />
 
-            <div class="d-flex justify-content-between">
-
-                <button type="submit" class="btn btn-success">
+            <!-- BOTÓN -->
+            <div class="d-flex justify-content-end mt-4">
+                <button type="submit" class="btn btn-success px-4 py-2 d-flex align-items-center gap-2">
+                    <i class="fa-solid fa-check"></i>
                     Confirmar y enviar
                 </button>
             </div>
-        </form>
 
+        </form>
     </div>
-</main>
+</div>
 
 @section Scripts {
     @await Html.PartialAsync("_ValidationScriptsPartial")

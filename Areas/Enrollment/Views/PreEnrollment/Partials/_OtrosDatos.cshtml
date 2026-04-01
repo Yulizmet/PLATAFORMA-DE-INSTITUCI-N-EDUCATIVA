@@ -20,70 +20,92 @@
 
     <div class="card-body row g-3">
 
+        <!-- BECA -->
         <div class="col-12">
             <label class="form-label fw-semibold d-block">¿Contaba con beca?</label>
-            <div class="form-check form-check-inline">
-                <input asp-for="Otros.beca" class="form-check-input" type="radio" value="No" />
-                <label class="form-check-label">No</label>
+            <div class="d-flex flex-wrap gap-3">
+                <div class="form-check">
+                    <input asp-for="Otros.beca" class="form-check-input"
+                           type="radio" value="No"
+                           required data-required="true" />
+                    <label class="form-check-label">No</label>
+                </div>
+                <div class="form-check">
+                    <input asp-for="Otros.beca" class="form-check-input"
+                           type="radio" value="Sí"
+                           required data-required="true" />
+                    <label class="form-check-label">Sí</label>
+                </div>
             </div>
-            <div class="form-check form-check-inline">
-                <input asp-for="Otros.beca" class="form-check-input" type="radio" value="Sí" />
-                <label class="form-check-label">Sí</label>
-            </div>
-            <span asp-validation-for="Otros.beca" class="text-danger"></span>
         </div>
 
+        <!-- COMUNIDAD INDIGENA -->
         <div class="col-12">
             <label class="form-label fw-semibold d-block">¿Proviene de alguna comunidad indígena?</label>
-            <div class="form-check form-check-inline">
-                <input asp-for="Otros.comu_indi" class="form-check-input" type="radio" value="false" checked>
-                <label class="form-check-label">No</label>
-            </div>
-            <div class="form-check form-check-inline">
-                <input asp-for="Otros.comu_indi" class="form-check-input" type="radio" value="true">
-                <label class="form-check-label">Sí</label>
+            <div class="d-flex flex-wrap gap-3">
+                <div class="form-check">
+                    <input asp-for="Otros.comu_indi" class="form-check-input" type="radio" value="false" checked>
+                    <label class="form-check-label">No</label>
+                </div>
+                <div class="form-check">
+                    <input asp-for="Otros.comu_indi" class="form-check-input" type="radio" value="true">
+                    <label class="form-check-label">Sí</label>
+                </div>
             </div>
         </div>
 
+        <!-- LENGUA -->
         <div class="col-12">
             <label class="form-label fw-semibold d-block">¿Habla lengua indígena?</label>
-            <div class="form-check form-check-inline">
-                <input asp-for="Otros.lengu_indi" class="form-check-input" type="radio" value="false" checked>
-                <label class="form-check-label">No</label>
-            </div>
-            <div class="form-check form-check-inline">
-                <input asp-for="Otros.lengu_indi" class="form-check-input" type="radio" value="true">
-                <label class="form-check-label">Sí</label>
+            <div class="d-flex flex-wrap gap-3">
+                <div class="form-check">
+                    <input asp-for="Otros.lengu_indi" class="form-check-input" type="radio" value="false" checked>
+                    <label class="form-check-label">No</label>
+                </div>
+                <div class="form-check">
+                    <input asp-for="Otros.lengu_indi" class="form-check-input" type="radio" value="true">
+                    <label class="form-check-label">Sí</label>
+                </div>
             </div>
         </div>
 
+        <!-- DISCAPACIDAD -->
         <div class="col-12">
             <label class="form-label fw-semibold d-block">¿Padece alguna discapacidad?</label>
-            <div class="form-check form-check-inline">
-                <input asp-for="Otros.incapa" class="form-check-input" type="radio" value="false" checked>
-                <label class="form-check-label">No</label>
-            </div>
-            <div class="form-check form-check-inline">
-                <input asp-for="Otros.incapa" class="form-check-input" type="radio" value="true">
-                <label class="form-check-label">Sí</label>
+            <div class="d-flex flex-wrap gap-3">
+                <div class="form-check">
+                    <input asp-for="Otros.incapa" class="form-check-input" type="radio" value="false" checked>
+                    <label class="form-check-label">No</label>
+                </div>
+                <div class="form-check">
+                    <input asp-for="Otros.incapa" class="form-check-input" type="radio" value="true">
+                    <label class="form-check-label">Sí</label>
+                </div>
             </div>
         </div>
 
+        <!-- ENFERMEDAD -->
         <div class="col-12">
             <label class="form-label fw-semibold d-block">¿Padece alguna enfermedad?</label>
-            <div class="form-check form-check-inline">
-                <input asp-for="Otros.disease" class="form-check-input" type="radio" value="false" checked>
-                <label class="form-check-label">No</label>
-            </div>
-            <div class="form-check form-check-inline">
-                <input asp-for="Otros.disease" class="form-check-input" type="radio" value="true">
-                <label class="form-check-label">Sí</label>
+            <div class="d-flex flex-wrap gap-3">
+                <div class="form-check">
+                    <input asp-for="Otros.disease" class="form-check-input" type="radio" value="false" checked>
+                    <label class="form-check-label">No</label>
+                </div>
+                <div class="form-check">
+                    <input asp-for="Otros.disease" class="form-check-input" type="radio" value="true">
+                    <label class="form-check-label">Sí</label>
+                </div>
             </div>
         </div>
 
+        <!-- COMO SE ENTERO -->
         <div class="col-12 mt-3">
-            <label class="form-label fw-semibold">¿Cómo se enteró primeramente del ITACE y sus especialidades?</label>
-            <select asp-for="Otros.comment" class="form-select">
+            <label class="form-label fw-semibold">
+                ¿Cómo se enteró primeramente del ITACE y sus especialidades?
+            </label>
+            <select asp-for="Otros.comment" class="form-select"
+                    required data-required="true">
                 <option value="">Sin selección</option>
                 <option value="Amigos">Amigos</option>
                 <option value="Familia">Familia</option>
@@ -94,7 +116,6 @@
                 <option value="Visita a escuela">Visita a escuela</option>
                 <option value="Otro">Otro</option>
             </select>
-            <span asp-validation-for="Otros.comment" class="text-danger"></span>
         </div>
 
     </div>

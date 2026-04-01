@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore;
 namespace SchoolManager.Areas.UserMng.Controllers;
 
 [Area("UserMng")]
-[Authorize(Roles = "Administrator")]
+[Authorize(Roles = "Administrator,Teacher")]
 
 public class TeachersController : Controller
 {

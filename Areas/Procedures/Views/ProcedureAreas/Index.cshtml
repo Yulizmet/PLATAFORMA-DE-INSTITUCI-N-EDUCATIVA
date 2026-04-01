@@ -3,6 +3,9 @@
 @{
     ViewData["Title"] = "Gestión de Áreas";
     ViewBag.EntityName = "areas";
+
+    bool HasPermission(string buttonName) =>
+        ViewBag.UserPermissions != null && ((List<string>)ViewBag.UserPermissions).Contains(buttonName);
 }
 
 @section Scripts {
@@ -25,7 +28,7 @@
                     myModal.show();
                 }
             } catch (error) {
-                Swal.fire('Error', 'No se pudo cargar la ventana: ' + error.message, 'error');
+                showToast('error', 'No se pudo cargar la ventana');
             }
         };
 
@@ -42,14 +45,93 @@
                 const result = await response.json();
 
                 if (result.success) {
-                    location.reload();
+                    const modalInstance = bootstrap.Modal.getInstance(form.closest('.modal'));
+                    if(modalInstance) modalInstance.hide();
+
+                    showToast('success', result.message || '¡Cambios guardados!');
+
+                    setTimeout(() => { location.reload(); }, 1500);
                 } else {
-                    Swal.fire('Atención', result.errors ? result.errors.join("\n") : "Error al procesar", 'warning');
+                    showToast('warning', 'No se puede eliminar porque está en uso.');
                 }
             } catch (error) {
-                Swal.fire('Error', 'Error al procesar la solicitud', 'error');
+                Swal.fire('Error', r.message, 'error');
             }
         });
+
+        $(document).ready(function () {
+            $(document).on('change', '#checkAll', function () {
+                const isChecked = $(this).is(':checked');
+                $('.row-checkbox').prop('checked', isChecked);
+                $('.row-checkbox').closest('tr').toggleClass('table-active', isChecked);
+                updateBulkBar();
+            });
+
+            $(document).on('change', '.row-checkbox', function () {
+                const total = $('.row-checkbox').length;
+                const selected = $('.row-checkbox:checked').length;
+                $('#checkAll').prop('checked', total === selected);
+                $(this).closest('tr').toggleClass('table-active', $(this).is(':checked'));
+                updateBulkBar();
+            });
+        });
+
+        function updateBulkBar() {
+            const count = $('.row-checkbox:checked').length;
+            const bar = $('#bulkActionsBar');
+
+            if (count > 0) {
+                const text = count === 1 ? '1 seleccionado' : count + ' seleccionados';
+                $('#selectedCount').text(text);
+                bar.removeClass('d-none').fadeIn('fast');
+            } else {
+                bar.fadeOut('fast', function() {
+                    $(this).addClass('d-none');
+                });
+                $('#checkAll').prop('checked', false);
+            }
+        }
+
+        function deselectAll() {
+            $('.row-checkbox, #checkAll').prop('checked', false).closest('tr').removeClass('table-active');
+            updateBulkBar();
+        }
+
+        function bulkDelete() {
+            const selectedIds = $('.row-checkbox:checked').map(function() {
+                return parseInt($(this).val());
+            }).get();
+
+            Swal.fire({
+                title: '¿Eliminar seleccionadas?',
+                html: `Estás por eliminar <b>${selectedIds.length}</b> áreas de forma permanente.`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#620900',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Sí, eliminar',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.ajax({
+                        url: '/Procedures/ProcedureAreas/BulkDelete',
+                        type: 'POST',
+                        data: {
+                            ids: selectedIds,
+                            __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val()
+                        },
+                        success: function (r) {
+                            if (r.success) {
+                                showToast('success', r.message);
+                                setTimeout(() => { location.reload(); }, 1500);
+                            } else {
+                                Swal.fire('Error', r.message, 'error');
+                            }
+                        }
+                    });
+                }
+            });
+        }
     </script>
 }
 
@@ -59,13 +141,15 @@
 
     <div class="d-flex justify-content-between align-items-start mb-4">
         <div>
-            <h2 class="fw-bold mb-1">
+            <h2 class="fw-bold mb-1 merriweather-font">
                 <i class="bi bi-diagram-3"></i> Áreas
             </h2>
             <p class="text-muted small mb-0">Configura las áreas o departamentos responsables de los trámites.</p>
         </div>
-
-        <button class="btn btn-burgundy shadow-sm" onclick="loadModal('/Procedures/ProcedureAreas/Create')">
+        <button class="btn btn-burgundy shadow-sm"
+                onclick="@(HasPermission("btn-agregar") ? "loadModal('/Procedures/ProcedureAreas/Create')" : "")"
+                @(HasPermission("btn-agregar") ? "" : "disabled")
+                title="@(HasPermission("btn-agregar") ? "Agregar área" : "Sin permiso para agregar")">
             <i class="bi bi-plus-circle me-2"></i> Agregar área
         </button>
     </div>
@@ -74,7 +158,7 @@
 
     <div class="border-0 overflow-hidden">
         <div class="card-body p-0">
-            <table id="mainTable" class="table table-hover align-middle mb-0">
+            <table id="mainTable" class="table table-hover align-middle mb-0 table-container-rounded">
                 <thead class="burgundy-header text-white">
                     <tr>
                         <th class="no-sort text-center" style="width: 5%;">
@@ -102,14 +186,16 @@
                                 <div class="btn-group">
                                     <button class="btn btn-sm btn-light border shadow-sm me-2"
                                             style="width:32px; height:32px; padding:0;"
-                                            onclick="loadModal('/Procedures/ProcedureAreas/Edit/@item.Id')"
-                                            title="Editar">
+                                            onclick="@(HasPermission("btn-editar") ? $"loadModal('/Procedures/ProcedureAreas/Edit/{item.Id}')" : "")"
+                                            @(HasPermission("btn-editar") ? "" : "disabled")
+                                            title="@(HasPermission("btn-editar") ? "Editar" : "Sin permiso para editar")">
                                         <i class="bi bi-pencil-square text-warning"></i>
                                     </button>
                                     <button class="btn btn-sm btn-light border shadow-sm"
                                             style="width:32px; height:32px; padding:0;"
-                                            onclick="loadModal('/Procedures/ProcedureAreas/Delete/@item.Id')"
-                                            title="Eliminar">
+                                            onclick="@(HasPermission("btn-eliminar") ? $"loadModal('/Procedures/ProcedureAreas/Delete/{item.Id}')" : "")"
+                                            @(HasPermission("btn-eliminar") ? "" : "disabled")
+                                            title="@(HasPermission("btn-eliminar") ? "Eliminar" : "Sin permiso para eliminar")">
                                         <i class="bi bi-trash-fill text-danger"></i>
                                     </button>
                                 </div>
@@ -118,6 +204,21 @@
                     }
                 </tbody>
             </table>
+        </div>
+    </div>
+    
+    <div id="bulkActionsBar" class="position-fixed bottom-0 start-50 translate-middle-x mb-4 shadow-lg bg-dark text-white p-3 rounded-pill d-none animate__animated animate__fadeInUp" style="z-index: 1050; min-width: 300px;">
+        <div class="d-flex align-items-center justify-content-between px-3">
+            <span id="selectedCount" class="fw-bold me-4">0 seleccionados</span>
+            <div class="btn-group">
+                @if (HasPermission("btn-multiple-eliminar"))
+                {
+                    <button class="btn btn-sm btn-danger px-3 fw-bold rounded-pill" onclick="bulkDelete()">
+                        <i class="bi bi-trash3-fill me-1"></i> Eliminar
+                    </button>
+                }
+            </div>
+            <button type="button" class="btn-close btn-close-white ms-3" onclick="deselectAll()"></button>
         </div>
     </div>
 </div>

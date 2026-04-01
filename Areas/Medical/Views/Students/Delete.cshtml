@@ -1,0 +1,73 @@
+﻿@model SchoolManager.Models.StudentDetailVM
+@{
+    Layout = "~/Areas/Medical/Views/Shared/_LayoutDashboard.cshtml";
+    ViewData["Title"] = "Eliminar registro médico";
+}
+<div class="dashboard-header">
+    <div class="header-content">
+        <h2 class="text-white">ELIMINAR REGISTRO MÉDICO</h2>
+        <p class="mb-0">Sistema Médico - Registro de Alumnos</p>
+    </div>
+</div>
+<div class="container mt-4">
+    <div class="card p-4 shadow-sm">
+        <div class="alert-delete mb-4">
+            ¿Seguro que deseas eliminar este registro médico?
+        </div>
+        <h5 class="section-title">DATOS DEL ALUMNO</h5>
+        <div class="row g-4 mb-4">
+            <div class="col-md-6">
+                <div class="info-block">
+                    <label class="fw-bold text-uppercase">Matrícula</label>
+                    <div class="info-box">@Model.Matricula</div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="info-block">
+                    <label class="fw-bold text-uppercase">Nombre del Alumno</label>
+                    <div class="info-box">@Model.Nombre @Model.Paterno @Model.Materno</div>
+                </div>
+            </div>
+        </div>
+        <hr class="section-divider" />
+        <h5 class="section-title">INFORMACIÓN MÉDICA</h5>
+        <div class="row g-4 mb-4">
+            <div class="col-md-4">
+                <div class="info-block">
+                    <label class="fw-bold text-uppercase">Peso</label>
+                    <div class="info-box">
+                        @(Model.Peso.HasValue? Model.Peso + " kg" : "No registrado")
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="info-block">
+                    <label class="fw-bold text-uppercase">Alergias</label>
+                    <div class="info-box">
+                        @(string.IsNullOrEmpty(Model.Alergias) ? "Ninguna" : Model.Alergias)
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="info-block">
+                    <label class="fw-bold text-uppercase">Condiciones Crónicas</label>
+                    <div class="info-box">
+                        @(string.IsNullOrEmpty(Model.CondicionesCronicas) ? "Ninguna" : Model.CondicionesCronicas)
+                    </div>
+                </div>
+            </div>
+        </div>
+        <hr class="section-divider" />
+        <form asp-action="Delete" method="post">
+            <input type="hidden" asp-for="Id" />
+            <div class="d-flex justify-content-between mt-4">
+                <a asp-action="Index" class="btn" style="border: 1.5px solid #6c757d;">
+                    CANCELAR
+                </a>
+                <button type="submit" class="btn px-4" style="border: 1.5px solid #6c757d;">
+                    ELIMINAR DEFINITIVAMENTE
+                </button>
+            </div>
+        </form>
+    </div>
+</div>

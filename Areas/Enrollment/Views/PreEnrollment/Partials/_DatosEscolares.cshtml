@@ -21,37 +21,51 @@
     <div class="card-body row g-3">
 
         <!-- ESCUELA Y CARRERA -->
-        <div class="col-md-8">
+        <div class="col-12 col-md-8">
             <label asp-for="DatosEscolares.school" class="form-label">Escuela de procedencia</label>
-            <input asp-for="DatosEscolares.school" class="form-control" id="escProcedencia" required />
-            <div class="invalid-feedback">Campo obligatorio.</div>
+            <input asp-for="DatosEscolares.school"
+                   class="form-control"
+                   id="escProcedencia"
+                   required
+                   data-required="true" />
         </div>
 
-        <div class="col-md-4">
+        <div class="col-12 col-md-4">
             <label asp-for="DatosEscolares.degree" class="form-label">Carrera cursada</label>
-            <input asp-for="DatosEscolares.degree" class="form-control" id="escCarrera" required />
-            <div class="invalid-feedback">Campo obligatorio.</div>
+            <input asp-for="DatosEscolares.degree"
+                   class="form-control"
+                   id="escCarrera"
+                   required
+                   data-required="true" />
         </div>
 
         <!-- ESTADO Y MUNICIPIO -->
-        <div class="col-md-4">
+        <div class="col-12 col-sm-6 col-md-4">
             <label asp-for="DatosEscolares.state" class="form-label">Estado</label>
-            <select asp-for="DatosEscolares.state" class="form-select" id="escEstado" required>
+            <select asp-for="DatosEscolares.state"
+                    class="form-select"
+                    id="escEstado"
+                    required
+                    data-required="true">
                 <option value="">Sin selección</option>
             </select>
             <div class="invalid-feedback">Selecciona un estado.</div>
         </div>
 
-        <div class="col-md-4">
+        <div class="col-12 col-sm-6 col-md-4">
             <label asp-for="DatosEscolares.city" class="form-label">Municipio</label>
-            <select asp-for="DatosEscolares.city" class="form-select" id="escMunicipio" required>
+            <select asp-for="DatosEscolares.city"
+                    class="form-select"
+                    id="escMunicipio"
+                    required
+                    data-required="true">
                 <option value="">Sin selección</option>
             </select>
             <div class="invalid-feedback">Selecciona un municipio.</div>
         </div>
 
         <!-- PROMEDIO -->
-        <div class="col-md-2">
+        <div class="col-12 col-sm-6 col-md-2">
             <label asp-for="DatosEscolares.average" class="form-label">Promedio</label>
             <input asp-for="DatosEscolares.average"
                    type="number"
@@ -61,37 +75,56 @@
                    class="form-control"
                    placeholder="0.0"
                    id="escPromedio"
-                   required />
-            <div class="invalid-feedback">Campo obligatorio.</div>
+                   required
+                   data-required="true" />
         </div>
 
         <!-- FECHAS -->
-        <div class="col-md-2">
+        <div class="col-12 col-sm-6 col-md-2">
             <label asp-for="DatosEscolares.start_date" class="form-label">Fecha de inicio</label>
-            <input asp-for="DatosEscolares.start_date" type="date" class="form-control" id="escFechaInicio" required />
-            <div class="invalid-feedback">Campo obligatorio.</div>
+            <input asp-for="DatosEscolares.start_date"
+                   type="date"
+                   class="form-control"
+                   id="escFechaInicio"
+                   required
+                   data-required="true" />
+           
         </div>
 
-        <div class="col-md-2">
+        <div class="col-12 col-sm-6 col-md-2">
             <label asp-for="DatosEscolares.end_date" class="form-label">Fecha de terminación</label>
-            <input asp-for="DatosEscolares.end_date" type="date" class="form-control" id="escFechaFin" required />
-            <div class="invalid-feedback">Campo obligatorio.</div>
+            <input asp-for="DatosEscolares.end_date"
+                   type="date"
+                   class="form-control"
+                   id="escFechaFin"
+                   required
+                   data-required="true" />
+           
         </div>
 
         <!-- SISTEMA DE ESTUDIO Y TIPO DE SECUNDARIA -->
-        <div class="col-md-3">
+        <div class="col-12 col-md-6 col-lg-3">
             <label asp-for="DatosEscolares.study_system" class="form-label">Sistema de estudio</label>
-            <select asp-for="DatosEscolares.study_system" class="form-select" id="escSistema" required>
+            <select asp-for="DatosEscolares.study_system"
+                    class="form-select"
+                    id="escSistema"
+                    required
+                    data-required="true">
                 <option value="">Sin selección</option>
                 <option>Por cooperación</option>
                 <option>Privada</option>
                 <option>Pública</option>
             </select>
+           
         </div>
 
-        <div class="col-md-3">
+        <div class="col-12 col-md-6 col-lg-3">
             <label asp-for="DatosEscolares.high_school_type" class="form-label">Tipo de secundaria</label>
-            <select asp-for="DatosEscolares.high_school_type" class="form-select" id="escTipoPrepa" required>
+            <select asp-for="DatosEscolares.high_school_type"
+                    class="form-select"
+                    id="escTipoPrepa"
+                    required
+                    data-required="true">
                 <option value="">Sin selección</option>
                 <option>Secundaria General</option>
                 <option>Secundaria Técnica</option>

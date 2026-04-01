@@ -1,0 +1,539 @@
+@model List<SchoolManager.Models.social_service_log>
+
+<div class="mb-2">
+    @if (ViewBag.TeacherId != null)
+    {
+        <a asp-area="SocialService" asp-controller="Coordinator" asp-action="VerAlumnosAsesor" asp-route-id="@ViewBag.TeacherId" class="btn btn-secondary">
+            <i class="bi bi-arrow-left"></i> Volver a Alumnos del Asesor
+        </a>
+    }
+    else
+    {
+        <a asp-area="SocialService" asp-controller="Coordinator" asp-action="Alumnos" class="btn btn-secondary">
+            <i class="bi bi-arrow-left"></i> Volver
+        </a>
+    }
+</div>
+<div class="mb-4 text-center">
+    <h3 class="mb-0">
+        Bitácoras de @ViewBag.StudentName
+    </h3>
+    @if (ViewBag.TeacherName != null)
+    {
+        <div class="text-muted">
+            Asesor: @ViewBag.TeacherName
+        </div>
+    }
+</div>
+
+@{
+    // Preparar URL e icono para ordenar por semana
+    var sortWeekOrder = (ViewBag.CurrentSort == "week") ? (ViewBag.CurrentOrder == "asc" ? "desc" : "asc") : "asc";
+    var sortWeekUrl = Url.Action("VerBitacorasAlumno", new { id = ViewBag.StudentId, status = ViewBag.FilterStatus, semester = ViewBag.FilterSemester, dateFrom = ViewBag.FilterDateFrom, dateTo = ViewBag.FilterDateTo, sortBy = "week", sortOrder = sortWeekOrder });
+    var sortWeekIcon = ViewBag.CurrentSort == "week" ? (ViewBag.CurrentOrder == "asc" ? "bi-sort-up" : "bi-sort-down") : "bi-arrow-down-up";
+}
+<!-- Ordenar por semana se mostrará junto al filtro de fecha -->
+
+<div class="card mb-3">
+    <div class="card-body">
+        <form method="get" class="row g-3 align-items-end" id="filterForm">
+            <input type="hidden" name="id" value="@ViewBag.StudentId" />
+            <input type="hidden" name="sortBy" value="@ViewBag.CurrentSort" />
+            <input type="hidden" name="sortOrder" value="@ViewBag.CurrentOrder" />
+
+            <div class="col-md-3">
+                <label class="form-label">Estado</label>
+                <select name="status" class="form-select">
+                    <option value="">Todos</option>
+                    @if (ViewBag.FilterStatus == "approved")
+                    {
+                        <option value="approved" selected>Aprobadas</option>
+                    }
+                    else
+                    {
+                        <option value="approved">Aprobadas</option>
+                    }
+
+                    @if (ViewBag.FilterStatus == "pending")
+                    {
+                        <option value="pending" selected>Pendientes</option>
+                    }
+                    else
+                    {
+                        <option value="pending">Pendientes</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Semestre</label>
+                <select name="semester" class="form-select">
+                    <option value="">Todos</option>
+                    @if (ViewBag.Semesters != null)
+                    {
+                        foreach (var s in (List<string>)ViewBag.Semesters)
+                        {
+                            if (ViewBag.FilterSemester == s)
+                            {
+                                <option value="@s" selected>@s</option>
+                            }
+                            else
+                            {
+                                <option value="@s">@s</option>
+                            }
+                        }
+                    }
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Desde</label>
+                <div class="d-flex">
+                    <input type="date" name="dateFrom" class="form-control me-2" value="@ViewBag.FilterDateFrom" />
+                    <a href="@sortWeekUrl" class="btn btn-outline-secondary btn-sm align-self-center" title="Ordenar por semana">
+                        <i class="bi @sortWeekIcon"></i>
+                    </a>
+                </div>
+            </div>
+            <div class="col-md-3 d-flex gap-2">
+                <button type="submit" class="btn btn-primary w-100"><i class="bi bi-search"></i> Buscar</button>
+                <a href="@Url.Action("VerBitacorasAlumno", new { id = ViewBag.StudentId })" class="btn btn-secondary">Limpiar</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@if (Model != null && Model.Count > 0)
+{
+    <div class="teacher-bitacora-grid">
+        @foreach (var bitacora in Model)
+        {
+            <div class="teacher-bitacora-card @(bitacora.IsApproved ? "approved" : "pending")">
+                <div class="teacher-card-header @(bitacora.IsApproved ? "approved" : "")">
+                    <h6>
+                        Semana @bitacora.Week
+                        @if (bitacora.IsApproved)
+                        {
+                            <span class="badge bg-light text-success float-end">
+                                <i class="bi bi-check-circle-fill"></i> Aprobada
+                            </span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-warning float-end">
+                                <i class="bi bi-clock"></i> Pendiente
+                            </span>
+                        }
+                    </h6>
+                </div>
+
+                <div class="teacher-card-body">
+                    <div class="mb-2">
+                        <strong>Actividades:</strong>
+                        <p class="mb-1">@bitacora.Activities</p>
+                    </div>
+
+                    @if (!string.IsNullOrEmpty(bitacora.Observations))
+                    {
+                        <div class="mb-2">
+                            <strong>Observaciones:</strong>
+                            <p class="mb-1">@bitacora.Observations</p>
+                        </div>
+                    }
+
+                    <div class="row mb-2">
+                        <div class="col-6">
+                            <small class="text-muted">Hrs. Prácticas solicitadas:</small>
+                            <div><strong>@bitacora.HoursPracticas h</strong></div>
+                        </div>
+                        <div class="col-6">
+                            <small class="text-muted">Hrs. Servicio Social solicitadas:</small>
+                            <div><strong>@bitacora.HoursServicioSocial h</strong></div>
+                        </div>
+                    </div>
+
+                @* Modal para desaprobar (Master) con comentario *@
+                <div class="modal fade" id="bitacoraUnapproveModal@(bitacora.LogId)" tabindex="-1" aria-labelledby="bitacoraUnapproveModalLabel@(bitacora.LogId)" aria-hidden="true">
+                    <div class="modal-dialog modal-md modal-dialog-centered">
+                        <div class="modal-content">
+                            <div class="modal-header bg-warning text-dark">
+                                <h5 class="modal-title" id="bitacoraUnapproveModalLabel@(bitacora.LogId)">Desaprobar Bitácora - Semana @bitacora.Week</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <form method="post" action="/SocialService/Coordinator/DesaprobarBitacoraAdmin">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="logId" value="@bitacora.LogId" />
+
+                                    <div class="mb-3">
+                                        <label class="form-label">Comentarios (opcional):</label>
+                                        <textarea name="adminComments" class="form-control" rows="4" placeholder="Motivo o nota de desaprobación (opcional)"></textarea>
+                                    </div>
+
+                                    <div class="d-flex justify-content-end gap-2">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                                        <button type="submit" class="btn btn-warning">Desaprobar Bitácora</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                    @if (bitacora.IsApproved)
+                    {
+                        <div class="row mb-2">
+                            <div class="col-6">
+                                <small class="text-muted">Hrs. Prácticas aprobadas:</small>
+                                <div class="text-success"><strong>@bitacora.ApprovedHoursPracticas h</strong></div>
+                            </div>
+                            <div class="col-6">
+                                <small class="text-muted">Hrs. Servicio Social aprobadas:</small>
+                                <div class="text-success"><strong>@bitacora.ApprovedHoursServicioSocial h</strong></div>
+                            </div>
+                        </div>
+
+                        @if (!string.IsNullOrEmpty(bitacora.TeacherComments))
+                        {
+                            <div class="mb-2">
+                                <strong>Comentarios del asesor:</strong>
+                                <p class="mb-1 text-info">@bitacora.TeacherComments</p>
+                            </div>
+                        }
+
+                        <small class="text-muted">
+                            Aprobada el @bitacora.ApprovedAt?.ToString("dd/MM/yyyy HH:mm")
+                        </small>
+
+                        @* El botón de desaprobar aparecerá dentro del modal de detalle cuando el Master abra la bitácora aprobada *@
+                    }
+
+                    @if (!string.IsNullOrEmpty(bitacora.PdfFileName))
+                    {
+                        var pdfUrl = Url.Action("DescargarBitacoraPdf", "Coordinator", new { area = "SocialService", bitacoraId = bitacora.LogId });
+                        <div class="mt-2">
+                            <button type="button" class="btn btn-outline-danger btn-sm d-block w-100 text-truncate"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#bitacoraPdfModal"
+                                    data-pdf-url="@pdfUrl"
+                                    data-pdf-filename="@bitacora.PdfFileName"
+                                    data-semana="@bitacora.Week">
+                                <i class="bi bi-file-earmark-pdf me-1"></i>Ver PDF adjunto
+                            </button>
+                        </div>
+                    }
+
+                    <div class="mt-2">
+                        <small class="text-muted">Creada el @bitacora.CreatedAt.ToString("dd/MM/yyyy HH:mm")</small>
+                    </div>
+                    @if (!string.IsNullOrEmpty(bitacora.SnapshotSemesterName) || !string.IsNullOrEmpty(bitacora.SnapshotGroupName))
+                    {
+                        <div class="mt-1">
+                            <small class="text-muted"><i class="bi bi-building"></i>
+                                Semestre: @(string.IsNullOrEmpty(bitacora.SnapshotSemesterName) ? "N/A" : bitacora.SnapshotSemesterName)
+                                &nbsp;|&nbsp; Grupo: @(string.IsNullOrEmpty(bitacora.SnapshotGroupName) ? "N/A" : bitacora.SnapshotGroupName)
+                            </small>
+                        </div>
+                    }
+
+                    @if (User.IsInRole("Master"))
+                    {
+                        <div class="mt-3">
+                            <button type="button" class="btn btn-outline-secondary btn-sm w-100" data-bs-toggle="modal" data-bs-target="#bitacoraDetailModal@(bitacora.LogId)">
+                                <i class="bi bi-eye me-1"></i> Ver Detalles
+                            </button>
+                        </div>
+                    }
+
+                    @* Botones de aprobar/rechazar removidos del card principal para evitar duplicación; formularios están en el modal de detalle *@
+                </div>
+            </div>
+
+            @* Modal de aprobación para Master *@
+            @if (User.IsInRole("Master"))
+            {
+                <div class="modal fade" id="bitacoraApproveModal@(bitacora.LogId)" tabindex="-1" aria-labelledby="bitacoraApproveModalLabel@(bitacora.LogId)" aria-hidden="true">
+                    <div class="modal-dialog modal-lg modal-dialog-centered">
+                        <div class="modal-content">
+                            <div class="modal-header bg-success text-white">
+                                <h5 class="modal-title" id="bitacoraApproveModalLabel@(bitacora.LogId)">Aprobar Bitácora - Semana @bitacora.Week</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <form method="post" action="/SocialService/Coordinator/AprobarBitacoraAdmin">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="logId" value="@bitacora.LogId" />
+
+                                    <div class="row mb-3">
+                                        <div class="col-md-6">
+                                            <label class="form-label">Horas prácticas a aprobar:</label>
+                                            <input type="number" name="approvedHoursPracticas" class="form-control" min="0" max="@bitacora.HoursPracticas" value="@bitacora.HoursPracticas" required />
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label">Horas servicio social a aprobar:</label>
+                                            <input type="number" name="approvedHoursServicioSocial" class="form-control" min="0" max="@bitacora.HoursServicioSocial" value="@bitacora.HoursServicioSocial" required />
+                                        </div>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label class="form-label">Comentarios (opcional):</label>
+                                        <textarea name="teacherComments" class="form-control" rows="3" placeholder="Agrega comentarios..."></textarea>
+                                    </div>
+
+                                    <div class="d-flex justify-content-end">
+                                        <button type="submit" class="btn btn-success">Aprobar y Sumar Horas</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            @* Modal de detalle con opción de desaprobar para Master si la bitacora está aprobada *@
+            <div class="modal fade bitacora-modal" id="bitacoraDetailModal@(bitacora.LogId)" tabindex="-1" aria-labelledby="bitacoraDetailModalLabel@(bitacora.LogId)" aria-hidden="true">
+                <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+                    <div class="modal-content">
+                        <div class="modal-header @(bitacora.IsApproved ? "bg-success" : "")">
+                            <h5 class="modal-title" id="bitacoraDetailModalLabel@(bitacora.LogId)">
+                                <i class="bi bi-journal-text me-2"></i>Bitácora - Semana @bitacora.Week
+                                @if (bitacora.IsApproved)
+                                {
+                                    <span class="badge bg-light text-success ms-2">
+                                        <i class="bi bi-check-circle-fill"></i> Aprobada
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-warning ms-2">
+                                        <i class="bi bi-clock"></i> Pendiente
+                                    </span>
+                                }
+                            </h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="detail-section">
+                                <h6><i class="bi bi-list-task me-2"></i>Actividades Realizadas</h6>
+                                <p>@bitacora.Activities</p>
+                            </div>
+
+                            <div class="hours-grid">
+                                <div class="hour-badge">
+                                    <strong>Horas Prácticas Registradas</strong>
+                                    <h4 class="text-primary mt-2">@bitacora.HoursPracticas</h4>
+                                </div>
+                                <div class="hour-badge">
+                                    <strong>Horas Servicio Social Registradas</strong>
+                                    <h4 class="text-success mt-2">@bitacora.HoursServicioSocial</h4>
+                                </div>
+                            </div>
+
+                            <div class="detail-section">
+                                <h6><i class="bi bi-chat-left-text me-2"></i>Observaciones del Alumno</h6>
+                                @if (!string.IsNullOrWhiteSpace(bitacora.Observations))
+                                {
+                                    <p class="text-start" style="text-align: left !important;">@bitacora.Observations</p>
+                                }
+                                else
+                                {
+                                    <p style="text-align: left !important; margin: 0;"><span class="text-muted" style="display: block; text-align: left !important;">N/A</span></p>
+                                }
+                            </div>
+
+                            @if (!string.IsNullOrEmpty(bitacora.PdfFileName))
+                            {
+                                <div class="detail-section">
+                                    <h6><i class="bi bi-file-earmark-pdf me-2 text-danger"></i>Documento PDF Adjunto</h6>
+                                    <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#bitacoraPdfModal" data-pdf-url="@Url.Action("DescargarBitacoraPdf", "Coordinator", new { area = "SocialService", logId = bitacora.LogId })" data-pdf-filename="@bitacora.PdfFileName" data-semana="@bitacora.Week">
+                                        <i class="bi bi-file-earmark-pdf me-1"></i> Ver PDF
+                                    </button>
+                                </div>
+                            }
+
+                            <div class="creation-date">
+                                <p>
+                                    <i class="bi bi-calendar-check me-2"></i>
+                                    <strong>Fecha de creación:</strong> @bitacora.CreatedAt.ToString("dd/MM/yyyy HH:mm")
+                                </p>
+                            </div>
+
+                            @if (!string.IsNullOrEmpty(bitacora.SnapshotSemesterName) || !string.IsNullOrEmpty(bitacora.SnapshotGroupName))
+                            {
+                                <div class="creation-date">
+                                    <p class="mb-0"><small><i class="bi bi-building me-2"></i>
+                                        Semestre: @(string.IsNullOrEmpty(bitacora.SnapshotSemesterName) ? "N/A" : bitacora.SnapshotSemesterName)
+                                        &nbsp;|&nbsp; Grupo: @(string.IsNullOrEmpty(bitacora.SnapshotGroupName) ? "N/A" : bitacora.SnapshotGroupName)
+                                    </small></p>
+                                </div>
+                            }
+
+                            @if (bitacora.IsApproved)
+                            {
+                                <div class="approval-section mt-4">
+                                    <h6><i class="bi bi-check-circle-fill me-2"></i>Información de Aprobación</h6>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <p class="mb-2"><strong>Horas Prácticas Aprobadas:</strong></p>
+                                            <h5 class="text-primary">@bitacora.ApprovedHoursPracticas horas</h5>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <p class="mb-2"><strong>Horas Servicio Social Aprobadas:</strong></p>
+                                            <h5 class="text-success">@bitacora.ApprovedHoursServicioSocial horas</h5>
+                                        </div>
+                                    </div>
+                                    @if (!string.IsNullOrEmpty(bitacora.TeacherComments))
+                                    {
+                                        <p class="mt-3 mb-2"><strong>Comentarios del Maestro:</strong></p>
+                                        <p class="text-muted">@bitacora.TeacherComments</p>
+                                    }
+                                    <p class="text-muted mb-0 mt-2">
+                                        <i class="bi bi-calendar-check me-1"></i>
+                                        <strong>Aprobada el:</strong> @bitacora.ApprovedAt?.ToString("dd/MM/yyyy HH:mm")
+                                    </p>
+
+                                    @* Si el usuario es Master, permitir desaprobar desde la vista del coordinador/master *@
+                                    @if (User.IsInRole("Master"))
+                                    {
+                                        <div class="mt-3">
+                                            <button type="button" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#bitacoraUnapproveModal@(bitacora.LogId)">
+                                                <i class="bi bi-arrow-counterclockwise me-1"></i> Desaprobar Bitácora
+                                            </button>
+                                        </div>
+                                    }
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="approval-form mt-4">
+                                    <h6 class="mb-3"><i class="bi bi-pencil-square me-2"></i>Aprobar Bitácora</h6>
+                                    <form method="post" action="/SocialService/Coordinator/AprobarBitacoraAdmin" id="approvalForm@(bitacora.LogId)">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="logId" value="@bitacora.LogId" />
+
+                                        <div class="row mb-3">
+                                            <div class="col-md-6">
+                                                <label class="form-label">Horas prácticas a aprobar:</label>
+                                                <input type="number"
+                                                       name="approvedHoursPracticas"
+                                                       class="form-control"
+                                                       min="0"
+                                                       max="@bitacora.HoursPracticas"
+                                                       value="@bitacora.HoursPracticas"
+                                                       required />
+                                            </div>
+
+                                            <div class="col-md-6">
+                                                <label class="form-label">Horas servicio social a aprobar:</label>
+                                                <input type="number"
+                                                       name="approvedHoursServicioSocial"
+                                                       class="form-control"
+                                                       min="0"
+                                                       max="@bitacora.HoursServicioSocial"
+                                                       value="@bitacora.HoursServicioSocial"
+                                                       required />
+                                            </div>
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <label class="form-label">Comentarios (opcional):</label>
+                                            <textarea name="teacherComments" class="form-control" rows="3" placeholder="Agrega comentarios..."></textarea>
+                                        </div>
+
+                                        <div class="d-flex justify-content-end">
+                                            <button type="submit" class="btn btn-success btn-lg">
+                                                <i class="bi bi-check-circle me-1"></i> Aprobar y Sumar Horas
+                                            </button>
+                                        </div>
+                                    </form>
+
+                                    <hr />
+
+                                    <h6 class="mb-3"><i class="bi bi-x-circle me-2 text-danger"></i>Rechazar Bitácora</h6>
+                                    <form method="post" action="/SocialService/Coordinator/RechazarBitacoraAdmin">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="logId" value="@bitacora.LogId" />
+
+                                        <div class="mb-3">
+                                            <label class="form-label">Motivo del rechazo:</label>
+                                            <textarea name="rejectionReason" class="form-control" rows="3" placeholder="Indica el motivo del rechazo..." required></textarea>
+                                        </div>
+
+                                        <div class="d-flex justify-content-end">
+                                            <button type="submit" class="btn btn-danger btn-lg" onclick="return confirm('¿Estás seguro de rechazar esta bitácora? El alumno deberá crear una nueva.')">
+                                                <i class="bi bi-x-circle me-1"></i> Rechazar Bitácora
+                                            </button>
+                                        </div>
+                                    </form>
+                                </div>
+                            }
+                        </div>
+                        <div class="modal-footer justify-content-end gap-2">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+                @* Modal de rechazo para Master *@
+                <div class="modal fade" id="bitacoraRejectModal@(bitacora.LogId)" tabindex="-1" aria-labelledby="bitacoraRejectModalLabel@(bitacora.LogId)" aria-hidden="true">
+                    <div class="modal-dialog modal-md modal-dialog-centered">
+                        <div class="modal-content">
+                            <div class="modal-header bg-danger text-white">
+                                <h5 class="modal-title" id="bitacoraRejectModalLabel@(bitacora.LogId)">Rechazar Bitácora - Semana @bitacora.Week</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <form method="post" action="/SocialService/Coordinator/RechazarBitacoraAdmin">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="logId" value="@bitacora.LogId" />
+
+                                    <div class="mb-3">
+                                        <label class="form-label">Motivo del rechazo:</label>
+                                        <textarea name="rejectionReason" class="form-control" rows="4" required></textarea>
+                                    </div>
+
+                                    <div class="d-flex justify-content-end">
+                                        <button type="submit" class="btn btn-danger" onclick="return confirm('¿Estás seguro de rechazar esta bitácora? El alumno deberá crear una nueva.')">Rechazar Bitácora</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+    </div>
+}
+else
+{
+    <div class="alert alert-info text-center">
+        <i class="bi bi-info-circle me-2"></i>
+        Este alumno no tiene bitácoras registradas.
+    </div>
+}
+
+@await Html.PartialAsync("_BitacoraPdfModal")
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var pdfModal = document.getElementById('bitacoraPdfModal');
+            if (pdfModal) {
+                pdfModal.addEventListener('show.bs.modal', function (event) {
+                    var button = event.relatedTarget;
+                    var pdfUrl = button.getAttribute('data-pdf-url');
+                    var semana = button.getAttribute('data-semana');
+                    var filename = button.getAttribute('data-pdf-filename');
+                    var iframe = document.getElementById('bitacoraPdfIframe');
+                    var download = document.getElementById('bitacoraPdfDownload');
+                    var semanaLabel = document.getElementById('bitacoraPdfModalSemana');
+                    if (iframe && pdfUrl) iframe.src = pdfUrl;
+                    if (download && pdfUrl) download.href = pdfUrl;
+                    if (semanaLabel && semana) semanaLabel.textContent = 'Semana ' + semana;
+                });
+                pdfModal.addEventListener('hidden.bs.modal', function () {
+                    var iframe = document.getElementById('bitacoraPdfIframe');
+                    if (iframe) iframe.src = '';
+                });
+            }
+        });
+    </script>
+}

@@ -7,6 +7,7 @@
 
 <link rel="stylesheet" href="~/css/tramites.css" asp-append-version="true" />
 
+
 <div class="form-container area-tramites">
     <div class="container">
         <div class="row justify-content-center">
@@ -23,6 +24,24 @@
                                     <li>@error</li>
                                 }
                             </ul>
+                        </div>
+                    </div>
+                }
+
+                @if (ViewBag.UpcomingProcedures != null && ((List<SchoolManager.Models.procedure_types>)ViewBag.UpcomingProcedures).Any())
+                {
+                    <div class="alert alert-info border-0 shadow-sm mb-4 animate__animated animate__fadeIn" style="border-radius: 15px; background-color: rgba(56, 182, 255, 0.1);">
+                        <div class="d-flex align-items-center">
+                            <i class="bi bi-calendar-event-fill fs-4 me-3 text-primary"></i>
+                            <div>
+                                <strong class="d-block text-primary">Próximas aperturas:</strong>
+                                <ul class="mb-0 small text-dark">
+                                    @foreach (var p in (List<SchoolManager.Models.procedure_types>)ViewBag.UpcomingProcedures)
+                                    {
+                                        <li><strong>@p.Name:</strong> Disponible a partir del @p.StartDate?.ToString("dd/MM/yyyy hh:mm tt")</li>
+                                    }
+                                </ul>
+                            </div>
                         </div>
                     </div>
                 }
@@ -90,6 +109,7 @@
 </div>
 
 @section Scripts {
+    <script src="~/js/site.js" asp-append-version="true"></script>
     <script>
         $('#ProcedureSelect').on('change', async function() {
             const procedureId = $(this).val();
@@ -124,13 +144,14 @@
                         list.append(inputHtml);
                     });
                     container.fadeIn();
+                    showToast('info', 'Requisitos cargados');
                 } else {
                     list.append('<div class="col-12 text-muted p-3"><i class="bi bi-info-circle me-2"></i>Este trámite no requiere adjuntar documentos adicionales.</div>');
                     container.fadeIn();
                 }
             } catch (error) {
                 console.error("Error al cargar requisitos:", error);
-                Swal.fire('Error', 'No se pudieron cargar los requisitos del trámite.', 'error');
+                showToast('error', 'No se pudieron cargar los requisitos');
             }
         });
 
@@ -142,6 +163,7 @@
                     btn.classList.replace('btn-outline-secondary', 'btn-success');
                     btn.classList.add('text-white');
                 }
+                showToast('success', 'Folio copiado al portapapeles');
             });
         }
 
@@ -149,20 +171,23 @@
             e.preventDefault();
             const form = e.target;
             const files = form.querySelectorAll('input[type="file"]');
-            const maxSize = 50 * 1024 * 1024;
+            const maxSize = 50 * 1024 * 1024; // 50MB
             const allowedExtensions = /(\.pdf|\.jpg|\.jpeg|\.png)$/i;
 
             for (let fileInput of files) {
                 if (fileInput.files.length > 0) {
                     const file = fileInput.files[0];
                     if (!allowedExtensions.exec(file.name)) {
-                        Swal.fire({ title: 'Archivo no permitido', text: `El archivo "${file.name}" debe ser PDF, JPG o PNG.`, icon: 'error' });
+                        showToast('error', `Formato no permitido: ${file.name}`);
+                        fileInput.classList.add('is-invalid');
                         return;
                     }
                     if (file.size > maxSize) {
-                        Swal.fire({ title: 'Archivo muy pesado', text: `"${file.name}" supera el límite permitido.`, icon: 'error' });
+                        showToast('warning', `El archivo es demasiado grande (>50MB)`);
+                        fileInput.classList.add('is-invalid');
                         return;
                     }
+                    fileInput.classList.remove('is-invalid');
                 }
             }
 
@@ -196,16 +221,18 @@
                                     <i class="bi bi-clipboard"></i> Copiar Folio
                                 </button>
                             </div>
-                            <p class="small text-muted text-start">Puedes consultar el avance en la sección de "Seguimiento" o con las actualizaciones que se enviarán a tu correo institucional.</p>
+                            <p class="small text-muted text-start">Puedes consultar el avance en la sección de "Seguimiento".</p>
                         `,
                         confirmButtonText: 'Ver mis trámites'
                     });
                     window.location.href = '/Procedures/Request/Tracking';
                 } else {
-                    Swal.fire('Hubo un problema', data.errors?.join('<br>') || 'No se pudo completar el registro.', 'error');
+                    Swal.close();
+                    showToast('error', data.errors?.join(' ') || 'Error al procesar');
                 }
             } catch (error) {
-                Swal.fire('Error de conexión', 'No pudimos comunicarnos con el servidor.', 'error');
+                Swal.close();
+                showToast('error', 'Error de conexión con el servidor');
             }
         });
     </script>

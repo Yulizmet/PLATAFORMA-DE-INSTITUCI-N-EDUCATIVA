@@ -55,10 +55,36 @@ namespace SchoolManager.Models
         [Column("TeacherComments")]
         public string? TeacherComments { get; set; }
 
+        [MaxLength(255)]
+        [Column("PdfFileName")]
+        public string? PdfFileName { get; set; }
+
+        [Column("PdfFileData")]
+        public byte[]? PdfFileData { get; set; }
+
+        [MaxLength(100)]
+        [Column("PdfContentType")]
+        public string? PdfContentType { get; set; }
+
         [ForeignKey("StudentId")]
         public virtual users_user? Student { get; set; }
 
         [ForeignKey("ApprovedBy")]
         public virtual users_user? Approver { get; set; }
+
+        // Snapshot of student's enrollment/semester at the moment the log was created
+        [Column("EnrollmentId")]
+        public int? EnrollmentId { get; set; }
+
+        [MaxLength(100)]
+        [Column("SnapshotSemesterName")]
+        public string? SnapshotSemesterName { get; set; }
+
+        [MaxLength(100)]
+        [Column("SnapshotGroupName")]
+        public string? SnapshotGroupName { get; set; }
+
+        [ForeignKey("EnrollmentId")]
+        public virtual grades_enrollment? Enrollment { get; set; }
     }
 }

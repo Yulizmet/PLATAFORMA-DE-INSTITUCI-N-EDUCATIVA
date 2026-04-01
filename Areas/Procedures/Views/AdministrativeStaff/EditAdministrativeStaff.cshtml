@@ -35,6 +35,17 @@
                 }
             });
         });
+        function togglePassword(inputId) {
+            const input = document.getElementById(inputId);
+            const icon = event.currentTarget.querySelector('i');
+            if (input.type === "password") {
+                input.type = "text";
+                icon.classList.replace('bi-eye', 'bi-eye-slash');
+            } else {
+                input.type = "password";
+                icon.classList.replace('bi-eye-slash', 'bi-eye');
+            }
+        }
     </script>
 }
 
@@ -102,6 +113,16 @@
                         <div class="input-group">
                             <span class="input-group-text bg-light border-2"><i class="bi bi-envelope"></i></span>
                             <input asp-for="Email" class="form-control shadow-sm border-2 bg-light" />
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold small text-muted">Nueva Contraseña (opcional)</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-2"><i class="bi bi-key"></i></span>
+                            <input type="password" name="NewPassword" id="NewPassword" class="form-control shadow-sm border-2" placeholder="Dejar en blanco para no cambiar" />
+                            <button class="btn btn-outline-secondary border-2" type="button" onclick="togglePassword('NewPassword')">
+                                <i class="bi bi-eye"></i>
+                            </button>
                         </div>
                     </div>
                 </div>

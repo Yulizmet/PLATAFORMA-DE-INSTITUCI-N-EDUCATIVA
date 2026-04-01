@@ -1,101 +1,162 @@
-﻿@{
-    ViewData["Title"] = "Mis Alumnos Asignados";
+﻿@model IEnumerable<SchoolManager.Models.users_user>
+@{
+    ViewData["Title"] = "Directorio de Alumnos";
+    
+    int roleId = ViewBag.RoleId ?? 0;
+
+    var dictGruposCabecera = ViewBag.Grupos as Dictionary<int, string> ?? new Dictionary<int, string>();
+    string nombreMiGrupo = "Cargando grupo...";
+    
+    if (roleId == 2 && Model != null && Model.Any())
+    {
+        int primerId = Model.First().UserId;
+        if (dictGruposCabecera.ContainsKey(primerId))
+        {
+            nombreMiGrupo = dictGruposCabecera[primerId];
+        }
+    }
 }
 
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
 
-
-<div class="container-fluid p-0">
-
-    <h2 class="fw-bold mb-4" style="color: var(--utt-dark-red);">Directorios de Alumnos</h2>
-
-    <div class="filter-container">
-        <form class="row g-3 align-items-end">
-            <div class="col-md-4">
-                <label class="form-label fw-bold">Grado</label>
-                <select class="form-select" style="border-color: var(--utt-beige);">
-                    <option selected>Seleccionar Grado...</option>
-                    <option>1</option>
-                    <option>2</option>
-                    <option>3</option>
-                    <option>4</option>
-                    <option>5</option>
-                    <option>6</option>
-                    <option>7</option>
-                    <option>8</option>
-                    <option>9</option>
-                    <option>10</option>
-                    <option>11</option>
-                </select>
-            </div>
-            <div class="col-md-4">
-                <label class="form-label fw-bold">Grupo</label>
-                <select class="form-select" style="border-color: var(--utt-beige);">
-                    <option selected>Seleccionar Grupo...</option>
-                    <option>A</option>
-                    <option>B</option>
-                    <option>C</option>
-                </select>
-            </div>
-            <div class="col-md-4">
-                <button type="button" class="btn w-100 fw-bold"
-                        style="background-color: var(--utt-beige); color: var(--utt-dark-red);">
-                    <i class="bi bi-funnel-fill"></i> Filtrar Lista
-                </button>
-            </div>
-        </form>
-    </div>
-
-    <div class="student-list">
-
-        <div class="d-none d-md-flex px-4 mb-2 text-muted small fw-bold">
-            <div style="width: 70px;">FOTO</div>
-            <div class="flex-grow-1">INFORMACIÓN DEL ALUMNO</div>
-            <div style="width: 300px;" class="text-center">ACCIONES</div>
-        </div>
-
-        @foreach (var alumno in Model)
-        {
-            @if (alumno.Person != null)
+<div class="container-fluid p-0 mt-4">
+    <h2 class="text-center fw-bold mb-4" style="color: var(--brand-dark);">Directorio de Alumnos</h2>
+    <div class="card border-0 shadow-sm mb-5" style="border-radius: 10px;">
+        <div class="card-body p-4">
+            
+            @if (roleId == 3)
             {
-                <div class="student-row">
-                    <div style="width: 70px;">
-                        <img src="https://ui-avatars.com/api/?name=@alumno.Person.FirstName&background=8C1B1B&color=fff" class="avatar-circle" alt="Foto">
+                <form class="row g-3 align-items-end" method="get" asp-action="ListaDeAlumnos">
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold text-dark">Grado</label>
+                        <select class="form-select shadow-sm" name="grado" style="border-color: #ddd;">
+                            <option value="">Todos los grados...</option>
+                            @if (ViewBag.GradosDisponibles != null)
+                            {
+                                foreach (int gradoDb in ViewBag.GradosDisponibles)
+                                {
+                                    <option value="@gradoDb" selected="@(ViewBag.GradoSeleccionado == gradoDb)">@gradoDb</option>
+                                }
+                            }
+                        </select>
                     </div>
 
-                    <div class="flex-grow-1 ps-2">
-                        <div class="student-name">@alumno.Person.FirstName @alumno.Person.LastNamePaternal @alumno.Person.LastNameMaternal</div>
-
-                        <div class="student-meta">ID Usuario: @alumno.UserId | CURP: @alumno.Person.Curp</div>
+                    <div class="col-md-5">
+                        <label class="form-label fw-bold text-dark">Grupo</label>
+                        <select class="form-select shadow-sm" name="grupo" style="border-color: #ddd;">
+                            <option value="">Todos los grupos...</option>
+                            @if (ViewBag.GruposDisponibles != null)
+                            {
+                                foreach (string grupoDb in ViewBag.GruposDisponibles)
+                                {
+                                    <option value="@grupoDb" selected="@(ViewBag.GrupoSeleccionado == grupoDb)">@grupoDb</option>
+                                }
+                            }
+                        </select>
                     </div>
 
-                    <div class="d-flex gap-2 justify-content-end flex-wrap">
-                        <a asp-area="Tutorship" asp-controller="Tutorship" asp-action="DetalleEntrevista" asp-route-id="@alumno.UserId" class="btn btn-action-entrevista">
-                            <i class="bi bi-file-text"></i> Ver Entrevista
-                        </a>
-                        <a asp-area="Tutorship" asp-controller="Tutorship" asp-action="Seguimiento" asp-route-id="@alumno.UserId" class="btn btn-action-seguimiento">
-                            <i class="bi bi-graph-up"></i> Ver Seguimiento
-                        </a>
+                    <div class="col-md-3">
+                        <button type="submit" class="btn btn-secondary-brand w-100 fw-bold shadow-sm">
+                            <i class="bi bi-funnel-fill"></i> Filtrar Lista
+                        </button>
+                    </div>
+                </form>
+            }
+            else if (roleId == 2)
+            {
+                <div class="row g-3 align-items-end">
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold" style="color: var(--brand-dark);"><i class="bi bi-person-video3 me-2"></i>Mi Grupo Asignado</label>
+                        <input type="text" class="form-control shadow-sm bg-light fw-bold" value="@nombreMiGrupo" readonly disabled style="border-color: #ddd; color: #555;">
                     </div>
                 </div>
             }
-        }
 
-        @* <div class="student-row">
-            <div style="width: 70px;">
-                <img src="https://ui-avatars.com/api/?name=Diego+Gonzalez&background=8C1B1B&color=fff" class="avatar-circle" alt="Foto">
-            </div>
-            <div class="flex-grow-1 ps-2">
-                <div class="student-name">Diego González</div>
-                <div class="student-meta">Matrícula: 220015 • TIC-4A</div>
-            </div>
-            <div class="d-flex gap-2 justify-content-end flex-wrap">
-                <a asp-area="Gestion" asp-controller="Tutorship" asp-action="DetalleEntrevista" asp-route-id="3" class="btn btn-action-entrevista">
-                    <i class="bi bi-file-text"></i> Ver Entrevista
-                </a>
-                <a asp-area="Gestion" asp-controller="Tutorship" asp-action="Seguimiento" asp-route-id="3" class="btn btn-action-seguimiento">
-                    <i class="bi bi-graph-up"></i> Ver Seguimiento
-                </a>
-            </div>
-        </div> *@
+            @if (ViewBag.MensajeFiltro != null)
+            {
+                <div class="alert alert-warning mt-4 mb-0 text-center fw-bold shadow-sm">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i> @ViewBag.MensajeFiltro
+                </div>
+            }
+        </div>
     </div>
+
+    <table id="tablaAlumnos" class="table table-cards w-100">
+        <thead>
+            <tr>
+                <th class="text-center" style="width: 80px;">Foto</th>
+                <th>Información del Alumno</th>
+                <th class="text-end" style="width: 320px; padding-right: 1.5rem;">Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            @{
+                var dictMatriculas = ViewBag.Matriculas as Dictionary<int, string> ?? new Dictionary<int, string>();
+                var dictGrupos = ViewBag.Grupos as Dictionary<int, string> ?? new Dictionary<int, string>();
+                var dictFotos = ViewBag.FotosPerfil as Dictionary<int, string> ?? new Dictionary<int, string>();
+            }
+
+            @foreach (var alumno in Model)
+            {
+                @if (alumno.Person != null)
+                {
+                    string matriculaAlumno = dictMatriculas.ContainsKey(alumno.UserId) ? dictMatriculas[alumno.UserId] : "Sin Matrícula";
+                    string grupoAlumno = dictGrupos.ContainsKey(alumno.UserId) ? dictGrupos[alumno.UserId] : "Sin Grupo";
+                    string rutaFoto = dictFotos.ContainsKey(alumno.UserId) ? dictFotos[alumno.UserId] : "";
+                    bool tieneFoto = !string.IsNullOrEmpty(rutaFoto);
+
+                    string imgSrc = tieneFoto ? rutaFoto : $"https://ui-avatars.com/api/?name={alumno.Person.FirstName}&background=8C1B1B&color=fff";
+                    string nombreCompleto = $"{alumno.Person.FirstName} {alumno.Person.LastNamePaternal} {alumno.Person.LastNameMaternal}";
+
+                    <tr>
+                        <td class="text-center ps-3">
+                            <img src="@imgSrc" alt="Foto" class="rounded-circle border" style="object-fit: cover; width: 55px; height: 55px; border-color: #ddd !important;">
+                        </td>
+
+                        <td data-sort="@nombreCompleto">
+                            <div class="fw-bold fs-6 text-dark mb-1">@nombreCompleto</div>
+                            <div class="text-muted small">
+                                <span class="badge bg-light text-dark border me-2">Matrícula: @matriculaAlumno</span>
+                                <span class="badge" style="background-color: var(--brand-secondary); color: var(--brand-white);">Grado y Grupo: @grupoAlumno</span>
+                            </div>
+                        </td>
+
+                        <td class="text-end pe-3">
+                            <div class="d-flex gap-2 justify-content-end">
+                                <a asp-area="Gestion" asp-controller="Tutorship" asp-action="VerEntrevistaAlumno" asp-route-id="@alumno.UserId" class="btn btn-action-seguimiento shadow-sm btn-sm px-3 py-2">
+                                    <i class="bi bi-file-text"></i> Entrevista
+                                </a>
+                                <a asp-area="Gestion" asp-controller="Tutorship" asp-action="Seguimiento" asp-route-matriculaBuscar="@matriculaAlumno" class="btn btn-action-seguimiento shadow-sm btn-sm px-3 py-2">
+                                    <i class="bi bi-graph-up"></i> Seguimiento
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
 </div>
+
+@section Scripts {
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+
+    <script>
+        $(document).ready(function () {
+        $('#tablaAlumnos').DataTable({
+        language: {
+        url: 'https://cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json'
+        },
+        lengthMenu: [[10, 25, 50, -1], [10, 25, 50, "Todos"]],
+        pageLength: 10,
+        columnDefs: [
+        { orderable: false, targets: [0, 2] },
+        { searchable: false, targets: [0, 2] }
+        ],
+        order: [[1, 'asc']]
+        });
+        });
+    </script>
+}

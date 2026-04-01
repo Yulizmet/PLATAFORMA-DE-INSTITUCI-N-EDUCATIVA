@@ -15,8 +15,8 @@
                 <form method="post" action="/Procedures/ProcedureAreas/DeleteConfirmed">
                     @Html.AntiForgeryToken()
                     <input type="hidden" name="id" value="@Model.Id" />
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="submit" class="btn btn-danger">Eliminar permanentemente</button>
+                    <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-danger rounded-pill px-4">Eliminar permanentemente</button>
                 </form>
             </div>
         </div>

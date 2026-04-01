@@ -1,4 +1,8 @@
-﻿<!DOCTYPE html>
+﻿@{
+    var pasoActual = ViewData["PasoActual"] as int? ?? 1;
+}
+
+<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="utf-8" />
@@ -28,9 +32,48 @@
     <!-- ===== ESTILOS DEL WIZARD ===== -->
     <style>
         .steps-vertical {
+            position: relative;
             padding: 12px 14px 12px 18px;
             margin: 8px 10px;
-            border-left: 3px solid rgba(255,255,255,.2);
+        }
+
+            .steps-vertical::before {
+                content: "";
+                position: absolute;
+                left: 12px;
+                top: 18px;
+                bottom: 18px;
+                width: 3px;
+                background: rgba(255,255,255,.18);
+                border-radius: 10px;
+            }
+
+            .steps-vertical::after {
+                content: "";
+                position: absolute;
+                left: 12px;
+                top: 18px;
+                width: 3px;
+                background: #ffffff;
+                border-radius: 10px;
+                transition: height .3s ease;
+                height: 0%;
+            }
+
+        .progress-1::after {
+            height: 0%;
+        }
+
+        .progress-2::after {
+            height: 33%;
+        }
+
+        .progress-3::after {
+            height: 66%;
+        }
+
+        .progress-4::after {
+            height: 100%;
         }
 
         .step-vertical {
@@ -60,6 +103,7 @@
                 height: 12px;
                 border-radius: 50%;
                 background: rgba(255,255,255,.3);
+                z-index: 2;
             }
 
         .step-vertical-icon {
@@ -96,6 +140,7 @@
 
             .step-vertical.active::before {
                 background: #4D0218;
+                box-shadow: 0 0 0 4px rgba(77,2,24,.2);
             }
 
         .step-vertical.complete {
@@ -103,20 +148,149 @@
         }
 
             .step-vertical.complete::before {
-                background: #198754;
+                background: #ffffff;
+                box-shadow: 0 0 0 4px rgba(255,255,255,.20);
             }
 
-            .step-vertical.complete .step-vertical-icon i {
-                color: #198754;
+            .step-vertical.complete .step-vertical-icon {
+                background: rgba(255,255,255,.15);
             }
+
+                .step-vertical.complete .step-vertical-icon i {
+                    color: #ffffff;
+                }
 
         .step-vertical.locked {
-            opacity: .35;
-            pointer-events: none;
+            opacity: .55;
+            cursor: default;
+        }
+
+            .step-vertical.locked:hover {
+                background: rgba(255,255,255,.05);
+                opacity: .85;
+            }
+
+        @@media (max-width: 991.98px) {
+            .sidebar
+
+        {
+            width: 260px;
+        }
+
+        .sidebar-brand {
+            height: 160px !important;
+        }
+
+        }
+
+        .main {
+            min-width: 0;
+            width: 100%;
+        }
+
+        .content {
+            min-width: 0;
+            overflow-x: hidden;
+        }
+
+        .container-fluid {
+            min-width: 0;
+        }
+
+        .card,
+        .card-body,
+        form {
+            min-width: 0;
+        }
+
+        input,
+        select,
+        textarea {
+            max-width: 100%;
+        }
+
+        .sidebar-brand .user-box {
+            width: 100px;
+            height: 100px;
+            border-radius: 20%;
+            background: rgba(255,255,255,.1);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 4px 10px rgba(0,0,0,.3);
+        }
+
+            .sidebar-brand .user-box i {
+                font-size: 70px;
+                color: white;
+            }
+
+        @@media (max-width: 991.98px) {
+            .sidebar {
+                width: 260px;
+            }
+
+            .sidebar-brand {
+                height: 160px !important;
+            }
+
+                .sidebar-brand .user-box {
+                    width: 75px;
+                    height: 75px;
+                }
+
+                    .sidebar-brand .user-box i {
+                        font-size: 48px;
+                    }
+
+            .step-vertical-title {
+                font-size: .88rem;
+            }
+
+            .step-vertical-desc {
+                font-size: .72rem;
+            }
+
+            .container-fluid.p-4 {
+                padding: 1rem !important;
+            }
+        }
+
+        @@media (max-width: 767.98px) {
+            .sidebar-brand {
+                height: 130px !important;
+            }
+
+                .sidebar-brand .user-box {
+                    width: 65px;
+                    height: 65px;
+                }
+
+                    .sidebar-brand .user-box i {
+                        font-size: 40px;
+                    }
+
+            .step-vertical {
+                gap: 10px;
+                padding: 8px;
+            }
+
+            .step-vertical-icon {
+                width: 30px;
+                height: 30px;
+                flex: 0 0 30px;
+            }
+
+                .step-vertical-icon i {
+                    font-size: 13px;
+                }
+
+            .container-fluid.p-4 {
+                padding: .75rem !important;
+            }
         }
     </style>
 
-    <!-- 👇 IMPORTANTE: Renderiza estilos por vista -->
     @RenderSection("Styles", required: false)
 
 </head>
@@ -129,22 +303,31 @@
             <div class="sidebar-content js-simplebar">
 
                 <!-- LOGO -->
-                <a class="sidebar-brand"
-                   href="@Url.Action("Create", "PreEnrollment", new { area = "Enrollment" })">
-                    <div style="position: relative; height: 110px; overflow: hidden;">
-                        <img src="~/enrollment/static/img/icons/ITACE.png"
-                             alt="Escuela logo"
-                             style="position:absolute; top:-50px; left:50%; transform:translateX(-50%); height:150px; width:auto;">
+                <a class="sidebar-brand d-flex justify-content-center align-items-center"
+                   href="@Url.Action("Create", "PreEnrollment", new { area = "Enrollment" })"
+                   style="height:230px;">
+
+                    <div style="
+                        width:100px;
+                        height:100px;
+                        border-radius:20%;
+                        background: rgba(255,255,255,.1);
+                        display:flex;
+                        justify-content:center;
+                        align-items:center;
+                        box-shadow: 0 4px 10px rgba(0,0,0,.3);
+">
+                        <i class="fa-solid fa-user" style="font-size:70px; color:white;"></i>
                     </div>
+
                 </a>
 
                 <ul class="sidebar-nav">
                     <li class="sidebar-item">
-                        <div class="steps-vertical">
+                        <div class="steps-vertical progress-@pasoActual">
 
                             <!-- PREINSCRIPCIÓN -->
-                            <a class="step-vertical"
-                               href="@Url.Action("Create", "PreEnrollment", new { area = "Enrollment" })">
+                            <div class="step-vertical @(pasoActual == 1 ? "active" : pasoActual > 1 ? "complete" : "")">
                                 <div class="step-vertical-icon">
                                     <i class="fa-solid fa-user-plus"></i>
                                 </div>
@@ -152,11 +335,10 @@
                                     <div class="step-vertical-title">Preinscripción</div>
                                     <div class="step-vertical-desc">Datos iniciales</div>
                                 </div>
-                            </a>
+                            </div>
 
                             <!-- DOCUMENTOS -->
-                            <a class="step-vertical"
-                               href="@Url.Action("SubirDocumentos", "PreEnrollment", new { area = "Enrollment" })">
+                            <div class="step-vertical @(pasoActual == 2 ? "active" : pasoActual > 2 ? "complete" : "")">
                                 <div class="step-vertical-icon">
                                     <i class="fa-solid fa-file-lines"></i>
                                 </div>
@@ -164,11 +346,10 @@
                                     <div class="step-vertical-title">Documentos</div>
                                     <div class="step-vertical-desc">Carga de archivos</div>
                                 </div>
-                            </a>
+                            </div>
 
                             <!-- CONFIRMAR -->
-                            <a class="step-vertical"
-                               href="@Url.Action("ConfirmarPreinscripcion", "PreEnrollment", new { area = "Enrollment" })">
+                            <div class="step-vertical @(pasoActual == 3 ? "active" : pasoActual > 3 ? "complete" : "")">
                                 <div class="step-vertical-icon">
                                     <i class="fa-solid fa-user-check"></i>
                                 </div>
@@ -176,11 +357,10 @@
                                     <div class="step-vertical-title">Confirmar datos</div>
                                     <div class="step-vertical-desc">Verifica tu información</div>
                                 </div>
-                            </a>
+                            </div>
 
-                            <!-- FINALIZAR (BLOQUEADO) -->
-                            <a class="step-vertical locked"
-                               href="javascript:void(0)">
+                            <!-- FINALIZAR -->
+                            <div class="step-vertical @(pasoActual == 4 ? "active" : "") @(pasoActual < 4 ? "locked" : "")">
                                 <div class="step-vertical-icon">
                                     <i class="fa-solid fa-flag-checkered"></i>
                                 </div>
@@ -188,7 +368,7 @@
                                     <div class="step-vertical-title">Finalizar</div>
                                     <div class="step-vertical-desc">Enviar solicitud</div>
                                 </div>
-                            </a>
+                            </div>
 
                         </div>
                     </li>
@@ -209,14 +389,6 @@
                     @RenderBody()
                 </div>
             </main>
-
-            <footer class="footer">
-                <div class="container-fluid text-muted text-center py-3">
-                    <a class="text-muted" href="https://itace.edu.mx/" target="_blank">
-                        <strong>Instituto Tamaulipeco de Capacitación para el Empleo</strong>
-                    </a>
-                </div>
-            </footer>
 
         </div>
     </div>

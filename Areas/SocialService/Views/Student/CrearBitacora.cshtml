@@ -5,11 +5,14 @@
     <div class="card">
         <div class="card-body">
 
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h4 class="mb-0">Crear Bitácora Semanal</h4>
-                <a asp-area="SocialService" asp-controller="Student" asp-action="Dashboard" class="btn btn-secondary">
+            <div class="mb-4 text-start">
+                <a asp-area="SocialService" asp-controller="Student" asp-action="Dashboard" class="btn btn-secondary btn-responsive-sm">
                     <i class="bi bi-arrow-left me-1"></i> Volver
                 </a>
+            </div>
+
+            <div class="mb-3">
+                <h4 class="text-center mb-0">Crear Bitácora Semanal</h4>
             </div>
 
             @if (TempData["Success"] != null)
@@ -31,11 +34,13 @@
             <form asp-area="SocialService"
                   asp-controller="Student"
                   asp-action="CrearBitacora"
-                  method="post">
+                  method="post"
+                  enctype="multipart/form-data">
 
                 <div class="mb-4 form-group-inline">
                     <label asp-for="Week" class="form-label">Semana</label>
-                    <input asp-for="Week" class="form-control input-small" />
+                    <input asp-for="Week" type="number" min="1" class="form-control input-small" />
+                    <span asp-validation-for="Week" class="text-danger"></span>
                 </div>
 
                 <div class="mb-4">
@@ -47,12 +52,16 @@
 
                     <div>
                         <label asp-for="HoursPracticas"></label>
-                        <input asp-for="HoursPracticas" type="number" class="form-control input-small" />
+                        <input asp-for="HoursPracticas" type="number" min="0" max="40" class="form-control input-small" />
+                        <span asp-validation-for="HoursPracticas" class="text-danger"></span>
+                        <div class="form-text text-muted">Límite: 0 - 40 horas</div>
                     </div>
 
                     <div>
                         <label asp-for="HoursServicioSocial"></label>
-                        <input asp-for="HoursServicioSocial" type="number" class="form-control input-small" />
+                        <input asp-for="HoursServicioSocial" type="number" min="0" max="40" class="form-control input-small" />
+                        <span asp-validation-for="HoursServicioSocial" class="text-danger"></span>
+                        <div class="form-text text-muted">Límite: 0 - 40 horas</div>
                     </div>
 
                 </div>
@@ -60,6 +69,13 @@
                 <div class="mb-4">
                     <label asp-for="Observations"></label>
                     <textarea asp-for="Observations" class="form-control textarea-large"></textarea>
+                </div>
+
+                <div class="mb-4">
+                    <label asp-for="PdfFile" class="form-label">
+                        <i class="bi bi-file-earmark-pdf me-1"></i> Archivo PDF (opcional, máx. 10 MB)
+                    </label>
+                    <input asp-for="PdfFile" type="file" class="form-control" accept=".pdf" />
                 </div>
 
                 <button type="submit" class="btn-primary">

@@ -24,7 +24,22 @@ body {
     /*font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;*/
 }
 
-/*FUENTE INTER*/
+.colored-toast.swal2-icon-success,
+.colored-toast.swal2-icon-error,
+.colored-toast.swal2-icon-info {
+    color: white !important;
+    border-color: white !important;
+}
+
+.colored-toast .swal2-title {
+    margin: 0.5rem 1rem;
+}
+
+.colored-toast .swal2-timer-progress-bar {
+    background: rgba(255,255,255,0.5);
+}
+
+/* ===== FUENTE INTER PARA SUBTÍTULOS Y TEXTO SECUNDARIO ===== */
 
 .sistema-subtitle,
 .users-subtitle,
@@ -65,7 +80,7 @@ p {
 .hero-section {
     background: linear-gradient(135deg, var(--rojo-principal), var(--rojo-claro));
     color: white;
-    padding: 100px 0;
+    padding: 100px 50px;
     border-radius: 28px;
     border-radius: 28px;
 }
@@ -199,7 +214,7 @@ p {
 .footer-custom {
     background-color: #0c1b2a;
     color: #dcdcdc;
-    padding: 60px 0 20px 0;
+    padding: 60px 20px 20px 20px;
     border-bottom-left-radius: 28px;
     border-bottom-right-radius: 28px;
 }
@@ -362,7 +377,24 @@ p {
     background-color: #8C1B1B !important;
 }
 
-/*ADMIN FORO */
+#checkAll:checked,
+.row-checkbox:checked {
+    background-color: #620900 !important;
+    border-color: #620900 !important;
+}
+
+#checkAll:focus,
+.row-checkbox:focus {
+    border-color: #620900 !important;
+    outline: 0;
+    box-shadow: 0 0 0 0.25rem rgba(98, 9, 0, 0.25) !important;
+}
+
+#checkAll:checked {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3e%3cpath fill='none' stroke='%23fff' stroke-linecap='round' stroke-linejoin='round' stroke-width='3' d='m6 10 3 3 6-6'/%3e%3c/svg%3e");
+}
+
+/* ===== ADMIN FORO ===== */
 
 .admin-section {
     padding: 100px 0;

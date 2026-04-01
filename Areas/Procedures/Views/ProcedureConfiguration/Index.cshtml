@@ -3,133 +3,112 @@
 @{
     ViewData["Title"] = "Gestión de Trámites";
     ViewBag.EntityName = "tramites";
+
+    bool HasPermission(string buttonName) =>
+        ViewBag.UserPermissions != null && ((List<string>)ViewBag.UserPermissions).Contains(buttonName);
 }
 
 @section Scripts {
     <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
     <partial name="_DataTableConfig" />
 
     <script>
+        let statusColors = [];
+
+        window.updateStatusColors = function(data) {
+            if (!data) return;
+            statusColors = data;
+            console.log("Sincronización de colores:", statusColors);
+        };
+
         window.loadModal = async function(url) {
             try {
                 const response = await fetch(url);
                 const html = await response.text();
                 const container = document.getElementById('modalContainer');
+                if (!container) return;
+
                 container.innerHTML = html;
+
+                const dataElement = container.querySelector('#statusDataJson');
+                if (dataElement) {
+                    const data = JSON.parse(dataElement.textContent);
+                    window.updateStatusColors(data);
+                }
+
                 const modalElement = container.querySelector('.modal');
 
                 if (modalElement) {
                     const myModal = new bootstrap.Modal(modalElement);
                     myModal.show();
 
-                    reqIndex = $('#pillsContainer .badge').length;
-                    flowIndex = $('#flowContainer .flow-item').length;
+                    const pills = document.getElementById('pillsContainer');
+                    reqIndex = pills ? $(pills).find('.badge').length : 0;
+
+                    setTimeout(() => {
+                        initSortable();
+                        updateStatusDropdown();
+                    }, 300);
                 }
             } catch (error) {
-                Swal.fire('Error', 'Fallo en la carga: ' + error.message, 'error');
+                showToast('error', 'Fallo en la carga: ' + error.message);
             }
         };
 
-        window.bulkEdit = function() {
-            const ids = $('.row-checkbox:checked').map((_, el) => el.value).get();
-            if(ids.length === 0) return;
-            loadModal('/Procedures/ProcedureConfiguration/BulkEdit');
-        };
+        function initSortable() {
+            const el = document.getElementById('flowContainer');
+            if (!el) return;
 
-        window.bulkDelete = async function() {
-            const ids = $('.row-checkbox:checked').map((_, el) => parseInt(el.value)).get();
-            if(ids.length === 0) return;
+            if (window.sortableInstance) window.sortableInstance.destroy();
 
-            const result = await Swal.fire({
-                title: '¿Eliminar seleccionados?',
-                text: `Borrarás ${ids.length} trámites permanentemente.`,
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#620900',
-                confirmButtonText: 'Sí, borrar todo'
-            });
-
-            if (result.isConfirmed) {
-                const response = await fetch('/Procedures/ProcedureConfiguration/BulkDelete', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(ids)
-                });
-                if (response.ok) {
-                    Swal.fire('¡Eliminado!', 'Los registros han sido borrados.', 'success')
-                        .then(() => location.reload());
+            window.sortableInstance = Sortable.create(el, {
+                handle: '.handle',
+                animation: 150,
+                ghostClass: 'bg-light',
+                onEnd: function () {
+                    reorderAll();
                 }
-            }
-        };
-
-        $(document).off("submit", "#formProcedureMaster, #formBulkProcedure")
-                   .on("submit", "#formProcedureMaster, #formBulkProcedure", async function (e) {
-            e.preventDefault();
-            const form = e.target;
-            let bodyData;
-            let isJson = false;
-
-            if (form.id === "formBulkProcedure") {
-                isJson = true;
-                const ids = $('.row-checkbox:checked').map((_, el) => parseInt(el.value)).get();
-                const reqs = [];
-                $('#pillsContainer .badge').each(function() {
-                    reqs.push({
-                        IdTypeDocument: parseInt($(this).find('input[name*="IdTypeDocument"]').val()),
-                        IsRequired: $(this).find('input[name*="IsRequired"]').val() === "true"
-                    });
-                });
-                const flows = [];
-                $('#flowContainer .flow-item').each(function() {
-                    flows.push({
-                        IdStatus: parseInt($(this).find('input[name*="IdStatus"]').val()),
-                        StepOrder: parseInt($(this).find('input.step-order-input').val())
-                    });
-                });
-
-                bodyData = JSON.stringify({
-                    Ids: ids,
-                    Name: $(form).find('input[name="Name"]').val(),
-                    IdArea: parseInt($(form).find('select[name="IdArea"]').val()) || 0,
-                    RequirementsList: reqs,
-                    FlowList: flows
-                });
-            } else {
-                bodyData = new FormData(form);
-            }
-
-            const response = await fetch(form.action, {
-                method: 'POST',
-                headers: isJson ? { 'Content-Type': 'application/json' } : {},
-                body: bodyData
             });
+        }
 
-            const result = await response.json();
-            if (result.success) {
-                Swal.fire({
-                    icon: 'success',
-                    title: '¡Éxito!',
-                    text: 'Operación realizada correctamente.',
-                    timer: 1500,
-                    showConfirmButton: false
-                }).then(() => {
-                    location.reload();
+        function updateStatusDropdown() {
+            const flowContainer = $('#flowContainer');
+            if (flowContainer.length === 0) return;
+
+            const selectedIds = flowContainer.find('input[type="hidden"]')
+                .map((_, el) => parseInt(el.value))
+                .get();
+
+            $('#tempStatus option').each(function () {
+                const val = parseInt($(this).val());
+                if (!val) return;
+                $(this).prop('disabled', selectedIds.includes(val));
+            });
+        }
+
+        function reorderAll() {
+            const pillsCont = $('#pillsContainer');
+            const flowCont = $('#flowContainer');
+
+            if (pillsCont.length > 0) {
+                pillsCont.find('.badge').each(function(i) {
+                    $(this).find('input[name*="IdTypeDocument"]').attr('name', `requirementsList[${i}].IdTypeDocument`);
+                    $(this).find('input[name*="IsRequired"]').attr('name', `requirementsList[${i}].IsRequired`);
                 });
-            } else {
-                Swal.fire('Error', result.errors ? result.errors.join("\n") : "Error al guardar.", 'error');
+                reqIndex = pillsCont.find('.badge').length;
             }
-        });
 
-        $(document).on("submit", "#formDeleteProcedure", async function (e) {
-            e.preventDefault();
-            const form = e.target;
-            const response = await fetch(form.action, { method: 'POST', body: new FormData(form) });
-            const result = await response.json();
-            if (result.success) {
-                location.reload();
+            if (flowCont.length > 0) {
+                flowCont.find('.flow-item').each(function(i) {
+                    const newOrder = i + 1;
+                    $(this).find('.step-order-input').val(newOrder);
+                    $(this).find('input.step-order-input').attr('name', `flowList[${i}].StepOrder`);
+                    $(this).find('input[type="hidden"]').attr('name', `flowList[${i}].IdStatus`);
+                });
             }
-        });
+        }
 
         $(document).off('click', '#btnAddReq').on('click', '#btnAddReq', function (e) {
             e.preventDefault();
@@ -151,58 +130,185 @@
 
         $(document).off('click', '#btnAddStatus').on('click', '#btnAddStatus', function (e) {
             e.preventDefault();
-            const orderInput = parseInt($('#tempOrder').val());
+            const statusId = parseInt($('#tempStatus').val());
 
-            if (orderInput >= 90) {
-                Swal.fire({
-                    title: 'Orden reservado',
-                    text: 'Los números del 90 al 99 son para estados automáticos. Por favor usa un número menor.',
-                    icon: 'warning',
-                    confirmButtonColor: '#620900'
-                });
+            if (isNaN(statusId)) {
+                showToast('warning', 'Selecciona un estado.');
                 return;
             }
 
-            const statusId = $('#tempStatus').val();
-            const statusText = $("#tempStatus option:selected").text();
-            const suggestedOrder = (flowIndex + 1) * 10;
-            const order = $('#tempOrder').val() || suggestedOrder;
+            const exists = $('#flowContainer input[value="' + statusId + '"]').length > 0;
+            if (exists) {
+                showToast('info', 'Ese estado ya está agregado.');
+                return;
+            }
 
-            if (!statusId) return;
+            const data = statusColors.find(x => (x.Id || x.id) == statusId);
 
-            const flowRow = `<div class="flow-item d-flex align-items-center bg-light border rounded-3 p-2 mb-2" style="border-left:5px solid #620900!important;">
-                                <div class="me-2" style="width:60px;">
-                                    <input type="number" class="form-control form-control-sm step-order-input" name="flowList[${flowIndex}].StepOrder" value="${order}" />
-                                </div>
-                                <div class="flex-grow-1">${statusText}</div>
-                                <button type="button" class="btn btn-sm btn-outline-danger btn-remove-flow"><i class="bi bi-trash"></i></button>
-                                <input type="hidden" name="flowList[${flowIndex}].IdStatus" value="${statusId}" />
-                             </div>`;
+            if (!data) {
+                showToast('error', 'No se pudieron cargar los estilos. Cierra y abre el modal de nuevo.');
+                return;
+            }
+
+            const flowRow = `
+                <div class="flow-item d-flex align-items-center bg-light border rounded-3 p-2 mb-2 shadow-sm"
+                     style="border-left: 5px solid ${data.Bg || data.bg} !important;">
+                    <div class="me-3 text-muted handle" style="cursor:grab"><i class="bi bi-grip-vertical fs-5"></i></div>
+                    <div class="me-2" style="width: 50px;">
+                        <input type="number" class="form-control form-control-sm step-order-input bg-white border-0 text-center fw-bold" readonly />
+                    </div>
+                    <div class="flex-grow-1">
+                        <span class="badge" style="background-color:${data.Bg || data.bg}; color:${data.Txt || data.txt}">${data.Name || data.name}</span>
+                    </div>
+                    <button type="button" class="btn btn-sm btn-outline-danger btn-remove-flow border-0"><i class="bi bi-trash"></i></button>
+                    <input type="hidden" value="${statusId}" />
+                </div>`;
 
             $('#flowContainer').append(flowRow);
-            flowIndex++;
-            $('#tempOrder').val(parseInt(order) + 10);
-            $('#tempStatus').val("");
             reorderAll();
+            updateStatusDropdown();
+            $('#tempStatus').val("");
         });
 
-        function reorderAll() {
-            $('#pillsContainer .badge').each(function(i) {
-                $(this).find('input[name*="IdTypeDocument"]').attr('name', `requirementsList[${i}].IdTypeDocument`);
-                $(this).find('input[name*="IsRequired"]').attr('name', `requirementsList[${i}].IsRequired`);
-            });
-
-            $('#flowContainer .flow-item').each(function(i) {
-                $(this).find('input.step-order-input').attr('name', `flowList[${i}].StepOrder`);
-                $(this).find('input[type="hidden"]').attr('name', `flowList[${i}].IdStatus`);
-            });
-
-            reqIndex = $('#pillsContainer .badge').length;
-            flowIndex = $('#flowContainer .flow-item').length;
-        }
-
         $(document).on('click', '.btn-remove-pill', function() { $(this).closest('.badge').remove(); reorderAll(); });
-        $(document).on('click', '.btn-remove-flow', function() { $(this).closest('.flow-item').remove(); reorderAll(); });
+        $(document).on('click', '.btn-remove-flow', function() { $(this).closest('.flow-item').remove(); reorderAll(); updateStatusDropdown(); });
+
+        $(document).off("submit", "#formProcedureMaster, #formBulkProcedure")
+                   .on("submit", "#formProcedureMaster, #formBulkProcedure", async function (e) {
+            e.preventDefault();
+            const form = e.target;
+            reorderAll();
+
+            const flows = [];
+            $('#flowContainer .flow-item').each(function() {
+                flows.push({
+                    IdStatus: parseInt($(this).find('input[type="hidden"]').val()),
+                    StepOrder: parseInt($(this).find('.step-order-input').val())
+                });
+            });
+
+            if (flows.length > 0) {
+                const lastStep = flows[flows.length - 1];
+                const statusInfo = statusColors.find(x => (x.Id || x.id) == lastStep.IdStatus);
+
+                const isTerminal = statusInfo ? (statusInfo.IsTerminal || statusInfo.isTerminal || statusInfo.IsTerminalState || statusInfo.isTerminalState) : false;
+
+                if (isTerminal !== true && isTerminal !== 1) {
+                    showToast('warning', 'El último estado de la ruta debe ser un estado Final/Terminal.');
+                    return;
+                }
+            } else {
+                showToast('warning', 'Debes añadir al menos un estado al flujo.');
+                return;
+            }
+
+            let bodyData;
+            let headers = {};
+
+            if (form.id === "formBulkProcedure") {
+                const ids = $('.row-checkbox:checked').map((_, el) => parseInt(el.value)).get();
+                const reqs = [];
+                $('#pillsContainer .badge').each(function() {
+                    reqs.push({
+                        IdTypeDocument: parseInt($(this).find('input[type="hidden"]').eq(0).val()),
+                        IsRequired: $(this).find('input[type="hidden"]').eq(1).val() === "true"
+                    });
+                });
+
+                bodyData = JSON.stringify({
+                    Ids: ids,
+                    Name: $(form).find('input[name="Name"]').val(),
+                    IdArea: parseInt($(form).find('select[name="IdArea"]').val()) || 0,
+                    RequirementsList: reqs,
+                    FlowList: flows
+                });
+                headers['Content-Type'] = 'application/json';
+            } else {
+                bodyData = new FormData(form);
+            }
+
+            try {
+                const response = await fetch(form.action, { method: 'POST', headers: headers, body: bodyData });
+                const result = await response.json();
+                if (result.success) {
+                    showToast('success', '¡Cambios guardados!');
+                    setTimeout(() => location.reload(), 1200);
+                } else {
+                    showToast('error', result.errors ? result.errors.join(" | ") : "Error al guardar");
+                }
+            } catch (e) { showToast('error', 'Error de conexión con el servidor'); }
+        });
+
+        $(document).on("submit", "#formDeleteProcedure", async function (e) {
+            e.preventDefault();
+            const form = e.target;
+            try {
+                const response = await fetch(form.action, { method: 'POST', body: new FormData(form) });
+                const result = await response.json();
+                if (result.success) {
+                    showToast('success', 'Registro eliminado correctamente');
+                    setTimeout(() => { location.reload(); }, 1000);
+                } else {
+                    showToast('error', result.message || 'No se pudo eliminar el registro.');
+                }
+            } catch (error) {
+                showToast('error', 'Error en el servidor.');
+            }
+        });
+
+        window.bulkEdit = () => {
+            const count = $('.row-checkbox:checked').length;
+            if(count === 0) return showToast('info', 'Selecciona trámites');
+            loadModal('/Procedures/ProcedureConfiguration/BulkEdit');
+        };
+
+        window.bulkDelete = async () => {
+            const ids = $('.row-checkbox:checked').map((_, el) => parseInt(el.value)).get();
+            if(ids.length === 0) return;
+            const result = await Swal.fire({
+                title: '¿Eliminar seleccionados?',
+                text: `Borrarás ${ids.length} trámites.`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#620900',
+                confirmButtonText: 'Sí, borrar'
+            });
+            if (result.isConfirmed) {
+                const res = await fetch('/Procedures/ProcedureConfiguration/BulkDelete', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(ids)
+                });
+                const rJson = await res.json();
+                if (rJson.success) {
+                    showToast('success', 'Eliminado');
+                    setTimeout(() => location.reload(), 1000);
+                }
+            }
+        };
+
+        $(document).on('change', '#checkAll', function () {
+            const isChecked = $(this).is(':checked');
+            $('.row-checkbox').prop('checked', isChecked).closest('tr').toggleClass('table-active', isChecked);
+            updateBulkBar();
+        });
+
+        $(document).on('change', '.row-checkbox', function () {
+            $('#checkAll').prop('checked', $('.row-checkbox').length === $('.row-checkbox:checked').length);
+            $(this).closest('tr').toggleClass('table-active', $(this).is(':checked'));
+            updateBulkBar();
+        });
+
+        function updateBulkBar() {
+            const count = $('.row-checkbox:checked').length;
+            const bar = $('#bulkActionsBar');
+            if (count > 0) {
+                $('#selectedCount').text(count + (count === 1 ? ' seleccionado' : ' seleccionados'));
+                bar.removeClass('d-none').show();
+            } else {
+                bar.hide();
+            }
+        }
     </script>
 }
 
@@ -212,14 +318,24 @@
 
     <div class="d-flex justify-content-between align-items-start mb-4">
         <div>
-            <h2 class="fw-bold mb-1">
+            <h2 class="fw-bold mb-1 merriweather-font">
                 <i class="bi bi-pencil-square"></i> Trámites
             </h2>
             <p class="text-muted small mb-0">Configura los documentos necesarios, el área responsable y la ruta de estados para cada trámite.</p>
         </div>
-        <button class="btn btn-burgundy shadow-sm" onclick="loadModal('/Procedures/ProcedureConfiguration/Create')">
-            <i class="bi bi-plus-circle me-2"></i> Agregar trámite
-        </button>
+
+        @if (HasPermission("btn-agregar"))
+        {
+            <button class="btn btn-burgundy shadow-sm" onclick="loadModal('/Procedures/ProcedureConfiguration/Create')">
+                <i class="bi bi-plus-circle me-2"></i> Agregar trámite
+            </button>
+        }
+        else
+        {
+            <button class="btn btn-burgundy shadow-sm" disabled title="No tienes permiso para agregar">
+                <i class="bi bi-plus-circle me-2"></i> Agregar trámite
+            </button>
+        }
     </div>
     
     <partial name="_TableTools" />
@@ -228,12 +344,18 @@
         <div class="d-flex align-items-center justify-content-between px-3">
             <span id="selectedCount" class="fw-bold me-4">0 seleccionados</span>
             <div class="btn-group">
-                <button class="btn btn-warning btn-sm rounded-pill me-2" onclick="bulkEdit()">
-                    <i class="bi bi-pencil-square me-1"></i> Editar
-                </button>
-                <button class="btn btn-danger btn-sm rounded-pill" onclick="bulkDelete()">
-                    <i class="bi bi-trash-fill me-1"></i> Eliminar
-                </button>
+                @if (HasPermission("btn-multiple-editar"))
+                {
+                    <button class="btn btn-warning btn-sm rounded-pill me-2" onclick="bulkEdit()">
+                        <i class="bi bi-pencil-square me-1"></i> Editar
+                    </button>
+                }               
+                @if (HasPermission("btn-multiple-eliminar"))
+                {
+                    <button class="btn btn-sm btn-danger px-3 fw-bold rounded-pill" onclick="bulkDelete()">
+                        <i class="bi bi-trash3-fill me-1"></i> Eliminar
+                    </button>
+                }
             </div>
             <button type="button" class="btn-close btn-close-white ms-3" onclick="deselectAll()"></button>
         </div>
@@ -241,10 +363,10 @@
 
     <div class="border-0 overflow-hidden">
         <div class="card-body p-0">
-            <table id="mainTable" class="table table-hover">
+            <table id="mainTable" class="table table-hover table-container-rounded">
                 <thead class="burgundy-header text-white">
                     <tr>
-                        <th class="no-sort text-center"> <input type="checkbox" id="checkAll"> </th>
+                        <th class="no-sort text-center"> <input type="checkbox" id="checkAll" class="form-check-input"> </th>
                         <th style="width: 20%;">Nombre del Trámite</th>
                         <th style="width: 17%;">Documentos</th>
                         <th style="width: 13%;">Área</th>
@@ -339,14 +461,17 @@
                                 <div class="btn-group">
                                     <button class="btn btn-sm btn-light border shadow-sm me-2"
                                             style="width:32px; height:32px; padding:0;"
-                                            onclick="loadModal('/Procedures/ProcedureConfiguration/Edit/@item.Id')"
-                                            title="Editar">
+                                            onclick="@(HasPermission("btn-editar") ? $"loadModal('/Procedures/ProcedureConfiguration/Edit/{item.Id}')" : "")"
+                                            @(HasPermission("btn-editar") ? "" : "disabled")
+                                            title="@(HasPermission("btn-editar") ? "Editar" : "Sin permiso")">
                                         <i class="bi bi-pencil-square text-warning"></i>
                                     </button>
+
                                     <button class="btn btn-sm btn-light border shadow-sm"
                                             style="width:32px; height:32px; padding:0;"
-                                            onclick="loadModal('/Procedures/ProcedureConfiguration/Delete/@item.Id')"
-                                            title="Eliminar">
+                                            onclick="@(HasPermission("btn-eliminar") ? $"loadModal('/Procedures/ProcedureConfiguration/Delete/{item.Id}')" : "")"
+                                            @(HasPermission("btn-eliminar") ? "" : "disabled")
+                                            title="@(HasPermission("btn-eliminar") ? "Eliminar" : "Sin permiso")">
                                         <i class="bi bi-trash-fill text-danger"></i>
                                     </button>
                                 </div>

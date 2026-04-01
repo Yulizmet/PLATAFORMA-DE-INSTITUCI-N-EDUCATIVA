@@ -1,0 +1,90 @@
+﻿@model SchoolManager.Models.medical_pychology
+@{
+    Layout = "~/Areas/Medical/Views/Shared/_LayoutDashboard.cshtml";
+    ViewData["Title"] = "Eliminar Registro Psicológico";
+}
+<div class="dashboard-header">
+    <div class="header-content">
+        <h2 class="text-white">ELIMINAR REGISTRO PSICOLÓGICO</h2>
+        <p class="mb-0">Sistema Médico - Bitácoras Psicológicas</p>
+    </div>
+</div>
+<div class="container mt-4">
+    <div class="card p-4 shadow-sm">
+        <div class="alert-delete mb-4">
+            ¿Seguro que deseas eliminar este registro psicológico?
+        </div>
+        <h5 class="section-title">DATOS DEL ALUMNO</h5>
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="info-block">
+                    <label class="fw-bold text-uppercase">Matrícula</label>
+                    <div class="info-box">@Model.MatriculaTemp</div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="info-block">
+                    <label class="fw-bold text-uppercase">Nombre del Alumno</label>
+                    <div class="info-box">@Model.NombreCompletoTemp</div>
+                </div>
+            </div>
+        </div>
+        <hr class="section-divider" />
+        <h5 class="section-title">DATOS DEL REGISTRO</h5>
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="info-block">
+                    <label class="fw-bold text-uppercase">Folio</label>
+                    <div class="info-box fw-bold">@Model.Fol</div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="info-block">
+                    <label class="fw-bold text-uppercase">Fecha</label>
+                    <div class="info-box">@Model.AppointmentDatetime.ToString("dd/MM/yyyy hh:mm tt")</div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="info-block">
+                    <label class="fw-bold text-uppercase">Asistencia</label>
+                    <div class="mt-2">
+                        @if (Model.AttendanceStatus == "Asistió")
+                        {
+                            <span class="badge asistencia-asistio d-inline-block px-3 py-2 fs-6">Asistió</span>
+                        }
+                        else if (Model.AttendanceStatus == "No asistió")
+                        {
+                            <span class="badge asistencia-no d-inline-block px-3 py-2 fs-6">No asistió</span>
+                        }
+                        else if (Model.AttendanceStatus == "Justificado")
+                        {
+                            <span class="badge asistencia-justificado d-inline-block px-3 py-2 fs-6">Justificado</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-secondary d-inline-block px-3 py-2 fs-6">@Model.AttendanceStatus</span>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="mt-4">
+            <div class="info-block">
+                <label class="fw-bold text-uppercase">Observaciones Psicológicas</label>
+                <div class="info-box">@Model.PsychologyObservations</div>
+            </div>
+        </div>
+        <hr class="section-divider" />
+        <form asp-action="Delete" method="post">
+            <input type="hidden" asp-for="Id" />
+            <div class="d-flex justify-content-between mt-4">
+                <a asp-action="Index" class="btn" style="border: 1.5px solid #6c757d;">
+                    CANCELAR
+                </a>
+                <button type="submit" class="btn px-5" style="border: 1.5px solid #6c757d;">
+                    ELIMINAR DEFINITIVAMENTE
+                </button>
+            </div>
+        </form>
+    </div>
+</div>

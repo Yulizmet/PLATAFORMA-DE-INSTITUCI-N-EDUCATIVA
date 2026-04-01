@@ -22,8 +22,8 @@
                 <form id="formActivateStudent">
                     @Html.AntiForgeryToken()
                     <input type="hidden" name="id" value="@Model.PersonId" />
-                    <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="button" onclick="confirmActivateLogic()" class="btn btn-success px-4">Confirmar Reactivación</button>
+                    <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" onclick="confirmActivateLogic()" class="btn btn-success rounded-pill px-4">Confirmar Reactivación</button>
                 </form>
             </div>
         </div>

@@ -10,7 +10,7 @@
             <div class="container-fluid p-0">
 
                 <div class="text-center my-4">
-                    <h2 class="fw-bold" style="color:#198754;">Tu solicitud ha sido enviada con éxito</h2>
+                    <h2 class="fw-bold" style="color:#198754;">Tu solicitud ha sido generada con éxito</h2>
                 </div>
 
                 <div class="row justify-content-center">
@@ -43,23 +43,21 @@
                                 </div>
 
                                 <div class="px-4 py-4" style="background:#eef2f5;">
-                                    <div class="text-center fw-semibold mb-2">
-                                        Te hemos enviado un correo con tu ficha de preinscripción
-                                    </div>
-
-                                    <div class="text-center">
-                                        <a class="fw-bold text-primary text-break"
-                                           href="#"
-                                           target="_blank"
-                                           rel="noopener">
-                                            ¿Tienes sugerencias para mejorar este formulario?
-                                        </a>
-                                    </div>
-
                                     <div class="d-flex flex-column flex-sm-row justify-content-center gap-2 mt-3">
+
                                         <button class="btn btn-primary" type="button" onclick="convertirPdf()">
                                             <i class="fa-solid fa-download me-2"></i>Descargar comprobante
                                         </button>
+
+                                        <!-- BOTÓN ABAJO -->
+                                        <a asp-area="MainScreen"
+                                           asp-controller="MainScreen"
+                                           asp-action="Tramites"
+                                           class="btn-regresar">
+                                            <i class="fa-solid fa-arrow-left"></i>
+                                            <span>Regresar</span>
+                                        </a>
+
                                     </div>
                                 </div>
 
@@ -94,17 +92,43 @@
     <span id="pdfGeneracion">@Model.Generacion</span>
 </div>
 
-<img id="pdfLogo" src="@Url.Content("~/src/img/icons/ITACE.png")" style="display:none;" alt="logo">
-
 @section Styles {
-    <link href="@Url.Content("~/enrollment/static/css/app.css")" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+
+    <style>
+        .btn-regresar {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 18px;
+            border-radius: 10px;
+            background: #ffffff;
+            border: 1px solid #dcdfe3;
+            color: #343a40;
+            font-weight: 600;
+            text-decoration: none;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            transition: all 0.2s ease-in-out;
+        }
+
+            .btn-regresar i {
+                font-size: 14px;
+            }
+
+            .btn-regresar:hover {
+                background: #198754;
+                color: #ffffff;
+                border-color: #198754;
+                text-decoration: none;
+                transform: translateY(-1px);
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            }
+    </style>
 }
 
 @section Scripts {
     <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
-    <script src="@Url.Content("~/enrollment/static/js/app.js")"></script>
     <script src="@Url.Content("~/enrollment/src/js/modules/pdf-comprobante.js")"></script>
     <script src="@Url.Content("~/enrollment/src/js/modules/finalizar-scripts.js")"></script>
 }
