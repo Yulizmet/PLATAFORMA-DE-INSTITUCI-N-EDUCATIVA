@@ -44,12 +44,14 @@ namespace SchoolManager.Areas.Tutorship.Controllers
             return Content("No tienes permiso para ver esta pantalla. Tu rol actual es: " + LoggedRoleId);
         }
 
-       
+
 
         public async Task<IActionResult> Seguimiento(string matriculaBuscar)
         {
-            if (LoggedRoleId != 2) return RedirectToAction(nameof(AccesoDenegado));
-            ViewBag.RoleId = LoggedRoleId;
+            if (LoggedRoleId != 2 && LoggedRoleId != 3)
+            {
+                return RedirectToAction("AccesoDenegado", "Tutorship");
+            }
 
             if (string.IsNullOrEmpty(matriculaBuscar))
             {
@@ -77,11 +79,14 @@ namespace SchoolManager.Areas.Tutorship.Controllers
                 return View("~/Areas/Tutorship/Views/Seguimiento.cshtml");
             }
 
-            bool esTutor = await _context.Tutorships.AnyAsync(t => t.StudentId == alumno.UserId && t.TeacherId == LoggedUserId);
-            if (!esTutor)
+            if (LoggedRoleId == 2)
             {
-                TempData["Error"] = "Acceso denegado: Puedes ver que el alumno existe, pero no pertenece a tu grupo de tutoría para dejar reportes.";
-                return View("~/Areas/Tutorship/Views/Seguimiento.cshtml");
+                bool esTutor = await _context.Tutorships.AnyAsync(t => t.StudentId == alumno.UserId && t.TeacherId == LoggedUserId);
+                if (!esTutor)
+                {
+                    TempData["Error"] = "Acceso denegado: Puedes ver que el alumno existe, pero no pertenece a tu grupo de tutoría para dejar reportes.";
+                    return View("~/Areas/Tutorship/Views/Seguimiento.cshtml");
+                }
             }
 
             var historial = await _context.TutorshipMonitorings

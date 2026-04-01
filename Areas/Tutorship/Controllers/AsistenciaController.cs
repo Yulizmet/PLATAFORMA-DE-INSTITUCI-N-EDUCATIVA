@@ -152,7 +152,7 @@ namespace SchoolManager.Areas.Tutorship.Controllers
 
             if (studentIds == null || !studentIds.Any())
             {
-                TempData["Error"] = "No hay alumnos para procesar asistencia.";
+                TempData["AsistenciaError"] = "No hay alumnos para procesar asistencia.";
                 return RedirectToAction(nameof(Asistencia), new { fecha = fecha.ToString("yyyy-MM-dd"), groupId, fechaInicio = fechaInicio.ToString("yyyy-MM-dd"), fechaFin = fechaFin.ToString("yyyy-MM-dd") });
             }
 
@@ -185,11 +185,12 @@ namespace SchoolManager.Areas.Tutorship.Controllers
 
             if (esActualizacion)
             {
-                TempData["Exito"] = "La asistencia fue actualizada correctamente.";
+                // ¡CORREGIDO AQUÍ!
+                TempData["AsistenciaExito"] = "La asistencia fue actualizada correctamente.";
             }
             else
             {
-                TempData["Exito"] = "Asistencia guardada correctamente.";
+                TempData["AsistenciaExito"] = "Asistencia guardada correctamente.";
             }
 
             return RedirectToAction(nameof(Asistencia), new

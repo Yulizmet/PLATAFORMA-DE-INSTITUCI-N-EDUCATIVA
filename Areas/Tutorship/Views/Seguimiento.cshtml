@@ -6,9 +6,17 @@
     var historial = ViewBag.Historial as List<SchoolManager.Models.tutorship_monitoring> ?? new List<SchoolManager.Models.tutorship_monitoring>();
 }
 
+
 <div class="container mt-4 mb-5">
-    <h2 class="text-center fw-bold mb-4" style="color: var(--brand-dark);">Historial de Seguimiento</h2>
-    
+    <div class="position-relative mb-4 text-center">
+        <div class="position-absolute top-50 start-0 translate-middle-y">
+            <button type="button" onclick="history.back()" class="btn btn-sm btn-outline-secondary fw-bold shadow-sm px-3" style="border-radius: 20px;">
+                <i class="bi bi-arrow-left me-1"></i> Regresar
+            </button>
+        </div>
+
+        <h2 class="fw-bold m-0" style="color: var(--brand-dark);">Historial de Seguimiento</h2>
+    </div>
     <div class="row justify-content-center mb-5">
         <div class="col-md-8">
             <form method="get" asp-controller="Seguimiento" asp-action="Seguimiento">
@@ -38,7 +46,7 @@
                         <div class="card-header bg-transparent border-0 pt-4 d-flex justify-content-between align-items-center px-4">
                             <h5 class="fw-bold m-0" style="color: var(--brand-dark);">Nuevo Feedback</h5>
 
-                            <a asp-controller="Tutorship" asp-action="VerEntrevistaAlumno" asp-route-id="@Model.UserId"
+                            <a asp-controller="Entrevista" asp-action="VerEntrevistaAlumno" asp-route-id="@Model.UserId"
                                    class="btn btn-sm btn-secondary-brand rounded-circle d-flex align-items-center justify-content-center"
                                    style="width: 32px; height: 32px;"
                                    title="Ver Expediente Completo">
@@ -67,20 +75,36 @@
                                     <textarea class="form-control shadow-sm" name="observaciones" rows="5" style="border-color: var(--brand-secondary); resize: none;" required></textarea>
                                 </div>
 
-                                <div class="mb-4">
-                                    <label class="form-label fw-bold">Adjuntar Evidencia</label>
-                                    <div class="input-group shadow-sm">
-                                        <input type="file" class="form-control" name="ArchivoAdjunto"
-                                               accept=".pdf,.jpg,.jpeg,.png"
-                                               style="border-color: var(--brand-secondary);">
-                                        <label class="input-group-text bg-white" style="border-color: var(--brand-secondary);">
+                            <div class="mb-4">
+                                <label class="form-label fw-bold">Adjuntar Evidencia</label>
+    
+                                <div class="position-relative shadow-sm" style="border-radius: 8px; border: 1px solid var(--brand-secondary); overflow: hidden;">
+        
+                                    <input type="file" name="ArchivoAdjunto" id="evidenciaUpload" class="d-none"
+                                           accept=".pdf,.jpg,.jpeg,.png"
+                                           onchange="document.getElementById('fileName').textContent = this.files.length > 0 ? this.files[0].name : 'Ningún archivo seleccionado';">
+        
+                                    <label for="evidenciaUpload" class="d-flex align-items-center m-0 w-100" style="cursor: pointer; background-color: #ffffff;">
+            
+                                        <div class="px-3 py-2 fw-bold text-dark text-center" style="background-color: #f8f9fa; border-right: 1px solid var(--brand-secondary); min-width: 140px;">
+                                            Elegir archivo
+                                        </div>
+            
+                                        <div id="fileName" class="px-3 text-muted flex-grow-1 text-truncate" style="font-size: 0.95rem;">
+                                            Ningún archivo seleccionado
+                                        </div>
+            
+                                        <div class="px-3 border-start" style="border-color: #eee !important;">
                                             <i class="bi bi-paperclip text-muted"></i>
-                                        </label>
-                                    </div>
-                                    <div class="form-text small text-muted">
-                                        * Justificantes médicos, reportes firmados (PDF o Imagen).
-                                    </div>
+                                        </div>
+            
+                                    </label>
                                 </div>
+    
+                                <div class="form-text small text-muted mt-2">
+                                    * Justificantes médicos, reportes firmados (PDF o Imagen).
+                                </div>
+                            </div>
 
                                 <button type="submit" class="btn btn-primary-brand w-100 fw-bold shadow">
                                     <i class="bi bi-save me-2"></i> Guardar Reporte

@@ -179,5 +179,87 @@ namespace SchoolManager.Areas.Tutorship.Controllers
 
             return RedirectToAction(nameof(AsignarTutores));
         }
+
+        [HttpGet]
+        public async Task<IActionResult> ObtenerDataAlumnos()
+        {
+            try
+            {
+                var draw = Request.Query["draw"].FirstOrDefault();
+                var start = Request.Query["start"].FirstOrDefault() ?? "0";
+                var length = Request.Query["length"].FirstOrDefault() ?? "10";
+                var searchValue = Request.Query["search[value]"].FirstOrDefault()?.ToLower();
+                var sortDirection = Request.Query["order[0][dir]"].FirstOrDefault() ?? "asc";
+
+                var gradoFilter = Request.Query["grado"].FirstOrDefault();
+                var grupoFilter = Request.Query["grupo"].FirstOrDefault();
+
+                int pageSize = int.Parse(length);
+                int skip = int.Parse(start);
+
+                var query = from u in _context.Users
+                            where u.UserRoles.Any(ur => ur.RoleId == 1)
+                            join p in _context.PreenrollmentGenerals on u.UserId equals p.UserId into pg
+                            from p in pg.DefaultIfEmpty()
+                            join e in _context.grades_Enrollments.Include(ge => ge.Group) on u.UserId equals e.StudentId into eg
+                            from e in eg.DefaultIfEmpty()
+                            join t in _context.TutorshipInterviews on u.UserId equals t.StudentId into tg
+                            from t in tg.DefaultIfEmpty()
+                            select new
+                            {
+                                UserId = u.UserId,
+                                Nombre = u.Person.FirstName, 
+                                NombreCompleto = u.Person.FirstName + " " + u.Person.LastNamePaternal + " " + u.Person.LastNameMaternal,
+                                Matricula = p != null ? p.Matricula : "Sin Matrícula",
+                                Grado = e != null ? (int?)e.Group.GradeLevelId : null,
+                                GrupoNombre = e != null ? e.Group.Name : null,
+                                GrupoTexto = e != null ? e.Group.GradeLevelId + e.Group.Name : "Sin Grupo",
+                                Foto = t != null && t.FilePath != null && t.FilePath != "Sin archivo" ? t.FilePath : ""
+                            };
+
+                if (LoggedRoleId == 2)
+                {
+                    query = query.Where(x => _context.Tutorships.Any(t => t.StudentId == x.UserId && t.TeacherId == LoggedUserId));
+                }
+
+                // 4. Aplicar Filtros del usuario
+                if (!string.IsNullOrEmpty(gradoFilter) && int.TryParse(gradoFilter, out int gradoId))
+                {
+                    query = query.Where(x => x.Grado == gradoId);
+                }
+
+                if (!string.IsNullOrEmpty(grupoFilter))
+                {
+                    query = query.Where(x => x.GrupoNombre == grupoFilter);
+                }
+
+                if (!string.IsNullOrEmpty(searchValue))
+                {
+                    query = query.Where(x => x.NombreCompleto.ToLower().Contains(searchValue) ||
+                                             x.Matricula.ToLower().Contains(searchValue));
+                }
+
+                int recordsFiltered = await query.CountAsync();
+
+                bool asc = sortDirection == "asc";
+                query = asc ? query.OrderBy(x => x.NombreCompleto) : query.OrderByDescending(x => x.NombreCompleto);
+
+                var datosPaginados = await query.Skip(skip).Take(pageSize).ToListAsync();
+                int recordsTotal = await _context.Users.CountAsync(u => u.UserRoles.Any(ur => ur.RoleId == 1));
+
+                return Json(new
+                {
+                    draw = draw,
+                    recordsFiltered = recordsFiltered,
+                    recordsTotal = recordsTotal,
+                    data = datosPaginados
+                });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { error = ex.Message });
+            }
+        }
+
     }
 }

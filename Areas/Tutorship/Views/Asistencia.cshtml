@@ -24,13 +24,18 @@
 
         <h2 class="fw-bold m-0" style="color: var(--brand-dark);">Registro de Asistencia</h2>
     </div>
-    @if (TempData["Exito"] != null)
+
+    @if (TempData["AsistenciaExito"] != null)
     {
-        <div class="alert alert-success shadow-sm text-center fw-bold"><i class="bi bi-check-circle-fill"></i> @TempData["Exito"]</div>
+        <div class="alert alert-success shadow-sm text-center fw-bold">
+            <i class="bi bi-check-circle-fill me-2"></i> @TempData["AsistenciaExito"]
+        </div>
     }
-    @if (TempData["Error"] != null)
+    @if (TempData["AsistenciaError"] != null)
     {
-        <div class="alert alert-danger shadow-sm text-center fw-bold"><i class="bi bi-exclamation-triangle-fill"></i> @TempData["Error"]</div>
+        <div class="alert alert-danger shadow-sm text-center fw-bold">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i> @TempData["AsistenciaError"]
+        </div>
     }
 
     <div class="p-4 rounded shadow-sm mb-4" style="background-color: #f4f4f4; border-left: 5px;">
@@ -225,7 +230,7 @@
         "language": {
         "url": "//cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json"
         },
-        "lengthMenu": [[10, 25, 50, 100, -1], [10, 25, 50, 100, "Todos"]],
+        "lengthMenu": [[10, 25, 50, 100, -1], [10, 25, 50, 100]],
         "pageLength": 25,
         "columnDefs": [
         { "orderable": false, "targets": 4 },
