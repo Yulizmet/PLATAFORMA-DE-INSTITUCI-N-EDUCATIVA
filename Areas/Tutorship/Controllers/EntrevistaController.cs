@@ -190,7 +190,7 @@ namespace SchoolManager.Areas.Tutorship.Controllers
                 if (!esTutor)
                 {
                     TempData["Mensaje"] = "Acceso denegado: Este alumno no pertenece a tu grupo de tutoría.";
-                    return RedirectToAction("ListaDeAlumnos", "Alumnos"); // Lo mandaremos a Alumnos próximamente
+                    return RedirectToAction("ListaDeAlumnos", "Alumnos"); 
                 }
             }
 
@@ -285,11 +285,10 @@ namespace SchoolManager.Areas.Tutorship.Controllers
             return View("~/Areas/Tutorship/Views/ReporteEntrevistas.cshtml", todosLosAlumnos);
         }
 
-        [HttpGet] // <-- Cambiado a GET por seguridad
+        [HttpGet] 
         [HttpPost]
         public async Task<IActionResult> ObtenerDataReportes()
         {
-            // 1. Capturar parámetros de DataTables
             var draw = Request.Form["draw"].FirstOrDefault();
             var start = Request.Form["start"].FirstOrDefault() ?? "0";
             var length = Request.Form["length"].FirstOrDefault() ?? "25";
@@ -301,7 +300,6 @@ namespace SchoolManager.Areas.Tutorship.Controllers
             int pageSize = int.Parse(length);
             int skip = int.Parse(start);
 
-            // 2. Consulta Base (Sin ejecutar aún en la DB)
             var query = from u in _context.Users
                         where u.UserRoles.Any(ur => ur.RoleId == 1)
                         join p in _context.PreenrollmentGenerals on u.UserId equals p.UserId into pg
@@ -320,13 +318,11 @@ namespace SchoolManager.Areas.Tutorship.Controllers
                             Estatus = t != null && t.Status != null ? t.Status : "Pendiente"
                         };
 
-            // Filtro por Rol (Si es profesor, solo sus tutorados)
             if (LoggedRoleId == 2)
             {
                 query = query.Where(x => _context.Tutorships.Any(t => t.StudentId == x.UserId && t.TeacherId == LoggedUserId));
             }
 
-            // 3. Aplicar Filtros (Aquí es donde ahorramos memoria)
             if (!string.IsNullOrEmpty(filtroEstatus))
             {
                 query = query.Where(x => x.Estatus == filtroEstatus);
@@ -338,11 +334,9 @@ namespace SchoolManager.Areas.Tutorship.Controllers
                                          x.Matricula.ToLower().Contains(searchValue));
             }
 
-            // Conteos para la paginación
             int recordsTotal = await _context.Users.CountAsync(u => u.UserRoles.Any(ur => ur.RoleId == 1));
             int recordsFiltered = await query.CountAsync();
 
-            // 4. Ordenamiento dinámico
             bool asc = sortDirection == "asc";
             query = sortColumnIndex switch
             {
@@ -352,7 +346,6 @@ namespace SchoolManager.Areas.Tutorship.Controllers
                 _ => query.OrderBy(x => x.Nombre)
             };
 
-            // 5. LA CLAVE: Solo traer los 10, 25 o 100 registros solicitados
             var datosPaginados = await query.Skip(skip).Take(pageSize).ToListAsync();
 
             return Json(new

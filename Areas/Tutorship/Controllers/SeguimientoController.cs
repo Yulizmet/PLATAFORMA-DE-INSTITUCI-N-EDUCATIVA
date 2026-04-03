@@ -13,7 +13,7 @@ using System.Security.Claims;
 
 namespace SchoolManager.Areas.Tutorship.Controllers
 {
-    [Area("Gestion")] // Mantén el área que estás usando
+    [Area("Gestion")] 
     [Authorize]
     public class SeguimientoController : Controller
     {
@@ -32,7 +32,6 @@ namespace SchoolManager.Areas.Tutorship.Controllers
             }
         }
 
-        // Constructor
         public SeguimientoController(AppDbContext context, IWebHostEnvironment webHostEnvironment)
         {
             _context = context;

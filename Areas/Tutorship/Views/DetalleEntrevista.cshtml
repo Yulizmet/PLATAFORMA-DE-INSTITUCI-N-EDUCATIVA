@@ -3,23 +3,18 @@
 @{
     ViewData["Title"] = "Resultados de Entrevista";
     
-    // 1. Datos de Control
     int roleId = ViewBag.RoleId ?? 0;
 
-    // 2. Datos del Alumno
     string nombreAlumno = Model?.Student?.Person != null
         ? $"{Model.Student.Person.FirstName} {Model.Student.Person.LastNamePaternal} {Model.Student.Person.LastNameMaternal}"
         : "Alumno Desconocido";
             
     string primerNombre = Model?.Student?.Person?.FirstName ?? "A";
     
-    // 3. Lógica de la Foto
     string rutaFoto = ViewBag.FotoPerfil as string ?? "";
     bool tieneFoto = !string.IsNullOrEmpty(rutaFoto);
-    // Usamos el color rojo de la marca (8C1B1B) para el avatar automático
     string imgSrc = tieneFoto ? rutaFoto : $"https://ui-avatars.com/api/?name={primerNombre}&background=8C1B1B&color=fff&size=128";
     
-    // Extra
     string matricula = ViewBag.Matricula as string ?? "";
     string grupo = ViewBag.Grupo as string ?? "";
 }

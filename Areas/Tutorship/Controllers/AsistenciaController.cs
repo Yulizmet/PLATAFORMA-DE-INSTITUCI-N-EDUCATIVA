@@ -18,7 +18,6 @@ namespace SchoolManager.Areas.Tutorship.Controllers
     {
         private readonly AppDbContext _context;
 
-        // Propiedades auxiliares para usuario y rol
         private int LoggedUserId => int.Parse(User.FindFirst("UserId")?.Value ?? "0");
         private int LoggedRoleId
         {
@@ -41,7 +40,6 @@ namespace SchoolManager.Areas.Tutorship.Controllers
             return Content("No tienes permiso para ver esta pantalla. Tu rol actual es: " + LoggedRoleId);
         }
 
-     
         [HttpGet]
         public async Task<IActionResult> Asistencia(DateTime? fecha, int? groupId, DateTime? fechaInicio, DateTime? fechaFin)
         {
@@ -55,6 +53,13 @@ namespace SchoolManager.Areas.Tutorship.Controllers
             ViewBag.FechaSeleccionada = fechaSeleccionada.ToString("yyyy-MM-dd");
             ViewBag.FechaInicio = inicioRango.ToString("yyyy-MM-dd");
             ViewBag.FechaFin = finRango.ToString("yyyy-MM-dd");
+
+            var temaSemanal = await _context.TutorshipSuggestedTopics
+                .Where(t => fechaSeleccionada.Date >= t.StartDate.Date && fechaSeleccionada.Date <= t.EndDate.Date)
+                .FirstOrDefaultAsync();
+
+            ViewBag.TemaSemanal = temaSemanal;
+            
 
             List<grades_group> gruposDisponibles = new List<grades_group>();
 
@@ -156,6 +161,13 @@ namespace SchoolManager.Areas.Tutorship.Controllers
                 return RedirectToAction(nameof(Asistencia), new { fecha = fecha.ToString("yyyy-MM-dd"), groupId, fechaInicio = fechaInicio.ToString("yyyy-MM-dd"), fechaFin = fechaFin.ToString("yyyy-MM-dd") });
             }
 
+            var temaActivo = await _context.TutorshipSuggestedTopics
+                .Where(t => fecha.Date >= t.StartDate.Date && fecha.Date <= t.EndDate.Date)
+                .FirstOrDefaultAsync();
+
+            int? temaId = temaActivo?.Id;
+            
+
             var asistenciasExistentes = await _context.TutorshipAttendances
                 .Where(a => a.GroupId == groupId && a.Date.Date == fecha.Date)
                 .ToListAsync();
@@ -176,7 +188,8 @@ namespace SchoolManager.Areas.Tutorship.Controllers
                     TeacherId = LoggedUserId,
                     Date = fecha,
                     IsPresent = isPresent[i],
-                    GroupId = groupId
+                    GroupId = groupId,
+                    SuggestedTopicId = temaId 
                 });
             }
 
@@ -185,7 +198,6 @@ namespace SchoolManager.Areas.Tutorship.Controllers
 
             if (esActualizacion)
             {
-                // ¡CORREGIDO AQUÍ!
                 TempData["AsistenciaExito"] = "La asistencia fue actualizada correctamente.";
             }
             else

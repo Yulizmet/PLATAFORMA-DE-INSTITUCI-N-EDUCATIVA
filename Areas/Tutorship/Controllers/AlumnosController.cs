@@ -137,7 +137,6 @@ namespace SchoolManager.Areas.Tutorship.Controllers
 
             if (!alumnosGrupo.Any())
             {
-                // CAMBIO AQUÍ: Usamos AsignacionError
                 TempData["AsignacionError"] = "El grupo seleccionado no tiene alumnos inscritos actualmente.";
                 return RedirectToAction(nameof(AsignarTutores));
             }
@@ -174,7 +173,6 @@ namespace SchoolManager.Areas.Tutorship.Controllers
             var grupoDb = await _context.grades_GradeGroups.FindAsync(groupId);
             string nombreGrupo = grupoDb != null ? $"{grupoDb.GradeLevelId}{grupoDb.Name}" : "seleccionado";
 
-            // CAMBIO AQUÍ: Usamos AsignacionExito
             TempData["AsignacionExito"] = $"Tutor asignado correctamente a los {alumnosGrupo.Count} alumnos del grupo {nombreGrupo}.";
 
             return RedirectToAction(nameof(AsignarTutores));
