@@ -1109,4 +1109,36 @@ table.dataTable.table-striped > tbody > tr.odd > * {
     .dropdown-menu {
         border-radius: var(--radius-md);
     }
+
+
+    
+
 }
+
+
+/*SCROLLL*/
+
+.scroll-historial {
+    max-height: 480px; 
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding-right: 8px;
+}
+
+    .scroll-historial::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    .scroll-historial::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 10px;
+    }
+
+    .scroll-historial::-webkit-scrollbar-thumb {
+        background: var(--brand-secondary, #8c1b1b); 
+        border-radius: 10px;
+    }
+
+        .scroll-historial::-webkit-scrollbar-thumb:hover {
+            background: var(--brand-dark, #5a1010);
+        }

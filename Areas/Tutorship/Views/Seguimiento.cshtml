@@ -1,9 +1,11 @@
-﻿@model SchoolManager.Models.users_user
+﻿
+@model SchoolManager.Models.users_user
 
 @{
     ViewData["Title"] = "Seguimiento Académico";
 
     var historial = ViewBag.Historial as List<SchoolManager.Models.tutorship_monitoring> ?? new List<SchoolManager.Models.tutorship_monitoring>();
+    var bitacoras = ViewBag.BitacorasPsicologia as IEnumerable<dynamic>;
 }
 
 <div class="container mt-4 mb-4">
@@ -104,11 +106,13 @@
             </div>
 
             <div class="col-md-8">
-                <h4 class="mb-4 fw-bold" style="color: var(--brand-black);">Historial de Seguimiento</h4>
-
+                
+                <h4 class="mb-4 fw-bold" style="color: var(--brand-black);">
+                    <i class="bi bi-journal-bookmark-fill me-2" style="color: var(--brand-secondary);"></i> Historial de Seguimiento
+                </h4>
                 @if (!historial.Any())
                 {
-                    <div class="text-center p-5 bg-white rounded shadow-sm border mt-3">
+                    <div class="text-center p-5 bg-white rounded shadow-sm border mt-3 mb-5">
                         <i class="bi bi-folder2-open" style="font-size: 3rem; color: var(--brand-secondary);"></i>
                         <h5 class="mt-3 text-dark fw-bold">Sin reportes</h5>
                         <p class="text-muted mb-0">Este alumno no tiene reportes previos en su expediente.</p>
@@ -116,35 +120,137 @@
                 }
                 else
                 {
-                    foreach (var reporte in historial)
-                    {
-                        <div class="card mb-3 dashboard-card-hover border-0 shadow-sm">
-                            <div class="card-body p-4">
-                                <div class="d-flex justify-content-between align-items-center mb-2">
-                                    <div class="d-flex align-items-center gap-2">
-                                        <h6 class="mb-0 fw-bold" style="color: var(--brand-black);">
-                                            Reporte de Tutoría
-                                        </h6>
+                    <div class="mb-5 scroll-historial">
+                        @foreach (var reporte in historial)
+                        {
+                            <div class="card mb-3 dashboard-card-hover border-0 shadow-sm">
+                                <div class="card-body p-4">
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <div class="d-flex align-items-center gap-2">
+                                            <h6 class="mb-0 fw-bold" style="color: var(--brand-black);">
+                                                Reporte de Tutoría
+                                            </h6>
 
-                                        @if (reporte.FilePath != "Sin archivo")
+                                            @if (reporte.FilePath != "Sin archivo")
+                                            {
+                                                <a href="@reporte.FilePath" target="_blank" class="badge text-decoration-none" style="background-color: var(--btn-ver); color: white;">
+                                                    <i class="bi bi-paperclip"></i> Ver Archivo
+                                                </a>
+                                            }
+                                        </div>
+                                        <div class="text-end">
+                                            <small class="text-muted d-block">@reporte.Date.ToString("dd MMM yyyy")</small>
+                                            <small class="badge bg-light text-secondary border">@reporte.PerformanceLevel</small>
+                                        </div>
+                                    </div>
+                                    <p class="card-text mt-3 p-3 bg-light rounded text-dark" style="font-size: 0.95rem; border: 1px solid rgba(0,0,0,0.05);">
+                                        @reporte.DetailedObservations
+                                    </p>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+
+                <hr class="mb-4" style="opacity: 0.1;" />
+                <h4 class="mb-4 fw-bold" style="color: var(--brand-black);">
+                    <i class="bi bi-chat-heart-fill me-2" style="color: #38b6ff;"></i> Intervenciones Psicológicas
+                </h4>
+
+                @if (bitacoras == null || !bitacoras.Any())
+                {
+                    <div class="text-center p-4 bg-light rounded shadow-sm border mt-3 mb-4">
+                        <i class="bi bi-journal-x" style="font-size: 2rem; color: #ccc;"></i>
+                        <p class="text-muted mb-0 mt-2">No hay registros psicológicos para este alumno.</p>
+                    </div>
+                }
+                else
+                {
+                    <div class="scroll-historial mb-4">
+                        @foreach (var psic in bitacoras)
+                        {
+                            <div class="card mb-3 border-0 shadow-sm" @* style="border-left: 5px solid #38b6ff !important;" *@>
+                                <div class="card-body p-4">
+                                    <div class="d-flex align-items-center mb-2 gap-2">
+                                        <span class="badge" style="background-color: #38b6ff; color: white;">Folio: @psic.Fol</span>
+                                        <small class="text-muted fw-bold">@psic.AppointmentDatetime.ToString("dd MMM yyyy - hh:mm tt")</small>
+                                        
+                                        @if (psic.AttendanceStatus == "Asistió")
                                         {
-                                            <a href="@reporte.FilePath" target="_blank" class="badge text-decoration-none" style="background-color: var(--btn-ver); color: white;">
-                                                <i class="bi bi-paperclip"></i> Ver Archivo
-                                            </a>
+                                            <span class="badge bg-success" style="font-size:0.7rem;">Asistió</span>
+                                        }
+                                        else if (psic.AttendanceStatus == "No asistió")
+                                        {
+                                            <span class="badge bg-danger" style="font-size:0.7rem;">Falta</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-warning text-dark" style="font-size:0.7rem;">Justificado</span>
                                         }
                                     </div>
-                                    <div class="text-end">
-                                        <small class="text-muted d-block">@reporte.Date.ToString("dd MMM yyyy")</small>
-                                        <small class="badge bg-light text-secondary border">@reporte.PerformanceLevel</small>
-                                    </div>
+                                    
+                                    <p class="mb-0 text-dark" style="font-size: 0.95rem;">
+                                        @(string.IsNullOrEmpty(psic.PsychologyObservations) ? "Sin observaciones previas." : psic.PsychologyObservations)
+                                    </p>
                                 </div>
-                                <p class="card-text mt-3 p-3 bg-light rounded text-dark" style="font-size: 0.95rem; border: 1px solid rgba(0,0,0,0.05);">
-                                    @reporte.DetailedObservations
-                                </p>
                             </div>
-                        </div>
-                    }
+                        }
+                    </div>
                 }
+
+                <hr class="mb-4" style="opacity: 0.1;" />
+                <h4 class="mb-4 fw-bold" style="color: var(--brand-black);">
+                    <i class="bi bi-heart-pulse-fill me-2" style="color: #e53935;"></i> Atención Clínica
+                </h4>
+
+                @{
+                    var clinicas = ViewBag.BitacorasClinicas as IEnumerable<dynamic>;
+                }
+
+                @if (clinicas == null || !clinicas.Any())
+                {
+                    <div class="text-center p-4 bg-light rounded shadow-sm border mt-3 mb-4">
+                        <i class="bi bi-clipboard2-pulse" style="font-size: 2rem; color: #ccc;"></i>
+                        <p class="text-muted mb-0 mt-2">No hay registros de atención clínica para este alumno.</p>
+                    </div>
+                }
+                else
+                {
+                    <div class="scroll-historial mb-4">
+                        @foreach (var clinica in clinicas)
+                        {
+                            <div class="card mb-3 border-0 shadow-sm" @* style="border-left: 5px solid #e53935 !important; *@">
+                                <div class="card-body p-4">
+                                    <div class="d-flex align-items-center mb-2 gap-2">
+                                        <span class="badge" style="background-color: #e53935; color: white;">Folio: @clinica.Folio</span>
+                                        <small class="text-muted fw-bold">@clinica.FechaHora.ToString("dd MMM yyyy - hh:mm tt")</small>
+                                        
+                                        @if (clinica.Estado == "Estable")
+                                        {
+                                            <span class="badge bg-success" style="font-size:0.7rem;">Estable</span>
+                                        }
+                                        else if (clinica.Estado == "Grave" || clinica.Estado == "Traslado")
+                                        {
+                                            <span class="badge bg-danger" style="font-size:0.7rem;">@clinica.Estado</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-warning text-dark" style="font-size:0.7rem;">@clinica.Estado</span>
+                                        }
+                                    </div>
+                                    
+                                    <p class="mb-2 text-dark" style="font-size: 0.95rem;">
+                                        <strong style="color: #e53935;">Motivo:</strong> @(string.IsNullOrEmpty(clinica.MotivoConsulta) ? "No especificado." : clinica.MotivoConsulta)
+                                    </p>
+                                    <p class="mb-0 text-muted" style="font-size: 0.90rem;">
+                                        <strong>Acción / Tratamiento:</strong> @(string.IsNullOrEmpty(clinica.Tratamiento) ? "Ninguno registrado." : clinica.Tratamiento)
+                                    </p>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+
             </div>
             
         </div>

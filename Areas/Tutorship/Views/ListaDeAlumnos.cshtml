@@ -129,17 +129,15 @@
                 lengthMenu: [[10, 25, 50, 100], [10, 25, 50, 100]],
                 pageLength: 10,
                 processing: true,
-                serverSide: true, // ¡Encendemos el motor backend!
+                serverSide: true, 
                 ajax: {
                     url: "@Url.Action("ObtenerDataAlumnos", "Alumnos", new { area = "Gestion" })",
                     type: "GET",
                     data: function (d) {
-                        // Enviamos los filtros adicionales al controlador
                         d.grado = $('#filtroGrado').val();
                         d.grupo = $('#filtroGrupo').val();
                     }
                 },
-                // DIBUJAMOS LA INTERFAZ HTML EN JAVASCRIPT
                 columns: [
                     { 
                         data: null, 
@@ -178,7 +176,6 @@
                 ]
             });
 
-            // Recargar tabla al usar los filtros de Grado/Grupo
             $('#filtroForm').on('submit', function (e) {
                 e.preventDefault();
                 tabla.ajax.reload();

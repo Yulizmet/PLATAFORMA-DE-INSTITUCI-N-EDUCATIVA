@@ -97,6 +97,39 @@ namespace SchoolManager.Areas.Tutorship.Controllers
             ViewBag.Matricula = preinscripcion.Matricula;
             ViewBag.Historial = historial;
 
+            var bitacorasPsicologo = await (
+                from p in _context.MedicalPsychology
+                join pre in _context.PreenrollmentGenerals on p.PreenrollmentId equals pre.IdData
+                where pre.Matricula == preinscripcion.Matricula
+                select new
+                {
+                    Id = p.Id,
+                    Fol = p.Fol,
+                    AppointmentDatetime = p.AppointmentDatetime,
+                    AttendanceStatus = p.AttendanceStatus,
+                    PsychologyObservations = p.PsychologyObservations
+                }
+            ).OrderByDescending(x => x.AppointmentDatetime).ToListAsync();
+
+            ViewBag.BitacorasPsicologia = bitacorasPsicologo;
+
+            var bitacorasClinicas = await (
+                from b in _context.MedicalLogbooks
+                join a in _context.MedicalStudents on b.IdAlumno equals a.Id
+                join pre in _context.PreenrollmentGenerals on a.PreenrollmentId equals pre.IdData
+                where pre.Matricula == preinscripcion.Matricula
+                select new
+                {
+                    Folio = b.Folio,
+                    FechaHora = b.FechaHora,
+                    Estado = b.Estado,
+                    MotivoConsulta = b.MotivoConsulta,
+                    Tratamiento = b.Tratamiento
+                }
+            ).OrderByDescending(x => x.FechaHora).ToListAsync();
+
+            ViewBag.BitacorasClinicas = bitacorasClinicas;
+
             return View("~/Areas/Tutorship/Views/Seguimiento.cshtml", alumno);
         }
 
