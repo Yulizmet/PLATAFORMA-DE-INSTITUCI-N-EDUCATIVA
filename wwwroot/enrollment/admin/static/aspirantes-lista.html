@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+	<meta name="description" content="Responsive Admin Dashboard Template based on Bootstrap 5">
+	<meta name="author" content="AdminKit">
+
+	<link rel="preconnect" href="https://fonts.gstatic.com">
+	<link rel="shortcut icon" href="img/icons/icon-48x48.png" />
+
+	<title>Aspirantes</title>
+
+	<link href="css/app.css" rel="stylesheet">
+	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+</head>
+
+<body>
+	<div class="wrapper">
+		<nav id="sidebar" class="sidebar js-sidebar">
+			<div class="sidebar-content js-simplebar">
+				<a class="sidebar-brand" href="index.html">
+					<span class="align-middle ms-3">
+						<img src="/src/img/photos/icon-icons.png" alt="Logo" height="60" class="d-inline-block align-text-top">
+					</span>
+				</a>
+
+				<ul class="sidebar-nav">
+					<li class="sidebar-header"></li>
+
+					<li class="sidebar-item active">
+						<a class="sidebar-link" href="index.html">
+							<i class="align-middle" data-feather="users"></i>
+							<span class="align-middle">Aspirantes</span>
+						</a>
+					</li>
+
+					<li class="sidebar-item">
+						<a class="sidebar-link" href="matriculas.html">
+							<i class="align-middle" data-feather="user"></i>
+							<span class="align-middle">Matriculas</span>
+						</a>
+					</li>
+
+					<li class="sidebar-item">
+						<a class="sidebar-link" href="configuracion.html">
+							<i class="align-middle" data-feather="settings"></i>
+							<span class="align-middle">Configuración</span>
+						</a>
+					</li>
+				</ul>
+			</div>
+		</nav>
+
+		<div class="main">
+			<nav class="navbar navbar-expand navbar-light navbar-bg">
+				<a class="sidebar-toggle js-sidebar-toggle">
+					<i class="hamburger align-self-center"></i>
+				</a>
+
+				<div class="navbar-collapse collapse">
+					<ul class="navbar-nav navbar-align">
+						<li class="nav-item dropdown">
+							<a class="nav-icon dropdown-toggle d-inline-block d-sm-none" href="#" data-bs-toggle="dropdown">
+								<i class="align-middle" data-feather="settings"></i>
+							</a>
+
+							<a class="nav-link dropdown-toggle d-none d-sm-inline-block" href="#" data-bs-toggle="dropdown">
+								<img src="img/avatars/avatar.jpg" class="avatar img-fluid rounded me-1" alt="Usuario" />
+								<span class="text-dark">User</span>
+							</a>
+
+							<div class="dropdown-menu dropdown-menu-end">
+								<a class="dropdown-item" href="alumno.html">
+									<i class="align-middle me-1" data-feather="user"></i> Perfil
+								</a>
+								<div class="dropdown-divider"></div>
+								<a class="dropdown-item" href="#">Cerrar sesión</a>
+							</div>
+						</li>
+					</ul>
+				</div>
+			</nav>
+
+			<main class="content">
+				<div class="mb-3 d-flex align-items-center gap-3">
+					<a href="index.html" class="btn btn-outline-secondary btn-sm">
+						<i data-feather="arrow-left" style="width:16px; height:16px;"></i>
+					</a>
+					<h1 class="h3 d-inline align-middle mb-0">
+						Generación <span id="titulo-year">...</span>
+					</h1>
+				</div>
+
+				<div id="loading" class="text-center py-4">
+					<div class="spinner-border text-primary" role="status">
+						<span class="visually-hidden">Cargando...</span>
+					</div>
+					<p class="mt-2 text-muted">Cargando aspirantes...</p>
+				</div>
+
+				<div id="error" class="alert alert-danger d-none" role="alert">
+					No se pudieron cargar los aspirantes. Intenta recargar la página.
+				</div>
+
+				<div id="empty" class="alert alert-info d-none" role="alert">
+					No hay aspirantes registrados para esta generación.
+				</div>
+
+				<div id="tabla-container" class="d-none">
+					<div class="row">
+						<div class="col-12">
+							<div class="card">
+								<div class="card-body">
+									<div class="table-responsive">
+										<table class="table table-striped table-hover align-middle mb-0">
+											<thead>
+												<tr>
+													<th>#</th>
+													<th>Nombre</th>
+													<th class="d-none d-md-table-cell">Folio</th>
+													<th class="d-none d-md-table-cell">Matrícula</th>
+													<th class="d-none d-md-table-cell">Correo</th>
+												</tr>
+											</thead>
+											<tbody id="tabla-body">
+											</tbody>
+										</table>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</main>
+
+			<footer class="footer">
+				<div class="container-fluid">
+					<div class="row text-muted">
+						<div class="col-6 text-start">
+							<p class="mb-0">
+								<a class="text-muted" href="https://uttn.edu.mx/" target="_blank">
+									<strong>Universidad Tecnológica de Tamaulipas Norte</strong>
+								</a> &copy;
+							</p>
+						</div>
+						<div class="col-6 text-end">
+							<ul class="list-inline">
+								<li class="list-inline-item"><a class="text-muted" href="" target="_blank">Soporte</a></li>
+								<li class="list-inline-item"><a class="text-muted" href="" target="_blank">Ayuda</a></li>
+								<li class="list-inline-item"><a class="text-muted" href="" target="_blank">Privacidad</a></li>
+								<li class="list-inline-item"><a class="text-muted" href="" target="_blank">Términos</a></li>
+							</ul>
+						</div>
+					</div>
+				</div>
+			</footer>
+		</div>
+	</div>
+
+	<script src="js/app.js"></script>
+	<script>
+		const BASE_URL = 'https://localhost:7207';
+
+		const params       = new URLSearchParams(window.location.search);
+		const idGeneration = params.get('idGeneration');
+
+		const tituloYear     = document.getElementById('titulo-year');
+		const loading        = document.getElementById('loading');
+		const error          = document.getElementById('error');
+		const empty          = document.getElementById('empty');
+		const tablaContainer = document.getElementById('tabla-container');
+		const tablaBody      = document.getElementById('tabla-body');
+
+		async function cargarAspirantes() {
+			if (!idGeneration) {
+				loading.classList.add('d-none');
+				error.classList.remove('d-none');
+				return;
+			}
+
+			try {
+				const response = await fetch(
+					`${BASE_URL}/Enrollment/PreEnrollment/GetAspirantesPorGeneracion?idGeneration=${idGeneration}`
+				);
+
+				if (!response.ok) throw new Error('Error al obtener aspirantes');
+
+				const aspirantes = await response.json();
+
+				loading.classList.add('d-none');
+
+				if (aspirantes.length === 0) {
+					empty.classList.remove('d-none');
+					return;
+				}
+
+				const year = aspirantes[0].matricula.substring(0, 2);
+				tituloYear.textContent = '20' + year;
+
+				aspirantes.forEach((asp, index) => {
+					const tr = document.createElement('tr');
+					tr.style.cursor = 'pointer';
+					tr.onclick = () => verAspirante(asp.idData);
+
+					tr.innerHTML = `
+						<td>
+							<img src="img/avatars/avatar.jpg" width="32" height="32"
+								class="rounded-circle my-n1" alt="Avatar">
+						</td>
+						<td>${asp.nombreCompleto}</td>
+						<td class="d-none d-md-table-cell">${asp.folio}</td>
+						<td class="d-none d-md-table-cell">${asp.matricula}</td>
+						<td class="d-none d-md-table-cell">${asp.email}</td>
+					`;
+
+					tablaBody.appendChild(tr);
+				});
+
+				tablaContainer.classList.remove('d-none');
+
+			} catch (err) {
+				loading.classList.add('d-none');
+				error.classList.remove('d-none');
+				console.error(err);
+			}
+		}
+
+		function verAspirante(idData) {
+			window.location.href = `aspirante-data.html?id=${idData}`;
+		}
+
+		cargarAspirantes();
+	</script>
+</body>
+</html>

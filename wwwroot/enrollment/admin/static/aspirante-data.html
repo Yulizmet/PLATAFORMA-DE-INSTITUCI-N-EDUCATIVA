@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+	<meta name="description" content="Responsive Admin & Dashboard Template based on Bootstrap 5">
+	<meta name="author" content="AdminKit">
+
+	<link rel="preconnect" href="https://fonts.gstatic.com">
+	<link rel="shortcut icon" href="img/icons/icon-48x48.png" />
+
+	<title>Alumno</title>
+
+	<link href="css/app.css" rel="stylesheet">
+	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+
+	<style>
+		.page-actions .btn { white-space: nowrap; }
+		.table td, .table th { vertical-align: middle; }
+		@media (max-width: 576px){
+			.table-responsive {
+				border: 1px solid rgba(0,0,0,.1);
+				border-radius: .5rem;
+			}
+		}
+	</style>
+</head>
+
+<body>
+	<div class="wrapper">
+
+		<nav id="sidebar" class="sidebar js-sidebar">
+			<div class="sidebar-content js-simplebar">
+				<a class="sidebar-brand" href="index.html">
+					<span class="align-middle ms-3">
+						<img src="/src/img/photos/icon-icons.png" alt="Logo" height="60" class="d-inline-block align-text-top">
+					</span>
+				</a>
+
+				<ul class="sidebar-nav">
+					<li class="sidebar-header"></li>
+
+					<li class="sidebar-item active">
+						<a class="sidebar-link" href="index.html">
+							<i class="align-middle" data-feather="users"></i>
+							<span class="align-middle">Aspirantes</span>
+						</a>
+					</li>
+
+					<li class="sidebar-item">
+						<a class="sidebar-link" href="matriculas.html">
+							<i class="align-middle" data-feather="user"></i>
+							<span class="align-middle">Matriculas</span>
+						</a>
+					</li>
+
+					<li class="sidebar-item">
+						<a class="sidebar-link" href="configuracion.html">
+							<i class="align-middle" data-feather="settings"></i>
+							<span class="align-middle">Configuración</span>
+						</a>
+					</li>
+				</ul>
+			</div>
+		</nav>
+
+		<div class="main">
+			<nav class="navbar navbar-expand navbar-light navbar-bg">
+				<a class="sidebar-toggle js-sidebar-toggle">
+					<i class="hamburger align-self-center"></i>
+				</a>
+
+				<div class="navbar-collapse collapse">
+					<ul class="navbar-nav navbar-align">
+						<li class="nav-item dropdown">
+							<a class="nav-icon dropdown-toggle d-inline-block d-sm-none" href="#" data-bs-toggle="dropdown">
+								<i class="align-middle" data-feather="settings"></i>
+							</a>
+
+							<a class="nav-link dropdown-toggle d-none d-sm-inline-block" href="#" data-bs-toggle="dropdown">
+								<img src="img/avatars/avatar.jpg" class="avatar img-fluid rounded me-1" alt="Usuario" />
+								<span class="text-dark">User</span>
+							</a>
+
+							<div class="dropdown-menu dropdown-menu-end">
+								<a class="dropdown-item" href="alumno.html">
+									<i class="align-middle me-1" data-feather="user"></i> Perfil
+								</a>
+								<div class="dropdown-divider"></div>
+								<a class="dropdown-item" href="#">Cerrar sesión</a>
+							</div>
+						</li>
+					</ul>
+				</div>
+			</nav>
+
+			<main class="content">
+				<div class="container-fluid p-0">
+
+					<div id="loading" class="text-center py-5">
+						<div class="spinner-border text-primary" role="status"></div>
+						<p class="mt-2 text-muted">Cargando datos del aspirante...</p>
+					</div>
+
+					<div id="error" class="alert alert-danger d-none" role="alert">
+						No se pudo cargar la información del aspirante.
+					</div>
+
+					<div id="contenido" class="d-none">
+
+						<div class="mb-3 d-flex align-items-center justify-content-between flex-wrap gap-2">
+							<div class="d-flex align-items-center gap-3">
+								<a id="btn-regresar" href="#" class="btn btn-outline-secondary btn-sm">
+									<i data-feather="arrow-left" style="width:16px;height:16px;"></i>
+								</a>
+								<h1 class="h3 mb-0">Aspirante</h1>
+							</div>
+
+							<div>
+								<button id="btn-editar" class="btn btn-primary btn-sm">
+									<i data-feather="edit" style="width:16px;height:16px;"></i>
+									Editar
+								</button>
+							</div>
+						</div>
+
+						<div class="row">
+							<div class="col-md-4 col-xl-3">
+								<div class="card mb-3">
+									<div class="card-header">
+										<h5 class="card-title mb-0">Detalles del aspirante</h5>
+									</div>
+
+									<div class="card-body text-center">
+										<img src="img/avatars/avatar.jpg" alt="Avatar" class="img-fluid rounded-circle mb-2" width="128" height="128" />
+										<h5 class="card-title mb-0" id="card-nombre"></h5>
+										<div class="text-muted mb-2">Aspirante</div>
+										<div class="text-muted mb-2" id="card-carrera"></div>
+										<div class="text-muted mb-2" id="card-folio"></div>
+									</div>
+
+									<hr class="my-0" />
+
+									<div class="card-body">
+										<h5 class="h6 card-title">Generación</h5>
+										<div class="text-muted mb-2" id="card-generacion"></div>
+									</div>
+
+									<hr class="my-0" />
+
+									<div class="card-body">
+										<h5 class="h6 card-title">Dirección</h5>
+										<ul class="list-unstyled mb-0">
+											<li class="mb-1">
+												<span data-feather="home" class="feather-sm me-1"></span>
+												Vive en <span id="card-ciudad"></span>
+											</li>
+											<li class="mb-1">
+												<span data-feather="map-pin" class="feather-sm me-1"></span>
+												<span id="card-direccion"></span>
+											</li>
+											<li class="mb-1">
+												<span data-feather="map" class="feather-sm me-1"></span>
+												Colonia <span id="card-colonia"></span>
+											</li>
+										</ul>
+									</div>
+
+									<hr class="my-0" />
+
+									<div class="card-body">
+										<h5 class="h6 card-title">Contacto</h5>
+										<ul class="list-unstyled mb-0">
+											<li class="mb-1"><span id="card-email"></span></li>
+											<li class="mb-1"><span id="card-telefono"></span></li>
+										</ul>
+									</div>
+								</div>
+							</div>
+
+							<div class="col-md-8 col-xl-9">
+
+								<div class="card mb-3">
+									<div class="card-header">
+										<h5 class="card-title mb-0">Datos generales</h5>
+									</div>
+
+									<div class="card-body">
+										<div class="row g-3">
+											<div class="col-lg-8">
+												<div class="row g-3">
+
+													<div class="col-md-6">
+														<label class="form-label">Folio</label>
+														<input id="f-folio" type="text" class="form-control" disabled>
+													</div>
+
+													<div class="col-md-6">
+														<label class="form-label">Matrícula</label>
+														<input id="f-matricula" type="text" class="form-control" disabled>
+													</div>
+
+													<div class="col-md-4">
+														<label class="form-label">Ap. Paterno</label>
+														<input id="f-ap-paterno" type="text" class="form-control" disabled>
+													</div>
+													<div class="col-md-4">
+														<label class="form-label">Ap. Materno</label>
+														<input id="f-ap-materno" type="text" class="form-control" disabled>
+													</div>
+													<div class="col-md-4">
+														<label class="form-label">Nombre</label>
+														<input id="f-nombre" type="text" class="form-control" disabled>
+													</div>
+
+													<div class="col-md-4">
+														<label class="form-label">Sexo</label>
+														<input id="f-genero" type="text" class="form-control" disabled>
+													</div>
+
+													<div class="col-md-4">
+														<label class="form-label">Nacionalidad</label>
+														<input id="f-nacionalidad" type="text" class="form-control" disabled>
+													</div>
+
+													<div class="col-md-4">
+														<label class="form-label">Estado Civil</label>
+														<input id="f-estado-civil" type="text" class="form-control" disabled>
+													</div>
+
+													<div class="col-md-6">
+														<label class="form-label">Ciudad</label>
+														<input id="f-ciudad" type="text" class="form-control" disabled>
+													</div>
+
+													<div class="col-md-6">
+														<label class="form-label">Estado</label>
+														<input id="f-estado" type="text" class="form-control" disabled>
+													</div>
+
+													<div class="col-md-8">
+														<label class="form-label">CURP</label>
+														<input id="f-curp" type="text" class="form-control" disabled>
+													</div>
+
+													<div class="col-md-4">
+														<label class="form-label">Tipo de sangre</label>
+														<input id="f-sangre" type="text" class="form-control" disabled>
+													</div>
+
+												</div>
+											</div>
+
+											<div class="col-lg-4">
+												<div class="d-flex flex-column align-items-center gap-3">
+													<div class="ratio ratio-3x4 w-100" style="max-width: 220px;">
+														<img src="" class="rounded border object-fit-cover" alt="Foto">
+													</div>
+													<div class="w-100">
+														<label class="form-label">Fecha de nacimiento</label>
+														<input id="f-fecha-nac" type="text" class="form-control" disabled>
+													</div>
+												</div>
+											</div>
+										</div>
+									</div>
+								</div>
+
+								<div class="card mb-3">
+									<div class="card-header">
+										<h5 class="card-title mb-0">Domicilio</h5>
+									</div>
+									<div class="card-body">
+										<div class="row g-3">
+											<div class="col-md-8">
+												<label class="form-label">Calle</label>
+												<input id="f-calle" type="text" class="form-control" disabled>
+											</div>
+											<div class="col-md-2">
+												<label class="form-label">Núm. Ext.</label>
+												<input id="f-num-ext" type="text" class="form-control" disabled>
+											</div>
+											<div class="col-md-2">
+												<label class="form-label">Núm. Int.</label>
+												<input id="f-num-int" type="text" class="form-control" disabled>
+											</div>
+											<div class="col-md-4">
+												<label class="form-label">Colonia</label>
+												<input id="f-colonia" type="text" class="form-control" disabled>
+											</div>
+											<div class="col-md-4">
+												<label class="form-label">Ciudad</label>
+												<input id="f-ciudad2" type="text" class="form-control" disabled>
+											</div>
+											<div class="col-md-4">
+												<label class="form-label">Código Postal</label>
+												<input id="f-cp" type="text" class="form-control" disabled>
+											</div>
+										</div>
+									</div>
+								</div>
+
+								<div class="card mb-3">
+									<div class="card-header">
+										<h5 class="card-title mb-0">Datos escolares</h5>
+									</div>
+									<div class="card-body">
+										<div class="row g-3">
+											<div class="col-12">
+												<label class="form-label">Escuela de Procedencia</label>
+												<input id="f-escuela" type="text" class="form-control" disabled>
+											</div>
+											<div class="col-md-6">
+												<label class="form-label">Estado</label>
+												<input id="f-esc-estado" type="text" class="form-control" disabled>
+											</div>
+											<div class="col-md-6">
+												<label class="form-label">Ciudad</label>
+												<input id="f-esc-ciudad" type="text" class="form-control" disabled>
+											</div>
+											<div class="col-md-4">
+												<label class="form-label">Promedio</label>
+												<input id="f-promedio" type="text" class="form-control" disabled>
+											</div>
+											<div class="col-md-4">
+												<label class="form-label">Fecha inicio</label>
+												<input id="f-esc-inicio" type="text" class="form-control" disabled>
+											</div>
+											<div class="col-md-4">
+												<label class="form-label">Fecha fin</label>
+												<input id="f-esc-fin" type="text" class="form-control" disabled>
+											</div>
+											<div class="col-md-6">
+												<label class="form-label">Sistema de estudio</label>
+												<input id="f-sistema" type="text" class="form-control" disabled>
+											</div>
+											<div class="col-md-6">
+												<label class="form-label">Tipo de bachillerato</label>
+												<input id="f-tipo-bach" type="text" class="form-control" disabled>
+											</div>
+										</div>
+									</div>
+								</div>
+
+								<div class="card mb-3">
+									<div class="card-header">
+										<h5 class="card-title mb-0">Información adicional</h5>
+									</div>
+									<div class="card-body">
+										<div class="row g-3">
+											<div class="col-md-6">
+												<label class="form-label">Beca</label>
+												<input id="f-beca" type="text" class="form-control" disabled>
+											</div>
+											<div class="col-md-6">
+												<label class="form-label">Comunidad indígena</label>
+												<input id="f-comu-indi" type="text" class="form-control" disabled>
+											</div>
+											<div class="col-md-6">
+												<label class="form-label">Lengua indígena</label>
+												<input id="f-lengua-indi" type="text" class="form-control" disabled>
+											</div>
+											<div class="col-md-6">
+												<label class="form-label">Discapacidad</label>
+												<input id="f-discapacidad" type="text" class="form-control" disabled>
+											</div>
+											<div class="col-md-6">
+												<label class="form-label">Enfermedad</label>
+												<input id="f-enfermedad" type="text" class="form-control" disabled>
+											</div>
+											<div class="col-12">
+												<label class="form-label">Comentarios</label>
+												<textarea id="f-comentario" class="form-control" rows="3" disabled></textarea>
+											</div>
+										</div>
+									</div>
+								</div>
+
+							</div>
+						</div>
+					</div>
+				</div>
+			</main>
+
+			<footer class="footer">
+				<div class="container-fluid">
+					<div class="row text-muted">
+						<div class="col-6 text-start">
+							<p class="mb-0">
+								<a class="text-muted" href="https://uttn.edu.mx/" target="_blank">
+									<strong>Universidad Tecnológica de Tamaulipas Norte</strong>
+								</a> &copy;
+							</p>
+						</div>
+						<div class="col-6 text-end">
+							<ul class="list-inline">
+								<li class="list-inline-item"><a class="text-muted" href="#">Soporte</a></li>
+								<li class="list-inline-item"><a class="text-muted" href="#">Ayuda</a></li>
+								<li class="list-inline-item"><a class="text-muted" href="#">Privacidad</a></li>
+								<li class="list-inline-item"><a class="text-muted" href="#">Términos</a></li>
+							</ul>
+						</div>
+					</div>
+				</div>
+			</footer>
+		</div>
+	</div>
+
+	<script src="js/app.js"></script>
+	<script>
+		const BASE_URL = 'https://localhost:7207';
+
+		const params = new URLSearchParams(window.location.search);
+		const idData = params.get('id');
+		const btnRegresar = document.getElementById('btn-regresar');
+
+		const loading   = document.getElementById('loading');
+		const error     = document.getElementById('error');
+		const contenido = document.getElementById('contenido');
+
+		function formatearFecha(fechaStr) {
+			if (!fechaStr) return '';
+			const fecha = new Date(fechaStr);
+			return fecha.toLocaleDateString('es-MX');
+		}
+
+		function bool(valor) {
+			return valor ? 'Sí' : 'No';
+		}
+
+		function set(id, valor) {
+			const el = document.getElementById(id);
+			if (!el) return;
+			if (el.tagName === 'TEXTAREA') el.value = valor ?? '';
+			else el.value = valor ?? '';
+		}
+
+		async function cargarAspirante() {
+			if (!idData) {
+				loading.classList.add('d-none');
+				error.classList.remove('d-none');
+				return;
+			}
+
+			try {
+				const response = await fetch(
+					`${BASE_URL}/Enrollment/PreEnrollment/GetAspiranteDetalle?idData=${idData}`
+				);
+
+				if (!response.ok) throw new Error('Error al obtener aspirante');
+
+				const d = await response.json();
+
+				loading.classList.add('d-none');
+				btnRegresar.href = 'javascript:history.back()';
+
+				document.getElementById('card-nombre').textContent =
+					`${d.nombre} ${d.apellidoPaterno} ${d.apellidoMaterno}`;
+				document.getElementById('card-carrera').textContent  = d.carrera;
+				document.getElementById('card-folio').textContent    = d.folio;
+				document.getElementById('card-generacion').textContent = `Generación ${d.generacion}`;
+				document.getElementById('card-ciudad').textContent   = `${d.ciudad}, ${d.estado}`;
+				document.getElementById('card-direccion').textContent = `${d.calle} ${d.numExterior}`;
+				document.getElementById('card-colonia').textContent  = d.colonia;
+				document.getElementById('card-email').textContent    = d.email;
+				document.getElementById('card-telefono').textContent = d.telefono;
+
+				set('f-folio',       d.folio);
+				set('f-matricula',   d.matricula);
+				set('f-ap-paterno',  d.apellidoPaterno);
+				set('f-ap-materno',  d.apellidoMaterno);
+				set('f-nombre',      d.nombre);
+				set('f-genero',      d.genero);
+				set('f-nacionalidad',d.nacionalidad);
+				set('f-estado-civil',d.estadoCivil);
+				set('f-ciudad',      d.ciudad);
+				set('f-estado',      d.estado);
+				set('f-curp',        d.curp);
+				set('f-sangre',      d.tipoSangre);
+				set('f-fecha-nac',   formatearFecha(d.fechaNacimiento));
+				set('f-calle',    d.calle);
+				set('f-num-ext',  d.numExterior);
+				set('f-num-int',  d.numInterior);
+				set('f-colonia',  d.colonia);
+				set('f-ciudad2',  d.ciudad);
+				set('f-cp',       d.codigoPostal);
+				set('f-escuela',    d.escuela);
+				set('f-esc-estado', d.escuelaEstado);
+				set('f-esc-ciudad', d.escuelaCiudad);
+				set('f-promedio',   d.promedio);
+				set('f-esc-inicio', formatearFecha(d.fechaInicioEsc));
+				set('f-esc-fin',    formatearFecha(d.fechaFinEsc));
+				set('f-sistema',    d.sistemaEstudio);
+				set('f-tipo-bach',  d.tipoBachillerato);
+				set('f-beca',        d.beca);
+				set('f-comu-indi',   bool(d.comunidadIndi));
+				set('f-lengua-indi', bool(d.lenguaIndi));
+				set('f-discapacidad',bool(d.discapacidad));
+				set('f-enfermedad',  bool(d.enfermedad));
+				set('f-comentario',  d.comentario);
+
+				contenido.classList.remove('d-none');
+				feather.replace();
+
+			} catch (err) {
+				loading.classList.add('d-none');
+				error.classList.remove('d-none');
+				console.error(err);
+			}
+		}
+
+		cargarAspirante();
+
+			let modoEdicion = false;
+
+	const btnEditar = document.getElementById('btn-editar');
+
+	const campos = document.querySelectorAll('input, textarea');
+
+	function activarEdicion() {
+		campos.forEach(c => {
+			c.disabled = false;
+		});
+
+		modoEdicion = true;
+
+		btnEditar.innerHTML = `
+			<i data-feather="save" style="width:16px;height:16px;"></i>
+			Guardar
+		`;
+
+		feather.replace();
+	}
+
+	function desactivarEdicion() {
+		campos.forEach(c => {
+			c.disabled = true;
+		});
+
+		modoEdicion = false;
+
+		btnEditar.innerHTML = `
+			<i data-feather="edit" style="width:16px;height:16px;"></i>
+			Editar
+		`;
+
+		feather.replace();
+	}
+
+	btnEditar.addEventListener('click', async () => {
+		if (!modoEdicion) {
+			activarEdicion();
+		} else {
+			await guardarCambios();
+		}
+	});
+
+	async function guardarCambios() {
+		try {
+			const data = {
+				idData: idData,
+
+				// PERSON
+				nombre: document.getElementById('f-nombre').value,
+				apellidoPaterno: document.getElementById('f-ap-paterno').value,
+				apellidoMaterno: document.getElementById('f-ap-materno').value,
+				email: document.getElementById('card-email').textContent,
+				telefono: document.getElementById('card-telefono').textContent,
+				genero: document.getElementById('f-genero').value,
+				curp: document.getElementById('f-curp').value,
+
+				// GENERAL
+				nacionalidad: document.getElementById('f-nacionalidad').value,
+				estadoCivil: document.getElementById('f-estado-civil').value,
+				tipoSangre: document.getElementById('f-sangre').value,
+
+				// ADDRESS
+				calle: document.getElementById('f-calle').value,
+				numExt: document.getElementById('f-num-ext').value,
+				numInt: document.getElementById('f-num-int').value,
+				colonia: document.getElementById('f-colonia').value,
+				ciudad: document.getElementById('f-ciudad2').value,
+				estado: document.getElementById('f-estado').value,
+				cp: document.getElementById('f-cp').value,
+
+				// SCHOOL
+				escuela: document.getElementById('f-escuela').value,
+				promedio: parseFloat(document.getElementById('f-promedio').value) || null,
+				escuelaCiudad: document.getElementById('f-esc-ciudad').value,
+				escuelaEstado: document.getElementById('f-esc-estado').value,
+
+				// INFO
+				beca: document.getElementById('f-beca').value,
+				comunidadIndi: document.getElementById('f-comu-indi').value === "Sí",
+				lenguaIndi: document.getElementById('f-lengua-indi').value === "Sí",
+				discapacidad: document.getElementById('f-discapacidad').value === "Sí",
+				enfermedad: document.getElementById('f-enfermedad').value === "Sí",
+				comentario: document.getElementById('f-comentario').value
+			};
+
+			const response = await fetch(`${BASE_URL}/Enrollment/PreEnrollment/UpdateAspirante`, {
+				method: 'PUT',
+				headers: {
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify(data)
+			});
+
+			if (!response.ok) throw new Error("Error al guardar");
+
+			desactivarEdicion();
+
+		} catch (error) {
+			console.error(error);
+			alert("Error al guardar los cambios ❌");
+		}
+	}
+	</script>
+</body>
+</html>

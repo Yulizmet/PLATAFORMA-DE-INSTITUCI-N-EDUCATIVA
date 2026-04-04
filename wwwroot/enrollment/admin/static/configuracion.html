@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+	<meta name="description" content="Responsive Admin &amp; Dashboard Template based on Bootstrap 5">
+	<meta name="author" content="AdminKit">
+	<meta name="keywords" content="adminkit, bootstrap, bootstrap 5, admin, dashboard, template, responsive, css, sass, html, theme, front-end, ui kit, web">
+
+	<link rel="preconnect" href="https://fonts.gstatic.com">
+	<link rel="shortcut icon" href="img/icons/icon-48x48.png" />
+
+	<title>Calificaciones</title>
+
+	<link href="css/app.css" rel="stylesheet">
+	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+</head>
+
+<body>
+	<div class="wrapper">
+		<nav id="sidebar" class="sidebar js-sidebar">
+			<div class="sidebar-content js-simplebar">
+				<a class="sidebar-brand" href="index.html">
+          <span class="align-middle ms-3">
+			<img src="/src/img/photos/icon-icons.png" alt="Logo" height="60" class="d-inline-block align-text-top">
+			</span>
+        </a>
+			<ul class="sidebar-nav">
+			<li class="sidebar-header"></li>
+
+			<li class="sidebar-item active">
+				<a class="sidebar-link" href="index.html">
+				<i class="align-middle" data-feather="users"></i>
+				<span class="align-middle">Aspirantes</span>
+				</a>
+			</li>
+
+			<li class="sidebar-item">
+				<a class="sidebar-link" href="matriculas.html">
+				<i class="align-middle" data-feather="user"></i>
+				<span class="align-middle">Matriculas</span>
+				</a>
+			</li>
+
+			<li class="sidebar-item">
+				<a class="sidebar-link" href="configuracion.html">
+				<i class="align-middle" data-feather="settings"></i>
+				<span class="align-middle">Configuración</span>
+				</a>
+			</li>
+			</ul>
+			</div>
+		</nav>
+
+		<div class="main">
+			<nav class="navbar navbar-expand navbar-light navbar-bg">
+				<a class="sidebar-toggle js-sidebar-toggle">
+          <i class="hamburger align-self-center"></i>
+        </a>
+
+				<div class="navbar-collapse collapse">
+					<ul class="navbar-nav navbar-align">
+						
+						<li class="nav-item dropdown">
+							<a class="nav-icon dropdown-toggle d-inline-block d-sm-none" href="#" data-bs-toggle="dropdown">
+                <i class="align-middle" data-feather="settings"></i>
+              </a>
+
+							<a class="nav-link dropdown-toggle d-none d-sm-inline-block" href="#" data-bs-toggle="dropdown">
+                <img src="img/avatars/avatar.jpg" class="avatar img-fluid rounded me-1" alt="Charles Hall" /> <span class="text-dark">User</span>
+              </a>
+							<div class="dropdown-menu dropdown-menu-end">
+								<a class="dropdown-item" href="alumno.html"><i class="align-middle me-1" data-feather="user"></i> Perfil</a>
+								<div class="dropdown-divider"></div>
+								<a class="dropdown-item" href="#">Cerrar sesión</a>
+							</div>
+						</li>
+					</ul>
+				</div>
+			</nav>
+
+			<main class="content">
+			<div class="container-fluid p-0">
+				<h1 class="h3 mb-3">Configuración</h1>
+
+				<div class="row">
+				<!-- MENU IZQUIERDO -->
+				<div class="col-md-3 col-xl-2">
+					<div class="card">
+					<div class="card-header">
+						<h5 class="card-title mb-0">Configuración del Perfil</h5>
+					</div>
+
+					<div class="list-group list-group-flush" role="tablist">
+						<a class="list-group-item list-group-item-action active" data-bs-toggle="list" href="#account" role="tab">
+						<i class="align-middle me-2" data-feather="user"></i>
+						Cuenta
+						</a>
+
+						<a class="list-group-item list-group-item-action" data-bs-toggle="list" href="#password" role="tab">
+						<i class="align-middle me-2" data-feather="lock"></i>
+						Contraseña
+						</a>
+
+						<a class="list-group-item list-group-item-action" data-bs-toggle="list" href="#careers" role="tab">
+						<i class="align-middle me-2" data-feather="book-open"></i>
+						Configurar carreras
+						</a>
+
+						<a class="list-group-item list-group-item-action text-danger" data-bs-toggle="list" href="#delete" role="tab">
+						<i class="align-middle me-2" data-feather="trash-2"></i>
+						Eliminar cuenta
+						</a>
+					</div>
+					</div>
+				</div>
+
+				<!-- CONTENIDO DERECHA -->
+				<div class="col-md-9 col-xl-10">
+					<div class="tab-content">
+
+					<!-- CUENTA (ACTIVO AL ABRIR) -->
+					<div class="tab-pane fade show active" id="account" role="tabpanel">
+						<div class="card">
+						<div class="card-header">
+							<h5 class="card-title mb-0">Información personal</h5>
+						</div>
+
+						<div class="card-body">
+							<form>
+							<div class="row">
+								<div class="col-md-8">
+								<div class="mb-3">
+									<label class="form-label" for="inputUsername">Nombre de usuario</label>
+									<input type="text" class="form-control" id="inputUsername" placeholder="Nombre de usuario" />
+								</div>
+								</div>
+
+								<div class="col-md-4">
+								<div class="text-center">
+									<img
+									alt="Avatar"
+									src="img/avatars/avatar.jpg"
+									class="rounded-circle img-fluid mt-2"
+									width="128"
+									height="128"
+									/>
+
+									<div class="mt-2">
+									<label for="avatarUpload" class="btn btn-primary">
+										<i class="align-middle me-1" data-feather="upload"></i>
+										Cargar
+									</label>
+									<input id="avatarUpload" type="file" class="d-none" accept="image/jpeg,image/jpg,image/png" />
+									</div>
+
+									<small class="d-block mt-2">
+									Para mejores resultados, utiliza una imagen de al menos 128x128 en formato .jpg o .png.
+									</small>
+								</div>
+								</div>
+							</div>
+
+							<button type="submit" class="btn btn-primary">Guardar cambios</button>
+							</form>
+						</div>
+						</div>
+
+						<div class="card">
+						<div class="card-header">
+							<h5 class="card-title mb-0">Información de contacto</h5>
+						</div>
+
+						<div class="card-body">
+							<form>
+							<div class="row">
+								<div class="mb-3 col-md-6">
+								<label class="form-label" for="inputFirstName">Nombre</label>
+								<input type="text" class="form-control" id="inputFirstName" />
+								</div>
+
+								<div class="mb-3 col-md-6">
+								<label class="form-label" for="inputLastName">Apellido</label>
+								<input type="text" class="form-control" id="inputLastName" />
+								</div>
+							</div>
+
+							<div class="mb-3">
+								<label class="form-label" for="inputEmail4">Correo</label>
+								<input type="email" class="form-control" id="inputEmail4" placeholder="correo@ejemplo.com" />
+							</div>
+
+							<div class="mb-3">
+								<label class="form-label" for="inputAddress">Dirección</label>
+								<input type="text" class="form-control" id="inputAddress" />
+							</div>
+
+							<div class="row">
+								<div class="mb-3 col-md-6">
+								<label class="form-label" for="inputCity">Ciudad</label>
+								<input type="text" class="form-control" id="inputCity" />
+								</div>
+
+								<div class="mb-3 col-md-4">
+								<label class="form-label" for="inputState">Estado</label>
+								<select id="inputState" class="form-select">
+									<option selected>Selecciona…</option>
+									<option>Tamaulipas</option>
+									<option>Nuevo León</option>
+									<option>Coahuila</option>
+									<option>Veracruz</option>
+								</select>
+								</div>
+
+								<div class="mb-3 col-md-2">
+								<label class="form-label" for="inputZip">C.P.</label>
+								<input type="text" class="form-control" id="inputZip" />
+								</div>
+							</div>
+
+							<button type="submit" class="btn btn-primary">Guardar cambios</button>
+							</form>
+						</div>
+						</div>
+					</div>
+
+					<!-- CONTRASEÑA -->
+					<div class="tab-pane fade" id="password" role="tabpanel">
+						<div class="card">
+						<div class="card-body">
+							<h5 class="card-title">Contraseña</h5>
+
+							<form>
+							<div class="mb-3">
+								<label class="form-label" for="inputPasswordCurrent">Contraseña actual</label>
+								<input type="password" class="form-control" id="inputPasswordCurrent" />
+							</div>
+
+							<div class="mb-3">
+								<label class="form-label" for="inputPasswordNew">Nueva contraseña</label>
+								<input type="password" class="form-control" id="inputPasswordNew" />
+							</div>
+
+							<div class="mb-3">
+								<label class="form-label" for="inputPasswordNew2">Confirmar contraseña</label>
+								<input type="password" class="form-control" id="inputPasswordNew2" />
+							</div>
+
+							<button type="submit" class="btn btn-primary">Guardar cambios</button>
+							</form>
+						</div>
+						</div>
+					</div>
+
+					<!-- CONFIGURAR CARRERAS (YA NO SE VE SI NO ABRES LA PESTAÑA) -->
+					<div class="tab-pane fade" id="careers" role="tabpanel">
+						<div class="card mb-3">
+						<div class="card-header">
+							<h5 class="card-title mb-0">Configurar carreras</h5>
+						</div>
+
+						<div class="card-body">
+							<div class="table-responsive">
+							<table class="table table-hover my-0" id="careersTable">
+								<thead>
+								<tr>
+									<th>Carrera / Materia</th>
+									<th>ID</th>
+									<th class="d-none d-md-table-cell">Fecha de creación</th>
+									<th class="text-end">Acciones</th>
+								</tr>
+								</thead>
+
+								<tbody id="careersTbody">
+								<tr>
+									<td data-field="name">Mecatrónica</td>
+									<td data-field="code">IDGS345136</td>
+									<td data-field="date" class="d-none d-md-table-cell">25 feb 2026</td>
+									<td class="text-end">
+									<div class="table-actions">
+										<button type="button" class="btn btn-link p-0 action-edit" title="Editar">
+										<i class="align-middle" data-feather="edit-2"></i>
+										</button>
+										<button type="button" class="btn btn-link p-0 action-delete" title="Eliminar">
+										<i class="align-middle" data-feather="trash-2"></i>
+										</button>
+									</div>
+									</td>
+								</tr>
+								</tbody>
+							</table>
+							</div>
+
+							<hr class="my-4" />
+
+							<form id="addCareerForm">
+							<h6 class="mb-3">Agregar nueva carrera</h6>
+
+							<div class="row g-2">
+								<div class="col-12 col-md-6">
+								<label class="form-label" for="careerName">Nombre</label>
+								<input
+									type="text"
+									class="form-control"
+									id="careerName"
+									placeholder="Ej: Mecatrónica"
+									required
+								/>
+								</div>
+
+								<div class="col-12 d-flex gap-2 mt-2">
+								<button type="submit" class="btn btn-primary">
+									<i class="align-middle me-1" data-feather="plus"></i>
+									Añadir a la tabla
+								</button>
+
+								<button type="button" class="btn btn-outline-secondary" id="clearCareerForm">
+									Limpiar
+								</button>
+								</div>
+
+								<small class="text-muted mt-2">
+								El ID se genera automáticamente. Después puedes editar o eliminar desde “Acciones”.
+								</small>
+							</div>
+							</form>
+
+							<div class="mt-4">
+							<button type="button" class="btn btn-primary" id="saveConfigBtn">
+								<i class="align-middle me-1" data-feather="save"></i>
+								Guardar configuración
+							</button>
+							</div>
+						</div>
+						</div>
+					</div>
+
+					<!-- ELIMINAR CUENTA -->
+					<div class="tab-pane fade" id="delete" role="tabpanel">
+						<div class="card border border-danger">
+						<div class="card-header">
+							<h5 class="card-title mb-0 text-danger">
+							<i class="align-middle me-1" data-feather="alert-triangle"></i>
+							Eliminar cuenta
+							</h5>
+						</div>
+
+						<div class="card-body">
+							<p class="mb-3">
+							Esta acción es <strong>permanente</strong>. Se eliminarán tus datos y no podrás recuperar la cuenta.
+							</p>
+
+							<form>
+							<div class="mb-3">
+								<label class="form-label" for="deleteConfirm">
+								Escribe <strong>ELIMINAR</strong> para confirmar
+								</label>
+								<input type="text" class="form-control" id="deleteConfirm" placeholder="ELIMINAR" />
+							</div>
+
+							<button type="submit" class="btn btn-danger">
+								<i class="align-middle me-1" data-feather="trash-2"></i>
+								Eliminar cuenta
+							</button>
+							</form>
+						</div>
+						</div>
+					</div>
+
+					</div><!-- /tab-content -->
+				</div>
+				</div>
+			</div>
+			</main>
+
+
+			<footer class="footer">
+				<div class="container-fluid">
+					<div class="row text-muted">
+						<div class="col-6 text-start">
+							<p class="mb-0">
+								<a class="text-muted" href="https://uttn.edu.mx/" target="_blank"><strong>Universidad Tecnólogica de Tamaulipas Norte</strong></a> &copy;
+							</p>
+						</div>
+						<div class="col-6 text-end">
+							<ul class="list-inline">
+								<li class="list-inline-item">
+									<a class="text-muted" href="https://adminkit.io/" target="_blank">Soporte</a>
+								</li>
+								<li class="list-inline-item">
+									<a class="text-muted" href="https://adminkit.io/" target="_blank">Ayuda</a>
+								</li>
+								<li class="list-inline-item">
+									<a class="text-muted" href="https://adminkit.io/" target="_blank">Privacidad</a>
+								</li>
+								<li class="list-inline-item">
+									<a class="text-muted" href="https://adminkit.io/" target="_blank">Terminos</a>
+								</li>
+							</ul>
+						</div>
+					</div>
+				</div>
+			</footer>
+		</div>
+	</div>
+
+		<script>
+  const currentPage = location.pathname.split('/').pop();
+
+  document.querySelectorAll('.sidebar-item').forEach(item => {
+    const link = item.querySelector('a').getAttribute('href');
+
+    if (link === currentPage) {
+      item.classList.add('active');
+    } else {
+      item.classList.remove('active');
+    }
+  });
+</script>
+
+<script>
+  (function () {
+    const tbody = document.getElementById("careersTbody");
+    const form = document.getElementById("addCareerForm");
+    const clearBtn = document.getElementById("clearCareerForm");
+    const nameInput = document.getElementById("careerName");
+
+    function rerenderIcons() {
+      if (window.feather) feather.replace();
+    }
+
+    function formatTodayEs() {
+      return new Date().toLocaleDateString("es-MX", {
+        year: "numeric",
+        month: "short",
+        day: "2-digit",
+      });
+    }
+
+    function getExistingIds() {
+      return new Set(
+        Array.from(tbody.querySelectorAll('[data-field="code"]')).map((td) =>
+          td.textContent.trim()
+        )
+      );
+    }
+
+    // ID automático tipo: IDGS + 6 dígitos (único revisando la tabla)
+    function generateId(prefix = "IDGS") {
+      const existing = getExistingIds();
+      let id = "";
+      do {
+        const num = Math.floor(Math.random() * 900000) + 100000; // 100000-999999
+        id = `${prefix}${num}`;
+      } while (existing.has(id));
+      return id;
+    }
+
+    function escapeHtml(str) {
+      return (str || "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function createRow({ name, code, date }) {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td data-field="name"></td>
+        <td data-field="code"></td>
+        <td data-field="date" class="d-none d-md-table-cell"></td>
+        <td class="text-end">
+          <div class="table-actions">
+            <button type="button" class="btn btn-link p-0 action-edit" title="Editar">
+              <i class="align-middle" data-feather="edit-2"></i>
+            </button>
+            <button type="button" class="btn btn-link p-0 action-delete" title="Eliminar">
+              <i class="align-middle" data-feather="trash-2"></i>
+            </button>
+          </div>
+        </td>
+      `;
+      tr.querySelector('[data-field="name"]').textContent = name;
+      tr.querySelector('[data-field="code"]').textContent = code;
+      tr.querySelector('[data-field="date"]').textContent = date;
+      return tr;
+    }
+
+    // AGREGAR (ID automático)
+    form.addEventListener("submit", (e) => {
+      e.preventDefault();
+
+      const name = nameInput.value.trim();
+      if (!name) return;
+
+      const tr = createRow({
+        name,
+        code: generateId("IDGS"),
+        date: formatTodayEs(),
+      });
+
+      tbody.appendChild(tr);
+      nameInput.value = "";
+      nameInput.focus();
+      rerenderIcons();
+    });
+
+    clearBtn.addEventListener("click", () => {
+      nameInput.value = "";
+      nameInput.focus();
+    });
+
+    // ACCIONES: editar / eliminar / guardar / cancelar
+    tbody.addEventListener("click", (e) => {
+      const tr = e.target.closest("tr");
+      if (!tr) return;
+
+      const editBtn = e.target.closest(".action-edit");
+      const delBtn = e.target.closest(".action-delete");
+      const saveBtn = e.target.closest(".action-save");
+      const cancelBtn = e.target.closest(".action-cancel");
+
+      if (delBtn) {
+        tr.remove();
+        return;
+      }
+
+      if (editBtn) {
+        if (tr.dataset.editing === "1") return;
+        tr.dataset.editing = "1";
+
+        const nameTd = tr.querySelector('[data-field="name"]');
+        const codeTd = tr.querySelector('[data-field="code"]');
+        const dateTd = tr.querySelector('[data-field="date"]');
+
+        tr.dataset.origName = nameTd.textContent.trim();
+        tr.dataset.origCode = codeTd.textContent.trim();
+        tr.dataset.origDate = dateTd ? dateTd.textContent.trim() : "";
+
+        nameTd.innerHTML = `<input class="form-control form-control-sm" value="${escapeHtml(tr.dataset.origName)}">`;
+        // Si NO quieres editar el ID, cambia esto a: codeTd.textContent = tr.dataset.origCode;
+        codeTd.innerHTML = `<input class="form-control form-control-sm" value="${escapeHtml(tr.dataset.origCode)}">`;
+        if (dateTd) dateTd.innerHTML = `<input class="form-control form-control-sm" value="${escapeHtml(tr.dataset.origDate)}">`;
+
+        const actionCell = tr.querySelector("td.text-end");
+        actionCell.innerHTML = `
+          <div class="table-actions">
+            <button type="button" class="btn btn-success btn-sm action-save" title="Guardar">
+              <i class="align-middle" data-feather="check"></i>
+            </button>
+            <button type="button" class="btn btn-outline-secondary btn-sm action-cancel" title="Cancelar">
+              <i class="align-middle" data-feather="x"></i>
+            </button>
+          </div>
+        `;
+        rerenderIcons();
+        return;
+      }
+
+      if (saveBtn) {
+        const nameTd = tr.querySelector('[data-field="name"]');
+        const codeTd = tr.querySelector('[data-field="code"]');
+        const dateTd = tr.querySelector('[data-field="date"]');
+
+        const newName = nameTd.querySelector("input")?.value.trim();
+        const newCode = codeTd.querySelector("input")?.value.trim();
+        const newDate = dateTd ? dateTd.querySelector("input")?.value.trim() : "";
+
+        if (!newName || !newCode) return;
+
+        nameTd.textContent = newName;
+        codeTd.textContent = newCode;
+        if (dateTd) dateTd.textContent = newDate;
+
+        restoreActions(tr);
+        return;
+      }
+
+      if (cancelBtn) {
+        tr.querySelector('[data-field="name"]').textContent = tr.dataset.origName || "";
+        tr.querySelector('[data-field="code"]').textContent = tr.dataset.origCode || "";
+        const dateTd = tr.querySelector('[data-field="date"]');
+        if (dateTd) dateTd.textContent = tr.dataset.origDate || "";
+
+        restoreActions(tr);
+        return;
+      }
+    });
+
+    function restoreActions(tr) {
+      tr.dataset.editing = "0";
+      const actionCell = tr.querySelector("td.text-end");
+      actionCell.innerHTML = `
+        <div class="table-actions">
+          <button type="button" class="btn btn-link p-0 action-edit" title="Editar">
+            <i class="align-middle" data-feather="edit-2"></i>
+          </button>
+          <button type="button" class="btn btn-link p-0 action-delete" title="Eliminar">
+            <i class="align-middle" data-feather="trash-2"></i>
+          </button>
+        </div>
+      `;
+      rerenderIcons();
+    }
+
+    rerenderIcons();
+  })();
+</script>
+
+	<script src="js/app.js"></script>
+	<script src="/admin/src/js/modules/layout.js"></script>
+
+</body>
+
+</html>

@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+	<meta name="description" content="Responsive Admin & Dashboard Template based on Bootstrap 5">
+	<meta name="author" content="AdminKit">
+	<meta name="keywords" content="adminkit, bootstrap, bootstrap 5, admin, dashboard, template, responsive, css, sass, html, theme, front-end, ui kit, web">
+
+	<link rel="preconnect" href="https://fonts.gstatic.com">
+	<link rel="shortcut icon" href="img/icons/icon-48x48.png" />
+	<link rel="canonical" href="https://demo-basic.adminkit.io/" />
+
+	<title>Inicio</title>
+
+	<link href="css/app.css" rel="stylesheet">
+	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+</head>
+
+<body>
+	<div class="wrapper">
+		<nav id="sidebar" class="sidebar js-sidebar">
+			<div class="sidebar-content js-simplebar">
+				<a class="sidebar-brand" href="index.html">
+					<span class="align-middle ms-3">
+					<img src="/src/img/photos/icon-icons.png" alt="Logo" height="60" class="d-inline-block align-text-top">
+					</span>
+				</a>
+
+				<ul class="sidebar-nav">
+					<li class="sidebar-header"></li>
+
+					<li class="sidebar-item active">
+						<a class="sidebar-link" href="index.html">
+							<i class="align-middle" data-feather="users"></i>
+							<span class="align-middle">Aspirantes</span>
+						</a>
+					</li>
+
+					<li class="sidebar-item">
+						<a class="sidebar-link" href="matriculas.html">
+							<i class="align-middle" data-feather="user"></i>
+							<span class="align-middle">Matriculas</span>
+						</a>
+					</li>
+
+					<li class="sidebar-item">
+						<a class="sidebar-link" href="configuracion.html">
+							<i class="align-middle" data-feather="settings"></i>
+							<span class="align-middle">Configuración</span>
+						</a>
+					</li>
+				</ul>
+			</div>
+		</nav>
+
+		<div class="main">
+			<nav class="navbar navbar-expand navbar-light navbar-bg">
+				<a class="sidebar-toggle js-sidebar-toggle">
+					<i class="hamburger align-self-center"></i>
+				</a>
+
+				<form class="d-none d-sm-inline-block">
+					<div class="input-group input-group-navbar">
+						<input type="text" class="form-control" placeholder="Buscar…" aria-label="Search">
+						<button class="btn" type="button">
+							<i class="align-middle" data-feather="search"></i>
+						</button>
+					</div>
+				</form>
+
+				<div class="navbar-collapse collapse">
+					<ul class="navbar-nav navbar-align">
+						<li class="nav-item dropdown">
+							<a class="nav-icon dropdown-toggle d-inline-block d-sm-none" href="#" data-bs-toggle="dropdown">
+								<i class="align-middle" data-feather="settings"></i>
+							</a>
+
+							<a class="nav-link dropdown-toggle d-none d-sm-inline-block" href="#" data-bs-toggle="dropdown">
+								<img src="img/avatars/avatar.jpg" class="avatar img-fluid rounded me-1" alt="user-name" />
+								<span class="text-dark">User</span>
+							</a>
+
+							<div class="dropdown-menu dropdown-menu-end">
+								<a class="dropdown-item" href="alumno.html">
+									<i class="align-middle me-1" data-feather="user"></i> Perfil
+								</a>
+								<div class="dropdown-divider"></div>
+								<a class="dropdown-item" href="#">Cerrar sesión</a>
+							</div>
+						</li>
+					</ul>
+				</div>
+			</nav>
+
+			<main class="content">
+				<div class="container-fluid p-0">
+
+					<div class="row mb-3">
+						<div class="col-auto d-none d-sm-block">
+							<h3><strong>Aspirantes</strong></h3>
+						</div>
+					</div>
+
+			<main class="content">
+
+				<div class="row" id="generaciones-container">
+				</div>
+
+				<div id="loading" class="text-center py-4">
+					<div class="spinner-border text-primary" role="status">
+						<span class="visually-hidden">Cargando...</span>
+					</div>
+					<p class="mt-2 text-muted">Cargando generaciones...</p>
+				</div>
+
+				<div id="error" class="alert alert-danger d-none" role="alert">
+					No se pudieron cargar las generaciones. Intenta recargar la página.
+				</div>
+
+				<div id="empty" class="alert alert-info d-none" role="alert">
+					No hay generaciones registradas aún.
+				</div>
+			</main>
+
+				</div>
+			</main>
+
+			<footer class="footer">
+				<div class="container-fluid">
+					<div class="row text-muted">
+						<div class="col-6 text-start">
+							<p class="mb-0">
+								<a class="text-muted" href="https://itace.edu.mx/" target="_blank">
+									<strong>Instituto Tamaulipeco de Capacitación para el Empleo</strong>
+								</a> &copy;
+							</p>
+						</div>
+						<div class="col-6 text-end">
+							<ul class="list-inline">
+								<li class="list-inline-item">
+									<a class="text-muted" href="https://adminkit.io/" target="_blank">Soporte</a>
+								</li>
+								<li class="list-inline-item">
+									<a class="text-muted" href="/static/docs/AVISO-DE-PRIVACIDAD-ITACE.pdf" target="_blank">
+										Aviso de Privacidad
+									</a>
+								</li>
+							</ul>
+						</div>
+					</div>
+				</div>
+			</footer>
+		</div>
+	</div>
+	<script src="/src/js/modules/layout.js"></script>
+
+		<script src="js/app.js"></script>
+	<script>
+		const API_URL = 'https://localhost:7207/Enrollment/PreEnrollment/GetGeneraciones';
+
+		const container = document.getElementById('generaciones-container');
+		const loading   = document.getElementById('loading');
+		const error     = document.getElementById('error');
+		const empty     = document.getElementById('empty');
+
+		async function cargarGeneraciones() {
+			try {
+				const response = await fetch(API_URL);
+
+				if (!response.ok) throw new Error('Error al obtener generaciones');
+
+				const generaciones = await response.json();
+
+				loading.classList.add('d-none');
+
+				if (generaciones.length === 0) {
+					empty.classList.remove('d-none');
+					return;
+				}
+
+				generaciones.forEach(gen => {
+					const col = document.createElement('div');
+					col.className = 'col-12 col-sm-6 col-md-4 col-lg-3 mb-4';
+
+					col.innerHTML = `
+						<div class="card h-100 shadow-sm"
+							 style="cursor: pointer;"
+							 onclick="verAspirantes(${gen.idGeneration})">
+							<div class="card-body d-flex flex-column align-items-center justify-content-center py-4">
+								<i data-feather="users" class="mb-3 text-primary" style="width:40px; height:40px;"></i>
+								<h5 class="card-title mb-0">Generación ${gen.year}</h5>
+							</div>
+						</div>
+					`;
+
+					container.appendChild(col);
+				});
+
+				feather.replace();
+
+			} catch (err) {
+				loading.classList.add('d-none');
+				error.classList.remove('d-none');
+				console.error(err);
+			}
+		}
+
+		function verAspirantes(idGeneration) {
+			window.location.href = `aspirantes-lista.html?idGeneration=${idGeneration}`;
+		}
+
+		cargarGeneraciones();
+	</script>
+</body>
+
+</html>

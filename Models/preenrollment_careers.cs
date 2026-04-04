@@ -10,7 +10,8 @@ namespace SchoolManager.Models
 
         public string name_career { get; set; }
 
+        public bool IsActive { get; set; } = true; // 👈 nuevo campo
+
         public ICollection<preenrollment_general> preenrollment_general { get; set; }
     }
-
 }
