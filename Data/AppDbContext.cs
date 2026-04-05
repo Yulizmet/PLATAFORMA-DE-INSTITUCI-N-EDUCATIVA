@@ -70,6 +70,7 @@ namespace SchoolManager.Data
         public DbSet<tutorship_monitoring> TutorshipMonitorings { get; set; }
         public DbSet<tutorship_interview> TutorshipInterviews { get; set; }
         public DbSet<tutorship_interview_answer> TutorshipInterviewAnswers { get; set; }
+        public DbSet<tutorship_suggested_topic> TutorshipSuggestedTopics { get; set; }
 
         // Social Service (Servicio Social)
         public DbSet<social_service_assignment> SocialServiceAssignments { get; set; } = default!;
@@ -538,6 +539,7 @@ namespace SchoolManager.Data
             modelBuilder.Entity<tutorship_monitoring>().ToTable("tutorship_monitorings");
             modelBuilder.Entity<tutorship_interview>().ToTable("tutorship_interviews");
             modelBuilder.Entity<tutorship_interview_answer>().ToTable("tutorship_interview_answers");
+            modelBuilder.Entity<tutorship_suggested_topic>().ToTable("tutorship_suggested_topic");
 
             modelBuilder.Entity<tutorship_interview_answer>().HasOne(a => a.Interview).WithMany(i => i.Answers).HasForeignKey(a => a.InterviewId).OnDelete(DeleteBehavior.Cascade);
             modelBuilder.Entity<tutorship_monitoring>().HasOne(m => m.Student).WithMany().HasForeignKey(m => m.StudentId).OnDelete(DeleteBehavior.Restrict);

@@ -1,4 +1,4 @@
-﻿@{
+@{
     int roleId = ViewBag.RoleId ?? 0;
 }
 <!DOCTYPE html>
@@ -19,62 +19,102 @@
 </head>
 <body>
     <header>
-        <nav class="navbar navbar-light border-bottom shadow-sm mb-4"
-             style="background-color: var(--brand-primary); padding-top: 15px; padding-bottom: 15px; position: relative;">
-
-            <div class="container-fluid d-flex align-items-center">
-                
-                <button class="btn btn-outline-light border-0" type="button" data-bs-toggle="offcanvas" data-bs-target="#menuLateral" aria-controls="menuLateral" style="z-index: 20;">
+        <nav class="navbar navbar-light border-bottom shadow-sm mb-4 tutorship-navbar position-relative">
+            <div class="container-fluid d-flex align-items-center justify-content-between">
+                <button class="btn btn-outline-light border-0" type="button" data-bs-toggle="offcanvas" data-bs-target="#menuLateral" aria-controls="menuLateral" style="z-index:20;">
                     <i class="bi bi-list fs-3"></i>
                 </button>
 
-                <a asp-area="Gestion" asp-controller="Tutorship" asp-action="Controlador" class="navbar-brand text-white position-absolute top-50 start-50 translate-middle text-center"
-                       style="line-height: 1; z-index: 10;">
-                    <div style="font-weight: 900; font-size: 1.8rem; letter-spacing: 1px; color: var(--brand-white);">PORTAL</div>
-                    <div style="font-size: 0.85rem; font-weight: 400; letter-spacing: 2px; opacity: 0.9; color: var(--brand-white); font-family: var(--font-cuerpo);">TUTORÍAS</div>
+                <a asp-area="Gestion" asp-controller="Tutorship" asp-action="Controlador" class="navbar-brand text-white position-absolute top-50 start-50 translate-middle text-center navbar-brand-portal" style="z-index:10;">
+                    <div class="portal-title">TUTORÍAS</div>
+                    @* <div class="portal-subtitle">TUTO</div> *@
                 </a>
 
-                <div class="ms-auto" style="z-index: 20;">
+                <div class="ms-auto" style="z-index:20;">
                     <a asp-area="MainScreen" asp-controller="MainScreen" asp-action="Index" class="btn btn-outline-light border-0 d-flex align-items-center gap-2">
-                        <span class="d-none d-md-block fw-bold" style="font-family: var(--font-cuerpo);">Salir</span> <i class="bi bi-box-arrow-right fs-5"></i>
+                        <span class="d-none d-md-block fw-bold">Salir</span>
+                        <i class="bi bi-box-arrow-right fs-5"></i>
                     </a>
                 </div>
             </div>
         </nav>
     </header>
-
-    <div class="offcanvas offcanvas-start" tabindex="-1" id="menuLateral" aria-labelledby="menuLateralLabel">
-        <div class="offcanvas-header" style="background-color: var(--brand-dark); color: white;">
+    
+    <div class="offcanvas offcanvas-start offcanvas-tutorship" tabindex="-1" id="menuLateral" aria-labelledby="menuLateralLabel">
+        <div class="offcanvas-header">
             <h5 class="offcanvas-title fw-bold text-white" id="menuLateralLabel" style="font-family: var(--font-titulos);">
                 <i class="bi bi-compass-fill me-2"></i> Navegación
             </h5>
             <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Close"></button>
         </div>
-        <div class="offcanvas-body d-flex flex-column" style="background-color: #f8f9fa;">
-            
+        <div class="offcanvas-body d-flex flex-column">
             <ul class="nav nav-pills flex-column mb-auto">
                 <li class="nav-item">
-                    <a asp-area="Gestion" asp-controller="Tutorship" asp-action="Controlador" class="nav-link text-dark">
-                        <i class="bi bi-house-door-fill text-secondary me-2"></i> Panel Principal
+                    <a asp-area="Gestion" asp-controller="Tutorship" asp-action="Controlador" class="nav-link">
+                        <i class="bi bi-house-door-fill me-2"></i> Panel Principal
                     </a>
                 </li>
-                <hr style="border-color: #ddd;">
+
+                <hr class="my-2" style="border-color:#ddd;">
+
+                @if (roleId == 1)
+                {
+                    <li class="nav-item">
+                        <a asp-area="Gestion" asp-controller="Entrevista" asp-action="EntrevistaInicial" class="nav-link">
+                            <i class="bi bi-chat-text-fill me-2"></i> Entrevista Inicial
+                        </a>
+                    </li>
+                }
 
                 @if (roleId == 2)
                 {
                     <li class="nav-item">
-                        <a asp-area="Gestion" asp-controller="Tutorship" asp-action="Asistencia" class="nav-link text-dark">
-                            <i class="bi bi-calendar-check-fill text-secondary me-2"></i> Control de Asistencia
+                        <a asp-area="Gestion" asp-controller="Asistencia" asp-action="Asistencia" class="nav-link">
+                            <i class="bi bi-calendar-check-fill me-2"></i> Control de Asistencia
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a asp-area="Gestion" asp-controller="Tutorship" asp-action="Seguimiento" class="nav-link text-dark">
-                            <i class="bi bi-clipboard-data-fill text-secondary me-2"></i> Seguimiento
+                        <a asp-area="Gestion" asp-controller="Seguimiento" asp-action="Seguimiento" class="nav-link">
+                            <i class="bi bi-clipboard-data-fill me-2"></i> Seguimiento
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a asp-area="Gestion" asp-controller="Tutorship" asp-action="ListaDeAlumnos" class="nav-link text-dark">
-                            <i class="bi bi-people-fill text-secondary me-2"></i> Lista de Alumnos
+                        <a asp-area="Gestion" asp-controller="Alumnos" asp-action="ListaDeAlumnos" class="nav-link">
+                            <i class="bi bi-people-fill me-2"></i> Lista de Alumnos
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a asp-area="Gestion" asp-controller="Entrevista" asp-action="ReporteEntrevistas" class="nav-link">
+                            <i class="bi bi-file-earmark-person-fill me-2"></i> Estatus Entrevistas
+                        </a>
+                    </li>
+                }
+
+                @if (roleId == 3)
+                {
+                    <li class="nav-item">
+                        <a asp-area="Gestion" asp-controller="Alumnos" asp-action="ListaDeAlumnos" class="nav-link">
+                            <i class="bi bi-people-fill me-2"></i> Lista de Alumnos
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a asp-area="Gestion" asp-controller="Seguimiento" asp-action="Seguimiento" class="nav-link">
+                            <i class="bi bi-clipboard-data-fill me-2"></i> Seguimiento General
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a asp-area="Gestion" asp-controller="Asistencia" asp-action="Asistencia" class="nav-link">
+                            <i class="bi bi-calendar-check-fill me-2"></i> Control de Asistencia
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a asp-area="Gestion" asp-controller="Alumnos" asp-action="AsignarTutores" class="nav-link">
+                            <i class="bi bi-diagram-3-fill me-2"></i> Asignar Tutores
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a asp-area="Gestion" asp-controller="Entrevista" asp-action="ReporteEntrevistas" class="nav-link">
+                            <i class="bi bi-file-earmark-bar-graph-fill me-2"></i> Reporte General
                         </a>
                     </li>
                 }
@@ -95,8 +135,9 @@
     </div>
 
     <footer class="border-top footer text-muted mt-5">
-        <div class="container text-center py-3" style="font-family: var(--font-cuerpo); font-size: 0.9rem;">
-            &copy; 2026 - Sistema de Gestión Académica - <a asp-area="" asp-controller="Home" asp-action="Privacy" class="text-decoration-none" style="color: var(--brand-dark);">Aviso de Privacidad</a>
+        <div class="container text-center py-3" style="font-size: .92rem;">
+            &copy; 2026 - Sistema de Gestión Académica -
+            <a asp-area="" asp-controller="Home" asp-action="Privacy" class="text-decoration-none" style="color: var(--brand-dark);">Aviso de Privacidad</a>
         </div>
     </footer>
 

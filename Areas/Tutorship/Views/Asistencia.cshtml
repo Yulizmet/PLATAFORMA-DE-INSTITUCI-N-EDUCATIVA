@@ -14,20 +14,67 @@
 
 
 <div class="container-fluid mt-4 mb-5">
-    <h2 class="text-center mb-4 fw-bold" style="color: var(--brand-dark);">Registro de Asistencia</h2>
 
-    @if (TempData["Exito"] != null)
+    <div class="position-relative mb-4 text-center">
+        <div class="position-absolute top-50 start-0 translate-middle-y">
+            <button type="button" onclick="history.back()" class="btn btn-sm btn-outline-secondary fw-bold shadow-sm px-3" style="border-radius: 20px;">
+                <i class="bi bi-arrow-left me-1"></i> Regresar
+            </button>
+        </div>
+
+        <h2 class="fw-bold m-0" style="color: var(--brand-dark);">Registro de Asistencia</h2>
+    </div>
+
+    @if (TempData["AsistenciaExito"] != null)
     {
-        <div class="alert alert-success shadow-sm text-center fw-bold"><i class="bi bi-check-circle-fill"></i> @TempData["Exito"]</div>
+        <div class="alert alert-success shadow-sm text-center fw-bold">
+            <i class="bi bi-check-circle-fill me-2"></i> @TempData["AsistenciaExito"]
+        </div>
     }
-    @if (TempData["Error"] != null)
+    @if (TempData["AsistenciaError"] != null)
     {
-        <div class="alert alert-danger shadow-sm text-center fw-bold"><i class="bi bi-exclamation-triangle-fill"></i> @TempData["Error"]</div>
+        <div class="alert alert-danger shadow-sm text-center fw-bold">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i> @TempData["AsistenciaError"]
+        </div>
+    }
+
+    @if (ViewBag.TemaSemanal != null)
+    {
+        var tema = ViewBag.TemaSemanal as SchoolManager.Models.tutorship_suggested_topic;
+    
+        <div class="card mb-4 border-0 shadow-sm animate__animated animate__fadeIn" @* style="border-left: 6px solid var(--brand-secondary) !important; background-color: #fffcfc; *@">
+            <div class="card-body p-4">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div class="d-flex gap-3">
+                        <div class="rounded-circle d-flex align-items-center justify-content-center shadow-sm"
+                             style="background-color: var(--brand-secondary); width: 50px; height: 50px; min-width: 50px;">
+                            <i class="bi bi-megaphone-fill text-white fs-4"></i>
+                        </div>
+                        <div>
+                            <h5 class="fw-bold mb-1" style="color: var(--brand-dark);">TEMA SUGERIDO DE LA SEMANA</h5>
+                            <h4 class="fw-extrabold text-dark mb-2">@tema.Title</h4>
+                            <p class="text-muted mb-3" style="font-size: 0.95rem;">@tema.Description</p>
+                        
+                            @if (tema.FilePath != "Sin archivo")
+                            {
+                                <a href="@tema.FilePath" target="_blank" class="btn btn-sm btn-dark rounded-pill px-3 shadow-sm">
+                                    <i class="bi bi-file-earmark-pdf-fill text-danger me-1"></i> Descargar material de apoyo
+                                </a>
+                            }
+                        </div>
+                    </div>
+                    <div class="text-end">
+                        <span class="badge rounded-pill bg-light text-dark border px-3 py-2">
+                            <i class="bi bi-calendar-event me-1"></i> Semana activa
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
     }
 
     <div class="p-4 rounded shadow-sm mb-4" style="background-color: #f4f4f4; border-left: 5px;">
-        <form asp-action="Asistencia" method="get" class="row g-3 align-items-end">
-
+        <form asp-controller="Asistencia" asp-action="Asistencia" method="get" class="row g-3 align-items-end">
             <div class="col-md-3">
                 <label class="form-label fw-bold text-muted small mb-1">Contar faltas desde:</label>
                 <input type="date" name="fechaInicio" value="@ViewBag.FechaInicio" class="form-control shadow-sm" style="border-color: #ddd;">
@@ -81,8 +128,7 @@
 
     @if (Model != null && Model.Any())
     {
-        <form id="formAsistencia" asp-action="GuardarAsistencia" method="post">
-
+        <form id="formAsistencia" asp-controller="Asistencia" asp-action="GuardarAsistencia" method="post">
             <input type="hidden" name="groupId" value="@ViewBag.GrupoSeleccionado" />
             <input type="hidden" id="hiddenFecha" name="fecha" value="@ViewBag.FechaSeleccionada" />
             <input type="hidden" name="fechaInicio" value="@ViewBag.FechaInicio" />
@@ -219,7 +265,7 @@
         "language": {
         "url": "//cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json"
         },
-        "lengthMenu": [[10, 25, 50, 100, -1], [10, 25, 50, 100, "Todos"]],
+        "lengthMenu": [[10, 25, 50, 100, -1], [10, 25, 50, 100]],
         "pageLength": 25,
         "columnDefs": [
         { "orderable": false, "targets": 4 },
