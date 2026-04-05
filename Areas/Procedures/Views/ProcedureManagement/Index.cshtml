@@ -205,9 +205,36 @@
                                 </td>
                                 <td class="ps-4">
                                     <div class="fw-bold burgundy-color">@item.Folio</div>
-                                    <small class="text-muted">@item.DateCreated.ToString("dd/MM/yyyy hh:mm tt")</small>
-                                </td>
+                                    <small class="text-muted d-block">@item.DateCreated.ToString("dd/MM/yyyy hh:mm tt")</small>
+                                    @{
+                                        var maxDays = item.ProcedureType?.MaxResolutionDays ?? 0;
+                                        if (maxDays > 0 && item.DateTerminated == null)
+                                        {
+                                            var daysActive = (DateTime.Now - item.DateCreated).Days;
+                                            var remainingDays = maxDays - daysActive;
 
+                                            if (remainingDays < 0)
+                                            {
+                                                <span class="badge bg-danger mt-1 animate__animated animate__pulse animate__infinite"
+                                                      title="Trámite fuera de tiempo">
+                                                    <i class="bi bi-exclamation-triangle-fill"></i> @Math.Abs(remainingDays) días de retraso
+                                                </span>
+                                            }
+                                            else if (remainingDays <= 2)
+                                            {
+                                                <span class="badge bg-warning text-dark mt-1">
+                                                    <i class="bi bi-clock-fill"></i> vence en @remainingDays días
+                                                </span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-light text-muted border mt-1">
+                                                    <i class="bi bi-calendar-check"></i> @remainingDays días restantes
+                                                </span>
+                                            }
+                                        }
+                                    }
+                                </td>
                                 <td>
                                     <div class="fw-bold">
                                         @if (student?.User?.Person != null)

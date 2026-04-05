@@ -136,8 +136,10 @@
         </div>
         <div class="col-lg-4">
             <div class="card shadow-sm border-0 p-4 h-100">
-                <h5 class="fw-bold mb-4"><i class="bi bi-bar-chart-steps me-2"></i>Flujo Acumulado</h5>
-                <div style="height: 300px;"><canvas id="flowChart"></canvas></div>
+                <h5 class="fw-bold mb-4">
+                    <i class="bi bi-alarm me-2 text-dark"></i>Estado de SLA
+                </h5>
+                <div style="height: 300px;"><canvas id="slaChart"></canvas></div>
             </div>
         </div>
     </div>
@@ -279,23 +281,48 @@
     });
 
     // 6. Flujo Acumulado (Stacked)
-    new Chart(document.getElementById('flowChart'), {
-        type: 'bar',
+        new Chart(document.getElementById('slaChart'), {
+        type: 'doughnut',
         data: {
-            labels: ['Estado Actual'],
-            datasets: [
-                { label: 'Acción Requerida', data: [@Model.ActionRequired], backgroundColor: variedBarColors[2] },
-                { label: 'En curso', data: [@Model.InProgress], backgroundColor: variedBarColors[1] },
-                { label: 'Finalizadas', data: [@Model.Done], backgroundColor: variedBarColors[0] },
-                { label: 'Canceladas', data: [@Model.Cancelled], backgroundColor: '#6c757d' }
-            ]
+            labels: ['Vencidos', 'Por Vencer', 'En Tiempo', 'Finalizados'],
+            datasets: [{
+                data: [
+                    @Model.OverdueCount,  // Trámites con días < 0
+                    @Model.NearDueCount, // Trámites con días entre 0 y 2
+                    @Model.OnTimeCount,   // Trámites con más de 2 días restantes
+                    @Model.Done           // Trámites terminados
+                ],
+                backgroundColor: [
+                    '#ff3131', // Rojo (Vencidos)
+                    '#ffde59', // Amarillo (Por vencer)
+                    '#38b6ff', // Azul (En tiempo)
+                    '#7ed957'  // Verde (Finalizados)
+                ],
+                borderWidth: 2,
+                hoverOffset: 10
+            }]
         },
         options: {
-            ...commonOptions,
-            scales: {
-                x: { stacked: true, grid: { display: false } },
-                y: { stacked: true, beginAtZero: true, grid: { color: 'rgba(0,0,0,0.05)' } }
-            }
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        usePointStyle: true,
+                        padding: 20,
+                        font: { size: 12 }
+                    }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return ` ${context.label}: ${context.raw} trámites`;
+                        }
+                    }
+                }
+            },
+            cutout: '50%'
         }
     });
 </script>

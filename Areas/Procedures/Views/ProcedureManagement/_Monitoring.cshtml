@@ -172,7 +172,6 @@
                 {
                     foreach (var doc in Model.Documents)
                     {
-                        // Lógica para detectar extensión e ícono
                         string ext = System.IO.Path.GetExtension(doc.FileName).ToLower();
                         string iconClass = ext switch
                         {

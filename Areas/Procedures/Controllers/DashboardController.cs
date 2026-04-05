@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using DocumentFormat.OpenXml.Spreadsheet;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SchoolManager.Areas.Procedures.ViewModels;
@@ -22,6 +23,18 @@ namespace SchoolManager.Areas.Procedures.Controllers
         {
             await LoadPermissions("Panel de control");
             int selectedYear = year ?? DateTime.Now.Year;
+            var now = DateTime.Now;
+
+            var stats = await _context.ProcedureRequest
+                .Include(r => r.ProcedureType)
+                .Include(r => r.ProcedureFlow).ThenInclude(f => f.ProcedureStatus)
+                .Select(r => new {
+                    IsTerminated = r.DateTerminated != null,
+                    IsCancelled = r.ProcedureFlow.ProcedureStatus.Name.Contains("Cancelado"),
+                    DateCreated = r.DateCreated,
+                    MaxDays = r.ProcedureType.MaxResolutionDays ?? 0
+                })
+                .ToListAsync();
 
             ViewBag.Areas = await _context.ProcedureAreas.OrderBy(a => a.Name).ToListAsync();
             ViewBag.SelectedArea = areaId;
@@ -46,7 +59,14 @@ namespace SchoolManager.Areas.Procedures.Controllers
                 InProgress = await solicitudesFiltradas.CountAsync(r =>
                     !r.ProcedureFlow.ProcedureStatus.IsTerminalState &&
                     !r.ProcedureFlow.ProcedureStatus.IsActionRequiredByUser),
-                Cancelled = await solicitudesFiltradas.CountAsync(r => r.ProcedureFlow.ProcedureStatus.Name == "Cancelado")
+                Cancelled = await solicitudesFiltradas.CountAsync(r => r.ProcedureFlow.ProcedureStatus.Name == "Cancelado"),
+                OverdueCount = stats.Count(r => !r.IsTerminated && !r.IsCancelled && r.MaxDays > 0 &&
+                    (now - r.DateCreated).Days > r.MaxDays),
+                NearDueCount = stats.Count(r => !r.IsTerminated && !r.IsCancelled && r.MaxDays > 0 &&
+                    (r.MaxDays - (now - r.DateCreated).Days) <= 2 &&
+                    (r.MaxDays - (now - r.DateCreated).Days) >= 0),
+                OnTimeCount = stats.Count(r => !r.IsTerminated && !r.IsCancelled &&
+                    (r.MaxDays == 0 || (r.MaxDays - (now - r.DateCreated).Days) > 2))
             };
 
             var closedStats = await solicitudesFiltradas

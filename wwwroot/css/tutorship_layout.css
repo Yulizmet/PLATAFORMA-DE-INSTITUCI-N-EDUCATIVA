@@ -1,15 +1,66 @@
-﻿:root {
-    --utt-red: #8C1B1B;
-    --utt-dark-red: #620900;
-    --utt-beige: #B1A596;
-    --utt-light: #D5D0CB;
-    --utt-black: #090909;
-    --utt-white: #FFFFFF;
+﻿/* ==========================================================
+   SISTEMA DE DISEÑO INSTITUCIONAL (Genérico)
+   Módulo de Tutorías
+   ========================================================== */
+:root {
+    /* Paleta Principal Institucional */
+    --brand-primary: #8C1B1B; /* Rojo Principal */
+    --brand-primary-light: #D42D2D; /* Rojo Claro */
+    --brand-dark: #620900; /* Rojo Oscuro (Vino) */
+    --brand-secondary: #B1A596; /* Beige */
+    --brand-white: #ffffff;
+    --brand-black: #000000;
+    /* Colores Extra para Botones de Acción (Brandbook) */
+    --btn-crear: #7ed957; /* Verde */
+    --btn-ver: #38b6ff; /* Azul */
+    --btn-editar: #ffde59; /* Amarillo */
+    --btn-eliminar: #ff3131; /* Rojo brillante */
+    /* Tipografías Oficiales */
+    --font-titulos: 'Merriweather', serif;
+    --font-cuerpo: 'Inter', sans-serif;
 }
 
+/* ==========================================================
+   REGLAS GLOBALES DE TIPOGRAFÍA Y ESTRUCTURA
+   ========================================================== */
+body {
+    background-color: #f4f4f4;
+    color: var(--brand-black);
+    font-family: var(--font-cuerpo) !important;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+footer {
+    position: static !important;
+    margin-top: auto !important;
+}
+
+/* Títulos institucionales con Merriweather */
+h1, h2, h3, h4, h5, h6, .navbar-brand div, .modal-title {
+    font-family: var(--font-titulos) !important;
+}
+
+/* ¡LA REGLA MAESTRA PARA LA FUENTE INTER!
+   Obliga a TODOS los elementos rebeldes de Bootstrap y DataTables a usar Inter */
+p, span, a, label, input, select, textarea, button, .btn,
+table, .table, th, td, tr, .dataTables_wrapper *, .badge,
+.form-control, .form-select {
+    font-family: var(--font-cuerpo) !important;
+}
+
+    /* Corrección de enlaces (Evita que Bootstrap los pinte de azul por defecto) */
+    a.text-decoration-none {
+        color: inherit !important;
+    }
+
+/* ==========================================================
+   DISEÑO DEL PANEL DE CONTROL (DASHBOARD)
+   ========================================================== */
 .dashboard-header {
-    background-color: var(--utt-red);
-    color: var(--utt-white);
+    background-color: var(--brand-primary);
+    color: var(--brand-white);
     border-radius: 15px;
     padding: 2rem;
     margin-bottom: -3rem;
@@ -32,11 +83,16 @@
     height: 100%;
     text-decoration: none;
     color: inherit;
+    background-color: var(--brand-white);
 }
 
     .dashboard-card:hover {
         transform: translateY(-5px);
         box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    }
+
+    .dashboard-card h5 {
+        color: var(--brand-primary) !important;
     }
 
 .card-icon-box {
@@ -49,12 +105,12 @@
     justify-content: center;
     margin: 0 auto 1rem auto;
     font-size: 1.5rem;
-    color: var(--utt-red);
+    color: var(--brand-primary) !important;
 }
 
 .status-badge {
     background-color: rgba(177, 165, 150, 0.2);
-    color: var(--utt-dark-red);
+    color: var(--brand-dark);
     font-weight: bold;
     padding: 8px;
     border-radius: 20px;
@@ -66,22 +122,24 @@
 }
 
 .dashboard-card:hover .status-badge {
-    background-color: var(--utt-red);
-    color: white;
+    background-color: var(--brand-primary);
+    color: var(--brand-white);
 }
 
-
+/* ==========================================================
+   DISEÑO DE DIRECTORIO Y LISTAS
+   ========================================================== */
 .filter-container {
-    background-color: white;
+    background-color: var(--brand-white);
     border-radius: 15px;
     padding: 20px;
     box-shadow: 0 4px 6px rgba(0,0,0,0.05);
     margin-bottom: 30px;
-    border-left: 5px solid var(--utt-red); 
+    border-left: 5px solid var(--brand-primary);
 }
 
 .student-row {
-    background-color: white;
+    background-color: var(--brand-white);
     border-radius: 12px;
     padding: 15px 20px;
     margin-bottom: 15px;
@@ -94,7 +152,7 @@
     .student-row:hover {
         transform: translateY(-2px);
         box-shadow: 0 5px 15px rgba(0,0,0,0.08);
-        border-color: var(--utt-beige);
+        border-color: var(--brand-secondary);
     }
 
 .avatar-circle {
@@ -102,12 +160,12 @@
     height: 50px;
     border-radius: 50%;
     object-fit: cover;
-    border: 2px solid var(--utt-beige);
+    border: 2px solid var(--brand-secondary);
 }
 
 .student-name {
     font-weight: 600;
-    color: var(--utt-black);
+    color: var(--brand-black);
     font-size: 1.1rem;
 }
 
@@ -116,163 +174,243 @@
     color: #666;
 }
 
+/* ==========================================================
+   BOTONES INSTITUCIONALES 
+   ========================================================== */
+.btn-primary-brand {
+    background-color: var(--brand-primary);
+    border-color: var(--brand-primary);
+    color: var(--brand-white);
+    font-weight: 600;
+}
+
+    .btn-primary-brand:hover {
+        background-color: var(--brand-dark);
+        border-color: var(--brand-dark);
+        color: var(--brand-white);
+    }
+
+.btn-secondary-brand {
+    background-color: var(--brand-secondary);
+    border-color: var(--brand-secondary);
+    color: var(--brand-white);
+    font-weight: 600;
+}
+
+    .btn-secondary-brand:hover {
+        background-color: #9c8f80;
+        color: var(--brand-white);
+    }
+
+/* Botones de acción específicos (Para el directorio) */
 .btn-action-entrevista {
-    background-color: var(--utt-red);
-    color: white;
+    background-color: var(--brand-primary);
+    color: var(--brand-white);
     border: none;
     padding: 8px 20px;
     border-radius: 6px;
     font-size: 0.9rem;
     transition: background 0.3s;
+    font-weight: 600;
 }
 
     .btn-action-entrevista:hover {
-        background-color: var(--utt-dark-red);
-        color: white;
+        background-color: var(--brand-dark);
+        color: var(--brand-white);
     }
 
 .btn-action-seguimiento {
-    background-color: var(--utt-dark-red); 
-    color: white;
+    background-color: var(--brand-dark);
+    color: var(--brand-white);
     border: none;
     padding: 8px 20px;
     border-radius: 6px;
     font-size: 0.9rem;
     transition: background 0.3s;
+    font-weight: 600;
 }
 
     .btn-action-seguimiento:hover {
-        background-color: black;
-        color: white;
+        background-color: var(--brand-black);
+        color: var(--brand-white);
     }
 
-body {
-    background-color: #f4f4f4;
-    color: var(--utt-black);
-    font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif !important;
-    display: flex;
-    flex-direction: column;
-    min-height: 100vh;
+/* Elementos de Formularios y Tablas */
+.card-header-brand {
+    background-color: var(--brand-primary);
+    color: var(--brand-white);
 }
 
-h1, h2, h3, h4, h5, h6, .navbar-brand div {
-    font-family: inherit !important;
-}
-.btn-utt-primary {
-    background-color: var(--utt-red);
-    border-color: var(--utt-red);
-    color: var(--utt-white);
-}
-
-    .btn-utt-primary:hover {
-        background-color: var(--utt-dark-red);
-        border-color: var(--utt-dark-red);
-        color: var(--utt-white);
-    }
-
-.btn-utt-secondary {
-    background-color: var(--utt-beige);
-    border-color: var(--utt-beige);
-    color: var(--utt-black);
-}
-
-    .btn-utt-secondary:hover {
-        background-color: #9c8f80; 
-        color: var(--utt-black);
-    }
-
-.card-header-utt {
-    background-color: var(--utt-red);
-    color: var(--utt-white);
-}
-
-.table-utt-head {
-    background-color: var(--utt-dark-red);
-    color: var(--utt-white);
+.table-brand-head {
+    background-color: var(--brand-dark);
+    color: var(--brand-white);
 }
 
 .form-check-input:checked {
-    background-color: var(--utt-red);
-    border-color: var(--utt-red);
+    background-color: var(--brand-primary);
+    border-color: var(--brand-primary);
 }
 
-footer {
-    position: static !important;
-    margin-top: auto !important;
+/* ==========================================================
+   ESTILOS PARA DATATABLES (Centralizados)
+   ========================================================== */
+.dataTables_wrapper {
+    font-size: 0.95rem;
 }
 
-.filter-container {
-    background-color: white;
-    border-radius: 15px;
-    padding: 20px;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-    margin-bottom: 30px;
-    border-left: 5px solid var(--utt-red); /* Detalle rojo a la izquierda */
+.dataTables_length label,
+.dataTables_filter label {
+    font-weight: bold;
+    color: #444;
 }
 
-.student-row {
-    background-color: white;
-    border-radius: 12px;
-    padding: 15px 20px;
-    margin-bottom: 15px;
-    display: flex;
-    align-items: center;
-    transition: transform 0.2s, box-shadow 0.2s;
-    border: 1px solid rgba(0,0,0,0.05);
+.dataTables_filter input,
+.dataTables_length select {
+    border: 1px solid #ddd;
+    border-radius: 0.375rem;
+    padding: 0.25rem 0.5rem;
+    box-shadow: 0 .125rem .25rem rgba(0,0,0,.05);
 }
 
-    .student-row:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 5px 15px rgba(0,0,0,0.08);
-        border-color: var(--utt-beige);
+    .dataTables_filter input:focus,
+    .dataTables_length select:focus {
+        border-color: var(--brand-primary);
+        outline: none;
+        box-shadow: 0 0 0 0.2rem rgba(140, 27, 27, 0.25);
     }
 
-.avatar-circle {
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
-    object-fit: cover;
-    border: 2px solid var(--utt-beige);
-}
-
-.student-name {
-    font-weight: 600;
-    color: var(--utt-black);
-    font-size: 1.1rem;
-}
-
-.student-meta {
-    font-size: 0.85rem;
+.dataTables_info {
+    font-weight: 500;
     color: #666;
+    padding-top: 1rem !important;
 }
 
-/* Botones de acción específicos */
-.btn-action-entrevista {
-    background-color: var(--utt-red);
-    color: white;
-    border: none;
-    padding: 8px 20px;
-    border-radius: 6px;
-    font-size: 0.9rem;
-    transition: background 0.3s;
+/* Paginación Institucional DataTables */
+.page-item.active .page-link {
+    background-color: var(--brand-dark) !important;
+    border-color: var(--brand-dark) !important;
+    color: var(--brand-white) !important;
 }
 
-    .btn-action-entrevista:hover {
-        background-color: var(--utt-dark-red);
-        color: white;
+.page-link {
+    color: var(--brand-dark);
+    font-weight: 500;
+}
+
+    .page-link:hover {
+        background-color: var(--brand-secondary);
+        color: var(--brand-white);
+        border-color: var(--brand-secondary);
     }
 
-.btn-action-seguimiento {
-    background-color: var(--utt-dark-red); /* Un tono más oscuro para diferenciar */
-    color: white;
-    border: none;
-    padding: 8px 20px;
-    border-radius: 6px;
-    font-size: 0.9rem;
-    transition: background 0.3s;
+/* ==========================================================
+   DISEÑO DE TABLAS TIPO "TARJETAS FLOTANTES" (.table-cards)
+   ========================================================== */
+.table-cards {
+    border-collapse: separate !important;
+    border-spacing: 0 1.2rem !important;
+    border: none !important;
+    width: 100%;
 }
 
-    .btn-action-seguimiento:hover {
-        background-color: black;
-        color: white;
+    .table-cards thead th {
+        border: none !important;
+        color: #888;
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05rem;
+        padding-bottom: 0;
+        background: transparent !important;
+    }
+
+    .table-cards tbody tr {
+        background-color: var(--brand-white);
+        box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        border-radius: 10px;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+        .table-cards tbody tr:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 15px rgba(0,0,0,0.1);
+        }
+
+    .table-cards tbody td {
+        border-top: 1px solid #f4f4f4;
+        border-bottom: 1px solid #f4f4f4;
+        vertical-align: middle;
+        padding: 1.2rem 1rem;
+    }
+
+        .table-cards tbody td:first-child {
+            border-left: 1px solid #f4f4f4;
+            border-top-left-radius: 10px;
+            border-bottom-left-radius: 10px;
+        }
+
+        .table-cards tbody td:last-child {
+            border-right: 1px solid #f4f4f4;
+            border-top-right-radius: 10px;
+            border-bottom-right-radius: 10px;
+        }
+
+/* Evita conflictos de sombras con DataTables */
+table.dataTable.table-striped > tbody > tr.odd > * {
+    box-shadow: none !important;
+}
+
+.pregunta-row {
+    transition: background-color 0.2s ease;
+}
+
+    .pregunta-row:hover {
+        background-color: #f8f9fa;
+    }
+
+/* ==========================================================
+   SEGUIMIENTO ACADÉMICO (Buscador y Línea de tiempo)
+   ========================================================== */
+.jumbotron-search {
+    background-color: var(--brand-dark);
+    color: var(--brand-white);
+    padding: 3rem 1rem;
+    border-radius: 12px;
+    margin-bottom: 3rem;
+    box-shadow: 0 4px 15px rgba(98, 9, 0, 0.3);
+}
+
+    .jumbotron-search h2 {
+        color: var(--brand-white) !important;
+        font-family: var(--font-titulos);
+    }
+
+    .jumbotron-search .input-group {
+        max-width: 600px;
+        margin: 0 auto;
+    }
+
+    .jumbotron-search .form-control {
+        border: none;
+        border-radius: 25px 0 0 25px;
+        padding: 12px 20px;
+        font-size: 1.1rem;
+    }
+
+    .jumbotron-search .btn {
+        border-radius: 0 25px 25px 0;
+        font-weight: 600;
+    }
+
+.dashboard-card-hover {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border-radius: 12px;
+    background-color: var(--brand-white);
+    border: 1px solid rgba(0,0,0,0.08);
+}
+
+    .dashboard-card-hover:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        border-color: var(--brand-secondary);
     }

@@ -105,14 +105,9 @@
                         <i class="bi bi-search"></i> Buscar
                     </button>
 
-                    @if (!string.IsNullOrWhiteSpace(ViewBag.SearchName as string)
-                       || !string.IsNullOrWhiteSpace(ViewBag.SemesterFilter as string)
-                       || !string.IsNullOrWhiteSpace(ViewBag.GroupFilter as string))
-                    {
-                        <a href="@Url.Action("AgregarAlumnos")" class="btn btn-secondary px-4">
-                            <i class="bi bi-x-circle"></i> Limpiar filtros
-                        </a>
-                    }
+                    <a href="@Url.Action("AgregarAlumnos")" class="btn btn-secondary px-4">
+                        <i class="bi bi-x-circle"></i> Limpiar
+                    </a>
                 </div>
             </div>
         </form>
@@ -128,9 +123,72 @@
                 <table class="table table-hover ss-table-cards">
                     <thead>
                         <tr>
-                            <th style="width:40%">Nombre</th>
-                            <th class="text-center">Semestre</th>
-                            <th class="text-center">Grupo</th>
+                            <th style="width:40%">
+                                <a href="@Url.Action("AgregarAlumnos", new {
+                                       sortBy = "name",
+                                       sortOrder = ViewBag.CurrentSort == "name" ? ViewBag.NextOrder : "asc",
+                                       searchName = ViewBag.SearchName,
+                                       semesterFilter = ViewBag.SemesterFilter,
+                                       groupFilter = ViewBag.GroupFilter,
+                                       page = 1,
+                                       pageSize = ViewBag.PageSize
+                                   })"
+                                   class="text-decoration-none text-dark">
+                                    NOMBRE
+                                    @if (ViewBag.CurrentSort == "name")
+                                    {
+                                        <i class="bi bi-@(ViewBag.CurrentOrder == "asc" ? "sort-alpha-down" : "sort-alpha-up")"></i>
+                                    }
+                                    else
+                                    {
+                                        <i class="bi bi-filter text-muted"></i>
+                                    }
+                                </a>
+                            </th>
+                            <th class="text-center">
+                                <a href="@Url.Action("AgregarAlumnos", new {
+                                       sortBy = "semester",
+                                       sortOrder = ViewBag.CurrentSort == "semester" ? ViewBag.NextOrder : "asc",
+                                       searchName = ViewBag.SearchName,
+                                       semesterFilter = ViewBag.SemesterFilter,
+                                       groupFilter = ViewBag.GroupFilter,
+                                       page = 1,
+                                       pageSize = ViewBag.PageSize
+                                   })"
+                                   class="text-decoration-none text-dark">
+                                    SEMESTRE
+                                    @if (ViewBag.CurrentSort == "semester")
+                                    {
+                                        <i class="bi bi-@(ViewBag.CurrentOrder == "asc" ? "sort-down" : "sort-up")"></i>
+                                    }
+                                    else
+                                    {
+                                        <i class="bi bi-filter text-muted"></i>
+                                    }
+                                </a>
+                            </th>
+                            <th class="text-center">
+                                <a href="@Url.Action("AgregarAlumnos", new {
+                                       sortBy = "group",
+                                       sortOrder = ViewBag.CurrentSort == "group" ? ViewBag.NextOrder : "asc",
+                                       searchName = ViewBag.SearchName,
+                                       semesterFilter = ViewBag.SemesterFilter,
+                                       groupFilter = ViewBag.GroupFilter,
+                                       page = 1,
+                                       pageSize = ViewBag.PageSize
+                                   })"
+                                   class="text-decoration-none text-dark">
+                                    GRUPO
+                                    @if (ViewBag.CurrentSort == "group")
+                                    {
+                                        <i class="bi bi-@(ViewBag.CurrentOrder == "asc" ? "sort-down" : "sort-up")"></i>
+                                    }
+                                    else
+                                    {
+                                        <i class="bi bi-filter text-muted"></i>
+                                    }
+                                </a>
+                            </th>
                             <th class="text-center">Acción</th>
                         </tr>
                     </thead>
@@ -185,6 +243,11 @@
                             <a class="page-link"
                                href="@Url.Action("AgregarAlumnos", new {
                                    page = ViewBag.CurrentPage - 1,
+                                   sortBy = ViewBag.CurrentSort,
+                                   sortOrder = ViewBag.CurrentOrder,
+                                   searchName = ViewBag.SearchName,
+                                   semesterFilter = ViewBag.SemesterFilter,
+                                   groupFilter = ViewBag.GroupFilter,
                                    pageSize = ViewBag.PageSize
                                })">
                                 «
@@ -193,10 +256,15 @@
 
                         @for (int i = 1; i <= ViewBag.TotalPages; i++)
                         {
-                            <li class="page-item @(i == ViewBag.CurrentPage ? "active" : "")">
+                                <li class="page-item @(i == ViewBag.CurrentPage ? "active" : "")">
                                 <a class="page-link"
                                    href="@Url.Action("AgregarAlumnos", new {
                                        page = i,
+                                       sortBy = ViewBag.CurrentSort,
+                                       sortOrder = ViewBag.CurrentOrder,
+                                       searchName = ViewBag.SearchName,
+                                       semesterFilter = ViewBag.SemesterFilter,
+                                       groupFilter = ViewBag.GroupFilter,
                                        pageSize = ViewBag.PageSize
                                    })">
                                     @i
@@ -208,6 +276,11 @@
                             <a class="page-link"
                                href="@Url.Action("AgregarAlumnos", new {
                                    page = ViewBag.CurrentPage + 1,
+                                   sortBy = ViewBag.CurrentSort,
+                                   sortOrder = ViewBag.CurrentOrder,
+                                   searchName = ViewBag.SearchName,
+                                   semesterFilter = ViewBag.SemesterFilter,
+                                   groupFilter = ViewBag.GroupFilter,
                                    pageSize = ViewBag.PageSize
                                })">
                                 »

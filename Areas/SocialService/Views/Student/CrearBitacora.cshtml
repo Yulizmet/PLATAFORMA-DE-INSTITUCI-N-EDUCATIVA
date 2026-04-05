@@ -52,12 +52,16 @@
 
                     <div>
                         <label asp-for="HoursPracticas"></label>
-                        <input asp-for="HoursPracticas" type="number" class="form-control input-small" />
+                        <input asp-for="HoursPracticas" type="number" min="0" max="40" class="form-control input-small" />
+                        <span asp-validation-for="HoursPracticas" class="text-danger"></span>
+                        <div class="form-text text-muted">Límite: 0 - 40 horas</div>
                     </div>
 
                     <div>
                         <label asp-for="HoursServicioSocial"></label>
-                        <input asp-for="HoursServicioSocial" type="number" class="form-control input-small" />
+                        <input asp-for="HoursServicioSocial" type="number" min="0" max="40" class="form-control input-small" />
+                        <span asp-validation-for="HoursServicioSocial" class="text-danger"></span>
+                        <div class="form-text text-muted">Límite: 0 - 40 horas</div>
                     </div>
 
                 </div>
