@@ -10,6 +10,8 @@ namespace SchoolManager.Models
         [Required]
         public int Year { get; set; }
 
+        public int? MaxFolios { get; set; }  // límite de folios para esta generación
+
         public ICollection<preenrollment_general> Students { get; set; } = new List<preenrollment_general>();
     }
 }

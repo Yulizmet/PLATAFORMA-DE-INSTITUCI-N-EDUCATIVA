@@ -120,6 +120,149 @@ namespace SchoolManager.Areas.Enrollment.Controllers
             return View();
         }
 
+
+        // GET: Enrollment/PreEnrollment/Aspirantes
+        [AllowAnonymous]
+        [HttpGet]
+        public IActionResult Aspirantes()
+        {
+            return View();
+        }
+
+
+        // GET: Enrollment/PreEnrollment/AspirantesListas
+        [AllowAnonymous]
+        [HttpGet]
+        public IActionResult AspirantesLista(int idGeneration)
+        {
+            ViewBag.IdGeneration = idGeneration;
+            return View();
+        }
+
+        // GET: Enrollment/PreEnrollment/MatriculasAdmin
+        [AllowAnonymous]
+        [HttpGet]
+        public IActionResult MatriculasAdmin()
+        {
+            return View();
+        }
+
+        // GET: Enrollment/PreEnrollment/Configuracion
+        [AllowAnonymous]
+        [HttpGet]
+        public async Task<IActionResult> Configuracion()
+        {
+            var careers = await _context.PreenrollmentCareers
+                .OrderBy(c => c.name_career)
+                .ToListAsync();
+
+            return View(careers);
+        }
+
+
+        // CRUD DE CARRERAS
+
+        [AllowAnonymous]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CrearCarrera(string name_career)
+        {
+            if (string.IsNullOrWhiteSpace(name_career))
+            {
+                TempData["Error"] = "El nombre de la carrera es obligatorio.";
+                return RedirectToAction(nameof(Configuracion));
+            }
+
+            name_career = name_career.Trim();
+
+            bool existe = await _context.PreenrollmentCareers
+                .AnyAsync(c => c.name_career == name_career);
+
+            if (existe)
+            {
+                TempData["Error"] = "La carrera ya existe.";
+                return RedirectToAction(nameof(Configuracion));
+            }
+
+            var career = new preenrollment_careers
+            {
+                name_career = name_career
+            };
+
+            _context.PreenrollmentCareers.Add(career);
+            await _context.SaveChangesAsync();
+
+            TempData["Success"] = "Carrera agregada correctamente.";
+            return RedirectToAction(nameof(Configuracion));
+        }
+
+        [AllowAnonymous]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> EditarCarrera(int idCareer, string name_career)
+        {
+            if (string.IsNullOrWhiteSpace(name_career))
+            {
+                TempData["Error"] = "El nombre de la carrera es obligatorio.";
+                return RedirectToAction(nameof(Configuracion));
+            }
+
+            var career = await _context.PreenrollmentCareers
+                .FirstOrDefaultAsync(c => c.IdCareer == idCareer);
+
+            if (career == null)
+            {
+                TempData["Error"] = "Carrera no encontrada.";
+                return RedirectToAction(nameof(Configuracion));
+            }
+
+            name_career = name_career.Trim();
+
+            bool existe = await _context.PreenrollmentCareers
+                .AnyAsync(c => c.IdCareer != idCareer && c.name_career == name_career);
+
+            if (existe)
+            {
+                TempData["Error"] = "Ya existe otra carrera con ese nombre.";
+                return RedirectToAction(nameof(Configuracion));
+            }
+
+            career.name_career = name_career;
+            await _context.SaveChangesAsync();
+
+            TempData["Success"] = "Carrera actualizada correctamente.";
+            return RedirectToAction(nameof(Configuracion));
+        }
+
+        [AllowAnonymous]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> EliminarCarrera(int idCareer)
+        {
+            var career = await _context.PreenrollmentCareers
+                .Include(c => c.preenrollment_general)
+                .FirstOrDefaultAsync(c => c.IdCareer == idCareer);
+
+            if (career == null)
+            {
+                TempData["Error"] = "La carrera no existe.";
+                return RedirectToAction(nameof(Configuracion));
+            }
+
+            if (career.preenrollment_general != null && career.preenrollment_general.Any())
+            {
+                TempData["Error"] = "No se puede eliminar la carrera porque ya tiene preinscripciones o inscripciones asociadas.";
+                return RedirectToAction(nameof(Configuracion));
+            }
+
+            _context.PreenrollmentCareers.Remove(career);
+            await _context.SaveChangesAsync();
+
+            TempData["Success"] = "Carrera eliminada correctamente.";
+            return RedirectToAction(nameof(Configuracion));
+        }
+
+
         // POST: Enrollment/PreEnrollment/Create
         // Recibe un ViewModel con los datos del formulario de inscripción.
         // Guarda en preenrollment_general y tablas relacionadas, genera folio y matrícula.
@@ -526,6 +669,8 @@ namespace SchoolManager.Areas.Enrollment.Controllers
             return View();
         }
 
+
+
         // POST: Enrollment/PreEnrollment/ConfirmarPreinscripcion
         [AllowAnonymous]
         [HttpPost]
@@ -785,6 +930,7 @@ namespace SchoolManager.Areas.Enrollment.Controllers
         //} 
 
         // GET: Enrollment/PreEnrollment/Details/5
+        [AllowAnonymous]
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
@@ -886,6 +1032,7 @@ namespace SchoolManager.Areas.Enrollment.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+        [AllowAnonymous]
         [HttpGet]
         [EnableCors("AllowAdmin")]
         public async Task<IActionResult> GetGeneraciones()
@@ -903,6 +1050,7 @@ namespace SchoolManager.Areas.Enrollment.Controllers
         }
 
         // GET: Enrollment/PreEnrollment/GetAspirantesPorGeneracion?idGeneration=4
+        [AllowAnonymous]
         [HttpGet]
         [EnableCors("AllowAdmin")]
         public async Task<IActionResult> GetAspirantesPorGeneracion(int idGeneration)
@@ -913,20 +1061,18 @@ namespace SchoolManager.Areas.Enrollment.Controllers
             if (generation == null)
                 return NotFound(new { message = "Generación no encontrada." });
 
-            string yearShort = generation.Year.ToString().Substring(2, 2);
-
             var aspirantes = await _context.PreenrollmentGenerals
                 .Include(g => g.Person)
-                .Where(g => g.IdGeneration == idGeneration
-                         && g.Matricula.StartsWith(yearShort)
-                         && g.PersonId != null)   // <- solo los que tienen persona
+                .Where(g => g.IdGeneration == idGeneration)
                 .Select(g => new
                 {
                     g.IdData,
                     g.Folio,
                     g.Matricula,
-                    NombreCompleto = $"{g.Person.FirstName} {g.Person.LastNamePaternal} {g.Person.LastNameMaternal}",
-                    Email = g.Person.Email,
+                    NombreCompleto = g.Person != null
+                        ? $"{g.Person.FirstName} {g.Person.LastNamePaternal} {g.Person.LastNameMaternal}"
+                        : "Sin datos personales",
+                    Email = g.Person != null ? g.Person.Email : "",
                     g.IdGeneration
                 })
                 .ToListAsync();
@@ -935,6 +1081,7 @@ namespace SchoolManager.Areas.Enrollment.Controllers
         }
 
         // GET: Enrollment/PreEnrollment/GetAspiranteDetalle?idData=5
+        [AllowAnonymous]
         [HttpGet]
         [EnableCors("AllowAdmin")]
         public async Task<IActionResult> GetAspiranteDetalle(int idData)
@@ -1015,13 +1162,18 @@ namespace SchoolManager.Areas.Enrollment.Controllers
         }
 
         // GET: Enrollment/PreEnrollment/GetMatriculas
+        [AllowAnonymous]
         [HttpGet]
         [EnableCors("AllowAdmin")]
         public async Task<IActionResult> GetMatriculas()
         {
             var matriculas = await _context.PreenrollmentGenerals
                 .Include(g => g.Person)
-                .Where(g => !string.IsNullOrEmpty(g.Matricula))
+                .Where(g =>
+                    !string.IsNullOrEmpty(g.Matricula) &&
+                    g.Person != null &&
+                    g.Person.IsActive == true   // 🔥 FILTRO CLAVE
+                )
                 .Select(g => new
                 {
                     g.IdData,
@@ -1039,6 +1191,8 @@ namespace SchoolManager.Areas.Enrollment.Controllers
             return Json(matriculas);
         }
 
+
+        [AllowAnonymous]
         [HttpPut]
         [EnableCors("AllowAdmin")]
         public async Task<IActionResult> UpdateAspirante([FromBody] UpdateAspiranteDto dto)

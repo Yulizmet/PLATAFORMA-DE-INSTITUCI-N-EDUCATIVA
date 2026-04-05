@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+	<meta name="description" content="Responsive Admin &amp; Dashboard Template based on Bootstrap 5">
+	<meta name="author" content="AdminKit">
+	<meta name="keywords" content="adminkit, bootstrap, bootstrap 5, admin, dashboard, template, responsive, css, sass, html, theme, front-end, ui kit, web">
+
+	<link rel="preconnect" href="https://fonts.gstatic.com">
+	<link rel="shortcut icon" href="img/icons/icon-48x48.png" />
+
+	<title>Alumno</title>
+
+	<link href="css/app.css" rel="stylesheet">
+	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+
+	<style>
+		.page-actions .btn { white-space: nowrap; }
+	</style>
+	<style>
+	.table td, .table th { vertical-align: middle; }
+	@media (max-width: 576px){
+		.table-responsive {
+		border: 1px solid rgba(0,0,0,.1);
+		border-radius: .5rem;
+		}
+	}
+	</style>
+
+
+</head>
+
+<body>
+	<div class="wrapper">
+
+		<nav id="sidebar" class="sidebar js-sidebar">
+			<div class="sidebar-content js-simplebar">
+
+				<a class="sidebar-brand" href="index.html">
+					<span class="align-middle ms-3">
+					<img src="/src/img/photos/icon-icons.png" alt="Logo" height="60" class="d-inline-block align-text-top">
+					</span>
+				</a>
+
+				<ul class="sidebar-nav">
+				<li class="sidebar-header"></li>
+
+				<li class="sidebar-item active">
+					<a class="sidebar-link" href="index.html">
+					<i class="align-middle" data-feather="users"></i>
+					<span class="align-middle">Aspirantes</span>
+					</a>
+				</li>
+
+				<li class="sidebar-item">
+					<a class="sidebar-link" href="matriculas.html">
+					<i class="align-middle" data-feather="user"></i>
+					<span class="align-middle">Matriculas</span>
+					</a>
+				</li>
+
+				<li class="sidebar-item">
+					<a class="sidebar-link" href="configuracion.html">
+					<i class="align-middle" data-feather="settings"></i>
+					<span class="align-middle">Configuración</span>
+					</a>
+				</li>
+				</ul>
+
+			</div>
+		</nav>
+
+		<div class="main">
+			<nav class="navbar navbar-expand navbar-light navbar-bg">
+				<a class="sidebar-toggle js-sidebar-toggle">
+					<i class="hamburger align-self-center"></i>
+				</a>
+
+				<div class="navbar-collapse collapse">
+					<ul class="navbar-nav navbar-align">
+						<li class="nav-item dropdown">
+							<a class="nav-icon dropdown-toggle d-inline-block d-sm-none" href="#" data-bs-toggle="dropdown">
+								<i class="align-middle" data-feather="settings"></i>
+							</a>
+
+							<a class="nav-link dropdown-toggle d-none d-sm-inline-block" href="#" data-bs-toggle="dropdown">
+								<img src="img/avatars/avatar.jpg" class="avatar img-fluid rounded me-1" alt="Usuario" />
+								<span class="text-dark">User</span>
+							</a>
+
+							<div class="dropdown-menu dropdown-menu-end">
+								<a class="dropdown-item" href="alumno.html">
+									<i class="align-middle me-1" data-feather="user"></i> Perfil
+								</a>
+								<div class="dropdown-divider"></div>
+								<a class="dropdown-item" href="#">Cerrar sesión</a>
+							</div>
+
+						</li>
+					</ul>
+				</div>
+			</nav>
+
+			<main class="content">
+				<div class="container-fluid p-0">
+
+					<!-- Header + Acciones -->
+					<div class="mb-3 d-flex align-items-center justify-content-between flex-wrap gap-2">
+						<h1 class="h3 d-inline align-middle mb-0">Alumno</h1>
+
+						<div class="page-actions d-flex gap-2">
+							<button id="btn-editar" type="button" class="btn btn-primary">
+								<i class="align-middle me-1" data-feather="edit"></i> Editar
+							</button>
+
+							<button id="btn-guardar" type="button" class="btn btn-success d-none">
+								<i class="align-middle me-1" data-feather="save"></i> Guardar
+							</button>
+
+							<button id="btn-cancelar" type="button" class="btn btn-secondary d-none">
+								<i class="align-middle me-1" data-feather="x"></i> Cancelar
+							</button>
+						</div>
+					</div>
+
+					<div class="row">
+						<!-- Card izquierda -->
+						<div class="col-md-4 col-xl-3">
+							<div class="card mb-3">
+								<div class="card-header">
+									<h5 class="card-title mb-0">Detalles del alumno</h5>
+								</div>
+
+								<div class="card-body text-center">
+									<img src="img/avatars/avatar.jpg" alt="Carlos Mendez Hernandez" class="img-fluid rounded-circle mb-2" width="128" height="128" />
+									<h5 class="card-title mb-0" id="card-nombre">Carlos Mendez Hernandez</h5>
+									<div class="text-muted mb-2" id="card-tipo">Alumno</div>
+									<div class="text-muted mb-2" id="card-carrera">MECATRONICA</div>
+									<div class="text-muted mb-2" id="card-matricula">MTR-2026-001</div>
+								</div>
+
+								<hr class="my-0" />
+
+								<div class="card-body">
+									<h5 class="h6 card-title">Grado y Grupo</h5>
+									<div class="text-muted mb-2" id="card-grado">8vo</div>
+									<div class="text-muted mb-2" id="card-grupo">B</div>
+								</div>
+
+								<hr class="my-0" />
+
+								<div class="card-body">
+									<h5 class="h6 card-title">Dirección</h5>
+									<ul class="list-unstyled mb-0">
+										<li class="mb-1">
+											<span data-feather="home" class="feather-sm me-1"></span>
+											Vive en <span id="card-ciudad">Reynosa, Tamps</span>
+										</li>
+										<li class="mb-1">
+											<span data-feather="map-pin" class="feather-sm me-1"></span>
+											<span id="card-direccion">Dirección de ejemplo</span>
+										</li>
+										<li class="mb-1">
+											<span data-feather="map" class="feather-sm me-1"></span>
+											Colonia <span id="card-colonia">Los encinos</span>
+										</li>
+									</ul>
+								</div>
+
+								<hr class="my-0" />
+
+								<div class="card-body">
+									<h5 class="h6 card-title">Contacto</h5>
+									<ul class="list-unstyled mb-0">
+										<li class="mb-1"><span id="card-correo1">xxxx@correo.com</span></li>
+										<li class="mb-1"><span id="card-correo2">xxxx@correo.com</span></li>
+										<li class="mb-1"><span id="card-telefono">(899)123456</span></li>
+									</ul>
+								</div>
+
+							</div>
+						</div>
+
+						<!-- Columna derecha -->
+						<div class="col-md-8 col-xl-9">
+
+							<!-- Datos generales -->
+							<div class="card mb-3">
+								<div class="card-header d-flex align-items-center justify-content-between">
+									<h5 class="card-title mb-0">Datos generales</h5>
+								</div>
+
+								<div class="card-body">
+									<form id="form-alumno">
+										<div class="row g-3">
+											<div class="col-lg-8 order-2 order-lg-1">
+												<div class="row g-3">
+
+													<div class="col-md-6">
+														<label class="form-label">Matrícula</label>
+														<input name="matricula" type="text" class="form-control editable-field" value="MTR-2026-001" disabled>
+													</div>
+
+													<div class="col-md-6">
+														<label class="form-label">Tipo</label>
+														<select name="tipo" class="form-select editable-field" disabled>
+															<option selected>ESTUDIANTE</option>
+															<option>DOCENTE</option>
+															<option>ADMINISTRATIVO</option>
+														</select>
+													</div>
+
+													<div class="col-md-4">
+														<label class="form-label">Ap. Paterno</label>
+														<input name="ap_paterno" type="text" class="form-control editable-field" value="MENDEZ" disabled>
+													</div>
+													<div class="col-md-4">
+														<label class="form-label">Ap. Materno</label>
+														<input name="ap_materno" type="text" class="form-control editable-field" value="HERNANDEZ" disabled>
+													</div>
+													<div class="col-md-4">
+														<label class="form-label">Nombre</label>
+														<input name="nombre" type="text" class="form-control editable-field" value="CARLOS" disabled>
+													</div>
+
+													<div class="col-md-4">
+														<label class="form-label">Sexo</label>
+														<select name="sexo" class="form-select editable-field" disabled>
+															<option selected>MASCULINO</option>
+															<option>FEMENINO</option>
+															<option>OTRO</option>
+														</select>
+													</div>
+
+													<div class="col-md-4">
+														<label class="form-label">Nacionalidad</label>
+														<select name="nacionalidad" class="form-select editable-field" disabled>
+															<option selected>MEXICANA</option>
+															<option>EXTRANJERA</option>
+														</select>
+													</div>
+
+													<div class="col-md-6">
+														<label class="form-label">Lugar de Nacimiento (Estado)</label>
+														<select name="estado_nacimiento" class="form-select editable-field" disabled>
+															<option selected>TAMAULIPAS</option>
+														</select>
+													</div>
+
+													<div class="col-md-6">
+														<label class="form-label">Municipio / Ciudad</label>
+														<input name="municipio" type="text" class="form-control editable-field" value="REYNOSA" disabled>
+													</div>
+
+													<div class="col-md-8">
+														<label class="form-label">CURP</label>
+														<input name="curp" type="text" class="form-control editable-field" value="XXXXXXXXXXXXXXXXXXX" disabled>
+													</div>
+
+													<div class="col-md-4">
+														<label class="form-label">Tipo de sangre</label>
+														<select name="sangre" class="form-select editable-field" disabled>
+															<option>O- NEGATIVO</option>
+															<option selected>O+ POSITIVO</option>
+															<option>A+ POSITIVO</option>
+															<option>B+ POSITIVO</option>
+															<option>AB+ POSITIVO</option>
+														</select>
+													</div>
+
+													<div class="col-md-4">
+														<label class="form-label">Estado Civil</label>
+														<select name="estado_civil" class="form-select editable-field" disabled>
+															<option selected>SOLTERO</option>
+															<option>CASADO</option>
+															<option>UNIÓN LIBRE</option>
+															<option>DIVORCIADO</option>
+														</select>
+													</div>
+
+													<!-- Puedes seguir metiendo más campos aquí si quieres -->
+
+												</div>
+											</div>
+
+											<div class="col-lg-4 order-1 order-lg-2">
+												<div class="d-flex flex-column align-items-center gap-3">
+													<div class="ratio ratio-3x4 w-100" style="max-width: 220px;">
+														<img src="/src/img/photos/UTTN-logo.png" class="rounded border object-fit-cover" alt="Foto">
+													</div>
+
+													<div class="w-100">
+														<label class="form-label">Fecha de nacimiento <small class="text-muted">(dd/mm/aaaa)</small></label>
+														<input name="fecha_nacimiento" type="text" class="form-control editable-field" value="28/06/2004" disabled>
+													</div>
+												</div>
+											</div>
+
+										</div>
+									</form>
+								</div>
+							</div>
+
+							<!-- Datos escolares -->
+							<div class="card">
+								<div class="card-header">
+									<h5 class="card-title mb-0">Datos escolares</h5>
+								</div>
+
+								<div class="card-body">
+									<form id="form-datos-escolares">
+										<div class="row g-3">
+
+											<div class="col-12">
+												<label class="form-label">Escuela de Procedencia</label>
+												<input name="escuela" type="text" class="form-control editable-field"
+													value="COLEGIO DE BACHILLERES DEL ESTADO DE TAMAULIPAS, PLANTEL 22" disabled>
+											</div>
+
+											<div class="col-md-6">
+												<label class="form-label">Estado</label>
+												<select name="estado_escolar" class="form-select editable-field" disabled>
+													<option selected>TAMAULIPAS</option>
+												</select>
+											</div>
+
+											<div class="col-md-6">
+												<label class="form-label">Municipio</label>
+												<input name="municipio_escolar" type="text" class="form-control editable-field" value="REYNOSA" disabled>
+											</div>
+
+											<div class="col-md-6">
+												<label class="form-label">Fecha de Inicio Bachillerato</label>
+												<input name="bach_inicio" type="text" class="form-control editable-field" value="17/08/2019" disabled>
+											</div>
+
+											<div class="col-md-6">
+												<label class="form-label">Fecha de Terminación Bachillerato</label>
+												<input name="bach_fin" type="text" class="form-control editable-field" value="15/06/2022" disabled>
+											</div>
+
+											<div class="col-md-8">
+												<label class="form-label">UT de Procedencia</label>
+												<input name="ut_procedencia" type="text" class="form-control editable-field" value="" disabled>
+											</div>
+
+											<div class="col-md-4">
+												<label class="form-label">Promedio TSU</label>
+												<input name="promedio_tsu" type="text" class="form-control editable-field" value="9.2" disabled>
+											</div>
+
+											<div class="col-md-4">
+												<label class="form-label">Situación</label>
+												<select name="situacion" class="form-select editable-field" disabled>
+													<option selected>ACTIVO</option>
+													<option>INACTIVO</option>
+												</select>
+											</div>
+
+											<div class="col-12">
+												<label class="form-label">Observaciones</label>
+												<textarea name="observaciones" class="form-control editable-field" rows="3" disabled></textarea>
+											</div>
+
+											<div class="col-md-6">
+												<label class="form-label d-block">¿Contaba con beca?</label>
+												<div class="d-flex align-items-center gap-3">
+													<div class="form-check">
+														<input class="form-check-input editable-field" type="radio" name="beca" id="beca-no" value="NO" disabled>
+														<label class="form-check-label" for="beca-no">No</label>
+													</div>
+													<div class="form-check">
+														<input class="form-check-input editable-field" type="radio" name="beca" id="beca-si" value="SI" checked disabled>
+														<label class="form-check-label" for="beca-si">Sí</label>
+													</div>
+												</div>
+											</div>
+
+											<div class="col-md-6">
+												<label class="form-label">Tipo de beca</label>
+												<select name="tipo_beca" class="form-select editable-field" disabled>
+													<option selected>SIN SELECCIÓN</option>
+												</select>
+											</div>
+
+											<div class="col-md-6">
+												<label class="form-label d-block">¿Proviene de origen indígena?</label>
+												<div class="d-flex align-items-center gap-3">
+													<div class="form-check">
+														<input class="form-check-input editable-field" type="radio" name="origen" id="origen-no" value="NO" checked disabled>
+														<label class="form-check-label" for="origen-no">No</label>
+													</div>
+													<div class="form-check">
+														<input class="form-check-input editable-field" type="radio" name="origen" id="origen-si" value="SI" disabled>
+														<label class="form-check-label" for="origen-si">Sí</label>
+													</div>
+												</div>
+											</div>
+
+											<div class="col-md-6">
+												<label class="form-label d-block">¿Habla lengua indígena?</label>
+												<div class="d-flex align-items-center gap-3">
+													<div class="form-check">
+														<input class="form-check-input editable-field" type="radio" name="lengua" id="lengua-no" value="NO" checked disabled>
+														<label class="form-check-label" for="lengua-no">No</label>
+													</div>
+													<div class="form-check">
+														<input class="form-check-input editable-field" type="radio" name="lengua" id="lengua-si" value="SI" disabled>
+														<label class="form-check-label" for="lengua-si">Sí</label>
+													</div>
+												</div>
+											</div>
+
+											<div class="col-md-6">
+												<label class="form-label d-block">¿Padece alguna discapacidad?</label>
+												<div class="d-flex align-items-center gap-3">
+													<div class="form-check">
+														<input class="form-check-input editable-field" type="radio" name="discapacidad" id="discapacidad-no" value="NO" checked disabled>
+														<label class="form-check-label" for="discapacidad-no">No</label>
+													</div>
+													<div class="form-check">
+														<input class="form-check-input editable-field" type="radio" name="discapacidad" id="discapacidad-si" value="SI" disabled>
+														<label class="form-check-label" for="discapacidad-si">Sí</label>
+													</div>
+												</div>
+											</div>
+
+											<div class="col-md-6">
+												<label class="form-label d-block">¿Padece alguna enfermedad?</label>
+												<div class="d-flex align-items-center gap-3">
+													<div class="form-check">
+														<input class="form-check-input editable-field" type="radio" name="enfermedad" id="enfermedad-no" value="NO" checked disabled>
+														<label class="form-check-label" for="enfermedad-no">No</label>
+													</div>
+													<div class="form-check">
+														<input class="form-check-input editable-field" type="radio" name="enfermedad" id="enfermedad-si" value="SI" disabled>
+														<label class="form-check-label" for="enfermedad-si">Sí</label>
+													</div>
+												</div>
+											</div>
+
+										</div>
+									</form>
+								</div>
+							</div>
+
+							<!-- ================= DOCUMENTOS ================= -->
+							<div class="card mt-3">
+							<div class="card-header">
+								<h5 class="card-title mb-0">Documentación</h5>
+							</div>
+
+							<div class="card-body">
+
+								<h6 class="mb-3">Entregados</h6>
+								<div class="table-responsive">
+								<table class="table table-bordered table-sm align-middle">
+									<thead class="table-light">
+									<tr>
+										<th>Documento</th>
+										<th style="width:140px">Usuario</th>
+										<th style="width:140px">Fecha</th>
+										<th>Observaciones</th>
+										<th style="width:260px">Documento</th>
+										<th style="width:60px" class="text-center">Acción</th>
+									</tr>
+									</thead>
+									<tbody id="tbodyEntregados"></tbody>
+									</tbody>
+								</table>
+								</div>
+
+								<h6 class="mt-4 mb-3">Por Entregar</h6>
+								<div class="table-responsive">
+								<table class="table table-bordered table-sm align-middle">
+									<thead class="table-light">
+									<tr>
+										<th>Documento</th>
+										<th style="width:260px">Anexar Documento</th>
+									</tr>
+									</thead>
+									<tbody id="tbodyPorEntregar"></tbody>
+								</table>
+								</div>
+
+								<div class="d-flex justify-content-end mt-3">
+								<button type="button" id="btnContinuar" class="btn btn-primary">
+									Siguiente
+								</button>
+								</div>
+
+							</div>
+							</div>
+
+						</div>
+					</div>
+
+				</div>
+			</main>
+
+			<footer class="footer">
+				<div class="container-fluid">
+					<div class="row text-muted">
+						<div class="col-6 text-start">
+							<p class="mb-0">
+								<a class="text-muted" href="https://uttn.edu.mx/" target="_blank">
+									<strong>Universidad Tecnólogica de Tamaulipas Norte</strong>
+								</a> &copy;
+							</p>
+						</div>
+						<div class="col-6 text-end">
+							<ul class="list-inline">
+								<li class="list-inline-item"><a class="text-muted" href="https://adminkit.io/" target="_blank">Soporte</a></li>
+								<li class="list-inline-item"><a class="text-muted" href="https://adminkit.io/" target="_blank">Ayuda</a></li>
+								<li class="list-inline-item"><a class="text-muted" href="https://adminkit.io/" target="_blank">Privacidad</a></li>
+								<li class="list-inline-item"><a class="text-muted" href="https://adminkit.io/" target="_blank">Terminos</a></li>
+							</ul>
+						</div>
+					</div>
+				</div>
+			</footer>
+		</div>
+	</div>
+
+	<script src="js/app.js"></script>
+	<script src="/src/js/modules/alumno-scripts.js"></script>
+	<script src="/src/js/modules/layout.js"></script>
+</body>
+</html>
