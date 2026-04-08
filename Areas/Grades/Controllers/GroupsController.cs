@@ -40,7 +40,7 @@ namespace SchoolManager.Areas.Grades.Controllers
                     GradeLevelId = g.GradeLevelId,
                     GradeLevelName = g.GradeLevel.Name,
                     SubjectsCount = g.TeacherSubjectGroups.Count,
-                    StudentsCount = 0 // Por ahora, hasta que tengamos inscripciones
+                    StudentsCount = g.Enrollments.Count()
                 })
                 .OrderBy(g => g.GradeLevelName)
                 .ThenBy(g => g.Name)

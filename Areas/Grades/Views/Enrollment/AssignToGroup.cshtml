@@ -1,23 +1,24 @@
-﻿@model SchoolManager.Areas.Grades.ViewModels.Enrollment.EnrollmentCreateViewModel
+@using SchoolManager.Areas.Grades.ViewModels.Breadcrumbs;
+@model SchoolManager.Areas.Grades.ViewModels.Enrollment.EnrollmentCreateViewModel
 
 @{
+
     ViewData["Title"] = $"Asignar Estudiantes - {Model.GroupName}";
     Layout = "~/Areas/MainScreen/Views/Shared/_Layout.cshtml";
 
     var gradeLevels = ViewBag.GradeLevels as IEnumerable<dynamic> ?? Enumerable.Empty<dynamic>();
     var allGroups = ViewBag.AllGroups as IEnumerable<dynamic> ?? Enumerable.Empty<dynamic>();
+    var breadcrumbs = new BreadcrumbViewModel();
+
+    breadcrumbs.AddItem("Panel Administrativo", "/PanelAdministrativo");
+    breadcrumbs.AddItem("Grupos", "/Grades/Groups");
+    breadcrumbs.AddItem(Model.GroupName, $"/Grades/Groups/Details/{Model.GroupId}");
+    breadcrumbs.AddItem("Asignar Estudiantes");
 }
+<partial name="_Breadcrumb" model="breadcrumbs" />
 
 <div class="container-fluid py-4">
-    <nav aria-label="breadcrumb" class="mb-4">
-        <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="/PanelAdministrativo">Panel Administrativo</a></li>
-            <li class="breadcrumb-item">
-                <a asp-controller="Groups" asp-action="Details" asp-route-id="@Model.GroupId">@Model.GroupName</a>
-            </li>
-            <li class="breadcrumb-item active">Asignar Estudiantes</li>
-        </ol>
-    </nav>
+
 
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
@@ -49,12 +50,12 @@
                         <i class="bi bi-search" style="color: #8C1B1B;"></i>
                     </span>
                     <input type="text" id="searchInput" class="form-control"
-                           placeholder="Buscar por nombre o matrícula..."
+                           placeholder="Buscar por nombre o CURP..."
                            style="border-left: none;">
                 </div>
             </div>
 
-            <!-- Toggle inscripción -->
+            <!-- Toggle inscripción — 4 opciones -->
             <div class="btn-group" role="group" id="enrollFilter">
                 <input type="radio" class="btn-check" name="enrollOpt" id="optAll" autocomplete="off" checked>
                 <label class="btn btn-outline-secondary btn-sm" for="optAll">Todos</label>
@@ -64,16 +65,21 @@
                     <i class="bi bi-check-circle me-1"></i>Inscritos aquí
                 </label>
 
-                <input type="radio" class="btn-check" name="enrollOpt" id="optAvailable" autocomplete="off">
-                <label class="btn btn-outline-secondary btn-sm" for="optAvailable">
-                    <i class="bi bi-person-plus me-1"></i>No inscritos
+                <input type="radio" class="btn-check" name="enrollOpt" id="optNone" autocomplete="off">
+                <label class="btn btn-outline-secondary btn-sm" for="optNone">
+                    <i class="bi bi-dash-circle me-1"></i>Sin grupo
+                </label>
+
+                <input type="radio" class="btn-check" name="enrollOpt" id="optOther" autocomplete="off">
+                <label class="btn btn-outline-secondary btn-sm" for="optOther">
+                    <i class="bi bi-arrow-left-right me-1"></i>En otro grupo
                 </label>
             </div>
 
             <span id="filterCount" class="text-muted small"></span>
         </div>
 
-        <!-- Filtros secundarios (solo visibles en modo "no inscritos") -->
+        <!-- Filtros secundarios (solo visibles en modo "en otro grupo") -->
         <div id="extraFilters" class="d-flex flex-wrap gap-3 mb-4 align-items-center d-none">
             <div style="min-width: 200px;">
                 <select id="filterGradeLevel" class="form-select form-select-sm">
@@ -90,7 +96,7 @@
                     @foreach (var g in allGroups)
                     {
                         <option value="@g.GroupId" data-gradelevel="@g.GradeLevelId">
-                            @g.Name — @g.GradeLevelName
+                            @g.GradeLevelName — @g.Name
                         </option>
                     }
                 </select>
@@ -111,10 +117,10 @@
                                 <input type="checkbox" class="form-check-input" id="selectAll"
                                        title="Seleccionar todos los visibles" />
                             </th>
-                            <th>Matrícula</th>
+                            <th>CURP</th>
                             <th>Nombre</th>
                             <th>Email</th>
-                            <th class="text-center">Estado</th>
+                            <th class="text-center">Estado / Grupo actual</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -124,8 +130,9 @@
                                 data-name="@student.FullName.ToLower()"
                                 data-matricula="@(student.Matricula?.ToLower() ?? "")"
                                 data-enrolled="@(student.IsSelected ? "here" : (student.CurrentGroupName != null ? "other" : "none"))"
-                                data-groupid="@(student.CurrentGroupName != null ? "has" : "")"
+                                data-gradelevelid="@(student.CurrentGradeLevelId?.ToString() ?? "")"
                                 data-gradelevelname="@(student.CurrentGradeLevelName ?? "")"
+                                data-currentgroupid="@(student.CurrentGroupId?.ToString() ?? "")"
                                 data-currentgroup="@(student.CurrentGroupName ?? "")">
                                 <td>
                                     <input type="checkbox"
@@ -146,9 +153,9 @@
                                     }
                                     else if (student.CurrentGroupName != null)
                                     {
-                                        <span class="badge" style="background-color: #fd7e14;"
-                                              title="@student.CurrentGradeLevelName">
-                                            <i class="bi bi-arrow-left-right me-1"></i>@student.CurrentGroupName
+                                        <span class="badge" style="background-color: #fd7e14;">
+                                            <i class="bi bi-arrow-left-right me-1"></i>
+                                            @student.CurrentGradeLevelName — @student.CurrentGroupName
                                         </span>
                                     }
                                     else
@@ -195,12 +202,12 @@
         const filterGL    = document.getElementById('filterGradeLevel');
         const filterGrp   = document.getElementById('filterGroup');
 
-        // Grupos disponibles en el select (para filtrar por semestre)
         const allGroupOptions = [...document.querySelectorAll('#filterGroup option')].filter(o => o.value);
 
         function getEnrollOpt() {
-            if (document.getElementById('optEnrolled').checked)  return 'enrolled';
-            if (document.getElementById('optAvailable').checked) return 'available';
+            if (document.getElementById('optEnrolled').checked) return 'enrolled';
+            if (document.getElementById('optNone').checked)     return 'none';
+            if (document.getElementById('optOther').checked)    return 'other';
             return 'all';
         }
 
@@ -209,59 +216,63 @@
             badge.textContent = `${n} seleccionado${n !== 1 ? 's' : ''}`;
         }
 
-        function updateRowStyle(cb) {
-            const row = cb.closest('tr');
-            row.classList.toggle('table-success', cb.checked);
-            const cell = row.querySelector('.status-cell');
-            const enrolled = row.dataset.enrolled;
-            if (cb.checked) {
-                cell.innerHTML = `<span class="badge" style="background-color:#28a745;"><i class="bi bi-check-circle me-1"></i>Inscrito aquí</span>`;
+        function buildStatusHtml(enrolled, grp, lvl) {
+            if (enrolled === 'here') {
+                return `<span class="badge" style="background-color:#28a745;"><i class="bi bi-check-circle me-1"></i>Inscrito aquí</span>`;
             } else if (enrolled === 'other') {
-                const grp = row.dataset.currentgroup;
-                const lvl = row.dataset.gradelevelname;
-                cell.innerHTML = `<span class="badge" style="background-color:#fd7e14;" title="${lvl}"><i class="bi bi-arrow-left-right me-1"></i>${grp}</span>`;
+                return `<span class="badge" style="background-color:#fd7e14;"><i class="bi bi-arrow-left-right me-1"></i>${lvl} — ${grp}</span>`;
+            }
+            return `<span class="badge bg-secondary"><i class="bi bi-dash-circle me-1"></i>Sin inscribir</span>`;
+        }
+
+        function updateRowStyle(cb) {
+            const row     = cb.closest('tr');
+            const cell    = row.querySelector('.status-cell');
+            const enrolled = row.dataset.enrolled;
+            const grp     = row.dataset.currentgroup;
+            const lvl     = row.dataset.gradelevelname;
+
+            row.classList.toggle('table-success', cb.checked);
+
+            if (cb.checked) {
+                cell.innerHTML = buildStatusHtml('here', grp, lvl);
             } else {
-                cell.innerHTML = `<span class="badge bg-secondary"><i class="bi bi-dash-circle me-1"></i>Sin inscribir</span>`;
+                cell.innerHTML = buildStatusHtml(enrolled, grp, lvl);
             }
         }
 
         function applyFilters() {
-            const query    = searchInput.value.toLowerCase().trim();
-            const opt      = getEnrollOpt();
-            const selGL    = filterGL.value;
-            const selGrp   = filterGrp.value;
-            let visible    = 0;
+            const query   = searchInput.value.toLowerCase().trim();
+            const opt     = getEnrollOpt();
+            const selGL   = filterGL.value;
+            const selGrp  = filterGrp.value;
+            let visible   = 0;
 
             rows.forEach(row => {
                 const name      = row.dataset.name || '';
                 const matricula = row.dataset.matricula || '';
                 const enrolled  = row.dataset.enrolled; // 'here' | 'other' | 'none'
-                const glName    = row.dataset.gradelevelname || '';
-                const grpName   = row.dataset.currentgroup || '';
+                const glId      = row.dataset.gradelevelid || '';
+                const grpId     = row.dataset.currentgroupid || '';
 
-                // Filtro toggle inscripción
+                // Filtro principal de inscripción
                 let matchEnroll = true;
-                if (opt === 'enrolled')  matchEnroll = enrolled === 'here';
-                if (opt === 'available') matchEnroll = enrolled !== 'here';
+                if (opt === 'enrolled') matchEnroll = enrolled === 'here';
+                if (opt === 'none')     matchEnroll = enrolled === 'none';
+                if (opt === 'other')    matchEnroll = enrolled === 'other';
 
-                // Filtros extra (semestre/grupo — solo aplican sobre los "no inscritos aquí")
+                // Sub-filtros (solo aplican en modo "En otro grupo")
                 let matchGL  = true;
                 let matchGrp = true;
-                if (opt === 'available' && enrolled === 'other') {
-                    if (selGL) {
-                        // Comparamos por nombre de nivel porque el data-attribute tiene el nombre
-                        const selGLName = filterGL.options[filterGL.selectedIndex]?.text || '';
-                        matchGL = glName === selGLName;
-                    }
-                    if (selGrp) {
-                        const selGrpName = filterGrp.options[filterGrp.selectedIndex]?.text.split(' — ')[0].trim() || '';
-                        matchGrp = grpName === selGrpName;
-                    }
+                if (opt === 'other' && enrolled === 'other') {
+                    if (selGL)  matchGL  = glId  === selGL;
+                    if (selGrp) matchGrp = grpId === selGrp;
                 }
 
+                // Buscador
                 const matchSearch = !query || name.includes(query) || matricula.includes(query);
-                const show = matchEnroll && matchGL && matchGrp && matchSearch;
 
+                const show = matchEnroll && matchGL && matchGrp && matchSearch;
                 row.classList.toggle('d-none', !show);
                 if (show) visible++;
             });
@@ -273,26 +284,25 @@
             const visibleChecks = [...rows]
                 .filter(r => !r.classList.contains('d-none'))
                 .map(r => r.querySelector('.student-checkbox'));
-            selectAll.checked = visibleChecks.length > 0 && visibleChecks.every(c => c.checked);
+            selectAll.checked       = visibleChecks.length > 0 && visibleChecks.every(c => c.checked);
             selectAll.indeterminate = !selectAll.checked && visibleChecks.some(c => c.checked);
         }
 
-        // Mostrar/ocultar filtros extra según el toggle
+        // Mostrar/ocultar filtros extra solo para "En otro grupo"
         document.querySelectorAll('input[name="enrollOpt"]').forEach(radio => {
             radio.addEventListener('change', () => {
-                const isAvailable = document.getElementById('optAvailable').checked;
-                extraFilters.classList.toggle('d-none', !isAvailable);
-                if (!isAvailable) {
+                const isOther = document.getElementById('optOther').checked;
+                extraFilters.classList.toggle('d-none', !isOther);
+                if (!isOther) {
                     filterGL.value  = '';
                     filterGrp.value = '';
-                    // Restaurar todas las opciones de grupo
                     allGroupOptions.forEach(o => o.hidden = false);
                 }
                 applyFilters();
             });
         });
 
-        // Filtrar opciones de grupo según semestre seleccionado
+        // Filtrar opciones de grupo según semestre seleccionado (usa IDs)
         filterGL.addEventListener('change', function () {
             const selId = this.value;
             allGroupOptions.forEach(o => {

@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SchoolManager.Areas.Grades.ViewModels;
@@ -176,28 +176,172 @@ namespace SchoolManager.Areas.Grades.Controllers
             if (id == null) return NotFound();
 
             var subject = await _context.grades_Subjects
-                .Where(s => s.SubjectId == id)
-                .Select(s => new SubjectDetailsViewModel
-                {
-                    SubjectId = s.SubjectId,
-                    Name = s.Name,
-                    GradeLevelId = s.GradeLevelId,
-                    GradeLevelName = s.GradeLevel.Name,
-                    Units = s.Units
-                        .OrderBy(u => u.UnitNumber)
-                        .Select(u => new UnitViewModel
-                        {
-                            UnitId = u.UnitId,
-                            UnitNumber = u.UnitNumber,
-                            IsOpen = u.IsOpen,
-                            HasGrades = _context.grades_Grades.Any(g => g.SubjectUnitId == u.UnitId)
-                        }).ToList()
-                })
-                .FirstOrDefaultAsync();
+                .Include(s => s.GradeLevel)
+                .Include(s => s.Units)
+                .FirstOrDefaultAsync(s => s.SubjectId == id);
 
             if (subject == null) return NotFound();
 
-            return View(subject);
+            // Profesores ya asignados a esta materia con sus grupos
+            var teacherSubjects = await _context.grades_TeacherSubjects
+                .Include(ts => ts.Teacher).ThenInclude(t => t.Person)
+                .Include(ts => ts.TeacherSubjectGroups).ThenInclude(tsg => tsg.Group)
+                .Where(ts => ts.SubjectId == id)
+                .ToListAsync();
+
+            // Todos los grupos del mismo nivel
+            var allGroups = await _context.grades_GradeGroups
+                .Where(g => g.GradeLevelId == subject.GradeLevelId)
+                .OrderBy(g => g.Name)
+                .ToListAsync();
+
+            // Mapa groupId → profe que lo tiene en esta materia
+            var takenMap = teacherSubjects
+                .SelectMany(ts => ts.TeacherSubjectGroups.Select(tsg => new
+                {
+                    tsg.GroupId,
+                    ts.TeacherId,
+                    TeacherName = ts.Teacher.Person.FirstName + " " + ts.Teacher.Person.LastNamePaternal
+                }))
+                .ToDictionary(x => x.GroupId, x => x);
+
+            var viewModel = new SubjectDetailsViewModel
+            {
+                SubjectId = subject.SubjectId,
+                Name = subject.Name,
+                GradeLevelId = subject.GradeLevelId,
+                GradeLevelName = subject.GradeLevel.Name,
+                Units = subject.Units
+                    .OrderBy(u => u.UnitNumber)
+                    .Select(u => new UnitViewModel
+                    {
+                        UnitId = u.UnitId,
+                        UnitNumber = u.UnitNumber,
+                        IsOpen = u.IsOpen,
+                        HasGrades = _context.grades_Grades.Any(g => g.SubjectUnitId == u.UnitId)
+                    }).ToList(),
+                Teachers = teacherSubjects.Select(ts => new SubjectTeacherViewModel
+                {
+                    TeacherSubjectId = ts.TeacherSubjectId,
+                    TeacherId = ts.TeacherId,
+                    TeacherName = ts.Teacher.Person.FirstName + " " +
+                                  ts.Teacher.Person.LastNamePaternal + " " +
+                                  ts.Teacher.Person.LastNameMaternal,
+                    Groups = ts.TeacherSubjectGroups.Select(tsg => new SubjectTeacherGroupViewModel
+                    {
+                        TeacherSubjectGroupId = tsg.TeacherSubjectGroupId,
+                        GroupId = tsg.GroupId,
+                        GroupName = tsg.Group.Name
+                    }).OrderBy(g => g.GroupName).ToList()
+                }).OrderBy(t => t.TeacherName).ToList(),
+                GroupOptions = allGroups.Select(g => new SubjectGroupOptionViewModel
+                {
+                    GroupId = g.GroupId,
+                    GroupName = g.Name,
+                    IsTaken = takenMap.ContainsKey(g.GroupId),
+                    TakenByTeacherId = takenMap.ContainsKey(g.GroupId) ? takenMap[g.GroupId].TeacherId : null,
+                    TakenByTeacherName = takenMap.ContainsKey(g.GroupId) ? takenMap[g.GroupId].TeacherName : null
+                }).ToList()
+            };
+
+            ViewBag.Teachers = await GetTeachersForSubjectAsync();
+            return View(viewModel);
+        }
+
+        // POST: Subjects/AssignTeacher
+        // Asigna un profe a esta materia con los grupos seleccionados
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Administrator")]
+        public async Task<IActionResult> AssignTeacher(int subjectId, int teacherId, List<int> groupIds)
+        {
+            if (!groupIds.Any())
+            {
+                TempData["Error"] = "Debes seleccionar al menos un grupo";
+                return RedirectToAction(nameof(Details), new { id = subjectId });
+            }
+
+            // Verificar que ningún grupo seleccionado ya tenga otro profe en esta materia
+            var conflictingGroups = await _context.grades_TeacherSubjectGroups
+                .Include(tsg => tsg.TeacherSubject)
+                .Include(tsg => tsg.Group)
+                .Where(tsg => tsg.TeacherSubject.SubjectId == subjectId
+                           && groupIds.Contains(tsg.GroupId)
+                           && tsg.TeacherSubject.TeacherId != teacherId)
+                .ToListAsync();
+
+            if (conflictingGroups.Any())
+            {
+                var names = string.Join(", ", conflictingGroups.Select(c => c.Group.Name));
+                TempData["Error"] = $"Los siguientes grupos ya tienen un profesor asignado en esta materia: {names}";
+                return RedirectToAction(nameof(Details), new { id = subjectId });
+            }
+
+            // Obtener o crear el TeacherSubject
+            var teacherSubject = await _context.grades_TeacherSubjects
+                .FirstOrDefaultAsync(ts => ts.TeacherId == teacherId && ts.SubjectId == subjectId);
+
+            if (teacherSubject == null)
+            {
+                teacherSubject = new grades_teacher_subject
+                {
+                    TeacherId = teacherId,
+                    SubjectId = subjectId
+                };
+                _context.grades_TeacherSubjects.Add(teacherSubject);
+                await _context.SaveChangesAsync();
+            }
+
+            // Agregar solo los grupos nuevos (sin duplicar los que ya tenga este profe)
+            var existingGroupIds = await _context.grades_TeacherSubjectGroups
+                .Where(tsg => tsg.TeacherSubjectId == teacherSubject.TeacherSubjectId)
+                .Select(tsg => tsg.GroupId)
+                .ToListAsync();
+
+            foreach (var gId in groupIds.Where(g => !existingGroupIds.Contains(g)))
+            {
+                _context.grades_TeacherSubjectGroups.Add(new grades_teacher_subject_group
+                {
+                    TeacherSubjectId = teacherSubject.TeacherSubjectId,
+                    GroupId = gId
+                });
+            }
+
+            await _context.SaveChangesAsync();
+            TempData["Success"] = "Profesor asignado exitosamente";
+            return RedirectToAction(nameof(Details), new { id = subjectId });
+        }
+
+        // POST: Subjects/RemoveTeacherGroup
+        // Quita un grupo específico de un profe en esta materia
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Administrator")]
+        public async Task<IActionResult> RemoveTeacherGroup(int teacherSubjectGroupId, int subjectId)
+        {
+            var tsg = await _context.grades_TeacherSubjectGroups.FindAsync(teacherSubjectGroupId);
+            if (tsg == null) return NotFound();
+
+            var teacherSubjectId = tsg.TeacherSubjectId;
+            _context.grades_TeacherSubjectGroups.Remove(tsg);
+            await _context.SaveChangesAsync();
+
+            // Si el profe ya no tiene ningún grupo en esta materia, limpiar también el TeacherSubject
+            var remaining = await _context.grades_TeacherSubjectGroups
+                .CountAsync(x => x.TeacherSubjectId == teacherSubjectId);
+
+            if (remaining == 0)
+            {
+                var ts = await _context.grades_TeacherSubjects.FindAsync(teacherSubjectId);
+                if (ts != null)
+                {
+                    _context.grades_TeacherSubjects.Remove(ts);
+                    await _context.SaveChangesAsync();
+                }
+            }
+
+            TempData["Success"] = "Grupo removido del profesor";
+            return RedirectToAction(nameof(Details), new { id = subjectId });
         }
 
         // GET: Subjects/ManageUnits/5
@@ -242,7 +386,6 @@ namespace SchoolManager.Areas.Grades.Controllers
 
             if (subject == null) return NotFound();
 
-            // Verificar si ya existe una unidad con ese número
             if (subject.Units.Any(u => u.UnitNumber == unitNumber))
             {
                 TempData["Error"] = $"La unidad {unitNumber} ya existe";
@@ -289,7 +432,6 @@ namespace SchoolManager.Areas.Grades.Controllers
 
             if (unit == null) return NotFound();
 
-            // Verificar si tiene calificaciones asociadas
             var hasGrades = await _context.grades_Grades.AnyAsync(g => g.SubjectUnitId == unitId);
             if (hasGrades)
             {
@@ -304,7 +446,6 @@ namespace SchoolManager.Areas.Grades.Controllers
             return RedirectToAction(nameof(ManageUnits), new { subjectId = unit.SubjectId });
         }
 
-        // POST: Subjects/Delete/5
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Delete(int id)
@@ -315,7 +456,6 @@ namespace SchoolManager.Areas.Grades.Controllers
 
             if (subject == null) return NotFound();
 
-            // Verificar si tiene unidades con calificaciones
             var hasGrades = await _context.grades_Grades
                 .AnyAsync(g => subject.Units.Select(u => u.UnitId).Contains(g.SubjectUnitId));
 
@@ -325,11 +465,20 @@ namespace SchoolManager.Areas.Grades.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
-            // Eliminar primero las unidades
+            // Eliminar asignaciones de profesores
+            var teacherSubjects = await _context.grades_TeacherSubjects
+                .Include(ts => ts.TeacherSubjectGroups)
+                .Where(ts => ts.SubjectId == id)
+                .ToListAsync();
+
+            foreach (var ts in teacherSubjects)
+                _context.grades_TeacherSubjectGroups.RemoveRange(ts.TeacherSubjectGroups);
+
+            _context.grades_TeacherSubjects.RemoveRange(teacherSubjects);
+
+            // Eliminar unidades y materia
             if (subject.Units.Any())
-            {
                 _context.grades_SubjectUnits.RemoveRange(subject.Units);
-            }
 
             _context.grades_Subjects.Remove(subject);
             await _context.SaveChangesAsync();
@@ -338,9 +487,47 @@ namespace SchoolManager.Areas.Grades.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+        // ── Helpers ─────────────────────────────────────────────────────────────
+
         private bool SubjectExists(int id)
         {
             return _context.grades_Subjects.Any(e => e.SubjectId == id);
+        }
+
+        /// <summary>Usuarios con rol Teacher/Profesor para los selects de asignación</summary>
+        private async Task<List<dynamic>> GetTeachersForSubjectAsync()
+        {
+            var teacherRole = await _context.Roles
+                .FirstOrDefaultAsync(r => r.Name.ToLower() == "profesor"
+                                       || r.Name.ToLower() == "teacher"
+                                       || r.Name.ToLower() == "docente");
+
+            if (teacherRole == null)
+            {
+                return await _context.Users
+                    .Include(u => u.Person)
+                    .Where(u => u.IsActive)
+                    .Select(u => new {
+                        u.UserId,
+                        FullName = u.Person.FirstName + " " +
+                                   u.Person.LastNamePaternal + " " +
+                                   u.Person.LastNameMaternal
+                    })
+                    .OrderBy(u => u.FullName)
+                    .ToListAsync<dynamic>();
+            }
+
+            return await _context.UserRoles
+                .Include(ur => ur.User).ThenInclude(u => u!.Person)
+                .Where(ur => ur.RoleId == teacherRole.RoleId && ur.IsActive)
+                .Select(ur => new {
+                    ur.User!.UserId,
+                    FullName = ur.User.Person.FirstName + " " +
+                               ur.User.Person.LastNamePaternal + " " +
+                               ur.User.Person.LastNameMaternal
+                })
+                .OrderBy(u => u.FullName)
+                .ToListAsync<dynamic>();
         }
     }
 }
