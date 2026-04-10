@@ -4,17 +4,28 @@
     var idGeneration = ViewBag.IdGeneration;
 }
 
-<div class="mb-3 d-flex align-items-center gap-3">
+<div class="mb-3 d-flex justify-content-between align-items-center flex-wrap gap-2">
+    <div class="d-flex align-items-center gap-3">
+        <a asp-area="Enrollment"
+           asp-controller="PreEnrollment"
+           asp-action="Aspirantes"
+           class="btn btn-outline-secondary btn-sm">
+            <i data-feather="arrow-left" style="width:16px; height:16px;"></i>
+        </a>
+
+        <h1 class="h3 d-inline align-middle mb-0">
+            Generación <span id="titulo-year">...</span>
+        </h1>
+    </div>
+
     <a asp-area="Enrollment"
        asp-controller="PreEnrollment"
-       asp-action="Aspirantes"
-       class="btn btn-outline-secondary btn-sm">
-        <i data-feather="arrow-left" style="width:16px; height:16px;"></i>
+       asp-action="ExportarAspirantesExcel"
+       asp-route-idGeneration="@idGeneration"
+       class="btn btn-success btn-sm">
+        <i data-feather="download" class="me-1"></i>
+        Exportar a Excel
     </a>
-
-    <h1 class="h3 d-inline align-middle mb-0">
-        Generación <span id="titulo-year">...</span>
-    </h1>
 </div>
 
 <div id="loading" class="text-center py-4">
@@ -90,7 +101,7 @@
 
                 tr.innerHTML = `
                     <td>
-                        <img src="@Url.Content("~/enrollment/admin/img/avatars/avatar.jpg")"
+                        <img src="@Url.Content("~/enrollment/admin/src/img/avatars/avatar.jpg")"
                              width="32" height="32"
                              class="rounded-circle my-n1">
                     </td>
