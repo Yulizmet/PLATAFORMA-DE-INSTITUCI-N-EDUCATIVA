@@ -123,7 +123,12 @@ namespace SchoolManager.Areas.Grades.Controllers
                 {
                     StudentId = s.UserId,
                     StudentName = $"{s.Person.FirstName} {s.Person.LastNamePaternal} {s.Person.LastNameMaternal}",
-                    Matricula = s.Person.Curp ?? "S/N",
+                    // s = e.Student (users_user)
+                    Matricula = s.Preenrollments
+                        .Where(p => p.Matricula != null)
+                        .OrderByDescending(p => p.CreateStat)
+                        .Select(p => p.Matricula)
+                        .FirstOrDefault() ?? "S/N",
                     GradeId = existingGrades.FirstOrDefault(g => g.StudentId == s.UserId)?.GradeId,
                     GradeValue = existingGrades.FirstOrDefault(g => g.StudentId == s.UserId)?.Value,
                     HasRecovery = existingGrades.Any(g => g.StudentId == s.UserId && g.Recoveries.Any()),

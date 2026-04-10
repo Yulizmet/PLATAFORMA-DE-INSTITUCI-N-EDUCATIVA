@@ -1,0 +1,333 @@
+﻿@using SchoolManager.Areas.Grades.ViewModels.Kardex
+@model KardexViewModel
+
+@{
+    Layout = null; // Sin layout — página limpia para imprimir
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Kardex - @Model.StudentName</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet" />
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 10pt;
+            color: #333;
+            padding: 20px 30px;
+        }
+
+        /* ── Encabezado ─────────────────────────── */
+        .doc-header {
+            border: 2px solid #8C1B1B;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+
+        .doc-title {
+            text-align: center;
+            background-color: #8C1B1B;
+            color: white;
+            padding: 6px;
+            font-size: 14pt;
+            font-weight: bold;
+            letter-spacing: 3px;
+            margin-bottom: 12px;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4px 30px;
+            font-size: 9.5pt;
+        }
+
+            .info-grid .label {
+                font-weight: bold;
+                color: #555;
+            }
+
+        /* ── Semestres en 2 columnas ─────────────── */
+        .semesters-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px 25px;
+        }
+
+        .semester-block {
+            margin-bottom: 10px;
+        }
+
+        .semester-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            border-bottom: 2px solid #8C1B1B;
+            padding-bottom: 3px;
+            margin-bottom: 6px;
+        }
+
+        .semester-name {
+            font-weight: bold;
+            font-size: 9.5pt;
+            text-transform: uppercase;
+        }
+
+        .semester-period {
+            font-size: 8pt;
+            color: #666;
+        }
+
+        .semester-group {
+            font-size: 8pt;
+            color: #8C1B1B;
+            font-weight: bold;
+        }
+
+        /* ── Tabla de materias ─────────────────── */
+        .subject-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 8.5pt;
+        }
+
+            .subject-table td {
+                padding: 2px 0;
+                border-bottom: 1px dotted #ccc;
+            }
+
+                .subject-table td:last-child {
+                    text-align: right;
+                    font-weight: bold;
+                    width: 40px;
+                    padding-right: 5px;
+                }
+
+        .subject-name {
+            padding-left: 3px;
+        }
+
+        .grade-approved {
+            color: #333;
+        }
+
+        .grade-failed {
+            color: #dc3545;
+        }
+
+        .grade-extra {
+            color: #fd7e14;
+        }
+
+        .grade-pending {
+            color: #999;
+        }
+
+        /* ── Footer / Resumen ─────────────────── */
+        .doc-footer {
+            border: 2px solid #8C1B1B;
+            padding: 12px 15px;
+            margin-top: 20px;
+            font-size: 9pt;
+        }
+
+        .footer-stats {
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .footer-stat {
+            text-align: center;
+        }
+
+            .footer-stat .value {
+                font-size: 16pt;
+                font-weight: bold;
+                color: #8C1B1B;
+            }
+
+            .footer-stat .label {
+                font-size: 7.5pt;
+                color: #666;
+                text-transform: uppercase;
+            }
+
+        .footer-note {
+            text-align: center;
+            font-size: 7.5pt;
+            color: #999;
+            margin-top: 10px;
+            border-top: 1px solid #ddd;
+            padding-top: 8px;
+        }
+
+        /* ── Botones (solo en pantalla) ──────── */
+        .print-actions {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+            .print-actions button,
+            .print-actions a {
+                padding: 10px 25px;
+                border-radius: 10px;
+                border: none;
+                cursor: pointer;
+                font-size: 10pt;
+                text-decoration: none;
+                display: inline-block;
+                margin: 0 5px;
+            }
+
+        .btn-print {
+            background-color: #8C1B1B;
+            color: white;
+        }
+
+        .btn-back {
+            background-color: #6c757d;
+            color: white;
+        }
+
+        @@media print {
+            .print-actions {
+                display: none !important;
+            }
+
+            body {
+                padding: 0;
+            }
+
+            .semester-block {
+                break-inside: avoid;
+            }
+
+            @@page {
+                size: letter;
+                margin: 1.5cm;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Botones solo visibles en pantalla -->
+    <div class="print-actions">
+        <button class="btn-print" onclick="window.print()">
+            <i class="bi bi-printer me-2"></i>Imprimir / Guardar PDF
+        </button>
+        <a class="btn-back" href="/Grades/Kardex/Details?studentId=@Model.StudentId">
+            <i class="bi bi-arrow-left me-2"></i>Volver al Kardex
+        </a>
+    </div>
+
+    <!-- ══════ Encabezado ══════ -->
+    <div class="doc-header">
+        <div class="doc-title">HISTORIAL ACADÉMICO</div>
+
+        <div class="info-grid">
+            <div><span class="label">Alumno:</span> @Model.StudentName</div>
+            <div><span class="label">Matrícula:</span> @Model.Matricula</div>
+            <div><span class="label">Email:</span> @Model.Email</div>
+            <div><span class="label">Promedio General:</span> @Model.PromedioGeneral.ToString("F1")</div>
+        </div>
+    </div>
+
+    <!-- ══════ Semestres en 2 columnas ══════ -->
+    @if (Model.Semesters.Any())
+    {
+        <div class="semesters-grid">
+            @foreach (var semester in Model.Semesters)
+            {
+                <div class="semester-block">
+                    <!-- Header del semestre -->
+                    <div class="semester-header">
+                        <div>
+                            <span class="semester-name">@semester.GradeLevelName</span>
+                            <span class="semester-group">@semester.GroupName</span>
+                        </div>
+                        <span class="semester-period">
+                            @semester.StartDate.ToString("MMM yy").ToUpper()
+                            - @semester.EndDate.ToString("MMM yy").ToUpper()
+                        </span>
+                    </div>
+
+                    <!-- Materias -->
+                    <table class="subject-table">
+                        @foreach (var subject in semester.Subjects)
+                        {
+                            var gradeDisplay = "—";
+                            var gradeClass = "grade-pending";
+
+                            if (subject.HasExtraordinary && subject.ExtraordinaryGrade.HasValue)
+                            {
+                                gradeDisplay = subject.ExtraordinaryGrade.Value.ToString("F0");
+                                gradeClass = "grade-extra";
+                            }
+                            else if (subject.FinalGrade.HasValue)
+                            {
+                                gradeDisplay = subject.FinalGrade.Value.ToString("F0");
+                                gradeClass = subject.Passed ? "grade-approved" : "grade-failed";
+                            }
+
+                            <tr>
+                                <td class="subject-name">@subject.SubjectName.ToUpper()</td>
+                                <td class="@gradeClass">@gradeDisplay</td>
+                            </tr>
+                        }
+                    </table>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <div style="text-align: center; padding: 40px; color: #999;">
+            <p>Este alumno no tiene historial académico registrado.</p>
+        </div>
+    }
+
+    <!-- ══════ Footer / Resumen ══════ -->
+    <div class="doc-footer">
+        <div class="footer-stats">
+            <div class="footer-stat">
+                <div class="value">@Model.PromedioGeneral.ToString("F1")</div>
+                <div class="label">Promedio General</div>
+            </div>
+            <div class="footer-stat">
+                <div class="value">@Model.TotalMaterias</div>
+                <div class="label">Total Materias</div>
+            </div>
+            <div class="footer-stat">
+                <div class="value" style="color: #28a745;">@Model.MateriasAprobadas</div>
+                <div class="label">Aprobadas</div>
+            </div>
+            <div class="footer-stat">
+                <div class="value" style="color: #dc3545;">@Model.MateriasReprobadas</div>
+                <div class="label">Reprobadas</div>
+            </div>
+            <div class="footer-stat">
+                <div class="value" style="color: #fd7e14;">@Model.MateriasConExtraordinario</div>
+                <div class="label">Extraordinarios</div>
+            </div>
+        </div>
+
+        <div class="footer-note">
+            Documento generado el @DateTime.Now.ToString("dd/MM/yyyy") a las @DateTime.Now.ToString("HH:mm") hrs.
+            — Sistema de Gestión Escolar
+        </div>
+    </div>
+
+</body>
+</html>

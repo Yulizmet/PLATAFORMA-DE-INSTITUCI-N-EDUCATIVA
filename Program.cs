@@ -33,7 +33,7 @@ builder.Services.AddControllersWithViews(options =>
 });
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(
-        builder.Configuration.GetConnectionString("UttDeployConnection")));
+        builder.Configuration.GetConnectionString("tempConn")));
 
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>

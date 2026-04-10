@@ -45,9 +45,6 @@
   <ItemGroup>
     <Folder Include="Areas\Enrollment\Controllers\" />
     <Folder Include="Areas\Grades\JS\" />
-    <Folder Include="Areas\Grades\Controllers\" />
-    <Folder Include="Areas\Grades\Views\" />
-    <Folder Include="Areas\Grades\Views\" />
     <None Include="wwwroot\templates\Notification.html" />
     <Folder Include="Areas\Procedures\Controllers\" />
     <Folder Include="Areas\Procedures\Views\" />

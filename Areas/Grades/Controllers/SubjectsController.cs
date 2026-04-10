@@ -21,19 +21,12 @@ namespace SchoolManager.Areas.Grades.Controllers
         }
 
         // GET: Subjects
-        public async Task<IActionResult> Index(int? gradeLevelId)
+        // GET: Subjects
+        public async Task<IActionResult> Index()
         {
-            var query = _context.grades_Subjects
+            var subjects = await _context.grades_Subjects
                 .Include(s => s.GradeLevel)
                 .Include(s => s.Units)
-                .AsQueryable();
-
-            if (gradeLevelId.HasValue)
-            {
-                query = query.Where(s => s.GradeLevelId == gradeLevelId.Value);
-            }
-
-            var subjects = await query
                 .Select(s => new SubjectViewModel
                 {
                     SubjectId = s.SubjectId,
@@ -52,11 +45,8 @@ namespace SchoolManager.Areas.Grades.Controllers
                 .Select(gl => new { gl.GradeLevelId, gl.Name, gl.IsOpen })
                 .ToListAsync();
 
-            ViewBag.SelectedGradeLevel = gradeLevelId;
-
             return View(subjects);
         }
-
         // GET: Subjects/Create
         public IActionResult Create(int? gradeLevelId)
         {

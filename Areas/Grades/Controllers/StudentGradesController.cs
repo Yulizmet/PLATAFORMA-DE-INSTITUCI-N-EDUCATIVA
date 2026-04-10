@@ -36,6 +36,7 @@ namespace SchoolManager.Areas.Grades.Controllers
             // 1. Obtener información del estudiante (SIN Enrollments)
             var student = await _context.Users
                 .Include(u => u.Person)
+                .Include(u => u.Preenrollments)
                 .FirstOrDefaultAsync(u => u.UserId == studentId);
 
             if (student == null)
@@ -136,7 +137,12 @@ namespace SchoolManager.Areas.Grades.Controllers
             {
                 StudentId = student.UserId,
                 StudentName = $"{student.Person.FirstName} {student.Person.LastNamePaternal} {student.Person.LastNameMaternal}",
-                Matricula = student.Person.Curp ?? "S/N",
+                // student = users_user
+                Matricula = student.Preenrollments
+                    .Where(p => p.Matricula != null)
+                    .OrderByDescending(p => p.CreateStat)
+                    .Select(p => p.Matricula)
+                    .FirstOrDefault() ?? "S/N",
                 GradeLevel = gradeLevel.Name,
                 GroupName = group.Name,
                 Subjects = subjectGrades,

@@ -1,0 +1,170 @@
+﻿@using SchoolManager.Areas.Grades.ViewModels.Breadcrumbs
+@using SchoolManager.Areas.Grades.ViewModels.Kardex
+@model List<KardexStudentSearchViewModel>
+
+@{
+    ViewData["Title"] = "Kardex de Alumnos";
+    Layout = "~/Areas/MainScreen/Views/Shared/_Layout.cshtml";
+
+    var breadcrumbs = new BreadcrumbViewModel();
+    breadcrumbs.AddItem("Panel Administrativo", "/PanelAdministrativo");
+    breadcrumbs.AddItem("Kardex");
+}
+<partial name="_Breadcrumb" model="breadcrumbs" />
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.8/css/dataTables.bootstrap5.min.css" />
+
+<div class="container-fluid py-4">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="users-title mb-1">
+                <i class="bi bi-file-earmark-person me-2"></i>Kardex de Alumnos
+            </h1>
+            <p class="text-muted mb-0">Consulta el historial académico completo de un estudiante</p>
+        </div>
+    </div>
+
+    @if (Model.Any())
+    {
+        <div class="sistema-card">
+            <div class="table-responsive">
+                <table id="studentsTable" class="table table-hover align-middle mb-0" style="width:100%">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Matrícula</th>
+                            <th>Nombre</th>
+                            <th>Email</th>
+                            <th class="text-center">Grupo Actual</th>
+                            <th class="text-end">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var s in Model)
+                        {
+                            <tr>
+                                <td class="fw-semibold">
+                                    <i class="bi bi-person-badge me-1" style="color: #8C1B1B;"></i>
+                                    @s.Matricula
+                                </td>
+                                <td>@s.FullName</td>
+                                <td class="text-muted small">@s.Email</td>
+                                <td class="text-center">
+                                    @if (s.CurrentGroup != null)
+                                    {
+                                        <span class="badge" style="background-color: #B1A596; padding: 6px 12px; border-radius: 20px;">
+                                            <i class="bi bi-layers me-1"></i>@s.CurrentGradeLevel — @s.CurrentGroup
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary" style="padding: 6px 12px; border-radius: 20px;">
+                                            Sin grupo
+                                        </span>
+                                    }
+                                </td>
+                                <td class="text-end">
+                                    <a asp-action="Details" asp-route-studentId="@s.StudentId"
+                                       class="btn btn-sm btn-calificaciones" style="border-radius: 8px;">
+                                        <i class="bi bi-file-earmark-text me-1"></i>Ver Kardex
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="sistema-card text-center py-5">
+            <i class="bi bi-people" style="font-size: 3rem; color: #B1A596;"></i>
+            <p class="text-muted mt-3">No hay estudiantes registrados</p>
+        </div>
+    }
+</div>
+
+@if (Model.Any())
+{
+    @section Scripts {
+        <script src="https://cdn.datatables.net/1.13.8/js/jquery.dataTables.min.js"></script>
+        <script src="https://cdn.datatables.net/1.13.8/js/dataTables.bootstrap5.min.js"></script>
+
+        <script>
+            $(document).ready(function () {
+                $('#studentsTable').DataTable({
+                    language: {
+                        search: "",
+                        searchPlaceholder: "Buscar por nombre, matrícula...",
+                        lengthMenu: "Mostrar _MENU_ estudiantes",
+                        info: "Mostrando _START_ a _END_ de _TOTAL_ estudiantes",
+                        infoEmpty: "Sin estudiantes",
+                        infoFiltered: "(filtrado de _MAX_ totales)",
+                        zeroRecords: "No se encontraron estudiantes",
+                        paginate: {
+                            next: "<i class='bi bi-chevron-right'></i>",
+                            previous: "<i class='bi bi-chevron-left'></i>"
+                        }
+                    },
+                    pageLength: 15,
+                    lengthMenu: [10, 15, 25, 50],
+                    order: [[1, 'asc']],
+                    columnDefs: [
+                        { orderable: false, targets: 4 }
+                    ],
+                    dom: '<"d-flex justify-content-between align-items-center mb-3"lf>t<"d-flex justify-content-between align-items-center mt-3"ip>'
+                });
+            });
+        </script>
+
+        <style>
+            .dataTables_length select {
+                border-radius: 10px !important;
+                border: 1px solid #dee2e6 !important;
+                padding: 4px 30px 4px 10px !important;
+                min-width: 70px !important;
+            }
+
+            .dataTables_filter input {
+                border-radius: 10px !important;
+                border: 1px solid #dee2e6 !important;
+                padding: 6px 12px !important;
+                margin-left: 8px !important;
+            }
+
+                .dataTables_filter input:focus {
+                    border-color: #8C1B1B !important;
+                    box-shadow: 0 0 0 0.2rem rgba(140, 27, 27, 0.15) !important;
+                }
+
+            .page-item.active .page-link {
+                background-color: #8C1B1B !important;
+                border-color: #8C1B1B !important;
+                color: white !important;
+                border-radius: 8px !important;
+            }
+
+            .page-link {
+                color: #8C1B1B !important;
+                border-radius: 8px !important;
+                margin: 0 2px;
+                border: 1px solid #dee2e6 !important;
+            }
+
+                .page-link:hover {
+                    background-color: rgba(140, 27, 27, 0.1) !important;
+                }
+
+            .page-item.disabled .page-link {
+                color: #adb5bd !important;
+                background-color: #f8f9fa !important;
+                border-color: #dee2e6 !important;
+            }
+
+            .dataTables_info {
+                color: #6c757d !important;
+                font-size: 0.875rem;
+            }
+        </style>
+    }
+}

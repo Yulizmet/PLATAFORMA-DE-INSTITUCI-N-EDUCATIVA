@@ -1,20 +1,26 @@
 ﻿@using SchoolManager.Areas.Grades.ViewModels.GradeLevels
+@using SchoolManager.Areas.Grades.ViewModels.Breadcrumbs
 @model GradeLevelViewModel
 
 @{
-    ViewData["Title"] = "Editar Nivel Escolar";
+    ViewData["Title"] = $"Editar Nivel - {Model.Name}";
     Layout = "~/Areas/MainScreen/Views/Shared/_Layout.cshtml";
 
+    var breadcrumbs = new BreadcrumbViewModel();
+    breadcrumbs.AddItem("Panel Administrativo", "/PanelAdministrativo");
+    breadcrumbs.AddItem("Niveles Escolares", "/Grades/GradeLevels");
+    breadcrumbs.AddItem($"Editar - {Model.Name}");
 }
+<partial name="_Breadcrumb" model="breadcrumbs" />
 
 <div class="container-fluid py-4">
     <div class="row justify-content-center">
         <div class="col-md-8 col-lg-6">
-            <div class="card shadow">
-                <div class="card-header bg-white py-3">
-                    <h5 class="mb-0">
-                        <i class="fas fa-edit me-2 text-primary"></i>
-                        Editar Nivel: @Model.Name
+            <div class="card shadow" style="border: none; border-radius: 15px;">
+                <div class="card-header bg-white py-3" style="border-radius: 15px 15px 0 0;">
+                    <h5 class="mb-0 fw-bold" style="color: #1f2937;">
+                        <i class="bi bi-pencil-square me-2" style="color: #8C1B1B;"></i>
+                        Editar Nivel: <span style="color: #8C1B1B;">@Model.Name</span>
                     </h5>
                 </div>
                 <div class="card-body p-4">
@@ -23,45 +29,59 @@
                         <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
 
                         <div class="mb-3">
-                            <label asp-for="Name" class="form-label fw-semibold">Nombre del Nivel</label>
-                            <input asp-for="Name" class="form-control" />
+                            <label asp-for="Name" class="form-label fw-semibold">
+                                <i class="bi bi-tag me-1" style="color: #8C1B1B;"></i>Nombre del Nivel
+                            </label>
+                            <input asp-for="Name" class="form-control" placeholder="Ej: 1er Semestre" />
                             <span asp-validation-for="Name" class="text-danger"></span>
                         </div>
 
                         <div class="row">
                             <div class="col-md-6 mb-3">
-                                <label asp-for="StartDate" class="form-label fw-semibold">Fecha de Inicio</label>
+                                <label asp-for="StartDate" class="form-label fw-semibold">
+                                    <i class="bi bi-calendar-event me-1" style="color: #8C1B1B;"></i>Fecha de Inicio
+                                </label>
                                 <input asp-for="StartDate" class="form-control" type="date" />
                                 <span asp-validation-for="StartDate" class="text-danger"></span>
                             </div>
                             <div class="col-md-6 mb-3">
-                                <label asp-for="EndDate" class="form-label fw-semibold">Fecha de Fin</label>
+                                <label asp-for="EndDate" class="form-label fw-semibold">
+                                    <i class="bi bi-calendar-check me-1" style="color: #8C1B1B;"></i>Fecha de Fin
+                                </label>
                                 <input asp-for="EndDate" class="form-control" type="date" />
                                 <span asp-validation-for="EndDate" class="text-danger"></span>
                             </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="MinPassingGrade" class="form-label fw-semibold">
+                                <i class="bi bi-check2-circle me-1" style="color: #8C1B1B;"></i>Calificación mínima aprobatoria
+                            </label>
+                            <input asp-for="MinPassingGrade" class="form-control" type="number"
+                                   step="0.01" min="0" max="10" />
+                            <span asp-validation-for="MinPassingGrade" class="text-danger"></span>
+                            <small class="form-text text-muted">
+                                Calificación mínima para aprobar en este nivel (ej: 6.0, 7.0, 8.0)
+                            </small>
                         </div>
 
                         <div class="mb-4">
                             <div class="form-check form-switch">
                                 <input asp-for="IsOpen" class="form-check-input" role="switch" />
                                 <label asp-for="IsOpen" class="form-check-label fw-semibold">
-                                    Nivel Abierto
+                                    <i class="bi bi-unlock me-1" style="color: #8C1B1B;"></i>Nivel Abierto
                                 </label>
                             </div>
                         </div>
-                        <div class="mb-4">
-                            <label asp-for="MinPassingGrade" class="form-label fw-semibold">Calificación mínima aprobatoria</label>
-                            <input asp-for="MinPassingGrade" class="form-control" type="number" step="0.5" min="0" max="10" value="6.0" />
-                            <span asp-validation-for="MinPassingGrade" class="text-danger"></span>
-                            <small class="form-text text-muted">Calificación mínima para aprobar en este nivel (ej: 6.0, 7.0, 8.0)</small>
-                        </div>
 
                         <div class="d-flex gap-2 justify-content-end">
-                            <a asp-action="Index" class="btn btn-secondary">
-                                <i class="fas fa-times me-2"></i>Cancelar
+                            <a asp-action="Index" class="btn btn-secondary"
+                               style="border-radius: 10px; padding: 10px 25px;">
+                                <i class="bi bi-x-circle me-2"></i>Cancelar
                             </a>
-                            <button type="submit" class="btn btn-primary">
-                                <i class="fas fa-save me-2"></i>Guardar Cambios
+                            <button type="submit" class="btn btn-calificaciones"
+                                    style="padding: 10px 25px;">
+                                <i class="bi bi-save me-2"></i>Guardar Cambios
                             </button>
                         </div>
                     </form>

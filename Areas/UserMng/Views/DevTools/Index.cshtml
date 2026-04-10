@@ -1,6 +1,11 @@
 ﻿@{
     ViewData["Title"] = "DevTools - Herramientas de Desarrollo";
     Layout = "~/Areas/MainScreen/Views/Shared/_Layout.cshtml";
+
+    var careers = ViewBag.Careers as List<SchoolManager.Models.preenrollment_careers>
+                  ?? new List<SchoolManager.Models.preenrollment_careers>();
+    var generations = ViewBag.Generations as List<SchoolManager.Models.preenrollment_generations>
+                      ?? new List<SchoolManager.Models.preenrollment_generations>();
 }
 
 <div class="container py-4" style="max-width: 540px;">
@@ -10,7 +15,6 @@
                 <i class="bi bi-person-plus-fill me-1"></i> Crear Usuario Rápido
             </span>
 
-            <!-- ══ Switch ══ -->
             <div class="form-check form-switch mb-0">
                 <input class="form-check-input" type="checkbox" role="switch"
                        id="modeSwitch" onchange="toggleMode()">
@@ -21,6 +25,7 @@
         </div>
 
         <div class="card-body">
+            <!-- ══════════ USER FORM ══════════ -->
             <div id="userForm">
 
                 @if (TempData["Result"] != null)
@@ -47,7 +52,7 @@
                         <label class="form-label fw-semibold">Rol</label>
                         <div class="input-group">
                             <span class="input-group-text"><i class="bi bi-shield"></i></span>
-                            <select name="roleName" class="form-select" required>
+                            <select name="roleName" id="roleSelect" class="form-select" required>
                                 <option value="" disabled selected>-- Seleccionar rol --</option>
                                 @foreach (var role in ViewBag.Roles)
                                 {
@@ -55,6 +60,54 @@
                                 }
                             </select>
                         </div>
+                    </div>
+
+                    <div id="studentFields" class="d-none">
+                        <div class="alert alert-info py-2 mb-3">
+                            <i class="bi bi-info-circle me-1"></i>
+                            <small>Se generará matrícula automáticamente</small>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-6 mb-3">
+                                <label class="form-label fw-semibold small">Carrera</label>
+                                <select name="careerId" class="form-select form-select-sm">
+                                    <option value="">(Auto)</option>
+                                    @foreach (var c in careers)
+                                    {
+                                        <option value="@c.IdCareer">@c.name_career</option>
+                                    }
+                                </select>
+                            </div>
+                            <div class="col-6 mb-3">
+                                <label class="form-label fw-semibold small">Generación</label>
+                                <select name="generationId" class="form-select form-select-sm">
+                                    <option value="">(Auto)</option>
+                                    @foreach (var g in generations)
+                                    {
+                                        <option value="@g.IdGeneration">@g.Year</option>
+                                    }
+                                </select>
+                            </div>
+                        </div>
+
+                        @if (!careers.Any() || !generations.Any())
+                        {
+                            <div class="alert alert-warning py-2 mb-3">
+                                <i class="bi bi-exclamation-triangle me-1"></i>
+                                <small>
+                                    @if (!careers.Any())
+                                    {
+                                        <span>No hay carreras registradas. </span>
+                                    }
+                                    @if (!generations.Any())
+                                    {
+                                        <span>No hay generaciones registradas.</span>
+                                    }
+                                    <br />La matrícula no se generará sin estos datos.
+                                </small>
+                            </div>
+                        }
                     </div>
 
                     <div class="mb-3">
@@ -70,6 +123,8 @@
                     </button>
                 </form>
             </div>
+
+            <!-- ══════════ ROLE FORM ══════════ -->
             <div id="roleForm" style="display: none;">
 
                 @if (TempData["RoleResult"] != null)
@@ -115,7 +170,6 @@
                     </button>
                 </form>
 
-                <!-- Lista de roles existentes -->
                 <hr />
                 <h6 class="text-muted mb-2">
                     <i class="bi bi-list-ul me-1"></i> Roles existentes
@@ -159,35 +213,39 @@
 </div>
 
 @section Scripts {
-<script>
-    function toggleMode() {
-        const isRoleMode = document.getElementById('modeSwitch').checked;
-        const userForm   = document.getElementById('userForm');
-        const roleForm   = document.getElementById('roleForm');
-        const cardTitle  = document.getElementById('cardTitle');
-        const switchLabel = document.getElementById('switchLabel');
+    <script>
+        function toggleMode() {
+            const isRoleMode = document.getElementById('modeSwitch').checked;
+            const userForm = document.getElementById('userForm');
+            const roleForm = document.getElementById('roleForm');
+            const cardTitle = document.getElementById('cardTitle');
+            const switchLabel = document.getElementById('switchLabel');
 
-        if (isRoleMode) {
-            userForm.style.display = 'none';
-            roleForm.style.display = 'block';
-            cardTitle.innerHTML = '<i class="bi bi-shield-plus me-1"></i> Agregar Rol';
-            switchLabel.textContent = 'Crear Usuario';
-        } else {
-            userForm.style.display = 'block';
-            roleForm.style.display = 'none';
-            cardTitle.innerHTML = '<i class="bi bi-person-plus-fill me-1"></i> Crear Usuario Rápido';
-            switchLabel.textContent = 'Agregar Rol';
+            if (isRoleMode) {
+                userForm.style.display = 'none';
+                roleForm.style.display = 'block';
+                cardTitle.innerHTML = '<i class="bi bi-shield-plus me-1"></i> Agregar Rol';
+                switchLabel.textContent = 'Crear Usuario';
+            } else {
+                userForm.style.display = 'block';
+                roleForm.style.display = 'none';
+                cardTitle.innerHTML = '<i class="bi bi-person-plus-fill me-1"></i> Crear Usuario Rápido';
+                switchLabel.textContent = 'Agregar Rol';
+            }
         }
-    }
 
-    @if (TempData["RoleResult"] != null || TempData["RoleError"] != null)
-    {
-        <text>
-        document.addEventListener('DOMContentLoaded', function() {
-            document.getElementById('modeSwitch').checked = true;
-            toggleMode();
+        document.getElementById('roleSelect').addEventListener('change', function () {
+            document.getElementById('studentFields').classList.toggle('d-none', this.value !== 'Student');
         });
-        </text>
-    }
-</script>
+
+        @if (TempData["RoleResult"] != null || TempData["RoleError"] != null)
+        {
+                <text>
+                document.addEventListener('DOMContentLoaded', function () {
+                    document.getElementById('modeSwitch').checked = true;
+                    toggleMode();
+                });
+                </text>
+        }
+    </script>
 }

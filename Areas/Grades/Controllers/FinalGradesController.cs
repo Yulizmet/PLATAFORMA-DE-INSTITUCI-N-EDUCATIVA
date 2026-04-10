@@ -94,7 +94,11 @@ namespace SchoolManager.Areas.Grades.Controllers
                     {
                         StudentId = s.UserId,
                         StudentName = $"{s.Person.FirstName} {s.Person.LastNamePaternal} {s.Person.LastNameMaternal}",
-                        Matricula = s.Person.Curp ?? "S/N",
+                        Matricula = s.Preenrollments
+                            .Where(p => p.Matricula != null)
+                            .OrderByDescending(p => p.CreateStat)
+                            .Select(p => p.Matricula)
+                            .FirstOrDefault() ?? "S/N",
                         FinalGrade = finalGrade?.Value,
                         Passed = finalGrade?.Passed ?? false,
                         FinalGradeId = finalGrade?.FinalGradeId,
