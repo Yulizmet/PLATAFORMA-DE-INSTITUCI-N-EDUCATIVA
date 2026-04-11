@@ -101,6 +101,10 @@ namespace SchoolManager.Areas.Grades.Controllers
                     .ThenInclude(g => g.Enrollments)
                         .ThenInclude(e => e.Student)
                             .ThenInclude(s => s.Person)
+                .Include(tsg => tsg.Group)
+                    .ThenInclude(g => g.Enrollments)
+                        .ThenInclude(e => e.Student)
+                            .ThenInclude(s => s.Preenrollments)
                 .FirstOrDefaultAsync(tsg => tsg.TeacherSubjectGroupId == teacherSubjectGroupId);
 
             if (tsg == null) return NotFound();
