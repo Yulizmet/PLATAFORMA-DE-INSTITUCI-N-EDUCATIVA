@@ -1,187 +1,232 @@
-﻿@model IEnumerable<SchoolManager.Areas.Grades.ViewModels.Subjects.SubjectViewModel>
+﻿@using SchoolManager.Areas.Grades.ViewModels.Breadcrumbs
+@using SchoolManager.Areas.Grades.ViewModels.Subjects
+@model List<SubjectViewModel>
 
 @{
     ViewData["Title"] = "Materias";
     Layout = "~/Areas/MainScreen/Views/Shared/_Layout.cshtml";
 
-    var selectedGradeLevel = ViewBag.SelectedGradeLevel as int?;
+    var gradeLevels = ViewBag.GradeLevels as IEnumerable<dynamic> ?? Enumerable.Empty<dynamic>();
+
+    var breadcrumbs = new BreadcrumbViewModel();
+    breadcrumbs.AddItem("Panel Administrativo", "/PanelAdministrativo");
+    breadcrumbs.AddItem("Materias");
 }
+<partial name="_Breadcrumb" model="breadcrumbs" />
+
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.8/css/dataTables.bootstrap5.min.css" />
 
 <div class="container-fluid py-4">
+
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1 class="users-title">
-            <i class="bi bi-book me-2"></i>Materias
-        </h1>
-        <a asp-action="Create" asp-route-gradeLevelId="@selectedGradeLevel" class="btn btn-calificaciones">
+        <div>
+            <h1 class="users-title mb-1">
+                <i class="bi bi-book me-2"></i>Materias
+            </h1>
+            <p class="text-muted mb-0">Administración de materias por nivel escolar</p>
+        </div>
+        <a asp-action="Create" class="btn btn-calificaciones" style="padding: 10px 25px;">
             <i class="bi bi-plus-circle me-2"></i>Nueva Materia
         </a>
     </div>
 
-    @if (TempData["Success"] != null)
+    @if (Model.Any())
     {
-        <div class="alert alert-success alert-dismissible fade show" role="alert" style="background-color: #d4edda; color: #155724; border-left: 5px solid #28a745;">
-            <i class="bi bi-check-circle-fill me-2"></i>@TempData["Success"]
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-    }
-
-    @if (TempData["Error"] != null)
-    {
-        <div class="alert alert-danger alert-dismissible fade show" role="alert" style="background-color: #f8d7da; color: #721c24; border-left: 5px solid #D42D2D;">
-            <i class="bi bi-exclamation-triangle-fill me-2"></i>@TempData["Error"]
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-    }
-
-    <!-- Filtro por Nivel -->
-    <div class="card shadow-sm mb-4" style="border-radius: 20px; border: none;">
-        <div class="card-body" style="padding: 30px;">
-            <form method="get" class="row g-3 align-items-end">
-                <div class="col-md-4">
-                    <label class="form-label fw-semibold" style="color: #1f2937;">Filtrar por Nivel</label>
-                    <select name="gradeLevelId" class="form-select" onchange="this.form.submit()" style="border-radius: 10px; border: 1px solid #e0e0e0;">
-                        <option value="">Todos los niveles</option>
-                        @foreach (var level in ViewBag.GradeLevels)
-                        {
-                            <option value="@level.GradeLevelId" selected="@(level.GradeLevelId == selectedGradeLevel)">
-                                @level.Name
-                            </option>
-                        }
-                    </select>
-                </div>
-                @if (selectedGradeLevel.HasValue)
-                {
-                    <div class="col-md-2">
-                        <a asp-action="Index" class="btn btn-outline-secondary" style="border-radius: 10px;">
-                            <i class="bi bi-x-circle me-2"></i>Limpiar
-                        </a>
-                    </div>
-                }
-            </form>
-        </div>
-    </div>
-
-    @if (!Model.Any())
-    {
-        <div class="text-center py-5">
-            <div class="mb-3">
-                <i class="bi bi-book" style="font-size: 4rem; color: #B1A596;"></i>
+        <!-- Filtro por nivel -->
+        <div class="d-flex flex-wrap gap-3 mb-3 align-items-center">
+            <div style="min-width: 200px;">
+                <select id="filterGradeLevel" class="form-select">
+                    <option value="">Todos los niveles</option>
+                    @foreach (var gl in gradeLevels)
+                    {
+                        <option value="@gl.Name">
+                            @gl.Name
+                            @(gl.IsOpen ? "✓" : "")
+                        </option>
+                    }
+                </select>
             </div>
-            <h5 class="text-muted">No hay materias registradas</h5>
-            <p class="text-muted mb-4">Comienza creando la primera materia</p>
-            <a asp-action="Create" class="btn btn-calificaciones">
-                <i class="bi bi-plus-circle me-2"></i>Crear Materia
-            </a>
+        </div>
+
+        <div class="sistema-card">
+            <div class="table-responsive">
+                <table id="subjectsTable" class="table table-hover align-middle mb-0" style="width:100%">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Materia</th>
+                            <th>Nivel Escolar</th>
+                            <th class="text-center">Unidades</th>
+                            <th class="text-center">Abiertas</th>
+                            <th class="text-end">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var subject in Model)
+                        {
+                            <tr>
+                                <td class="fw-semibold">
+                                    <i class="bi bi-book me-1" style="color: #8C1B1B;"></i>
+                                    @subject.Name
+                                </td>
+                                <td>
+                                    <span class="badge" style="background-color: #B1A596; color: white; padding: 6px 12px; border-radius: 20px;">
+                                        <i class="bi bi-layers me-1"></i>@subject.GradeLevelName
+                                    </span>
+                                </td>
+                                <td class="text-center">
+                                    <span class="badge" style="background-color: #8C1B1B; padding: 6px 12px; border-radius: 20px;">
+                                        @subject.UnitsCount
+                                    </span>
+                                </td>
+                                <td class="text-center">
+                                    @if (subject.OpenUnitsCount > 0)
+                                    {
+                                        <span class="badge" style="background-color: #28a745; padding: 6px 12px; border-radius: 20px;">
+                                            @subject.OpenUnitsCount
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary" style="padding: 6px 12px; border-radius: 20px;">
+                                            0
+                                        </span>
+                                    }
+                                </td>
+                                <td class="text-end">
+                                    <a asp-action="Details" asp-route-id="@subject.SubjectId"
+                                       class="btn btn-sm btn-outline-secondary" title="Ver detalles"
+                                       style="border-radius: 8px;">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+
+                                    <a asp-action="Edit" asp-route-id="@subject.SubjectId"
+                                       class="btn btn-sm btn-outline-secondary" title="Editar"
+                                       style="border-radius: 8px;">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    <form asp-action="Delete" asp-route-id="@subject.SubjectId" method="post"
+                                          style="display: inline;"
+                                          onsubmit="return confirm('¿Estás seguro de eliminar esta materia?');">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger"
+                                                title="Eliminar" style="border-radius: 8px;">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
         </div>
     }
     else
     {
-        <div class="row">
-            @foreach (var item in Model)
-            {
-                <div class="col-md-6 col-lg-4 mb-4">
-                    <div class="sistema-card border-calificaciones">
-                        <div class="sistema-icon icon-calificaciones mb-4">
-                            <i class="bi bi-book"></i>
-                        </div>
-
-                        <div class="d-flex justify-content-between align-items-start mb-3">
-                            <h4 class="fw-bold" style="color: #1f2937;">@item.Name</h4>
-                            <span class="badge" style="background-color: #B1A596; color: white; padding: 8px 12px; border-radius: 10px;">
-                                @item.UnitsCount unidades
-                            </span>
-                        </div>
-
-                        <p class="text-muted mb-3">
-                            <i class="bi bi-layers me-1"></i>@item.GradeLevelName
-                        </p>
-
-                        <div class="mb-4">
-                            <small class="text-muted d-block mb-2">Unidades activas</small>
-                            <div class="d-flex gap-2">
-                                @if (item.UnitsCount > 0)
-                                {
-                                    var openPercentage = item.UnitsCount > 0 ? (item.OpenUnitsCount * 100 / item.UnitsCount) : 0;
-                                    <div class="progress flex-grow-1" style="height: 10px; border-radius: 5px;">
-                                        <div class="progress-bar" role="progressbar"
-                                             style="width: @openPercentage%; background-color: #D42D2D;"
-                                             aria-valuenow="@openPercentage" aria-valuemin="0" aria-valuemax="100">
-                                        </div>
-                                    </div>
-                                    <span class="fw-semibold" style="color: #D42D2D;">@item.OpenUnitsCount/@item.UnitsCount</span>
-                                }
-                                else
-                                {
-                                    <span class="text-muted">Sin unidades</span>
-                                }
-                            </div>
-                        </div>
-
-                        <div class="d-flex justify-content-end gap-2">
-                            <a asp-action="Details" asp-route-id="@item.SubjectId"
-                               class="btn btn-sm" style="background-color: #f0f0f0; color: #4a5568; border-radius: 10px; padding: 8px 12px;"
-                               title="Ver detalles">
-                                <i class="bi bi-eye"></i>
-                            </a>
-                            <a asp-action="ManageUnits" asp-route-subjectId="@item.SubjectId"
-                               class="btn btn-sm" style="background-color: #B1A596; color: white; border-radius: 10px; padding: 8px 12px;"
-                               title="Gestionar unidades">
-                                <i class="bi bi-puzzle"></i>
-                            </a>
-                            <a asp-action="Edit" asp-route-id="@item.SubjectId"
-                               class="btn btn-sm" style="background-color: #8C1B1B; color: white; border-radius: 10px; padding: 8px 12px;"
-                               title="Editar">
-                                <i class="bi bi-pencil"></i>
-                            </a>
-                            <button type="button" class="btn btn-sm"
-                                    style="background-color: #620900; color: white; border-radius: 10px; padding: 8px 12px;"
-                                    data-bs-toggle="modal" data-bs-target="#deleteModal-@item.SubjectId"
-                                    title="Eliminar">
-                                <i class="bi bi-trash"></i>
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Modal de eliminación -->
-                    <div class="modal fade" id="deleteModal-@item.SubjectId" tabindex="-1">
-                        <div class="modal-dialog">
-                            <div class="modal-content" style="border-radius: 20px; border: none;">
-                                <div class="modal-header" style="background-color: #8C1B1B; color: white; border-radius: 20px 20px 0 0;">
-                                    <h5 class="modal-title">
-                                        <i class="bi bi-exclamation-triangle-fill me-2"></i>
-                                        Confirmar Eliminación
-                                    </h5>
-                                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                                </div>
-                                <div class="modal-body p-4">
-                                    <p>¿Estás seguro de eliminar la materia <strong style="color: #8C1B1B;">@item.Name</strong>?</p>
-                                    @if (item.UnitsCount > 0)
-                                    {
-                                        <p class="mt-3 p-3" style="background-color: #fff3cd; color: #856404; border-radius: 10px;">
-                                            <i class="bi bi-exclamation-triangle-fill me-2"></i>
-                                            Esta materia tiene @item.UnitsCount unidades asociadas.
-                                        </p>
-                                    }
-                                    <p class="text-danger mb-0">
-                                        <i class="bi bi-exclamation-triangle-fill me-2"></i>
-                                        Esta acción no se puede deshacer.
-                                    </p>
-                                </div>
-                                <div class="modal-footer border-0">
-                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" style="border-radius: 10px; background-color: #6c757d;">
-                                        <i class="bi bi-x-circle me-2"></i>Cancelar
-                                    </button>
-                                    <form asp-action="Delete" asp-route-id="@item.SubjectId" method="post">
-                                        <button type="submit" class="btn" style="background-color: #D42D2D; color: white; border-radius: 10px;">
-                                            <i class="bi bi-trash me-2"></i>Eliminar
-                                        </button>
-                                    </form>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            }
+        <div class="sistema-card text-center py-5">
+            <i class="bi bi-book" style="font-size: 3rem; color: #B1A596;"></i>
+            <p class="text-muted mt-3">No hay materias registradas</p>
+            <a asp-action="Create" class="btn btn-calificaciones mt-2" style="padding: 10px 25px;">
+                <i class="bi bi-plus-circle me-2"></i>Crear Primera Materia
+            </a>
         </div>
     }
 </div>
+
+@if (Model.Any())
+{
+    @section Scripts {
+        <script src="https://cdn.datatables.net/1.13.8/js/jquery.dataTables.min.js"></script>
+        <script src="https://cdn.datatables.net/1.13.8/js/dataTables.bootstrap5.min.js"></script>
+
+        <script>
+            $(document).ready(function () {
+                var table = $('#subjectsTable').DataTable({
+                    language: {
+                        search: "",
+                        searchPlaceholder: "Buscar materia...",
+                        lengthMenu: "Mostrar _MENU_ materias",
+                        info: "Mostrando _START_ a _END_ de _TOTAL_ materias",
+                        infoEmpty: "Sin materias",
+                        infoFiltered: "(filtrado de _MAX_ totales)",
+                        zeroRecords: "No se encontraron materias",
+                        paginate: {
+                            first: "Primero",
+                            last: "Último",
+                            next: "<i class='bi bi-chevron-right'></i>",
+                            previous: "<i class='bi bi-chevron-left'></i>"
+                        }
+                    },
+                    pageLength: 10,
+                    lengthMenu: [5, 10, 25, 50],
+                    order: [[1, 'asc'], [0, 'asc']],
+                    columnDefs: [
+                        { orderable: false, targets: 4 }
+                    ],
+                    dom: '<"d-flex justify-content-between align-items-center mb-3"lf>t<"d-flex justify-content-between align-items-center mt-3"ip>'
+                });
+
+                // Filtro por nivel
+                $('#filterGradeLevel').on('change', function () {
+                    var val = $(this).val();
+                    table.column(1).search(val).draw();
+                });
+            });
+        </script>
+
+        <style>
+            /* Select "Mostrar X" más ancho */
+            .dataTables_length select {
+                border-radius: 10px !important;
+                border: 1px solid #dee2e6 !important;
+                padding: 4px 30px 4px 10px !important; /* ✅ Más espacio a la derecha */
+                min-width: 70px !important; /* ✅ Ancho mínimo */
+            }
+
+            /* Search input */
+            .dataTables_filter input {
+                border-radius: 10px !important;
+                border: 1px solid #dee2e6 !important;
+                padding: 6px 12px !important;
+                margin-left: 8px !important;
+            }
+
+                .dataTables_filter input:focus {
+                    border-color: #8C1B1B !important;
+                    box-shadow: 0 0 0 0.2rem rgba(140, 27, 27, 0.15) !important;
+                }
+
+            /* Paginación - página activa */
+            .page-item.active .page-link {
+                background-color: #8C1B1B !important;
+                border-color: #8C1B1B !important;
+                color: white !important; /* ✅ Texto blanco */
+                border-radius: 8px !important; /* ✅ Bordes redondeados */
+            }
+
+            /* Paginación - botones normales */
+            .page-link {
+                color: #8C1B1B !important;
+                border-radius: 8px !important;
+                margin: 0 2px;
+                border: 1px solid #dee2e6 !important; /* ✅ Borde visible */
+            }
+
+                .page-link:hover {
+                    background-color: rgba(140, 27, 27, 0.1) !important;
+                }
+
+            /* Paginación - botones deshabilitados (< >) */
+            .page-item.disabled .page-link {
+                color: #adb5bd !important;
+                background-color: #f8f9fa !important;
+                border-color: #dee2e6 !important;
+            }
+
+            /* Info text */
+            .dataTables_info {
+                color: #6c757d !important;
+                font-size: 0.875rem;
+            }
+        </style>
+    }
+}

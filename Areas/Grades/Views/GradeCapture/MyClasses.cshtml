@@ -9,36 +9,32 @@
     breadcrumbs.AddItem("Mis Clases");
 }
 <partial name="_Breadcrumb" model="breadcrumbs" />
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.8/css/dataTables.bootstrap5.min.css" />
 
 <div class="container-fluid py-4">
+
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1 class="users-title">
-            <i class="bi bi-mortarboard me-2"></i>Mis Clases
-        </h1>
+        <div>
+            <h1 class="users-title mb-1">
+                <i class="bi bi-mortarboard me-2"></i>Mis Clases
+            </h1>
+            <p class="text-muted mb-0">Selecciona una clase para capturar calificaciones</p>
+        </div>
     </div>
 
     @if (TempData["Success"] != null)
     {
-        <div class="alert alert-success alert-dismissible fade show" role="alert" style="background-color: #d4edda; color: #155724; border-left: 5px solid #28a745;">
+        <div class="alert alert-success alert-dismissible fade show" role="alert"
+             style="background-color: #d4edda; color: #155724; border-left: 5px solid #28a745;">
             <i class="bi bi-check-circle-fill me-2"></i>@TempData["Success"]
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
     }
 
-    @if (!Model.Classes.Any())
-    {
-        <div class="text-center py-5">
-            <div class="mb-3">
-                <i class="bi bi-mortarboard" style="font-size: 4rem; color: #B1A596;"></i>
-            </div>
-            <h5 class="text-muted">No tienes clases asignadas</h5>
-            <p class="text-muted mb-4">Contacta al administrador para asignarte materias</p>
-        </div>
-    }
-    else
+    @if (Model.Classes.Any())
     {
         <!-- Filtros -->
-        <div class="d-flex flex-wrap gap-3 mb-4 align-items-center">
+        <div class="d-flex flex-wrap gap-3 mb-3 align-items-center">
             <div style="min-width: 200px;">
                 <select id="filterGradeLevel" class="form-select">
                     <option value="">Todos los niveles</option>
@@ -57,100 +53,152 @@
                     }
                 </select>
             </div>
-            <span id="filterCount" class="text-muted small"></span>
-            <button type="button" id="btnClearFilters" class="btn btn-outline-secondary btn-sm d-none">
-                <i class="bi bi-x-circle me-1"></i>Limpiar filtros
-            </button>
         </div>
 
-        <!-- Cards -->
-        <div class="row" id="classesGrid">
-            @foreach (var item in Model.Classes)
-            {
-                <div class="col-md-6 col-lg-4 mb-4 class-card"
-                     data-gradelevel="@item.GradeLevelName"
-                     data-group="@item.GroupName">
-                    <div class="sistema-card border-calificaciones h-100">
-                        <div class="sistema-icon icon-calificaciones mb-4">
-                            <i class="bi bi-book"></i>
-                        </div>
-                        <h4 class="fw-bold mb-2" style="color: #1f2937;">@item.SubjectName</h4>
-                        <p class="text-muted mb-1">
-                            <i class="bi bi-people me-1"></i>Grupo: @item.GroupName
-                        </p>
-                        <p class="text-muted mb-3">
-                            <i class="bi bi-layers me-1"></i>@item.GradeLevelName
-                        </p>
-                        <div class="mt-3">
-                            <a asp-action="SelectUnit" asp-route-teacherSubjectGroupId="@item.TeacherSubjectGroupId"
-                               class="btn btn-calificaciones w-100">
-                                <i class="bi bi-pencil-square me-2"></i>Capturar Calificaciones
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            }
+        <div class="sistema-card">
+            <div class="table-responsive">
+                <table id="classesTable" class="table table-hover align-middle mb-0" style="width:100%">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Materia</th>
+                            <th>Grupo</th>
+                            <th>Nivel Escolar</th>
+                            <th class="text-end">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model.Classes)
+                        {
+                            <tr>
+                                <td class="fw-semibold">
+                                    <i class="bi bi-book me-1" style="color: #8C1B1B;"></i>
+                                    @item.SubjectName
+                                </td>
+                                <td>
+                                    <span class="badge" style="background-color: #8C1B1B; padding: 6px 12px; border-radius: 20px;">
+                                        <i class="bi bi-people me-1"></i>@item.GroupName
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="badge" style="background-color: #B1A596; color: white; padding: 6px 12px; border-radius: 20px;">
+                                        <i class="bi bi-layers me-1"></i>@item.GradeLevelName
+                                    </span>
+                                </td>
+                                <td class="text-end">
+                                    <a asp-action="SelectUnit"
+                                       asp-route-teacherSubjectGroupId="@item.TeacherSubjectGroupId"
+                                       class="btn btn-sm btn-calificaciones" style="border-radius: 8px;">
+                                        <i class="bi bi-pencil-square me-1"></i>Capturar
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
         </div>
-
-        <!-- Empty state al filtrar -->
-        <div id="noResults" class="text-center py-5 d-none">
-            <i class="bi bi-search" style="font-size: 3rem; color: #B1A596;"></i>
-            <h5 class="text-muted mt-3">Sin resultados</h5>
-            <p class="text-muted">Ninguna clase coincide con los filtros seleccionados.</p>
+    }
+    else
+    {
+        <div class="sistema-card text-center py-5">
+            <i class="bi bi-mortarboard" style="font-size: 3rem; color: #B1A596;"></i>
+            <p class="text-muted mt-3">No tienes clases asignadas</p>
+            <p class="text-muted">Contacta al administrador para asignarte materias</p>
         </div>
     }
 </div>
 
-@section Scripts {
-    <script>
-        const cards      = document.querySelectorAll('.class-card');
-        const selLevel   = document.getElementById('filterGradeLevel');
-        const selGroup   = document.getElementById('filterGroup');
-        const count      = document.getElementById('filterCount');
-        const noResults  = document.getElementById('noResults');
-        const btnClear   = document.getElementById('btnClearFilters');
+@if (Model.Classes.Any())
+{
+    @section Scripts {
+        <script src="https://cdn.datatables.net/1.13.8/js/jquery.dataTables.min.js"></script>
+        <script src="https://cdn.datatables.net/1.13.8/js/dataTables.bootstrap5.min.js"></script>
 
-        function applyFilters() {
-            const level = selLevel.value;
-            const group = selGroup.value;
-            let visible = 0;
+        <script>
+            $(document).ready(function () {
+                var table = $('#classesTable').DataTable({
+                    language: {
+                        search: "",
+                        searchPlaceholder: "Buscar materia...",
+                        lengthMenu: "Mostrar _MENU_ clases",
+                        info: "Mostrando _START_ a _END_ de _TOTAL_ clases",
+                        infoEmpty: "Sin clases",
+                        infoFiltered: "(filtrado de _MAX_ totales)",
+                        zeroRecords: "No se encontraron clases",
+                        paginate: {
+                            next: "<i class='bi bi-chevron-right'></i>",
+                            previous: "<i class='bi bi-chevron-left'></i>"
+                        }
+                    },
+                    pageLength: 10,
+                    lengthMenu: [5, 10, 25, 50],
+                    order: [[2, 'asc'], [1, 'asc'], [0, 'asc']],
+                    columnDefs: [
+                        { orderable: false, targets: 3 }
+                    ],
+                    dom: '<"d-flex justify-content-between align-items-center mb-3"lf>t<"d-flex justify-content-between align-items-center mt-3"ip>'
+                });
 
-            cards.forEach(card => {
-                const matchLevel = !level || card.dataset.gradelevel === level;
-                const matchGroup = !group || card.dataset.group === group;
-                const show = matchLevel && matchGroup;
-                card.classList.toggle('d-none', !show);
-                if (show) visible++;
+                // Filtro por nivel
+                $('#filterGradeLevel').on('change', function () {
+                    table.column(2).search($(this).val()).draw();
+                });
+
+                // Filtro por grupo
+                $('#filterGroup').on('change', function () {
+                    table.column(1).search($(this).val()).draw();
+                });
             });
+        </script>
 
-            count.textContent = visible < cards.length ? `${visible} de ${cards.length} clases` : '';
-            noResults.classList.toggle('d-none', visible > 0);
-            btnClear.classList.toggle('d-none', !level && !group);
-
-            // Al filtrar por nivel, actualizar opciones de grupo disponibles
-            if (level) {
-                document.querySelectorAll('#filterGroup option').forEach(opt => {
-                    if (!opt.value) return;
-                    const existe = [...cards].some(c =>
-                        c.dataset.gradelevel === level && c.dataset.group === opt.value);
-                    opt.disabled = !existe;
-                    opt.style.color = existe ? '' : '#ccc';
-                });
-            } else {
-                document.querySelectorAll('#filterGroup option').forEach(opt => {
-                    opt.disabled = false;
-                    opt.style.color = '';
-                });
+        <style>
+            .dataTables_length select {
+                border-radius: 10px !important;
+                border: 1px solid #dee2e6 !important;
+                padding: 4px 30px 4px 10px !important;
+                min-width: 70px !important;
             }
-        }
 
-        selLevel.addEventListener('change', applyFilters);
-        selGroup.addEventListener('change', applyFilters);
+            .dataTables_filter input {
+                border-radius: 10px !important;
+                border: 1px solid #dee2e6 !important;
+                padding: 6px 12px !important;
+                margin-left: 8px !important;
+            }
 
-        btnClear.addEventListener('click', function () {
-            selLevel.value = '';
-            selGroup.value = '';
-            applyFilters();
-        });
-    </script>
+                .dataTables_filter input:focus {
+                    border-color: #8C1B1B !important;
+                    box-shadow: 0 0 0 0.2rem rgba(140, 27, 27, 0.15) !important;
+                }
+
+            .page-item.active .page-link {
+                background-color: #8C1B1B !important;
+                border-color: #8C1B1B !important;
+                color: white !important;
+                border-radius: 8px !important;
+            }
+
+            .page-link {
+                color: #8C1B1B !important;
+                border-radius: 8px !important;
+                margin: 0 2px;
+                border: 1px solid #dee2e6 !important;
+            }
+
+                .page-link:hover {
+                    background-color: rgba(140, 27, 27, 0.1) !important;
+                }
+
+            .page-item.disabled .page-link {
+                color: #adb5bd !important;
+                background-color: #f8f9fa !important;
+                border-color: #dee2e6 !important;
+            }
+
+            .dataTables_info {
+                color: #6c757d !important;
+                font-size: 0.875rem;
+            }
+        </style>
+    }
 }
