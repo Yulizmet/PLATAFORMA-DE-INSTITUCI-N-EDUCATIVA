@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using MiniExcelLibs;
 using SchoolManager.Areas.Grades.ViewModels.GradeCapture;
 using SchoolManager.Data;
+using SchoolManager.Grades.Services;
 using SchoolManager.Helpers;
 using SchoolManager.Models;
 using System.Globalization;
@@ -19,11 +20,14 @@ namespace SchoolManager.Areas.Grades.Controllers
 
     public class GradeCaptureController : Controller
     {
+        private readonly ITeacherAccessService _access;
         private readonly AppDbContext _context;
 
-        public GradeCaptureController(AppDbContext context)
+
+        public GradeCaptureController(AppDbContext context, ITeacherAccessService access)
         {
             _context = context;
+            _access = access;
         }
 
         // GET: GradeCapture/MyClasses
@@ -61,6 +65,9 @@ namespace SchoolManager.Areas.Grades.Controllers
         // GET: GradeCapture/SelectUnit/5
         public async Task<IActionResult> SelectUnit(int teacherSubjectGroupId)
         {
+            var teacherId = GetCurrentTeacherId();
+            if (!await _access.OwnsTeacherSubjectGroupAsync(teacherId, teacherSubjectGroupId))
+                return Forbid();
             var tsg = await _context.grades_TeacherSubjectGroups
                 .Include(tsg => tsg.TeacherSubject)
                     .ThenInclude(ts => ts.Subject)
@@ -94,6 +101,9 @@ namespace SchoolManager.Areas.Grades.Controllers
         // GET: GradeCapture/Capture
         public async Task<IActionResult> Capture(int teacherSubjectGroupId, int unitId)
         {
+            var teacherId = GetCurrentTeacherId();
+            if (!await _access.OwnsTeacherSubjectGroupAsync(teacherId, teacherSubjectGroupId))
+                return Forbid();
             var tsg = await _context.grades_TeacherSubjectGroups
                 .Include(tsg => tsg.TeacherSubject)
                     .ThenInclude(ts => ts.Subject)
@@ -161,6 +171,9 @@ namespace SchoolManager.Areas.Grades.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> SaveGrades(SaveGradesViewModel viewModel)
         {
+            var teacherId = GetCurrentTeacherId();
+            if (!await _access.OwnsTeacherSubjectGroupAsync(teacherId, viewModel.TeacherSubjectGroupId))
+                return Forbid();
             var unit = await _context.grades_SubjectUnits
                 .FirstOrDefaultAsync(u => u.UnitId == viewModel.UnitId);
 
@@ -215,6 +228,9 @@ namespace SchoolManager.Areas.Grades.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> SaveRecovery(int gradeId, decimal recoveryValue, int teacherSubjectGroupId, int unitId)
         {
+            var teacherId = GetCurrentTeacherId();
+            if (!await _access.OwnsGradeAsync(teacherId, gradeId))
+                return Forbid();
             var grade = await _context.grades_Grades
                 .Include(g => g.Recoveries)
                 .FirstOrDefaultAsync(g => g.GradeId == gradeId);
@@ -242,6 +258,11 @@ namespace SchoolManager.Areas.Grades.Controllers
             await _context.SaveChangesAsync();
             TempData["Success"] = "Recuperación guardada exitosamente";
 
+            var unit = await _context.grades_SubjectUnits
+                .FirstOrDefaultAsync(u => u.UnitId == unitId);
+            if (unit != null)
+                await TryAutoCalculateFinalGrades(grade.GroupId, unit.SubjectId, unitId);
+
             return RedirectToAction(nameof(Capture), new { teacherSubjectGroupId, unitId });
         }
 
@@ -250,25 +271,34 @@ namespace SchoolManager.Areas.Grades.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteRecovery(int recoveryId, int teacherSubjectGroupId, int unitId)
         {
+            var teacherId = GetCurrentTeacherId();
+            if (!await _access.OwnsRecoveryAsync(teacherId, recoveryId))
+                return Forbid();
             var recovery = await _context.grades_UnitRecoveries
+                .Include(r => r.Grade)
                 .FirstOrDefaultAsync(r => r.UnitRecoveryId == recoveryId);
 
             if (recovery == null) return NotFound();
+
+            var groupId = recovery.Grade.GroupId;
 
             _context.grades_UnitRecoveries.Remove(recovery);
             await _context.SaveChangesAsync();
 
             TempData["Success"] = "Recuperación eliminada correctamente";
+            var unit = await _context.grades_SubjectUnits
+                .FirstOrDefaultAsync(u => u.UnitId == unitId);
+            if (unit != null)
+                await TryAutoCalculateFinalGrades(groupId, unit.SubjectId, unitId);
             return RedirectToAction(nameof(Capture), new { teacherSubjectGroupId, unitId });
         }
-        public class ImportedGrade
-        {
-            public int StudentId { get; set; }
-            public decimal Grade { get; set; }
-        }
+
         [HttpPost]
         public async Task<IActionResult> UploadExcel(int teacherSubjectGroupId, int unitId, IFormFile excelFile)
         {
+            var teacherId = GetCurrentTeacherId();
+            if (!await _access.OwnsTeacherSubjectGroupAsync(teacherId, teacherSubjectGroupId))
+                return Forbid();
             if (excelFile == null || excelFile.Length == 0)
                 return BadRequest(new { error = "Selecciona un archivo" });
 
@@ -278,126 +308,195 @@ namespace SchoolManager.Areas.Grades.Controllers
 
             try
             {
-                // Guardar en disco temporal
-                var tempPath = Path.Combine(Path.GetTempPath(), "SchoolManager", "GradeCapture");
-                Directory.CreateDirectory(tempPath);
-                var tempFileName = $"{Guid.NewGuid()}_{excelFile.FileName}";
-                var tempFilePath = Path.Combine(tempPath, tempFileName);
-
-                using (var stream = System.IO.File.Create(tempFilePath))
-                    await excelFile.CopyToAsync(stream);
-
-                // Leer headers y preview
+                // 1. Leer a memoria
                 using var ms = new MemoryStream();
                 await excelFile.CopyToAsync(ms);
-                ms.Position = 0;
+                var bytes = ms.ToArray();
 
+                // 2. Guardar en disco temporal con GUID (elimina dependencia de TempData)
+                var fileId = Guid.NewGuid().ToString();
+                var tempDir = Path.Combine(Path.GetTempPath(), "SchoolManager", "ExcelImport");
+                Directory.CreateDirectory(tempDir);
+                var tempFilePath = Path.Combine(tempDir, $"{fileId}{extension}");
+                await System.IO.File.WriteAllBytesAsync(tempFilePath, bytes);
+
+                // 3. Leer headers y vista previa
+                ms.Position = 0;
                 var rows = ms.Query().ToList();
+
                 if (!rows.Any())
                     return BadRequest(new { error = "El archivo está vacío" });
 
                 var firstRow = (IDictionary<string, object>)rows[0];
-                var headers = firstRow.Keys.ToList();
+                var headers = firstRow.Keys.ToList(); // ["A", "B", "C", ...]
 
+                // Vista previa (máx 5 filas)
                 var preview = new List<Dictionary<string, object>>();
-                for (int i = 0; i < Math.Min(rows.Count, 3); i++)
+                for (int i = 0; i < Math.Min(rows.Count, 5); i++)
                 {
                     var row = (IDictionary<string, object>)rows[i];
                     preview.Add(row.ToDictionary(k => k.Key, k => k.Value));
                 }
 
-                // Guardar SOLO la ruta en TempData (no headers ni preview)
-                TempData["TempExcelPath"] = tempFilePath;
-
-                return Ok(new { headers, preview, fileName = excelFile.FileName });
+                return Ok(new
+                {
+                    headers,
+                    preview,
+                    fileName = excelFile.FileName,
+                    fileId,          // ← El frontend lo envía de vuelta en ApplyExcelMapping
+                    totalRows = rows.Count
+                });
             }
             catch (Exception ex)
             {
                 return BadRequest(new { error = $"Error al leer el archivo: {ex.Message}" });
             }
         }
-
         // POST: GradeCapture/ApplyExcelMapping
         [HttpPost]
-        public async Task<IActionResult> ApplyExcelMapping([FromBody] ExcelMappingViewModel model)
+        public async Task<IActionResult> ApplyExcelMapping([FromBody] ExcelImportViewModel model)
         {
-            // Construir índices desde ColumnMappings
-            foreach (var mapping in model.ColumnMappings)
+            var teacherId = GetCurrentTeacherId();
+            if (!await _access.OwnsTeacherSubjectGroupAsync(teacherId, model.TeacherSubjectGroupId))
+                return BadRequest(new { error = "No tienes acceso a este grupo" });
+            // ── Validaciones ─────────────────────────────────────────────
+            if (model.NombreColumnIndex < 0)
+                return BadRequest(new { error = "Debes seleccionar la columna de nombres" });
+
+            if (model.CalificacionColumnIndex < 0)
+                return BadRequest(new { error = "Debes seleccionar la columna de calificaciones" });
+
+            if (model.NombreColumnIndex == model.CalificacionColumnIndex)
+                return BadRequest(new { error = "Las columnas de nombre y calificación deben ser diferentes" });
+
+            // ── Buscar archivo temporal por fileId ────────────────────────
+            var tempDir = Path.Combine(Path.GetTempPath(), "SchoolManager", "ExcelImport");
+            var tempFiles = Directory.Exists(tempDir)
+                ? Directory.GetFiles(tempDir, $"{model.FileId}.*")
+                : Array.Empty<string>();
+
+            if (!tempFiles.Any())
+                return BadRequest(new { error = "Archivo temporal no encontrado. Sube el archivo de nuevo." });
+
+            var tempFilePath = tempFiles.First();
+
+            try
             {
-                if (mapping.Type == "nombre")
-                    model.NombreColumnIndex = mapping.ColumnIndex;
-                else if (mapping.Type == "calificacion" && mapping.UnitNumber.HasValue)
-                    model.UnitColumns[mapping.UnitNumber.Value] = mapping.ColumnIndex;
-            }
+                // ── Cargar estudiantes del grupo ──────────────────────────
+                var estudiantesBase = await _context.grades_Enrollments
+                    .Include(e => e.Student).ThenInclude(s => s.Person)
+                    .Where(e => e.GroupId == model.GroupId && e.IsActive)
+                    .Select(e => new
+                    {
+                        StudentId = e.Student.UserId,
+                        Nombre = (e.Student.Person.FirstName + " " +
+                                  e.Student.Person.LastNamePaternal + " " +
+                                  e.Student.Person.LastNameMaternal).Trim()
+                    })
+                    .ToListAsync();
 
-            if (model.NombreColumnIndex == -1)
-                return BadRequest(new { error = "Debes seleccionar una columna para los nombres" });
+                if (!estudiantesBase.Any())
+                    return BadRequest(new { error = "No hay estudiantes inscritos en este grupo" });
 
-            if (!model.UnitColumns.ContainsKey(model.UnitId))
-                return BadRequest(new { error = "Debes seleccionar una columna de calificación para esta unidad" });
+                // Diccionario: nombre normalizado → studentId
+                var porNombreNormalizado = new Dictionary<string, int>();
+                var errores = new List<string>();
 
-            var tempFilePath = TempData["TempExcelPath"]?.ToString();
-            if (string.IsNullOrEmpty(tempFilePath) || !System.IO.File.Exists(tempFilePath))
-                return BadRequest(new { error = "Archivo no encontrado. Intenta de nuevo." });
-
-            // Cargar estudiantes
-            var estudiantesBase = await _context.grades_Enrollments
-                .Include(e => e.Student).ThenInclude(s => s.Person)
-                .Where(e => e.GroupId == model.GroupId)
-                .Select(e => new
+                foreach (var est in estudiantesBase)
                 {
-                    StudentId = e.Student.UserId,
-                    Nombre = e.Student.Person.FirstName + " " +
-                             e.Student.Person.LastNamePaternal + " " +
-                             e.Student.Person.LastNameMaternal
-                })
-                .ToListAsync();
-
-            var estudiantesGrupo = estudiantesBase.Select(e => new
-            {
-                e.StudentId,
-                e.Nombre,
-                NombreNormalizado = NormalizarNombre(e.Nombre)
-            }).ToList();
-
-            var porNombreOriginal = estudiantesGrupo.ToDictionary(e => e.Nombre, e => e.StudentId);
-            var porNombreNormalizado = estudiantesGrupo.ToDictionary(e => e.NombreNormalizado, e => e.StudentId);
-
-            using var stream = System.IO.File.OpenRead(tempFilePath);
-            var rows = stream.Query().ToList();
-
-            var gradesToSave = new List<ImportedGrade>();
-            var errores = new List<string>();
-
-            for (int i = 1; i < rows.Count; i++)
-            {
-                var row = (IDictionary<string, object>)rows[i];
-                var nombreExcel = row.ElementAt(model.NombreColumnIndex).Value?.ToString()?.Trim() ?? "";
-                var califText = row.ElementAt(model.UnitColumns[model.UnitId]).Value?.ToString()?.Trim() ?? "";
-
-                if (string.IsNullOrEmpty(nombreExcel)) { errores.Add($"Fila {i + 1}: Nombre vacío"); continue; }
-
-                int studentId;
-                if (!porNombreOriginal.TryGetValue(nombreExcel, out studentId) &&
-                    !porNombreNormalizado.TryGetValue(NormalizarNombre(nombreExcel), out studentId))
-                {
-                    errores.Add($"Fila {i + 1}: '{nombreExcel}' no encontrado en el grupo");
-                    continue;
+                    var key = NormalizarNombre(est.Nombre);
+                    if (!porNombreNormalizado.ContainsKey(key))
+                        porNombreNormalizado[key] = est.StudentId;
+                    else
+                        errores.Add($"Advertencia: nombre duplicado en grupo: '{est.Nombre}'");
                 }
 
-                if (string.IsNullOrEmpty(califText)) continue;
+                // ── Leer Excel ────────────────────────────────────────────
+                using var stream = System.IO.File.OpenRead(tempFilePath);
+                var rows = stream.Query().ToList();
 
-                if (decimal.TryParse(califText, out decimal calif) && calif >= 0 && calif <= 10)
-                    gradesToSave.Add(new ImportedGrade { StudentId = studentId, Grade = calif });
-                else
-                    errores.Add($"Fila {i + 1}: '{califText}' no es válida (rango 0-10)");
+                var gradesToSave = new List<ImportedGradeResult>();
+                int startRow = model.HasHeaderRow ? 1 : 0; // Si tiene encabezado, saltar fila 0
+
+                for (int i = startRow; i < rows.Count; i++)
+                {
+                    var row = (IDictionary<string, object>)rows[i];
+                    var values = row.Values.ToList();
+                    int displayRow = i + 1; // Número de fila para mensajes (1-based)
+
+                    // Leer nombre
+                    var nombreExcel = values.ElementAtOrDefault(model.NombreColumnIndex)?
+                        .ToString()?.Trim() ?? "";
+
+                    if (string.IsNullOrEmpty(nombreExcel))
+                    {
+                        errores.Add($"Fila {displayRow}: nombre vacío, se omitió");
+                        continue;
+                    }
+
+                    // Buscar estudiante por nombre normalizado
+                    var nombreNorm = NormalizarNombre(nombreExcel);
+                    if (!porNombreNormalizado.TryGetValue(nombreNorm, out int studentId))
+                    {
+                        errores.Add($"Fila {displayRow}: '{nombreExcel}' no encontrado en el grupo");
+                        continue;
+                    }
+
+                    // Leer calificación
+                    var califText = values.ElementAtOrDefault(model.CalificacionColumnIndex)?
+                        .ToString()?.Trim() ?? "";
+
+                    if (string.IsNullOrEmpty(califText))
+                    {
+                        errores.Add($"Fila {displayRow}: calificación vacía para '{nombreExcel}'");
+                        continue;
+                    }
+
+                    // Parsear (soportar punto y coma como separador decimal)
+                    califText = califText.Replace(',', '.');
+                    if (decimal.TryParse(califText, NumberStyles.Any, CultureInfo.InvariantCulture, out decimal calif))
+                    {
+                        if (calif < 0 || calif > 10)
+                        {
+                            errores.Add($"Fila {displayRow}: '{calif}' fuera de rango (0-10)");
+                            continue;
+                        }
+
+                        // Verificar duplicado (mismo estudiante 2 veces en Excel)
+                        if (gradesToSave.Any(g => g.StudentId == studentId))
+                        {
+                            errores.Add($"Fila {displayRow}: '{nombreExcel}' duplicado en el archivo, se usó la primera aparición");
+                            continue;
+                        }
+
+                        gradesToSave.Add(new ImportedGradeResult
+                        {
+                            StudentId = studentId,
+                            Grade = calif
+                        });
+                    }
+                    else
+                    {
+                        errores.Add($"Fila {displayRow}: '{califText}' no es un número válido");
+                    }
+                }
+
+                return Ok(new
+                {
+                    grades = gradesToSave,
+                    errores,
+                    total = gradesToSave.Count
+                });
             }
-
-            // Limpiar archivo temporal
-            try { System.IO.File.Delete(tempFilePath); } catch { }
-            TempData.Remove("TempExcelPath");
-
-            return Ok(new { grades = gradesToSave, errores, total = gradesToSave.Count });
+            catch (Exception ex)
+            {
+                return BadRequest(new { error = $"Error al procesar el archivo: {ex.Message}" });
+            }
+            finally
+            {
+                // Limpiar archivo temporal
+                try { System.IO.File.Delete(tempFilePath); } catch { }
+            }
         }
         private string NormalizarNombre(string nombre)
         {

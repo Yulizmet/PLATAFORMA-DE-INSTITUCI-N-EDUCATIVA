@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using SchoolManager.Areas.Procedures.Filters;
 using SchoolManager.Data;
+using SchoolManager.Grades.Services;
 using SchoolManager.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -15,6 +16,7 @@ builder.Services.AddScoped<IStorageService, AzureStorageService>();
 builder.Services.AddTransient<IEmailSender, OutlookEmailSender>();
 builder.Services.AddScoped<ProcedureRouteAuthorizeAttribute>();
 builder.Services.AddScoped<EmailService>();
+builder.Services.AddScoped<ITeacherAccessService, TeacherAccessService>();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddSession(options =>
 {
