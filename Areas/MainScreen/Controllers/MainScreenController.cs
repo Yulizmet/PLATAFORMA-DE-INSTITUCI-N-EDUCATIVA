@@ -15,10 +15,16 @@ namespace SchoolManager.Areas.MainScreen.Controllers
         public MainScreenController(AppDbContext context) {
             _context = context;
         }
+
         [AllowAnonymous]
         [Route("/", Order = -1)]
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
+            // Contar estudiantes activos (usuarios con rol "Student")
+            ViewBag.ActiveStudents = await _context.UserRoles
+                .Include(ur => ur.Role)
+                .CountAsync(ur => ur.Role.Name == "Student");
+
             return View();
         }
 

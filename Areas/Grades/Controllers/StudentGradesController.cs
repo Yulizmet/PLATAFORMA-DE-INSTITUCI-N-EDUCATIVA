@@ -33,6 +33,11 @@ namespace SchoolManager.Areas.Grades.Controllers
         // GET: StudentGrades/Details/5
         public async Task<IActionResult> Details(int studentId)
         {
+            var currentUserId = User.GetUserId();
+
+            // Si es estudiante, ignorar el parámetro y usar su propio ID
+            if (User.IsInRole("Student"))
+                studentId = currentUserId;
             // 1. Obtener información del estudiante (SIN Enrollments)
             var student = await _context.Users
                 .Include(u => u.Person)

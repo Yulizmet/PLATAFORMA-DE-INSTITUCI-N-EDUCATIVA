@@ -11,7 +11,7 @@
     breadcrumbs.AddItem(
         @Model.SubjectName + " - " + @Model.GroupName,
         $"/Grades/GradeCapture/SelectUnit?teacherSubjectGroupId={Model.TeacherSubjectGroupId}"
-    ); breadcrumbs.AddItem("Unidad" + @Model.UnitNumber);
+    ); breadcrumbs.AddItem("Unidad " + @Model.UnitNumber);
 }
 <partial name="_Breadcrumb" model="breadcrumbs" />
 
@@ -246,7 +246,7 @@
                     <div class="mb-3">
                         <label class="form-label fw-semibold">Selecciona tu archivo Excel</label>
                         <input type="file" id="excelFileInput" class="form-control" accept=".xlsx,.xls,.csv" />
-                        <small class="text-muted">Formatos: .xlsx, .xls, .csv</small>
+                        <small class="text-muted">Formatos aceptados: .xlsx, .xls, .csv</small>
                     </div>
                     <div id="uploadError" class="alert alert-danger d-none"></div>
                     <button type="button" id="btnUpload" class="btn btn-primary">
@@ -254,29 +254,70 @@
                     </button>
                 </div>
 
-                <!-- PASO 2: Mapeo (oculto hasta subir) -->
+                <!-- PASO 2: Mapeo simplificado (oculto hasta subir) -->
                 <div id="stepMapping" class="d-none">
-                    <p class="mb-3">Archivo: <strong id="uploadedFileName"></strong></p>
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <p class="mb-0">
+                            <i class="bi bi-file-earmark-spreadsheet me-2 text-success"></i>
+                            <strong id="uploadedFileName"></strong>
+                            <span class="text-muted ms-2" id="uploadedRowCount"></span>
+                        </p>
+                    </div>
+
                     <div id="mappingError" class="alert alert-danger d-none"></div>
-                    <div class="table-responsive">
-                        <table class="table table-bordered">
-                            <thead class="table-light">
-                                <tr>
-                                    <th>Columna</th>
-                                    <th>Vista Previa</th>
-                                    <th>Cargar columna como</th>
-                                    <th>Unidad</th>
-                                </tr>
-                            </thead>
-                            <tbody id="mappingTableBody"></tbody>
+
+                    <!-- Checkbox primera fila -->
+                    <div class="form-check mb-3">
+                        <input type="checkbox" class="form-check-input" id="hasHeaderRow">
+                        <label class="form-check-label" for="hasHeaderRow">
+                            La primera fila contiene encabezados
+                            <small class="text-muted d-block">
+                                Marca esto si tu Excel tiene títulos como "Nombre", "Calificación" en la primera fila
+                            </small>
+                        </label>
+                    </div>
+
+                    <!-- Tabla de vista previa -->
+                    <div class="table-responsive mb-3" style="max-height: 200px; overflow-y: auto;">
+                        <table class="table table-sm table-bordered mb-0" id="previewTable">
+                            <thead class="table-light" id="previewHead"></thead>
+                            <tbody id="previewBody"></tbody>
                         </table>
                     </div>
-                    <div class="d-flex justify-content-between mt-3">
+
+                    <!-- Dropdowns de mapeo -->
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">
+                                <i class="bi bi-person me-1"></i>Columna de Nombres
+                            </label>
+                            <select id="nombreColumnSelect" class="form-select">
+                                <!-- Se llena dinámicamente -->
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">
+                                <i class="bi bi-123 me-1"></i>Columna de Calificaciones
+                            </label>
+                            <select id="califColumnSelect" class="form-select">
+                                <!-- Se llena dinámicamente -->
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Info de la unidad destino -->
+                    <div class="alert alert-info py-2 mb-3">
+                        <i class="bi bi-info-circle me-2"></i>
+                        Las calificaciones se importarán a la <strong>Unidad @Model.UnitNumber</strong>
+                        de <strong>@Model.SubjectName</strong>
+                    </div>
+
+                    <div class="d-flex justify-content-between">
                         <button type="button" id="btnBackToUpload" class="btn btn-secondary">
                             <i class="bi bi-arrow-left me-2"></i>Volver
                         </button>
-                        <button type="button" id="btnApplyMapping" class="btn btn-primary">
-                            Aplicar Mapeo
+                        <button type="button" id="btnApplyMapping" class="btn btn-calificaciones">
+                            <i class="bi bi-check-circle me-2"></i>Importar Calificaciones
                         </button>
                     </div>
                 </div>
@@ -285,7 +326,6 @@
         </div>
     </div>
 </div>
-
 
 
 @section Scripts {
@@ -328,7 +368,7 @@
         const groupId               = @Model.GroupId;
         const subjectId             = @Model.SubjectId;
 
-        // Mapa: studentId → índice de fila en la tabla
+        // Mapa: studentId → índice de fila en la tabla del formulario
         const studentIndexMap = {
             @for (int i = 0; i < Model.Students.Count; i++)
             {
@@ -336,13 +376,22 @@
             }
         };
 
-        // PASO 1 — Subir archivo
+        // Variables del flujo de importación
+        let uploadedFileId = null;
+        let uploadedHeaders = [];
+        let uploadedPreview = [];
+
+        // ── PASO 1: Subir archivo ────────────────────────────────────
         document.getElementById('btnUpload').addEventListener('click', async function () {
             const file = document.getElementById('excelFileInput').files[0];
             const errorDiv = document.getElementById('uploadError');
             errorDiv.classList.add('d-none');
 
-            if (!file) { errorDiv.textContent = 'Selecciona un archivo'; errorDiv.classList.remove('d-none'); return; }
+            if (!file) {
+                errorDiv.textContent = 'Selecciona un archivo';
+                errorDiv.classList.remove('d-none');
+                return;
+            }
 
             const formData = new FormData();
             formData.append('excelFile', file);
@@ -353,17 +402,31 @@
             this.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Analizando...';
 
             try {
-                const response = await fetch('/Grades/GradeCapture/UploadExcel', { method: 'POST', body: formData });
+                const response = await fetch('/Grades/GradeCapture/UploadExcel', {
+                    method: 'POST',
+                    body: formData
+                });
                 const data = await response.json();
 
-                if (!response.ok) { errorDiv.textContent = data.error; errorDiv.classList.remove('d-none'); return; }
+                if (!response.ok) {
+                    errorDiv.textContent = data.error;
+                    errorDiv.classList.remove('d-none');
+                    return;
+                }
 
-                // Construir tabla de mapeo
-                buildMappingTable(data.headers, data.preview);
-                document.getElementById('uploadedFileName').textContent = data.fileName;
+                // Guardar datos para el paso 2
+                uploadedFileId = data.fileId;
+                uploadedHeaders = data.headers;
+                uploadedPreview = data.preview;
+
+                // Construir UI de mapeo
+                buildMappingUI(data.headers, data.preview, data.fileName, data.totalRows);
+
+                // Cambiar a paso 2
                 document.getElementById('stepUpload').classList.add('d-none');
                 document.getElementById('stepMapping').classList.remove('d-none');
-                document.getElementById('importModalTitle').textContent = 'Mapear Columnas del Excel';
+                document.getElementById('importModalTitle').textContent = 'Mapear Columnas';
+
             } catch (err) {
                 errorDiv.textContent = 'Error al conectar con el servidor';
                 errorDiv.classList.remove('d-none');
@@ -373,71 +436,123 @@
             }
         });
 
-        function buildMappingTable(headers, preview) {
-            const tbody = document.getElementById('mappingTableBody');
+        // ── Construir UI de mapeo ────────────────────────────────────
+        function buildMappingUI(headers, preview, fileName, totalRows) {
+            // Info del archivo
+            document.getElementById('uploadedFileName').textContent = fileName;
+            document.getElementById('uploadedRowCount').textContent = `(${totalRows} fila${totalRows !== 1 ? 's' : ''})`;
+
+            // Tabla de vista previa
+            const thead = document.getElementById('previewHead');
+            const tbody = document.getElementById('previewBody');
+
+            // Encabezados: # + columnas
+            thead.innerHTML = '<tr><th style="width:40px">#</th>' +
+                headers.map(h => `<th>${h}</th>`).join('') + '</tr>';
+
+            // Filas de datos
             tbody.innerHTML = '';
+            preview.forEach((row, idx) => {
+                const cells = headers.map(h => {
+                    const val = row[h];
+                    return `<td>${val !== null && val !== undefined ? val : ''}</td>`;
+                }).join('');
+                tbody.innerHTML += `<tr data-row-index="${idx}"><td class="text-muted">${idx + 1}</td>${cells}</tr>`;
+            });
+
+            // Llenar dropdowns de columnas
+            const nombreSelect = document.getElementById('nombreColumnSelect');
+            const califSelect = document.getElementById('califColumnSelect');
+
+            nombreSelect.innerHTML = '<option value="-1">-- Seleccionar --</option>';
+            califSelect.innerHTML = '<option value="-1">-- Seleccionar --</option>';
+
+            let suggestedNombre = -1;
+            let suggestedCalif = -1;
+
             headers.forEach((header, i) => {
-                const previewHtml = preview.map(row => `<div>${row[header] ?? ''}</div>`).join('');
-                const unitOptions = Array.from({length: 10}, (_, u) =>
-                    `<option value="${u+1}">Unidad ${u+1}</option>`).join('');
+                // Obtener valor de vista previa para auto-detectar tipo
+                const sampleValue = preview[0] ? preview[0][header] : null;
+                let hint = '';
 
-                tbody.innerHTML += `
-                    <tr>
-                        <td><strong>${header}</strong></td>
-                        <td>${previewHtml}</td>
-                        <td>
-                            <select name="ColumnMappings[${i}].Type" class="form-select column-type" data-index="${i}">
-                                <option value="">-- Ignorar --</option>
-                                <option value="nombre">Nombre del Estudiante</option>
-                                <option value="calificacion">Calificación</option>
-                            </select>
-                        </td>
-                        <td>
-                            <select name="ColumnMappings[${i}].UnitNumber" class="form-select unit-select" disabled>
-                                <option value="">-- Unidad --</option>
-                                ${unitOptions}
-                            </select>
-                        </td>
-                    </tr>`;
+                if (sampleValue !== null && sampleValue !== undefined) {
+                    if (typeof sampleValue === 'number' || !isNaN(Number(sampleValue))) {
+                        hint = ' (numérica)';
+                        if (suggestedCalif === -1) suggestedCalif = i;
+                    } else {
+                        hint = ' (texto)';
+                        if (suggestedNombre === -1) suggestedNombre = i;
+                    }
+                }
+
+                const label = `Columna ${header}${hint}`;
+                nombreSelect.innerHTML += `<option value="${i}">${label}</option>`;
+                califSelect.innerHTML += `<option value="${i}">${label}</option>`;
             });
 
-            // Habilitar/deshabilitar select de unidad
-            tbody.querySelectorAll('.column-type').forEach(select => {
-                select.addEventListener('change', function () {
-                    const unitSelect = this.closest('tr').querySelector('.unit-select');
-                    const isCalif = this.value === 'calificacion';
-                    unitSelect.disabled = !isCalif;
-                    unitSelect.required = isCalif;
-                    if (!isCalif) unitSelect.value = '';
-                });
-            });
+            // Auto-seleccionar basado en detección de tipo
+            if (suggestedNombre >= 0) nombreSelect.value = suggestedNombre;
+            if (suggestedCalif >= 0) califSelect.value = suggestedCalif;
         }
 
-        // Volver al paso 1
+        // ── Checkbox "primera fila es encabezado" ────────────────────
+        document.getElementById('hasHeaderRow').addEventListener('change', function () {
+            const firstRow = document.querySelector('#previewBody tr[data-row-index="0"]');
+            if (firstRow) {
+                if (this.checked) {
+                    firstRow.style.opacity = '0.4';
+                    firstRow.style.textDecoration = 'line-through';
+                    firstRow.title = 'Esta fila se tratará como encabezado y se omitirá';
+                } else {
+                    firstRow.style.opacity = '1';
+                    firstRow.style.textDecoration = 'none';
+                    firstRow.title = '';
+                }
+            }
+        });
+
+        // ── Volver al paso 1 ─────────────────────────────────────────
         document.getElementById('btnBackToUpload').addEventListener('click', function () {
             document.getElementById('stepMapping').classList.add('d-none');
             document.getElementById('stepUpload').classList.remove('d-none');
             document.getElementById('importModalTitle').textContent = 'Cargar Calificaciones desde Excel';
+            document.getElementById('mappingError').classList.add('d-none');
         });
 
-        // PASO 2 — Aplicar mapeo
+        // ── PASO 2: Aplicar mapeo ────────────────────────────────────
         document.getElementById('btnApplyMapping').addEventListener('click', async function () {
             const errorDiv = document.getElementById('mappingError');
             errorDiv.classList.add('d-none');
 
-            // Leer selects del mapeo
-            const columnMappings = [];
-            document.querySelectorAll('#mappingTableBody tr').forEach((tr, i) => {
-                const type = tr.querySelector('.column-type').value;
-                const unitNumber = parseInt(tr.querySelector('.unit-select').value) || null;
-                columnMappings.push({ columnIndex: i, type, unitNumber });
-            });
+            const nombreIdx = parseInt(document.getElementById('nombreColumnSelect').value);
+            const califIdx = parseInt(document.getElementById('califColumnSelect').value);
+            const hasHeaderRow = document.getElementById('hasHeaderRow').checked;
+
+            // Validaciones frontend
+            if (nombreIdx < 0) {
+                errorDiv.textContent = 'Selecciona la columna de nombres';
+                errorDiv.classList.remove('d-none');
+                return;
+            }
+            if (califIdx < 0) {
+                errorDiv.textContent = 'Selecciona la columna de calificaciones';
+                errorDiv.classList.remove('d-none');
+                return;
+            }
+            if (nombreIdx === califIdx) {
+                errorDiv.textContent = 'Las columnas de nombre y calificación deben ser diferentes';
+                errorDiv.classList.remove('d-none');
+                return;
+            }
 
             const payload = {
-                teacherSubjectGroupId, unitId, groupId, subjectId,
-                nombreColumnIndex: -1,
-                unitColumns: {},
-                columnMappings
+                teacherSubjectGroupId,
+                unitId,
+                groupId,
+                fileId: uploadedFileId,
+                nombreColumnIndex: nombreIdx,
+                calificacionColumnIndex: califIdx,
+                hasHeaderRow: hasHeaderRow
             };
 
             this.disabled = true;
@@ -451,33 +566,51 @@
                 });
                 const data = await response.json();
 
-                if (!response.ok) { errorDiv.textContent = data.error; errorDiv.classList.remove('d-none'); return; }
+                if (!response.ok) {
+                    errorDiv.textContent = data.error;
+                    errorDiv.classList.remove('d-none');
+                    return;
+                }
 
                 // Cerrar modal
                 bootstrap.Modal.getInstance(document.getElementById('importModal')).hide();
 
-                // Rellenar inputs de calificación
+                // Rellenar inputs de calificación en la tabla principal
                 let actualizados = 0;
                 data.grades.forEach(item => {
                     const rowIndex = studentIndexMap[item.studentId];
                     if (rowIndex !== undefined) {
                         const input = document.querySelector(`input[name='Grades[${rowIndex}].GradeValue']`);
                         if (input) {
-                            input.value = item.grade.toFixed(2);
+                            input.value = parseFloat(item.grade).toFixed(2);
                             input.style.backgroundColor = '#d4edda';
+                            input.style.transition = 'background-color 0.3s';
                             actualizados++;
                         }
                     }
                 });
 
-                // Mostrar resultado
+                // Mostrar resultado con alerta
+                let alertType = data.errores.length > 0 ? 'warning' : 'success';
+                let iconClass = data.errores.length > 0 ? 'exclamation-triangle-fill' : 'check-circle-fill';
+
                 const alertHtml = `
-                    <div class="alert alert-success alert-dismissible fade show" role="alert">
-                        <i class="bi bi-check-circle-fill me-2"></i>
-                        Se importaron <strong>${actualizados}</strong> calificaciones.
-                        ${data.errores.length ? `<ul class="mt-2 mb-0">${data.errores.map(e => `<li>${e}</li>`).join('')}</ul>` : ''}
+                    <div class="alert alert-${alertType} alert-dismissible fade show" role="alert">
+                        <i class="bi bi-${iconClass} me-2"></i>
+                        Se cargaron <strong>${actualizados}</strong> calificaciones desde el Excel.
+                        ${actualizados > 0 ? '<strong>Recuerda dar clic en "Guardar Calificaciones" para confirmar.</strong>' : ''}
+                        ${data.errores.length > 0 ? `
+                            <hr class="my-2">
+                            <details>
+                                <summary class="fw-semibold" style="cursor:pointer">
+                                    ${data.errores.length} observación${data.errores.length !== 1 ? 'es' : ''}</summary>
+                                <ul class="mb-0 mt-1">
+                                    ${data.errores.map(e => `<li>${e}</li>`).join('')}
+                                </ul>
+                            </details>` : ''}
                         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                     </div>`;
+
                 document.getElementById('gradeForm').insertAdjacentHTML('beforebegin', alertHtml);
 
             } catch (err) {
@@ -485,18 +618,20 @@
                 errorDiv.classList.remove('d-none');
             } finally {
                 this.disabled = false;
-                this.innerHTML = 'Aplicar Mapeo';
+                this.innerHTML = '<i class="bi bi-check-circle me-2"></i>Importar Calificaciones';
             }
         });
 
-        // Resetear modal al cerrarse
+        // ── Resetear modal al cerrarse ───────────────────────────────
         document.getElementById('importModal').addEventListener('hidden.bs.modal', function () {
             document.getElementById('stepUpload').classList.remove('d-none');
             document.getElementById('stepMapping').classList.add('d-none');
             document.getElementById('uploadError').classList.add('d-none');
             document.getElementById('mappingError').classList.add('d-none');
             document.getElementById('excelFileInput').value = '';
+            document.getElementById('hasHeaderRow').checked = false;
             document.getElementById('importModalTitle').textContent = 'Cargar Calificaciones desde Excel';
+            uploadedFileId = null;
         });
     </script>
 }
