@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SchoolManager.Areas.Grades.ViewModels.StudentGrades;
 using SchoolManager.Data;
@@ -8,6 +9,8 @@ using SchoolManager.Models;
 namespace SchoolManager.Areas.Grades.Controllers
 {
     [Area("Grades")]
+    [Authorize(Roles = "Student")]
+
     public class StudentGradesController : Controller
     {
         private readonly AppDbContext _context;

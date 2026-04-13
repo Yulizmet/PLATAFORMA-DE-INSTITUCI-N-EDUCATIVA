@@ -5,6 +5,8 @@ using Microsoft.EntityFrameworkCore;
 using SchoolManager.Areas.Enrollment.ViewModels;
 using SchoolManager.Data;
 using SchoolManager.Models;
+using SchoolManager.Models.ViewModels;
+using Microsoft.AspNetCore.Cors;
 
 
 namespace SchoolManager.Areas.Enrollment.Controllers
@@ -229,6 +231,7 @@ namespace SchoolManager.Areas.Enrollment.Controllers
             return RedirectToAction(nameof(SubirDocumentos), new { id = general.IdData });
         }
 
+
         // GET: Enrollment/PreEnrollment/FolioGenerado/5
         // Muestra al usuario su folio de pago recién generado.
         public async Task<IActionResult> FolioGenerado(int id)
@@ -249,13 +252,13 @@ namespace SchoolManager.Areas.Enrollment.Controllers
         // =====================================================================
 
         // GET: Enrollment/PreEnrollment/ValidateFolio
+        [HttpGet]
         public IActionResult ValidateFolio()
         {
             return View();
         }
 
         // POST: Enrollment/PreEnrollment/ValidateFolio
-        // El usuario escribe su folio. Se verifica que exista y esté aprobado.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ValidateFolio(string folio)
@@ -290,23 +293,22 @@ namespace SchoolManager.Areas.Enrollment.Controllers
                 return View();
             }
 
-            // Si ya tiene cuenta creada, no permitir duplicar
             if (pre.UserId != null)
             {
                 ModelState.AddModelError("", "Este folio ya tiene una cuenta asociada.");
                 return View();
             }
 
-            // Todo bien: redirigir a completar cuenta
-            return RedirectToAction(nameof(CreateAccount), new { id = pre.IdData });
+            return RedirectToAction(nameof(CrearUsuarioAlumno), new { id = pre.IdData });
         }
 
-        // GET: Enrollment/PreEnrollment/CreateAccount/5
-        // Muestra el formulario para que el usuario establezca su contraseña
-        // y confirme sus datos. Se pre-llenan con los datos del preenrollment.
-        public async Task<IActionResult> CreateAccount(int id)
+        // GET: Enrollment/PreEnrollment/CrearUsuarioAlumno
+        [HttpGet]
+        public async Task<IActionResult> CrearUsuarioAlumno(int id)
         {
             var pre = await _context.PreenrollmentGenerals
+                .Include(p => p.Person)
+                .Include(p => p.Career)
                 .Include(p => p.ProcedureRequest)
                     .ThenInclude(pr => pr.ProcedureFlow)
                         .ThenInclude(pf => pf.ProcedureStatus)
@@ -315,35 +317,41 @@ namespace SchoolManager.Areas.Enrollment.Controllers
             if (pre == null)
                 return NotFound();
 
-            // Doble verificación: no se puede acceder directo por URL sin aprobación
             if (pre.ProcedureRequest?.ProcedureFlow?.ProcedureStatus?.InternalCode != "APPROVED")
                 return RedirectToAction(nameof(ValidateFolio));
 
             if (pre.UserId != null)
                 return RedirectToAction(nameof(ValidateFolio));
 
-            // Pasar los datos precargados a la vista para mostrarlos al usuario
-            var vm = new CompleteRegistrationViewModel
+            if (pre.Person == null)
+                return RedirectToAction(nameof(ValidateFolio));
+
+            var vm = new CreateStudentUserViewModel
             {
                 IdData = pre.IdData,
-                Matricula = pre.Matricula,
-                Folio = pre.Folio
+                PersonId = pre.PersonId,
+                Folio = pre.Folio ?? "",
+                Matricula = pre.Matricula ?? "",
+                Username = pre.Matricula ?? "",
+                Carrera = pre.Career?.name_career ?? "",
+                NombreCompleto = $"{pre.Person.FirstName} {pre.Person.LastNamePaternal} {pre.Person.LastNameMaternal}",
+                Email = pre.Person.Email ?? ""
             };
 
             return View(vm);
         }
 
-        // POST: Enrollment/PreEnrollment/CreateAccount
-        // Crea el users_person y users_user con los datos del preenrollment.
-        // El usuario solo elige su contraseña en este paso.
+        // POST: Enrollment/PreEnrollment/CrearUsuarioAlumno
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> CreateAccount(CompleteRegistrationViewModel vm)
+        public async Task<IActionResult> CrearUsuarioAlumno(CreateStudentUserViewModel vm)
         {
             if (!ModelState.IsValid)
                 return View(vm);
 
             var pre = await _context.PreenrollmentGenerals
+                .Include(p => p.Person)
+                .Include(p => p.Career)
                 .Include(p => p.ProcedureRequest)
                     .ThenInclude(pr => pr.ProcedureFlow)
                         .ThenInclude(pf => pf.ProcedureStatus)
@@ -352,50 +360,93 @@ namespace SchoolManager.Areas.Enrollment.Controllers
             if (pre == null)
                 return NotFound();
 
-            // Triple verificación de seguridad
             if (pre.ProcedureRequest?.ProcedureFlow?.ProcedureStatus?.InternalCode != "APPROVED")
-                return RedirectToAction(nameof(ValidateFolio));
+            {
+                ModelState.AddModelError("", "Tu pago aún no ha sido aprobado.");
+                return View(vm);
+            }
 
             if (pre.UserId != null)
-                return RedirectToAction(nameof(ValidateFolio));
-
-            // Crear users_person (los datos de nombre/apellidos
-            // vienen del ViewModel que el usuario confirmó)
-            var person = new users_person
             {
-                // Llenar con los campos que users_person tenga definidos
-                // según el modelo de tu compañero
-            };
+                ModelState.AddModelError("", "Este folio ya tiene una cuenta asociada.");
+                return View(vm);
+            }
 
-            _context.Persons.Add(person);
-            await _context.SaveChangesAsync();
-
-            // Crear users_user
-            var user = new users_user
+            if (pre.Person == null)
             {
-                PersonId = person.PersonId,
-                Username = pre.Matricula,
-                Email = vm.Email,
-                IsActive = true,
-                CreatedDate = DateTime.Now,
-                // Aquí aplica el hash de la contraseña que defina tu compañero
-                // PasswordHash = HashPassword(vm.Password)
-            };
+                ModelState.AddModelError("", "No existe la persona asociada a esta preinscripción.");
+                return View(vm);
+            }
 
-            _context.Users.Add(user);
-            await _context.SaveChangesAsync();
+            bool existeUsername = await _context.Users.AnyAsync(u => u.Username == vm.Username);
+            if (existeUsername)
+            {
+                ModelState.AddModelError("", "La matrícula ya está registrada como usuario.");
+                return View(vm);
+            }
 
-            // Ligar el usuario creado al preenrollment
-            pre.UserId = user.UserId;
-            await _context.SaveChangesAsync();
+            bool existeCorreo = await _context.Users.AnyAsync(u => u.Email == vm.Email);
+            if (existeCorreo)
+            {
+                ModelState.AddModelError("Email", "Ese correo ya está registrado.");
+                return View(vm);
+            }
 
-            return RedirectToAction(nameof(Success));
-        }
+            using var transaction = await _context.Database.BeginTransactionAsync();
 
-        // GET: Enrollment/PreEnrollment/Success
-        public IActionResult Success()
-        {
-            return View();
+            try
+            {
+                pre.Person.Email = vm.Email;
+
+                var user = new users_user
+                {
+                    PersonId = pre.Person.PersonId,
+                    Username = pre.Matricula ?? vm.Username,
+                    Email = vm.Email,
+                    IsLocked = false,
+                    LockReason = "",
+                    LastLoginDate = null,
+                    IsActive = true,
+                    CreatedDate = DateTime.Now
+                };
+
+                user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(vm.Password);
+
+                _context.Users.Add(user);
+                await _context.SaveChangesAsync();
+
+                pre.UserId = user.UserId;
+                pre.PersonId = pre.Person.PersonId;
+
+                if (pre.ProcedureRequest != null)
+                {
+                    pre.ProcedureRequest.IdUser = user.UserId;
+                }
+
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+
+                ModelState.Clear();
+
+                vm.Username = user.Username;
+                vm.Matricula = pre.Matricula ?? "";
+                vm.NombreCompleto = $"{pre.Person.FirstName} {pre.Person.LastNamePaternal} {pre.Person.LastNameMaternal}";
+                vm.Carrera = pre.Career?.name_career ?? "";
+                vm.Email = user.Email;
+                vm.Password = "";
+                vm.ConfirmPassword = "";
+
+                ViewBag.UserCreated = true;
+                ViewBag.CreatedPassword = "La contraseña es la que capturaste antes de crear el usuario.";
+
+                return View(vm);
+            }
+            catch
+            {
+                await transaction.RollbackAsync();
+                ModelState.AddModelError("", "Ocurrió un error al crear el usuario.");
+                return View(vm);
+            }
         }
 
         // =====================================================================
@@ -802,6 +853,283 @@ namespace SchoolManager.Areas.Enrollment.Controllers
                 await _context.SaveChangesAsync();
             }
             return RedirectToAction(nameof(Index));
+        }
+
+        [HttpGet]
+        [EnableCors("AllowAdmin")]
+        public async Task<IActionResult> GetGeneraciones()
+        {
+            var generaciones = await _context.PreenrollmentGenerations
+                .OrderByDescending(g => g.Year)
+                .Select(g => new
+                {
+                    g.IdGeneration,
+                    g.Year
+                })
+                .ToListAsync();
+
+            return Json(generaciones);
+        }
+
+        // GET: Enrollment/PreEnrollment/GetAspirantesPorGeneracion?idGeneration=4
+        [HttpGet]
+        [EnableCors("AllowAdmin")]
+        public async Task<IActionResult> GetAspirantesPorGeneracion(int idGeneration)
+        {
+            var generation = await _context.PreenrollmentGenerations
+                .FirstOrDefaultAsync(g => g.IdGeneration == idGeneration);
+
+            if (generation == null)
+                return NotFound(new { message = "Generación no encontrada." });
+
+            string yearShort = generation.Year.ToString().Substring(2, 2);
+
+            var aspirantes = await _context.PreenrollmentGenerals
+                .Include(g => g.Person)
+                .Where(g => g.IdGeneration == idGeneration
+                         && g.Matricula.StartsWith(yearShort)
+                         && g.PersonId != null)   // <- solo los que tienen persona
+                .Select(g => new
+                {
+                    g.IdData,
+                    g.Folio,
+                    g.Matricula,
+                    NombreCompleto = $"{g.Person.FirstName} {g.Person.LastNamePaternal} {g.Person.LastNameMaternal}",
+                    Email = g.Person.Email,
+                    g.IdGeneration
+                })
+                .ToListAsync();
+
+            return Json(aspirantes);
+        }
+
+        // GET: Enrollment/PreEnrollment/GetAspiranteDetalle?idData=5
+        [HttpGet]
+        [EnableCors("AllowAdmin")]
+        public async Task<IActionResult> GetAspiranteDetalle(int idData)
+        {
+            var general = await _context.PreenrollmentGenerals
+                .Include(g => g.Person)
+                .Include(g => g.Career)
+                .Include(g => g.Generation)
+                .Include(g => g.Addresses)
+                .Include(g => g.Schools)
+                .Include(g => g.Tutors)
+                .Include(g => g.Infos)
+                .FirstOrDefaultAsync(g => g.IdData == idData);
+
+            if (general == null)
+                return NotFound(new { message = "Aspirante no encontrado." });
+
+            var address = general.Addresses.FirstOrDefault();
+            var school = general.Schools.FirstOrDefault();
+            var tutor = general.Tutors.FirstOrDefault();
+            var info = general.Infos.FirstOrDefault();
+
+            var result = new
+            {
+                // --- Persona ---
+                nombre = general.Person?.FirstName ?? "",
+                apellidoPaterno = general.Person?.LastNamePaternal ?? "",
+                apellidoMaterno = general.Person?.LastNameMaternal ?? "",
+                email = general.Person?.Email ?? "",
+                telefono = general.Person?.Phone ?? "",
+                genero = general.Person?.Gender ?? "",
+                fechaNacimiento = general.Person?.BirthDate,
+                curp = general.Person?.Curp ?? "",
+
+                // --- General ---
+                folio = general.Folio,
+                matricula = general.Matricula,
+                carrera = general.Career?.name_career ?? "",
+                generacion = general.Generation?.Year.ToString() ?? "",
+                tipoSangre = general.BloodType ?? "",
+                estadoCivil = general.MaritalStatus,
+                nacionalidad = general.Nationality,
+                ocupacion = general.Occupation ?? "",
+                trabaja = general.Work,
+                domicilioTrabajo = general.WorkAddress ?? "",
+                telefonoTrabajo = general.WorkPhone ?? "",
+
+                // --- Domicilio ---
+                calle = address?.street ?? "",
+                numExterior = address?.exterior_number ?? "",
+                numInterior = address?.interior_number ?? "",
+                colonia = address?.neighborhood ?? "",
+                codigoPostal = address?.postal_code ?? "",
+                ciudad = address?.city ?? "",
+                estado = address?.state ?? "",
+
+                // --- Escuela ---
+                escuela = school?.school ?? "",
+                grado = school?.degree ?? "",
+                escuelaEstado = school?.state ?? "",
+                escuelaCiudad = school?.city ?? "",
+                promedio = school?.average,
+                fechaInicioEsc = school?.start_date,
+                fechaFinEsc = school?.end_date,
+                sistemaEstudio = school?.study_system ?? "",
+                tipoBachillerato = school?.high_school_type ?? "",
+
+                // --- Info adicional ---
+                beca = info?.beca ?? "",
+                comunidadIndi = info?.comu_indi ?? false,
+                lenguaIndi = info?.lengu_indi ?? false,
+                discapacidad = info?.incapa ?? false,
+                enfermedad = info?.disease ?? false,
+                comentario = info?.comment ?? ""
+            };
+
+            return Json(result);
+        }
+
+        // GET: Enrollment/PreEnrollment/GetMatriculas
+        [HttpGet]
+        [EnableCors("AllowAdmin")]
+        public async Task<IActionResult> GetMatriculas()
+        {
+            var matriculas = await _context.PreenrollmentGenerals
+                .Include(g => g.Person)
+                .Where(g => !string.IsNullOrEmpty(g.Matricula))
+                .Select(g => new
+                {
+                    g.IdData,
+                    g.Folio,
+                    g.Matricula,
+                    NombreCompleto = g.Person != null
+                        ? $"{g.Person.FirstName} {g.Person.LastNamePaternal} {g.Person.LastNameMaternal}"
+                        : "Sin nombre",
+                    Email = g.Person != null ? g.Person.Email : "",
+                    IsActive = g.Person != null ? g.Person.IsActive : false
+                })
+                .OrderBy(g => g.Matricula)
+                .ToListAsync();
+
+            return Json(matriculas);
+        }
+
+        [HttpPut]
+        [EnableCors("AllowAdmin")]
+        public async Task<IActionResult> UpdateAspirante([FromBody] UpdateAspiranteDto dto)
+        {
+            var general = await _context.PreenrollmentGenerals
+                .Include(g => g.Person)
+                .Include(g => g.Addresses)
+                .Include(g => g.Schools)
+                .Include(g => g.Infos)
+                .FirstOrDefaultAsync(g => g.IdData == dto.IdData);
+
+            if (general == null)
+                return NotFound(new { message = "Aspirante no encontrado" });
+
+            var address = general.Addresses.FirstOrDefault();
+            var school = general.Schools.FirstOrDefault();
+            var info = general.Infos.FirstOrDefault();
+
+            // ========================
+            // PERSON
+            // ========================
+            if (general.Person != null)
+            {
+                general.Person.FirstName = dto.Nombre;
+                general.Person.LastNamePaternal = dto.ApellidoPaterno;
+                general.Person.LastNameMaternal = dto.ApellidoMaterno;
+                general.Person.Email = dto.Email;
+                general.Person.Phone = dto.Telefono;
+                general.Person.Gender = dto.Genero;
+                general.Person.Curp = dto.Curp;
+            }
+
+            // ========================
+            // GENERAL
+            // ========================
+            general.Nationality = dto.Nacionalidad;
+            general.MaritalStatus = dto.EstadoCivil;
+            general.BloodType = dto.TipoSangre;
+
+            // ========================
+            // ADDRESS
+            // ========================
+            if (address != null)
+            {
+                address.street = dto.Calle;
+                address.exterior_number = dto.NumExt;
+                address.interior_number = dto.NumInt;
+                address.neighborhood = dto.Colonia;
+                address.city = dto.Ciudad;
+                address.state = dto.Estado;
+                address.postal_code = dto.CP;
+            }
+
+            // ========================
+            // SCHOOL
+            // ========================
+            if (school != null)
+            {
+                school.school = dto.Escuela;
+                school.average = dto.Promedio;
+                school.city = dto.EscuelaCiudad;
+                school.state = dto.EscuelaEstado;
+            }
+
+            // ========================
+            // INFO
+            // ========================
+            if (info != null)
+            {
+                info.beca = dto.Beca;
+                info.comu_indi = dto.ComunidadIndi;
+                info.lengu_indi = dto.LenguaIndi;
+                info.incapa = dto.Discapacidad;
+                info.disease = dto.Enfermedad;
+                info.comment = dto.Comentario;
+            }
+
+            await _context.SaveChangesAsync();
+
+            return Ok(new { success = true });
+        }
+
+        public class UpdateAspiranteDto
+        {
+            public int IdData { get; set; }
+
+            // PERSON
+            public string Nombre { get; set; }
+            public string ApellidoPaterno { get; set; }
+            public string ApellidoMaterno { get; set; }
+            public string Email { get; set; }
+            public string Telefono { get; set; }
+            public string Genero { get; set; }
+            public string Curp { get; set; }
+
+            // GENERAL
+            public string Nacionalidad { get; set; }
+            public string EstadoCivil { get; set; }
+            public string TipoSangre { get; set; }
+
+            // ADDRESS
+            public string Calle { get; set; }
+            public string NumExt { get; set; }
+            public string NumInt { get; set; }
+            public string Colonia { get; set; }
+            public string Ciudad { get; set; }
+            public string Estado { get; set; }
+            public string CP { get; set; }
+
+            // SCHOOL
+            public string Escuela { get; set; }
+            public decimal? Promedio { get; set; }
+            public string EscuelaCiudad { get; set; }
+            public string EscuelaEstado { get; set; }
+
+            // INFO
+            public string Beca { get; set; }
+            public bool ComunidadIndi { get; set; }
+            public bool LenguaIndi { get; set; }
+            public bool Discapacidad { get; set; }
+            public bool Enfermedad { get; set; }
+            public string Comentario { get; set; }
         }
     }
 }

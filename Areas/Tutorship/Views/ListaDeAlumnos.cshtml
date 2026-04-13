@@ -2,10 +2,8 @@
 @{
     ViewData["Title"] = "Directorio de Alumnos";
     
-    // 1. Obtenemos el rol del usuario (Asegúrate de que tu controlador envíe ViewBag.RoleId = LoggedRoleId;)
     int roleId = ViewBag.RoleId ?? 0;
 
-    // 2. Lógica para extraer el nombre del grupo si es un maestro
     var dictGruposCabecera = ViewBag.Grupos as Dictionary<int, string> ?? new Dictionary<int, string>();
     string nombreMiGrupo = "Cargando grupo...";
     
@@ -21,128 +19,9 @@
 
 <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
 
-<style>
-
-    #tablaAlumnos {
-        border-collapse: separate !important;
-        border-spacing: 0 1.2rem !important;
-        border: none !important;
-        width: 100%;
-    }
-
-        #tablaAlumnos thead th {
-            border: none !important;
-            color: #888;
-            font-size: 0.75rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.05rem;
-            padding-bottom: 0;
-            background: transparent !important;
-        }
-
-        #tablaAlumnos tbody tr {
-            background-color: #ffffff;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-            border-radius: 10px;
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-        }
-
-            #tablaAlumnos tbody tr:hover {
-                transform: translateY(-3px);
-                box-shadow: 0 6px 15px rgba(0,0,0,0.1);
-            }
-
-        #tablaAlumnos tbody td {
-            border-top: 1px solid #f4f4f4;
-            border-bottom: 1px solid #f4f4f4;
-            vertical-align: middle;
-            padding: 1.2rem 1rem;
-        }
-
-            #tablaAlumnos tbody td:first-child {
-                border-left: 1px solid #f4f4f4;
-                border-top-left-radius: 10px;
-                border-bottom-left-radius: 10px;
-            }
-
-            #tablaAlumnos tbody td:last-child {
-                border-right: 1px solid #f4f4f4;
-                border-top-right-radius: 10px;
-                border-bottom-right-radius: 10px;
-            }
-
-    table.dataTable.table-striped > tbody > tr.odd > * {
-        box-shadow: none !important;
-    }
-
-
-    .btn-vino {
-        background-color: #620900;
-        color: white;
-        border: none;
-    }
-
-        .btn-vino:hover {
-            background-color: #4a0700;
-            color: white;
-        }
-
-    .dataTables_wrapper {
-        font-family: inherit !important;
-        font-size: 0.95rem;
-    }
-
-
-    .dataTables_length label,
-    .dataTables_filter label {
-        font-weight: bold;
-        color: #444;
-    }
-
-    .dataTables_filter input,
-    .dataTables_length select {
-        border: 1px solid #ddd;
-        border-radius: 0.375rem;
-        padding: 0.25rem 0.5rem;
-        box-shadow: 0 .125rem .25rem rgba(0,0,0,.05);
-    }
-
-        .dataTables_filter input:focus,
-        .dataTables_length select:focus {
-            border-color: #620900;
-            outline: none;
-            box-shadow: 0 0 0 0.2rem rgba(98, 9, 0, 0.25);
-        }
-
-    .dataTables_info {
-        font-weight: 500;
-        color: #666;
-        padding-top: 1rem !important;
-    }
-
-    .page-item.active .page-link {
-        background-color: #620900 !important;
-        border-color: #620900 !important;
-        color: white !important;
-    }
-
-    .page-link {
-        color: #620900;
-        font-weight: 500;
-    }
-
-        .page-link:hover {
-            background-color: #A89B8C; 
-            color: white;
-            border-color: #A89B8C;
-        }
-</style>
-
 <div class="container-fluid p-0 mt-4">
-    <h2 class="fw-bold mb-4" style="color:#620900;">Directorios de Alumnos</h2>
-
-    <div class="card border-0 shadow-sm mb-5" style="border-left: 6px solid #620900 !important; border-radius: 10px;">
+    <h2 class="text-center fw-bold mb-4" style="color: var(--brand-dark);">Directorio de Alumnos</h2>
+    <div class="card border-0 shadow-sm mb-5" style="border-radius: 10px;">
         <div class="card-body p-4">
             
             @if (roleId == 3)
@@ -177,7 +56,7 @@
                     </div>
 
                     <div class="col-md-3">
-                        <button type="submit" class="btn w-100 fw-bold shadow-sm" style="background-color: #A89B8C; color: white;">
+                        <button type="submit" class="btn btn-secondary-brand w-100 fw-bold shadow-sm">
                             <i class="bi bi-funnel-fill"></i> Filtrar Lista
                         </button>
                     </div>
@@ -187,12 +66,9 @@
             {
                 <div class="row g-3 align-items-end">
                     <div class="col-md-6">
-                        <label class="form-label fw-bold" style="color: #620900;"><i class="bi bi-person-video3 me-2"></i>Mi Grupo Asignado</label>
+                        <label class="form-label fw-bold" style="color: var(--brand-dark);"><i class="bi bi-person-video3 me-2"></i>Mi Grupo Asignado</label>
                         <input type="text" class="form-control shadow-sm bg-light fw-bold" value="@nombreMiGrupo" readonly disabled style="border-color: #ddd; color: #555;">
                     </div>
-                    @* <div class="col-md-6 text-muted small pb-2">
-                        <i class="bi bi-info-circle-fill me-1"></i> Visualizando únicamente a los alumnos bajo tu tutoría.
-                    </div> *@
                 </div>
             }
 
@@ -205,7 +81,7 @@
         </div>
     </div>
 
-    <table id="tablaAlumnos" class="table w-100">
+    <table id="tablaAlumnos" class="table table-cards w-100">
         <thead>
             <tr>
                 <th class="text-center" style="width: 80px;">Foto</th>
@@ -229,7 +105,7 @@
                     string rutaFoto = dictFotos.ContainsKey(alumno.UserId) ? dictFotos[alumno.UserId] : "";
                     bool tieneFoto = !string.IsNullOrEmpty(rutaFoto);
 
-                    string imgSrc = tieneFoto ? rutaFoto : $"https://ui-avatars.com/api/?name={alumno.Person.FirstName}&background=620900&color=fff";
+                    string imgSrc = tieneFoto ? rutaFoto : $"https://ui-avatars.com/api/?name={alumno.Person.FirstName}&background=8C1B1B&color=fff";
                     string nombreCompleto = $"{alumno.Person.FirstName} {alumno.Person.LastNamePaternal} {alumno.Person.LastNameMaternal}";
 
                     <tr>
@@ -241,16 +117,16 @@
                             <div class="fw-bold fs-6 text-dark mb-1">@nombreCompleto</div>
                             <div class="text-muted small">
                                 <span class="badge bg-light text-dark border me-2">Matrícula: @matriculaAlumno</span>
-                                <span class="badge" style="background-color: #A89B8C; color: white;">Grado y Grupo: @grupoAlumno</span>
+                                <span class="badge" style="background-color: var(--brand-secondary); color: var(--brand-white);">Grado y Grupo: @grupoAlumno</span>
                             </div>
                         </td>
 
                         <td class="text-end pe-3">
                             <div class="d-flex gap-2 justify-content-end">
-                                <a asp-area="Gestion" asp-controller="Tutorship" asp-action="VerEntrevistaAlumno" asp-route-id="@alumno.UserId" class="btn btn-vino shadow-sm btn-sm px-3 py-2">
+                                <a asp-area="Gestion" asp-controller="Tutorship" asp-action="VerEntrevistaAlumno" asp-route-id="@alumno.UserId" class="btn btn-action-seguimiento shadow-sm btn-sm px-3 py-2">
                                     <i class="bi bi-file-text"></i> Entrevista
                                 </a>
-                                <a asp-area="Gestion" asp-controller="Tutorship" asp-action="Seguimiento" asp-route-matriculaBuscar="@matriculaAlumno" class="btn btn-vino shadow-sm btn-sm px-3 py-2">
+                                <a asp-area="Gestion" asp-controller="Tutorship" asp-action="Seguimiento" asp-route-matriculaBuscar="@matriculaAlumno" class="btn btn-action-seguimiento shadow-sm btn-sm px-3 py-2">
                                     <i class="bi bi-graph-up"></i> Seguimiento
                                 </a>
                             </div>
@@ -269,18 +145,18 @@
 
     <script>
         $(document).ready(function () {
-            $('#tablaAlumnos').DataTable({
-                language: {
-                    url: 'https://cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json'
-                },
-                lengthMenu: [[10, 25, 50, -1], [10, 25, 50, "Todos"]],
-                pageLength: 10,
-                columnDefs: [
-                    { orderable: false, targets: [0, 2] },
-                    { searchable: false, targets: [0, 2] }
-                ],
-                order: [[1, 'asc']]
-            });
+        $('#tablaAlumnos').DataTable({
+        language: {
+        url: 'https://cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json'
+        },
+        lengthMenu: [[10, 25, 50, -1], [10, 25, 50, "Todos"]],
+        pageLength: 10,
+        columnDefs: [
+        { orderable: false, targets: [0, 2] },
+        { searchable: false, targets: [0, 2] }
+        ],
+        order: [[1, 'asc']]
+        });
         });
     </script>
 }

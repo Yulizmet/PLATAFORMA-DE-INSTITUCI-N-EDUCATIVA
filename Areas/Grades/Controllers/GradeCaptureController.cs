@@ -1,5 +1,6 @@
 ﻿using Azure.Core;
 using DocumentFormat.OpenXml.Office2016.Excel;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MiniExcelLibs;
@@ -14,6 +15,8 @@ using System.Text;
 namespace SchoolManager.Areas.Grades.Controllers
 {
     [Area("Grades")]
+    [Authorize(Roles = "Teacher")]
+
     public class GradeCaptureController : Controller
     {
         private readonly AppDbContext _context;

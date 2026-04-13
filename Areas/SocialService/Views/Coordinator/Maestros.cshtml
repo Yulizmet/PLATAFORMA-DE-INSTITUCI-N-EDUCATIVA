@@ -21,13 +21,13 @@
     }
 }
 
-<h3><i class="bi bi-person-badge-fill me-2"></i>Maestros / Asesores</h3>
-
 <div class="mb-3">
     <a asp-area="SocialService" asp-controller="Coordinator" asp-action="Dashboard" class="btn btn-secondary">
         <i class="bi bi-arrow-left"></i> Regresar al Dashboard
     </a>
 </div>
+
+<h3 class="text-center">Maestros / Asesores</h3>
 
 <!-- Filtros -->
 <div class="card mb-3">
@@ -71,6 +71,7 @@
                 </div>
             </div>
         </form>
+        <script src="~/js/SocialServiceAutoSearch.js"></script>
     </div>
 </div>
 
@@ -116,7 +117,7 @@
                 {
                     <tr>
                         <td>@(rowNum++)</td>
-                        <td><strong>@teacher.TeacherName</strong></td>
+                        <td>@teacher.TeacherName</td>
                         <td>@teacher.Email</td>
                         <td class="text-center">
                             <span class="badge bg-primary">@teacher.AlumnosAsignados</span>
@@ -133,10 +134,19 @@
                             }
                         </td>
                         <td class="text-center">
-                            <a asp-action="VerAlumnosAsesor" asp-route-id="@teacher.TeacherId"
-                               class="btn btn-sm btn-outline-primary" title="Ver alumnos del asesor">
-                                <i class="bi bi-people-fill me-1"></i> Ver Alumnos
-                            </a>
+                            <div class="d-flex justify-content-center align-items-center gap-1">
+                                <a asp-action="VerAlumnosAsesor" asp-route-id="@teacher.TeacherId"
+                                   class="btn btn-sm btn-outline-primary" title="Ver alumnos del asesor">
+                                    <i class="bi bi-people-fill me-1"></i> Ver Alumnos
+                                </a>
+                                @if (User.IsInRole("Master"))
+                                {
+                                    <a asp-action="AgregarAlumnosAsesor" asp-route-teacherId="@teacher.TeacherId"
+                                       class="btn btn-sm btn-outline-success" title="Agregar alumnos al asesor">
+                                        <i class="bi bi-person-plus me-1"></i> Agregar
+                                    </a>
+                                }
+                            </div>
                         </td>
                     </tr>
                 }
