@@ -44,9 +44,20 @@
 
                                 <div class="px-4 py-4" style="background:#eef2f5;">
                                     <div class="d-flex flex-column flex-sm-row justify-content-center gap-2 mt-3">
+
                                         <button class="btn btn-primary" type="button" onclick="convertirPdf()">
                                             <i class="fa-solid fa-download me-2"></i>Descargar comprobante
                                         </button>
+
+                                        <!-- BOTÓN ABAJO -->
+                                        <a asp-area="MainScreen"
+                                           asp-controller="MainScreen"
+                                           asp-action="Tramites"
+                                           class="btn-regresar">
+                                            <i class="fa-solid fa-arrow-left"></i>
+                                            <span>Regresar</span>
+                                        </a>
+
                                     </div>
                                 </div>
 
@@ -81,10 +92,11 @@
     <span id="pdfGeneracion">@Model.Generacion</span>
 </div>
 
-
 @section Styles {
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+
+    
 }
 
 @section Scripts {

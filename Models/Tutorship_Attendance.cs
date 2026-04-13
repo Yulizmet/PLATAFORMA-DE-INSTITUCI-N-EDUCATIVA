@@ -23,13 +23,19 @@ namespace SchoolManager.Models
 
         [Required]
         public int GroupId { get; set; }
+
         [NotMapped]
         public string GroupName { get; set; } = null!;
+
+        public int? SuggestedTopicId { get; set; }
 
         [ForeignKey("StudentId")]
         public virtual users_user Student { get; set; } = null!;
 
         [ForeignKey("TeacherId")]
         public virtual users_user Teacher { get; set; } = null!;
+
+        [ForeignKey("SuggestedTopicId")]
+        public virtual tutorship_suggested_topic? SuggestedTopic { get; set; }
     }
 }

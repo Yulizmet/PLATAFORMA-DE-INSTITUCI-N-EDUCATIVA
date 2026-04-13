@@ -7,6 +7,7 @@ namespace SchoolManager.ViewModels
         public string Genero { get; set; } = string.Empty;
         public string Curso { get; set; } = string.Empty;
         public int Semestre { get; set; }
+        public string Grupo { get; set; } = string.Empty;
         public double Nota { get; set; }
         public DateTime FechaInscripcion { get; set; }
         public string Estado { get; set; } = string.Empty;

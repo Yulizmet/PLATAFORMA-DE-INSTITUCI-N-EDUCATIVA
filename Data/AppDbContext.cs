@@ -70,6 +70,7 @@ namespace SchoolManager.Data
         public DbSet<tutorship_monitoring> TutorshipMonitorings { get; set; }
         public DbSet<tutorship_interview> TutorshipInterviews { get; set; }
         public DbSet<tutorship_interview_answer> TutorshipInterviewAnswers { get; set; }
+        public DbSet<tutorship_suggested_topic> TutorshipSuggestedTopics { get; set; }
 
         // Social Service (Servicio Social)
         public DbSet<social_service_assignment> SocialServiceAssignments { get; set; } = default!;
@@ -176,7 +177,7 @@ namespace SchoolManager.Data
             #endregion
 
             #region 2. Users Configuration
-        modelBuilder.Entity<users_person>().ToTable("users_person").HasKey(p => p.PersonId);
+            modelBuilder.Entity<users_person>().ToTable("users_person").HasKey(p => p.PersonId);
             modelBuilder.Entity<users_user>().ToTable("users_user").HasKey(u => u.UserId);
             modelBuilder.Entity<users_role>().ToTable("users_role").HasKey(r => r.RoleId);
             modelBuilder.Entity<users_permission>().ToTable("users_permission").HasKey(p => p.PermissionId);
@@ -538,6 +539,7 @@ namespace SchoolManager.Data
             modelBuilder.Entity<tutorship_monitoring>().ToTable("tutorship_monitorings");
             modelBuilder.Entity<tutorship_interview>().ToTable("tutorship_interviews");
             modelBuilder.Entity<tutorship_interview_answer>().ToTable("tutorship_interview_answers");
+            modelBuilder.Entity<tutorship_suggested_topic>().ToTable("tutorship_suggested_topic");
 
             modelBuilder.Entity<tutorship_interview_answer>().HasOne(a => a.Interview).WithMany(i => i.Answers).HasForeignKey(a => a.InterviewId).OnDelete(DeleteBehavior.Cascade);
             modelBuilder.Entity<tutorship_monitoring>().HasOne(m => m.Student).WithMany().HasForeignKey(m => m.StudentId).OnDelete(DeleteBehavior.Restrict);
@@ -574,6 +576,31 @@ namespace SchoolManager.Data
             modelBuilder.Entity<social_service_log>().ToTable("social_service_log");
 
             // Configuraciones específicas
+
+            modelBuilder.Entity<social_service_assignment>(entity =>
+            {
+                entity.HasOne(e => e.Student)
+                    .WithMany()
+                    .HasForeignKey(e => e.StudentId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(e => e.Teacher)
+                    .WithMany()
+                    .HasForeignKey(e => e.TeacherId)
+                    .OnDelete(DeleteBehavior.Restrict);
+            });
+            modelBuilder.Entity<social_service_rejection>(entity =>
+            {
+                entity.HasOne<users_user>()
+                    .WithMany()
+                    .HasForeignKey(e => e.RejectedBy)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(e => e.Student)
+                    .WithMany()
+                    .HasForeignKey(e => e.StudentId)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
             modelBuilder.Entity<social_service_assignment>()
                 .HasIndex(a => new { a.TeacherId, a.StudentId })
                 .IsUnique();

@@ -5,67 +5,58 @@
     Layout = "~/Areas/MainScreen/Views/Shared/_Layout.cshtml";
 }
 
-<div class="container-fluid py-4">
-    <!-- Header con información del estudiante -->
-    <div class="sistema-card mb-4">
-        <div class="row">
-            <div class="col-md-8">
-                <h1 class="users-title mb-3">
+<div class="container-fluid py-3">
+    <!-- Header compacto: info + stats en una sola fila -->
+    <div class="sistema-card mb-3">
+        <div class="row align-items-center">
+            <!-- Info del estudiante -->
+            <div class="col-lg-4 col-md-6 mb-2 mb-lg-0">
+                <h5 class="fw-bold mb-1" style="color: #1f2937;">
                     <i class="bi bi-person-video3 me-2" style="color: #8C1B1B;"></i>
                     @Model.StudentName
-                </h1>
-                <p class="text-muted mb-1">
-                    <i class="bi bi-qr-code me-2"></i>Matrícula: @Model.Matricula
-                </p>
-                <p class="text-muted mb-1">
-                    <i class="bi bi-layers me-2"></i>@Model.GradeLevel
-                </p>
-                <p class="text-muted">
-                    <i class="bi bi-people me-2"></i>Grupo: @Model.GroupName
-                </p>
-            </div>
-            <div class="col-md-4">
-                <div class="card h-100" style="background-color: #f8f9fa; border: none; border-radius: 15px;">
-                    <div class="card-body text-center">
-                        <h5 class="card-title">Promedio General</h5>
-                        <h2 style="color: #8C1B1B; font-size: 3rem;">@Model.Resumen.PromedioGeneral?.ToString("F2")</h2>
-                    </div>
+                </h5>
+                <div class="d-flex flex-wrap gap-3 text-muted" style="font-size: 0.85rem;">
+                    <span><i class="bi bi-qr-code me-1"></i>@Model.Matricula</span>
+                    <span><i class="bi bi-layers me-1"></i>@Model.GradeLevel</span>
+                    <span><i class="bi bi-people me-1"></i>@Model.GroupName</span>
                 </div>
             </div>
-        </div>
-    </div>
 
-    <!-- Tarjetas de resumen -->
-    <div class="row mb-4">
-        <div class="col-md-3">
-            <div class="card text-center h-100" style="border: none; border-radius: 15px; background-color: #e3f2fd;">
-                <div class="card-body">
-                    <h3>@Model.Resumen.TotalMaterias</h3>
-                    <p class="mb-0">Materias</p>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card text-center h-100" style="border: none; border-radius: 15px; background-color: #e8f5e8;">
-                <div class="card-body">
-                    <h3 style="color: #28a745;">@Model.Resumen.Aprobadas</h3>
-                    <p class="mb-0">Aprobadas</p>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card text-center h-100" style="border: none; border-radius: 15px; background-color: #ffebee;">
-                <div class="card-body">
-                    <h3 style="color: #D42D2D;">@Model.Resumen.Reprobadas</h3>
-                    <p class="mb-0">Reprobadas</p>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card text-center h-100" style="border: none; border-radius: 15px; background-color: #fff3e0;">
-                <div class="card-body">
-                    <h3 style="color: #ff9800;">@Model.Resumen.Extraordinarios</h3>
-                    <p class="mb-0">Extraordinarios</p>
+            <!-- Stats en línea -->
+            <div class="col-lg-8 col-md-6">
+                <div class="row g-2 text-center">
+                    <div class="col">
+                        <div class="rounded-3 py-2" style="background-color: #f8f9fa;">
+                            <div class="fw-bold fs-4" style="color: #8C1B1B;">
+                                @(Model.Resumen.PromedioGeneral?.ToString("F2") ?? "—")
+                            </div>
+                            <small class="text-muted">Promedio</small>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="rounded-3 py-2" style="background-color: #e3f2fd;">
+                            <div class="fw-bold fs-4">@Model.Resumen.TotalMaterias</div>
+                            <small class="text-muted">Materias</small>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="rounded-3 py-2" style="background-color: #e8f5e8;">
+                            <div class="fw-bold fs-4" style="color: #28a745;">@Model.Resumen.Aprobadas</div>
+                            <small class="text-muted">Aprobadas</small>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="rounded-3 py-2" style="background-color: #ffebee;">
+                            <div class="fw-bold fs-4" style="color: #D42D2D;">@Model.Resumen.Reprobadas</div>
+                            <small class="text-muted">Reprobadas</small>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="rounded-3 py-2" style="background-color: #fff3e0;">
+                            <div class="fw-bold fs-4" style="color: #ff9800;">@Model.Resumen.Extraordinarios</div>
+                            <small class="text-muted">Extra</small>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -74,25 +65,27 @@
     <!-- Detalle por materia -->
     @foreach (var subject in Model.Subjects)
     {
-        <div class="sistema-card mb-4">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <h4 class="fw-bold" style="color: #1f2937;">@subject.SubjectName</h4>
+        <div class="sistema-card mb-3">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <h6 class="fw-bold mb-0" style="color: #1f2937;">@subject.SubjectName</h6>
                 <div>
                     @if (subject.HasExtraordinary)
                     {
-                        <span class="badge bg-warning text-dark me-2">Extra: @subject.ExtraordinaryGrade?.ToString("F2")</span>
+                        <span class="badge bg-warning text-dark me-1" style="font-size: 0.75rem;">
+                            Extra: @subject.ExtraordinaryGrade?.ToString("F2")
+                        </span>
                     }
-                    <span class="badge @(subject.Passed ? "bg-success" : "bg-danger")" style="font-size: 1rem;">
-                        @subject.Status - @subject.FinalGrade?.ToString("F2")
+                    <span class="badge @(subject.Passed ? "bg-success" : "bg-danger")">
+                        @subject.Status — @(subject.FinalGrade?.ToString("F2") ?? "Sin final")
                     </span>
                 </div>
             </div>
 
             <div class="table-responsive">
-                <table class="table table-bordered">
+                <table class="table table-bordered table-sm mb-0">
                     <thead class="table-light">
                         <tr>
-                            <th style="width: 100px;">Unidad</th>
+                            <th style="width: 90px;">Unidad</th>
                             <th>Calificación</th>
                             <th>Recuperación</th>
                             <th>Nota Final</th>
@@ -102,9 +95,9 @@
                         @foreach (var unit in subject.Units)
                         {
                             <tr>
-                                <td class="fw-semibold">Unidad @unit.UnitNumber</td>
-                                <td>@unit.Grade?.ToString("F2")</td>
-                                <td>@unit.Recovery?.ToString("F2")</td>
+                                <td class="fw-semibold">U@(unit.UnitNumber)</td>
+                                <td>@(unit.Grade?.ToString("F2") ?? "—")</td>
+                                <td>@(unit.Recovery?.ToString("F2") ?? "—")</td>
                                 <td class="fw-bold @(unit.FinalGrade >= 6 ? "text-success" : "text-danger")">
                                     @unit.DisplayGrade
                                 </td>

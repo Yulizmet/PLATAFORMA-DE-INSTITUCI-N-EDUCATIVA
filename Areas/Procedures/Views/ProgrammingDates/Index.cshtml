@@ -1,0 +1,235 @@
+﻿@model IEnumerable<SchoolManager.Models.procedure_types>
+
+@{
+    ViewData["Title"] = "Vigencias de trámites";
+    Layout = "_ProceduresLayout";
+    ViewBag.EntityName = "types";
+
+    bool HasPermission(string buttonName) =>
+        ViewBag.UserPermissions != null && ((List<string>)ViewBag.UserPermissions).Contains(buttonName);
+}
+
+@section Scripts {
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+    <partial name="_DataTableConfig" />
+
+    <script>
+        window.loadModal = async function(url) {
+            try {
+                const response = await fetch(url);
+                if (!response.ok) throw new Error(`Error: ${response.status}`);
+                const html = await response.text();
+                const container = document.getElementById('modalContainer');
+                container.innerHTML = html;
+
+                const modalElement = container.querySelector('.modal');
+                if (modalElement) {
+                    const myModal = new bootstrap.Modal(modalElement);
+                    myModal.show();
+                }
+            } catch (error) {
+                showToast('error', 'No se pudo cargar la ventana');
+            }
+        };
+
+        $(document).off("submit", ".modal form").on("submit", ".modal form", async function (e) {
+            e.preventDefault();
+            const form = e.target;
+
+            try {
+                const response = await fetch(form.action, {
+                    method: form.method,
+                    body: new FormData(form)
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    const modalInstance = bootstrap.Modal.getInstance(form.closest('.modal'));
+                    if(modalInstance) modalInstance.hide();
+
+                    showToast('success', result.message || '¡Configuración guardada!');
+                    setTimeout(() => { location.reload(); }, 1500);
+                } else {
+                    showToast('warning', result.message || 'No se pudieron guardar los cambios.');
+                }
+            } catch (error) {
+                showToast('error', 'Error en el servidor al procesar la solicitud');
+            }
+        });
+
+        $(document).ready(function () {
+            $(document).on('change', '#checkAll', function () {
+                const isChecked = $(this).is(':checked');
+                $('.row-checkbox').prop('checked', isChecked);
+                $('.row-checkbox').closest('tr').toggleClass('table-active', isChecked);
+                updateBulkBar();
+            });
+
+            $(document).on('change', '.row-checkbox', function () {
+                const total = $('.row-checkbox').length;
+                const selected = $('.row-checkbox:checked').length;
+                $('#checkAll').prop('checked', total === selected);
+                $(this).closest('tr').toggleClass('table-active', $(this).is(':checked'));
+                updateBulkBar();
+            });
+        });
+
+        function updateBulkBar() {
+            const count = $('.row-checkbox:checked').length;
+            const bar = $('#bulkActionsBar');
+
+            if (count > 0) {
+                const text = count === 1 ? '1 seleccionado' : count + ' seleccionados';
+                $('#selectedCount').text(text);
+                bar.removeClass('d-none').fadeIn('fast');
+            } else {
+                bar.fadeOut('fast', function() {
+                    $(this).addClass('d-none');
+                });
+                $('#checkAll').prop('checked', false);
+            }
+        }
+
+        function deselectAll() {
+            $('.row-checkbox, #checkAll').prop('checked', false).closest('tr').removeClass('table-active');
+            updateBulkBar();
+        }
+
+        function bulkEdit() {
+            const selectedIds = $('.row-checkbox:checked').map(function() {
+                return parseInt($(this).val());
+            }).get();
+
+            if (selectedIds.length === 0) return;
+
+            Swal.fire({
+                title: '¿Editar vigencias?',
+                html: `Vas a configurar masivamente <b>${selectedIds.length}</b> trámites.`,
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#620900',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Sí, continuar',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    showToast('info', 'Funcionalidad de edición masiva en desarrollo');
+                }
+            });
+        }
+    </script>
+}
+
+<div id="modalContainer"></div>
+
+<div class="container-fluid px-4 pt-5">
+    <div class="d-flex justify-content-between align-items-start mb-4">
+        <div>
+            <h2 class="fw-bold mb-1 merriweather-font">
+                <i class="bi bi-calendar3"></i> Vigencias de trámites
+            </h2>
+            <p class="text-muted small mb-0">Configura las fechas de inicialización, cierre y tiempos de resolución de los trámites.</p>
+        </div>
+    </div>
+
+    <partial name="_TableTools" />
+
+    <div class="border-0 overflow-hidden">
+        <div class="card-body p-0">
+            <table id="mainTable" class="table table-hover align-middle mb-0 table-container-rounded">
+                <thead class="burgundy-header text-white">
+                    <tr>
+                        <th class="no-sort text-center" style="width: 5%;">
+                            <input type="checkbox" id="checkAll" class="form-check-input">
+                        </th>
+                        <th style="width: 25%;">Nombre del trámite</th>
+                        <th style="width: 10%;">Status</th>
+                        <th style="width: 20%;">Fecha de Inicialización</th>
+                        <th style="width: 20%;">Fecha de Cierre</th>
+                        <th style="width: 15%;">Días de resolución</th>
+                        <th class="no-sort text-center pe-4" style="width: 10%;">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody class="table-white">
+                    @foreach (var item in Model)
+                    {
+                        var today = DateTime.Today;
+                        string statusLabel = "Sin Programar";
+                        string statusClass = "accent-muted text-muted";
+
+                        if (item.StartDate.HasValue && item.EndDate.HasValue)
+                        {
+                            if (today >= item.StartDate && today <= item.EndDate)
+                            {
+                                statusLabel = "Activo";
+                                statusClass = "accent-done text-success";
+                            }
+                            else if (today < item.StartDate)
+                            {
+                                statusLabel = "Programado";
+                                statusClass = "accent-course text-primary";
+                            }
+                            else
+                            {
+                                statusLabel = "Inactivo";
+                                statusClass = "accent-total text-danger";
+                            }
+                        }
+
+                        <tr>
+                            <td class="text-center">
+                                <input type="checkbox" class="form-check-input row-checkbox" value="@item.Id" />
+                            </td>
+                            <td>
+                                <div class="fw-bold text-dark">@item.Name</div>
+                            </td>
+                            <td>
+                                <span class="badge @statusClass border rounded-pill fw-bold" style="font-size: 0.65rem; padding: 0.3em 0.8em;">
+                                    <i class="bi bi-circle-fill me-1" style="font-size: 0.5rem;"></i> @statusLabel
+                                </span>
+                            </td>
+                            <td class="text-muted small">
+                                <i class="bi bi-calendar-event me-1"></i>
+                                @(item.StartDate.HasValue? item.StartDate.Value.ToString("yyyy-MM-dd hh:mm tt") : "---")
+                            </td>
+                            <td class="text-muted small">
+                                <i class="bi bi-calendar-x me-1"></i>
+                                @(item.EndDate.HasValue? item.EndDate.Value.ToString("yyyy-MM-dd hh:mm tt") : "---")
+                            </td>
+                            <td class="text-center">
+                                <span class="badge rounded-pill bg-light text-dark border accent-course px-3 py-2">
+                                    @item.MaxResolutionDays días
+                                </span>
+                            </td>
+                            <td class="actions text-center pe-4">
+                                <button class="btn btn-light border shadow-sm rounded-pill px-4 py-2 d-inline-flex align-items-center transition-hover"
+                                        onclick="loadModal('/Procedures/ProgrammingDates/Edit/@item.Id')"
+                                        style="border-color: rgba(0,0,0,0.1) !important;">
+                                    <i class="bi bi-calendar-plus text-primary me-2"></i>
+                                    <span class="small fw-bold">Configurar</span>
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div id="bulkActionsBar" class="position-fixed bottom-0 start-50 translate-middle-x mb-4 shadow-lg bg-dark text-white p-3 rounded-pill d-none animate__animated animate__fadeInUp" style="z-index: 1050; min-width: 300px;">
+        <div class="d-flex align-items-center justify-content-between px-3">
+            <span id="selectedCount" class="fw-bold me-4">0 seleccionados</span>
+            <div class="btn-group">
+                @if (HasPermission("btn-multiple-editar"))
+                {
+                    <button class="btn btn-sm btn-info px-4 fw-bold rounded-pill text-white" onclick="bulkEdit()">
+                        <i class="bi bi-pencil-square me-1"></i> Configurar Varios
+                    </button>
+                }
+            </div>
+            <button type="button" class="btn-close btn-close-white ms-3" onclick="deselectAll()"></button>
+        </div>
+    </div>
+</div>

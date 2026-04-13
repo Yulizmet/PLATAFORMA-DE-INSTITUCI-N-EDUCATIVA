@@ -1,17 +1,18 @@
-﻿@model SchoolManager.Areas.Grades.ViewModels.Groups.GroupDetailsViewModel
+﻿@using SchoolManager.Areas.Grades.ViewModels.Breadcrumbs;
+@model SchoolManager.Areas.Grades.ViewModels.Groups.GroupDetailsViewModel
 
 @{
     ViewData["Title"] = $"Grupo {Model.Name}";
     Layout = "~/Areas/MainScreen/Views/Shared/_Layout.cshtml";
+    var breadcrumbs = new BreadcrumbViewModel();
+    breadcrumbs.AddItem("Panel Administrativo", "/PanelAdministrativo");
+    breadcrumbs.AddItem("Grupos", "/Grades/Groups/");
+    breadcrumbs.AddItem(Model.Name);
 }
+<partial name="_Breadcrumb" model="breadcrumbs" />
+
 
 <div class="container-fluid py-4">
-    <nav aria-label="breadcrumb" class="mb-4">
-        <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a asp-action="Index" style="color: #8C1B1B;">Grupos</a></li>
-            <li class="breadcrumb-item active" aria-current="page">@Model.Name</li>
-        </ol>
-    </nav>
 
     <div class="row">
         <div class="col-md-4 mb-4">
@@ -38,20 +39,24 @@
                     </div>
                     <div class="col-6">
                         <div class="p-3 text-center" style="background-color: #f8f9fa; border-radius: 15px;">
-                            <h3 class="fw-bold mb-1" style="color: #8C1B1B;">0</h3>
+                            <h3 class="fw-bold mb-1" style="color: #8C1B1B;">@Model.StudentsCount</h3>
                             <small class="text-muted">Estudiantes</small>
                         </div>
                     </div>
                 </div>
 
                 <div class="mt-4 d-flex gap-2">
-                    <a asp-action="Edit" asp-route-id="@Model.GroupId" class="btn flex-fill"
+@*                     <a asp-action="Edit" asp-route-id="@Model.GroupId" class="btn flex-fill"
                        style="background-color: #8C1B1B; color: white; border-radius: 10px; padding: 12px;">
                         <i class="bi bi-pencil me-2"></i>Editar
-                    </a>
+                    </a> *@
                     <a asp-action="Index" class="btn flex-fill"
                        style="background-color: #6c757d; color: white; border-radius: 10px; padding: 12px;">
                         <i class="bi bi-arrow-left me-2"></i>Volver
+                    </a>
+                    <a asp-controller="Enrollment" asp-action="AssignToGroup" asp-route-groupId="@Model.GroupId"
+                       class="btn btn-calificaciones">
+                        <i class="bi bi-person me-2"></i>Administrar Estudiantes
                     </a>
                 </div>
             </div>
@@ -103,16 +108,13 @@
         </div>
         <!-- En Groups/Details.cshtml, después de la sección de Materias Asignadas -->
         <!-- Sección de Estudiantes -->
-        <div class="card shadow mt-4">
+@*         <div class="card shadow mt-4">
             <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
                 <h5 class="mb-0">
                     <i class="bi bi-people me-2 text-primary"></i>
                     Estudiantes (@Model.StudentsCount)
                 </h5>
-                <a asp-controller="Enrollment" asp-action="AssignToGroup" asp-route-groupId="@Model.GroupId"
-                   class="btn btn-sm btn-calificaciones">
-                    <i class="bi bi-person-plus me-2"></i>Asignar Estudiantes
-                </a>
+
             </div>
             <div class="card-body">
                 @if (Model.Students != null && Model.Students.Any())
@@ -169,6 +171,6 @@
                     </div>
                 }
             </div>
-        </div>
+        </div> *@
     </div>
 </div>

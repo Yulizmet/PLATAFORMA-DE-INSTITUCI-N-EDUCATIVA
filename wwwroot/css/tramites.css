@@ -43,10 +43,15 @@
         font-weight: 300;
     }
 
-.btn:focus, .btn:active:focus, .btn-link.nav-link:focus,
-.form-control:focus, .form-select:focus, .form-check-input:focus {
+.btn:active:focus, .btn-link.nav-link:focus,
+.form-select:focus, .form-check-input:focus {
     box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem rgba(98, 9, 0, 0.25);
     border-color: var(--burgundy-light) !important;
+}
+
+.form-control:focus {
+    box-shadow: none !important;
+    border-color: none !important;
 }
 
 .form-check-input:checked {
@@ -110,10 +115,6 @@ body {
     border-color: var(--yellow-warning) !important;
 }
 
-.btn-danger {
-    background-color: var(--red-danger) !important;
-    border-color: var(--red-danger) !important;
-}
 
 .border-info {
     border-color: var(--blue-info) !important;
@@ -152,19 +153,86 @@ body {
 }
 
 .bg-outline-info {
-    background-color: var(--blue-info) !important;
+    border-color: var(--blue-info) !important;
 }
 
 .bg-outline-success {
-    background-color: var(--green-success) !important;
+    border-color: var(--green-success) !important;
 }
 
 .bg-outline-warning {
-    background-color: var(--yellow-warning) !important;
+    border-color: var(--yellow-warning) !important;
 }
 
 .bg-outline-danger {
+    border-color: var(--red-danger) !important;
+}
+
+.btn-outline-info {
+    color: var(--blue-info) !important;
+    border-color: var(--blue-info) !important;
+}
+
+.btn-outline-success {
+    color: var(--green-success) !important;
+    border-color: var(--green-success) !important;
+}
+
+.btn-outline-warning {
+    color: var(--yellow-warning) !important;
+    border-color: var(--yellow-warning) !important;
+}
+
+.btn-outline-danger {
+    color: var(--red-danger) !important;
+    border-color: var(--red-danger) !important;
+}
+
+.btn-outline-info:focus {
+    color: white !important;
+    background-color: var(--blue-info) !important;
+}
+
+.btn-outline-success:focus {
+    color: white !important;
+    background-color: var(--green-success) !important;
+}
+
+.btn-outline-warning:focus {
+    color: white !important;
+    background-color: var(--yellow-warning) !important;
+}
+
+.btn-outline-danger:focus {
+    color: white !important;
     background-color: var(--red-danger) !important;
+}
+
+.btn-outline-info:hover, .btn-outline-success:hover, .btn-outline-warning:hover, .btn-outline-danger:hover {
+    color: white !important;
+    background-color: var(--red-danger) !important;
+}
+
+.bg-danger.animate__pulse {
+    box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.7);
+    animation: pulse-red 2s infinite;
+}
+
+@keyframes pulse-red {
+    0% {
+        transform: scale(0.95);
+        box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.7);
+    }
+
+    70% {
+        transform: scale(1);
+        box-shadow: 0 0 0 10px rgba(220, 53, 69, 0);
+    }
+
+    100% {
+        transform: scale(0.95);
+        box-shadow: 0 0 0 0 rgba(220, 53, 69, 0);
+    }
 }
 
 /*============================================================================
@@ -236,6 +304,10 @@ body {
 .accent-cancel {
     border: 1px solid rgba(255, 49, 49, 0.4) !important;
     /*background-color: rgba(255, 49, 49, 0.1) !important;*/
+}
+
+.accent-muted {
+    border: 1px solid rgba(0, 0, 0, 0.4) !important;
 }
 
 .metric-big {
@@ -469,6 +541,15 @@ body {
     background: #ced4da;
     border-radius: 10px;
 }
+
+.grayscale-filter {
+    filter: grayscale(1);
+    pointer-events: none;
+}
+
+    .grayscale-filter .content-side {
+        background-color: #f8f9fa !important;
+    }
 
 /* --- ESTRUCTURA DEL WIZARD --- */
 .step-wizard-container {
@@ -786,6 +867,30 @@ body {
     text-decoration: none;
 }
 
+.btn-danger {
+    background-color: var(--red-danger) !important;
+    color: white !important;
+    border-radius: 50px;
+    padding: 0.5rem 2.5rem;
+    font-weight: 600;
+    transition: var(--transition);
+    border: none;
+    width: fit-content;
+    text-decoration: none;
+}
+
+.btn-success {
+    background-color: var(--green-success) !important;
+    color: white !important;
+    border-radius: 50px;
+    padding: 0.5rem 2.5rem;
+    font-weight: 600;
+    transition: var(--transition);
+    border: none;
+    width: fit-content;
+    text-decoration: none;
+}
+
 .btn-disabled {
     color: #6c757d !important;
     border-radius: 50px;
@@ -805,6 +910,7 @@ body {
     }
 
 .btn-disabled:hover {
+    color: white !important;
     background-color: #6c757d;
     transform: translateY(-2px);
     box-shadow: 0 5px 15px rgba(98, 9, 0, 0.3);
@@ -825,10 +931,6 @@ body {
     justify-content: center;
     font-weight: 600;
     font-size: 0.85rem;
-}
-
-.text-info {
-    color: #00838f !important;
 }
 
 .status-badge {

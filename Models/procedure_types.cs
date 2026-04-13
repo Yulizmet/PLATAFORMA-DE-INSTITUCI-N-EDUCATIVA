@@ -21,6 +21,10 @@ namespace SchoolManager.Models
         [Display(Name = "Área responsable")]
         public int IdArea { get; set; }
 
+        public DateTime? StartDate { get; set; } = DateTime.Now;
+        public DateTime? EndDate { get; set; } = DateTime.Now;
+        public int? MaxResolutionDays { get; set; }
+
         [ForeignKey("IdArea")]
         public virtual procedure_areas ProcedureArea { get; set; } = null!;
 

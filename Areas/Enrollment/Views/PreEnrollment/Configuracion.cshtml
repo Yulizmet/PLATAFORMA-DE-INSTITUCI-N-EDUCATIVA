@@ -1,0 +1,256 @@
+﻿@model List<SchoolManager.Models.preenrollment_careers>
+
+@{
+    ViewData["Title"] = "Configuración";
+    Layout = "~/Areas/Enrollment/Views/_LayoutAdmin.cshtml";
+}
+
+<main class="content">
+    <div class="container-fluid p-0">
+        <h1 class="h3 mb-3">Configuración</h1>
+
+        @if (TempData["Success"] != null)
+        {
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                @TempData["Success"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        }
+
+        @if (TempData["Error"] != null)
+        {
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                @TempData["Error"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        }
+
+        <div class="row">
+            <div class="col-md-3 col-xl-2">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">Configuración</h5>
+                    </div>
+
+                    <div class="list-group list-group-flush" role="tablist">
+                        <a class="list-group-item list-group-item-action active" data-bs-toggle="list" href="#careers" role="tab">
+                            <i class="align-middle me-2" data-feather="book-open"></i>
+                            Configurar carreras
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-9 col-xl-10">
+                <div class="tab-content">
+                    <div class="tab-pane fade show active" id="careers" role="tabpanel">
+                        <div class="card mb-3">
+                            <div class="card-header">
+                                <h5 class="card-title mb-0">Configurar carreras</h5>
+                            </div>
+
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-hover my-0" id="careersTable">
+                                        <thead>
+                                            <tr>
+                                                <th>Carrera</th>
+                                                <th class="text-end">Acciones</th>
+                                            </tr>
+                                        </thead>
+
+                                        <tbody id="careersTbody">
+                                            @if (Model != null && Model.Any())
+                                            {
+                                                foreach (var career in Model)
+                                                {
+                                                    <tr data-id="@career.IdCareer">
+                                                        <td data-field="name">@career.name_career</td>
+                                                        <td class="text-end">
+                                                            <div class="table-actions d-flex justify-content-end gap-2">
+                                                                <button type="button" class="btn btn-link p-0 action-edit" title="Editar">
+                                                                    <i class="align-middle" data-feather="edit-2"></i>
+                                                                </button>
+
+                                                                <form asp-action="EliminarCarrera"
+                                                                      asp-controller="PreEnrollment"
+                                                                      asp-area="Enrollment"
+                                                                      method="post"
+                                                                      class="d-inline"
+                                                                      onsubmit="return confirm('¿Deseas eliminar esta carrera?');">
+                                                                    @Html.AntiForgeryToken()
+                                                                    <input type="hidden" name="idCareer" value="@career.IdCareer" />
+                                                                    <button type="submit" class="btn btn-link p-0 action-delete" title="Eliminar">
+                                                                        <i class="align-middle" data-feather="trash-2"></i>
+                                                                    </button>
+                                                                </form>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                }
+                                            }
+                                            else
+                                            {
+                                                <tr id="emptyRow">
+                                                    <td colspan="2" class="text-center text-muted py-4">
+                                                        No hay carreras registradas.
+                                                    </td>
+                                                </tr>
+                                            }
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                                <hr class="my-4" />
+
+                                <form asp-action="CrearCarrera"
+                                      asp-controller="PreEnrollment"
+                                      asp-area="Enrollment"
+                                      method="post">
+                                    @Html.AntiForgeryToken()
+
+                                    <h6 class="mb-3">Agregar nueva carrera</h6>
+
+                                    <div class="row g-2 align-items-end">
+                                        <div class="col-12 col-md-6">
+                                            <label class="form-label" for="careerName">Nombre</label>
+                                            <input type="text"
+                                                   class="form-control"
+                                                   id="careerName"
+                                                   name="name_career"
+                                                   placeholder="Ej: Mecatrónica"
+                                                   required />
+                                        </div>
+
+                                        <div class="col-12 col-md-auto">
+                                            <button type="submit" class="btn btn-primary">
+                                                <i class="align-middle me-1" data-feather="plus"></i>
+                                                Añadir
+                                            </button>
+                                        </div>
+                                    </div>
+                                </form>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+@section Scripts {
+    <script>
+        (function () {
+            const tbody = document.getElementById("careersTbody");
+
+            function rerenderIcons() {
+                if (window.feather) feather.replace();
+            }
+
+            function escapeHtml(str) {
+                return (str || "")
+                    .replaceAll("&", "&amp;")
+                    .replaceAll("<", "&lt;")
+                    .replaceAll(">", "&gt;")
+                    .replaceAll('"', "&quot;")
+                    .replaceAll("'", "&#039;");
+            }
+
+            tbody.addEventListener("click", (e) => {
+                const tr = e.target.closest("tr");
+                if (!tr || tr.id === "emptyRow") return;
+
+                const editBtn = e.target.closest(".action-edit");
+                const saveBtn = e.target.closest(".action-save");
+                const cancelBtn = e.target.closest(".action-cancel");
+
+                if (editBtn) {
+                    if (tr.dataset.editing === "1") return;
+                    tr.dataset.editing = "1";
+
+                    const idCareer = tr.dataset.id;
+                    const nameTd = tr.querySelector('[data-field="name"]');
+                    tr.dataset.origName = nameTd.textContent.trim();
+
+                    nameTd.innerHTML = `<input class="form-control form-control-sm" value="${escapeHtml(tr.dataset.origName)}">`;
+
+                    const actionCell = tr.querySelector("td.text-end");
+                    actionCell.innerHTML = `
+                        <div class="d-flex justify-content-end gap-2">
+                            <button type="button" class="btn btn-success btn-sm action-save" title="Guardar">
+                                <i class="align-middle" data-feather="check"></i>
+                            </button>
+                            <button type="button" class="btn btn-outline-secondary btn-sm action-cancel" title="Cancelar">
+                                <i class="align-middle" data-feather="x"></i>
+                            </button>
+                        </div>
+                    `;
+
+                    tr.dataset.id = idCareer;
+                    rerenderIcons();
+                    return;
+                }
+
+                if (saveBtn) {
+                    const idCareer = tr.dataset.id;
+                    const nameTd = tr.querySelector('[data-field="name"]');
+                    const newName = nameTd.querySelector("input")?.value.trim();
+
+                    if (!newName) return;
+
+                    const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+
+                    const form = document.createElement("form");
+                    form.method = "post";
+                    form.action = '@Url.Action("EditarCarrera", "PreEnrollment", new { area = "Enrollment" })';
+
+                    form.innerHTML = `
+                        <input type="hidden" name="__RequestVerificationToken" value="${token}">
+                        <input type="hidden" name="idCareer" value="${idCareer}">
+                        <input type="hidden" name="name_career" value="${escapeHtml(newName)}">
+                    `;
+
+                    document.body.appendChild(form);
+                    form.submit();
+                    return;
+                }
+
+                if (cancelBtn) {
+                    tr.querySelector('[data-field="name"]').textContent = tr.dataset.origName || "";
+                    restoreActions(tr);
+                }
+            });
+
+            function restoreActions(tr) {
+                const idCareer = tr.dataset.id;
+                tr.dataset.editing = "0";
+
+                const actionCell = tr.querySelector("td.text-end");
+                actionCell.innerHTML = `
+                    <div class="table-actions d-flex justify-content-end gap-2">
+                        <button type="button" class="btn btn-link p-0 action-edit" title="Editar">
+                            <i class="align-middle" data-feather="edit-2"></i>
+                        </button>
+
+                        <form action="@Url.Action("EliminarCarrera", "PreEnrollment", new { area = "Enrollment" })"
+                              method="post"
+                              class="d-inline"
+                              onsubmit="return confirm('¿Deseas eliminar esta carrera?');">
+                            <input type="hidden" name="__RequestVerificationToken" value="${document.querySelector('input[name="__RequestVerificationToken"]').value}">
+                            <input type="hidden" name="idCareer" value="${idCareer}">
+                            <button type="submit" class="btn btn-link p-0 action-delete" title="Eliminar">
+                                <i class="align-middle" data-feather="trash-2"></i>
+                            </button>
+                        </form>
+                    </div>
+                `;
+
+                rerenderIcons();
+            }
+
+            rerenderIcons();
+        })();
+    </script>
+}

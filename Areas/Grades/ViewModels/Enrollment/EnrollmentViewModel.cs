@@ -22,6 +22,8 @@ namespace SchoolManager.Areas.Grades.ViewModels.Enrollment
 
     public class StudentSelectionViewModel
     {
+        public int? CurrentGroupId { get; set; }
+        public int? CurrentGradeLevelId { get; set; }
         public int StudentId { get; set; }
         public string FullName { get; set; } = null!; 
         public string Matricula { get; set; } = null!;
