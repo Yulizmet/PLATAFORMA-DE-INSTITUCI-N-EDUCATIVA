@@ -105,7 +105,7 @@ namespace SchoolManager.Areas.Procedures.Controllers
                 BackgroundColor = request.ProcedureFlow?.ProcedureStatus?.BackgroundColor!,
                 TextColor = request.ProcedureFlow?.ProcedureStatus?.TextColor!,
                 LastUpdate = request.DateUpdated ?? request.DateCreated,
-                AdminComment = request.ProcedureMonitorings?.OrderByDescending(m => m.DateUpdated!).Select(m => m.Comment!).FirstOrDefault()
+                AdminComment = request?.ProcedureMonitorings?.OrderByDescending(m => m.DateUpdated!).Select(m => m.Comment!).FirstOrDefault()
             };
 
             return PartialView("_PublicTrackingResult", viewModel);

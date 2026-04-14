@@ -11,7 +11,7 @@
                 <p class="mt-3">Estás a punto de borrar el estado: <br> <strong class="fw-bold">@Model.Name</strong></p>
                 <p class="text-muted small">Esta acción no se puede deshacer.</p>
             </div>
-            <div class="modal-footer">
+            <div class="modal-footer border-0 bg-light justify-content-end">
                 <form method="post" action="/Procedures/ProcedureStatus/DeleteConfirmed">
                     @Html.AntiForgeryToken()
                     <input type="hidden" name="id" value="@Model.Id" />

@@ -1,0 +1,70 @@
+﻿@model List<int>
+@{
+    var now = DateTime.Now.ToString("yyyy-MM-ddTHH:mm");
+}
+
+<div class="modal fade" id="modalBulkEditDates" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg rounded-4">
+            <div class="modal-header burgundy-header text-white border-0 py-3">
+                <h5 class="modal-title fw-bold"><i class="bi bi-calendar-range me-2"></i>Edición Masiva de Vigencias</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form asp-action="BulkEditConfirmed" method="post">
+                @Html.AntiForgeryToken()
+
+                @foreach (var id in Model)
+                {
+                    <input type="hidden" name="ids" value="@id" />
+                }
+
+                <div class="modal-body p-4 bg-light">
+                    <div class="alert alert-info border-0 shadow-sm rounded-3 mb-4">
+                        <i class="bi bi-info-circle-fill me-2"></i>
+                        Se actualizarán <strong>@Model.Count</strong> trámites simultáneamente.
+                    </div>
+
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold text-muted">Apertura (Fecha y Hora):</label>
+                            <input type="datetime-local" name="startDate" id="startDate"
+                                   class="form-control border-0 shadow-sm rounded-3"
+                                   value="@now" required />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold text-muted">Cierre (Fecha y Hora):</label>
+                            <input type="datetime-local" name="endDate" id="endDate"
+                                   class="form-control border-0 shadow-sm rounded-3"
+                                   value="@now" required />
+                        </div>
+                    </div>
+
+                    <div class="mt-4">
+                        <label class="form-label small fw-bold text-muted">Días máximos de resolución (SLA):</label>
+                        <div class="input-group shadow-sm rounded-3 overflow-hidden">
+                            <span class="input-group-text border-0 bg-white text-burgundy"><i class="bi bi-clock-history"></i></span>
+                            <input type="number" name="maxResolutionDays" class="form-control border-0"
+                                   value="5" min="1" max="365" required />
+                            <span class="input-group-text border-0 bg-white small text-muted">días</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-footer border-0 bg-light p-3">
+                    <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-burgundy rounded-pill px-5 shadow-sm">Actualizar @Model.Count Trámites</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.getElementById('endDate').addEventListener('change', function() {
+        const start = document.getElementById('startDate').value;
+        if (start && this.value < start) {
+            showToast('warning', 'La fecha de cierre no puede ser menor al inicio.');
+            this.value = start;
+        }
+    });
+</script>

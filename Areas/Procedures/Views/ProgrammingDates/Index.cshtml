@@ -119,6 +119,41 @@
                 }
             });
         }
+
+        function bulkEdit() {
+            const selectedIds = $('.row-checkbox:checked').map(function() {
+                return parseInt($(this).val());
+            }).get();
+
+            if (selectedIds.length === 0) {
+                showToast('warning', 'Selecciona al menos un trámite.');
+                return;
+            }
+
+            Swal.fire({
+                title: 'Preparando edición...',
+                didOpen: () => { Swal.showLoading(); }
+            });
+
+            $.ajax({
+                url: '@Url.Action("GetBulkEditModal", "ProgrammingDates")',
+                type: 'POST',
+                data: { ids: selectedIds },
+                success: function(html) {
+                    Swal.close();
+                    const container = document.getElementById('modalContainer');
+                    container.innerHTML = html;
+
+                    const modalEl = container.querySelector('.modal');
+                    const myModal = new bootstrap.Modal(modalEl);
+                    myModal.show();
+                },
+                error: function() {
+                    Swal.close();
+                    showToast('error', 'Error al cargar la configuración masiva.');
+                }
+            });
+        }
     </script>
 }
 
