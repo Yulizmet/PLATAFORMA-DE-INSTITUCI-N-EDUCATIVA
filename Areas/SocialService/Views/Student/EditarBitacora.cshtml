@@ -42,6 +42,8 @@
                   method="post"
                   enctype="multipart/form-data">
 
+                <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
                 <div class="mb-4 form-group-inline">
                     <label asp-for="Week" class="form-label">Semana</label>
                     <input asp-for="Week" type="number" min="1" class="form-control input-small" />
@@ -74,6 +76,30 @@
                     <label asp-for="Observations"></label>
                     <textarea asp-for="Observations" class="form-control textarea-large" rows="4"></textarea>
                     <span asp-validation-for="Observations" class="text-danger"></span>
+                </div>
+
+                <div class="mb-4">
+                    <label asp-for="PdfFile" class="form-label">
+                        <i class="bi bi-file-earmark-pdf me-1"></i> Reemplazar archivo PDF (opcional, máx. 10 MB)
+                    </label>
+
+                    @if (!string.IsNullOrEmpty(Model.ExistingPdfFileName))
+                    {
+                        <div class="mb-2">
+                            <span class="form-text d-block">Archivo actual:</span>
+                            <a asp-area="SocialService"
+                               asp-controller="Student"
+                               asp-action="DescargarBitacoraPdfArchivo"
+                               asp-route-logId="@ViewBag.LogId"
+                               class="btn btn-outline-secondary btn-sm mt-1">
+                                <i class="bi bi-paperclip me-1"></i> @Model.ExistingPdfFileName
+                            </a>
+                        </div>
+                    }
+
+                    <input asp-for="PdfFile" type="file" class="form-control" accept=".pdf" />
+                    <div class="form-text text-muted">Si seleccionas un archivo nuevo, reemplazará el archivo actual.</div>
+                    <span asp-validation-for="PdfFile" class="text-danger"></span>
                 </div>
 
                 <div class="d-flex gap-2">

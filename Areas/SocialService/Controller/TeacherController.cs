@@ -477,7 +477,7 @@ namespace SchoolManager.Areas.SocialService.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> AprobarBitacora(int logId, int approvedHoursPracticas, int approvedHoursServicioSocial, string teacherComments)
+        public async Task<IActionResult> AprobarBitacora(int logId, string teacherComments)
         {
             int currentTeacherId = GetCurrentTeacherId();
 
@@ -502,11 +502,14 @@ namespace SchoolManager.Areas.SocialService.Controllers
                 return RedirectToAction("Alumnos");
             }
 
-            if (approvedHoursPracticas > bitacora.HoursPracticas || approvedHoursServicioSocial > bitacora.HoursServicioSocial)
+            if (bitacora.IsApproved)
             {
-                TempData["Error"] = "Las horas aprobadas no pueden exceder las horas registradas.";
+                TempData["Error"] = "Esta bitácora ya fue aprobada.";
                 return RedirectToAction("RevisarBitacorasAlumno", new { id = bitacora.StudentId });
             }
+
+            int approvedHoursPracticas = bitacora.HoursPracticas;
+            int approvedHoursServicioSocial = bitacora.HoursServicioSocial;
 
             // Lógica de límite: calcular horas acumuladas para no exceder 240/480
             var approvedLogs = await _context.SocialServiceLogs

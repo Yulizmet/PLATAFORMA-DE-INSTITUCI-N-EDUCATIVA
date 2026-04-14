@@ -372,6 +372,7 @@ namespace SchoolManager.Areas.SocialService.Controllers
                     if (existingWeek)
                     {
                         TempData["Error"] = $"Ya existe otra bitácora para {vm.Week}.";
+                        vm.ExistingPdfFileName = bitacora.PdfFileName;
                         ViewBag.LogId = bitacora.LogId;
                         return View(vm);
                     }
@@ -390,6 +391,7 @@ namespace SchoolManager.Areas.SocialService.Controllers
                     if (pdfData == null)
                     {
                         TempData["Error"] = "Solo se permiten archivos PDF de máximo 10 MB.";
+                        vm.ExistingPdfFileName = bitacora.PdfFileName;
                         ViewBag.LogId = id;
                         return View(vm);
                     }
@@ -403,6 +405,12 @@ namespace SchoolManager.Areas.SocialService.Controllers
                 return RedirectToAction("Bitacoras");
             }
 
+            var currentStudentIdOnError = int.Parse(User.FindFirst("UserId")?.Value ?? "0");
+            var existingBitacora = _context.SocialServiceLogs
+                .AsNoTracking()
+                .FirstOrDefault(log => log.LogId == id && log.StudentId == currentStudentIdOnError);
+
+            vm.ExistingPdfFileName = existingBitacora?.PdfFileName;
             ViewBag.LogId = id;
             return View(vm);
         }

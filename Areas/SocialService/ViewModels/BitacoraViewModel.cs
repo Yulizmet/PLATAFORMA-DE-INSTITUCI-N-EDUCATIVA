@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Http;
 
 namespace SchoolManager.Areas.SocialService.ViewModels
 {
-    public class BitacoraViewModel
+    public class BitacoraViewModel : IValidatableObject
     {
         [Required(ErrorMessage = "La semana es obligatoria")]
         [RegularExpression(@"^\d+$", ErrorMessage = "Solo se permiten números")]
@@ -31,5 +31,14 @@ namespace SchoolManager.Areas.SocialService.ViewModels
         public IFormFile? PdfFile { get; set; }
 
         public string? ExistingPdfFileName { get; set; }
+
+        public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+        {
+            if (HoursPracticas == 0 && HoursServicioSocial == 0)
+            {
+                yield return new ValidationResult(
+                    "Debes capturar horas en Prácticas Profesionales o en Servicio Social.");
+            }
+        }
     }
 }
