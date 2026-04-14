@@ -1,0 +1,130 @@
+﻿@{
+    ViewData["Title"] = "Aspirantes";
+    Layout = "~/Areas/Enrollment/Views/_LayoutAdmin.cshtml";
+}
+
+<div class="row mb-3">
+    <div class="col-auto d-none d-sm-block">
+        <h3><strong>Generaciones</strong></h3>
+    </div>
+</div>
+
+<div class="row" id="generaciones-container"></div>
+
+<div id="loading" class="text-center py-4">
+    <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Cargando...</span>
+    </div>
+    <p class="mt-2 text-muted">Cargando generaciones...</p>
+</div>
+
+<div id="error" class="alert alert-danger d-none" role="alert">
+    No se pudieron cargar las generaciones. Intenta recargar la página.
+</div>
+
+<div id="empty" class="alert alert-info d-none" role="alert">
+    No hay generaciones registradas aún.
+</div>
+
+@section Scripts {
+    <script>
+        const API_URL = '@Url.Action("GetGeneraciones", "PreEnrollment", new { area = "Enrollment" })';
+
+        const container = document.getElementById('generaciones-container');
+        const loading = document.getElementById('loading');
+        const error = document.getElementById('error');
+        const empty = document.getElementById('empty');
+
+        let generacionesOriginales = [];
+
+        function renderGeneraciones(lista) {
+            container.innerHTML = '';
+
+            if (!lista || lista.length === 0) {
+                container.innerHTML = '';
+                empty.classList.remove('d-none');
+                return;
+            }
+
+            empty.classList.add('d-none');
+
+            lista.forEach(gen => {
+                const col = document.createElement('div');
+                col.className = 'col-12 col-sm-6 col-md-4 col-lg-3 mb-4';
+
+                col.innerHTML = `
+                    <div class="card h-100 shadow-sm"
+                         style="cursor: pointer;"
+                         onclick="verAspirantes(${gen.idGeneration})">
+                        <div class="card-body d-flex flex-column align-items-center justify-content-center py-4">
+                            <i data-feather="users" class="mb-3 text-primary" style="width:40px; height:40px;"></i>
+                            <h5 class="card-title mb-0">Generación ${gen.year}</h5>
+                        </div>
+                    </div>
+                `;
+
+                container.appendChild(col);
+            });
+
+            if (window.feather) {
+                feather.replace();
+            }
+        }
+
+        async function cargarGeneraciones() {
+            try {
+                const response = await fetch(API_URL);
+
+                if (!response.ok) {
+                    throw new Error('Error al obtener generaciones');
+                }
+
+                const generaciones = await response.json();
+                generacionesOriginales = generaciones || [];
+
+                loading.classList.add('d-none');
+                error.classList.add('d-none');
+                empty.classList.add('d-none');
+
+                if (generacionesOriginales.length === 0) {
+                    empty.classList.remove('d-none');
+                    return;
+                }
+
+                renderGeneraciones(generacionesOriginales);
+
+            } catch (err) {
+                loading.classList.add('d-none');
+                error.classList.remove('d-none');
+                console.error(err);
+            }
+        }
+
+        function verAspirantes(idGeneration) {
+            window.location.href = '@Url.Action("AspirantesLista", "PreEnrollment", new { area = "Enrollment" })' + '?idGeneration=' + idGeneration;
+        }
+
+        window.handleGlobalSearch = function (texto) {
+            const termino = (texto || '').toLowerCase().trim();
+
+            if (!termino) {
+                renderGeneraciones(generacionesOriginales);
+                return;
+            }
+
+            const filtradas = generacionesOriginales.filter(gen => {
+                const year = (gen.year ?? '').toString().toLowerCase();
+                const textoGeneracion = `generacion ${year}`;
+                const textoGeneracionAcento = `generación ${year}`;
+
+                return year.includes(termino)
+                    || textoGeneracion.includes(termino)
+                    || textoGeneracionAcento.includes(termino);
+            });
+
+            renderGeneraciones(filtradas);
+        };
+
+        cargarGeneraciones();
+    </script>
+}

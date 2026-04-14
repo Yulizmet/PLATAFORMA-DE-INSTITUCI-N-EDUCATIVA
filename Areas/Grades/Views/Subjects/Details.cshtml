@@ -1,20 +1,41 @@
-﻿@model SchoolManager.Areas.Grades.ViewModels.Subjects.SubjectDetailsViewModel
+@using SchoolManager.Areas.Grades.ViewModels.Breadcrumbs
+@model SchoolManager.Areas.Grades.ViewModels.Subjects.SubjectDetailsViewModel
 
 @{
+
     ViewData["Title"] = $"Detalles - {Model.Name}";
     Layout = "~/Areas/MainScreen/Views/Shared/_Layout.cshtml";
+
+    var teachers = ViewBag.Teachers as IEnumerable<dynamic> ?? Enumerable.Empty<dynamic>();
+
+    var breadcrumbs = new BreadcrumbViewModel();
+
+    breadcrumbs.AddItem("Panel Administrativo", "/PanelAdministrativo");
+    breadcrumbs.AddItem("Materias", "/Grades/Subjects");
+    breadcrumbs.AddItem(Model.Name);
 }
+<partial name="_Breadcrumb" model="breadcrumbs" />
 
 <div class="container-fluid py-4">
-    <nav aria-label="breadcrumb" class="mb-4">
-        <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a asp-action="Index" style="color: #8C1B1B;">Materias</a></li>
-            <li class="breadcrumb-item active" aria-current="page">@Model.Name</li>
-        </ol>
-    </nav>
 
-    <div class="row">
-        <div class="col-md-4 mb-4">
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show mb-4" role="alert">
+            <i class="bi bi-check-circle me-2"></i>@TempData["Success"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show mb-4" role="alert">
+            <i class="bi bi-exclamation-circle me-2"></i>@TempData["Error"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <div class="row g-4">
+
+        <div class="col-md-4">
             <div class="sistema-card">
                 <div class="sistema-icon icon-calificaciones mb-4">
                     <i class="bi bi-info-circle"></i>
@@ -29,7 +50,7 @@
                     </p>
                 </div>
 
-                <div class="row g-3">
+                <div class="row g-3 mb-4">
                     <div class="col-6">
                         <div class="p-3 text-center" style="background-color: #f8f9fa; border-radius: 15px;">
                             <h3 class="fw-bold mb-1" style="color: #D42D2D;">@Model.Units.Count</h3>
@@ -44,7 +65,7 @@
                     </div>
                 </div>
 
-                <div class="mt-4 d-flex gap-2">
+                <div class="d-flex gap-2">
                     <a asp-action="Edit" asp-route-id="@Model.SubjectId" class="btn flex-fill"
                        style="background-color: #8C1B1B; color: white; border-radius: 10px; padding: 12px;">
                         <i class="bi bi-pencil me-2"></i>Editar
@@ -55,20 +76,18 @@
                     </a>
                 </div>
                 <a asp-action="Index" class="btn btn-secondary w-100 mt-2"
-                   style="border-radius: 10px; padding: 12px; background-color: #6c757d; color: white;">
+                   style="border-radius: 10px; padding: 12px;">
                     <i class="bi bi-arrow-left me-2"></i>Volver
                 </a>
             </div>
         </div>
 
-        <div class="col-md-8">
+        <div class="col-md-8 d-flex flex-column gap-4">
+
             <div class="sistema-card">
-                <div class="d-flex justify-content-between align-items-center mb-4">
-                    <h4 class="fw-bold mb-0" style="color: #1f2937;">
-                        <i class="bi bi-puzzle me-2" style="color: #8C1B1B;"></i>
-                        Unidades Didácticas
-                    </h4>
-                </div>
+                <h4 class="fw-bold mb-4" style="color: #1f2937;">
+                    <i class="bi bi-puzzle me-2" style="color: #8C1B1B;"></i>Unidades Didácticas
+                </h4>
 
                 @if (Model.Units.Any())
                 {
@@ -76,9 +95,9 @@
                         <table class="table table-hover align-middle">
                             <thead style="background-color: #f8f9fa;">
                                 <tr>
-                                    <th style="border-radius: 10px 0 0 10px;">Unidad</th>
+                                    <th>Unidad</th>
                                     <th>Estado</th>
-                                    <th style="border-radius: 0 10px 10px 0;" class="text-end">Acciones</th>
+                                    <th class="text-end">Acciones</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -87,7 +106,8 @@
                                     <tr>
                                         <td class="fw-semibold">Unidad @unit.UnitNumber</td>
                                         <td>
-                                            <span class="badge" style="background-color: @(unit.IsOpen ? "#28a745" : "#6c757d"); color: white; padding: 8px 15px; border-radius: 20px;">
+                                            <span class="badge"
+                                                  style="background-color: @(unit.IsOpen ? "#28a745" : "#6c757d"); color: white; padding: 8px 15px; border-radius: 20px;">
                                                 <i class="bi @(unit.IsOpen ? "bi-lock-open" : "bi-lock") me-1"></i>
                                                 @(unit.IsOpen ? "Abierta" : "Cerrada")
                                             </span>
@@ -97,8 +117,8 @@
                                             {
                                                 <form asp-action="ToggleUnit" method="post" class="d-inline">
                                                     <input type="hidden" name="unitId" value="@unit.UnitId" />
-                                                    <button type="submit"
-                                                            class="btn btn-sm" style="background-color: @(unit.IsOpen ? "#ffc107" : "#28a745"); color: @(unit.IsOpen ? "#000" : "#fff"); border-radius: 8px; padding: 8px 12px;">
+                                                    <button type="submit" class="btn btn-sm"
+                                                            style="background-color: @(unit.IsOpen ? "#ffc107" : "#28a745"); color: @(unit.IsOpen ? "#000" : "#fff"); border-radius: 8px; padding: 8px 12px;">
                                                         <i class="bi @(unit.IsOpen ? "bi-lock" : "bi-lock-open") me-1"></i>
                                                         @(unit.IsOpen ? "Cerrar" : "Abrir")
                                                     </button>
@@ -128,6 +148,174 @@
                     </div>
                 }
             </div>
+
+            <div class="sistema-card">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h4 class="fw-bold mb-0" style="color: #1f2937;">
+                        <i class="bi bi-person-badge me-2" style="color: #8C1B1B;"></i>Profesores Asignados
+                    </h4>
+                    <button class="btn btn-sm"
+                            style="background-color: #8C1B1B; color: white; border-radius: 8px;"
+                            data-bs-toggle="collapse" data-bs-target="#assignPanel">
+                        <i class="bi bi-plus-circle me-1"></i>Asignar Profesor
+                    </button>
+                </div>
+
+                <div class="collapse mb-4" id="assignPanel">
+                    <div class="p-3" style="background: #f8f9fa; border-radius: 12px; border: 1px solid #dee2e6;">
+                        <h6 class="fw-semibold mb-3" style="color: #1f2937;">Nueva asignación</h6>
+                        <form asp-action="AssignTeacher" method="post" id="assignForm">
+                            <input type="hidden" name="subjectId" value="@Model.SubjectId" />
+
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold small">Profesor</label>
+                                <select name="teacherId" class="form-select" id="teacherSelect" required>
+                                    <option value="">-- Selecciona un profesor --</option>
+                                    @foreach (var t in teachers)
+                                    {
+                                        <option value="@t.UserId">@t.FullName</option>
+                                    }
+                                </select>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold small">
+                                    Grupos a impartir
+                                    <span class="text-muted fw-normal">(los marcados en naranja ya tienen otro profesor)</span>
+                                </label>
+                                <div class="d-flex flex-wrap gap-2 mt-1" id="groupCheckboxes">
+                                    @foreach (var g in Model.GroupOptions)
+                                    {
+                                        <div class="form-check form-check-inline m-0">
+                                            <input class="form-check-input group-cb"
+                                                   type="checkbox"
+                                                   name="groupIds"
+                                                   value="@g.GroupId"
+                                                   id="grp_@g.GroupId"
+                                                   @(g.IsTaken ? "disabled" : "") />
+                                            <label class="form-check-label small px-2 py-1"
+                                                   for="grp_@g.GroupId"
+                                                   style="border-radius: 8px; border: 1px solid @(g.IsTaken ? "#fd7e14" : "#dee2e6"); background: @(g.IsTaken ? "#fff3e0" : "white"); cursor: @(g.IsTaken ? "not-allowed" : "pointer");"
+                                                   title="@(g.IsTaken ? $"Ya asignado a {g.TakenByTeacherName}" : "")">
+                                                @g.GroupName
+                                                @if (g.IsTaken)
+                                                {
+                                                    <i class="bi bi-lock-fill ms-1" style="color:#fd7e14; font-size:.7rem;"></i>
+                                                }
+                                            </label>
+                                        </div>
+                                    }
+                                    @if (!Model.GroupOptions.Any())
+                                    {
+                                        <span class="text-muted small">No hay grupos en este nivel</span>
+                                    }
+                                </div>
+                            </div>
+
+                            <div class="d-flex gap-2 justify-content-end">
+                                <button type="button" class="btn btn-secondary btn-sm"
+                                        data-bs-toggle="collapse" data-bs-target="#assignPanel">
+                                    Cancelar
+                                </button>
+                                <button type="submit" class="btn btn-sm"
+                                        style="background-color: #8C1B1B; color: white; border-radius: 8px;">
+                                    <i class="bi bi-save me-1"></i>Guardar
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                @if (Model.Teachers.Any())
+                {
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead style="background-color: #f8f9fa;">
+                                <tr>
+                                    <th>Profesor</th>
+                                    <th>Grupos asignados</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var teacher in Model.Teachers)
+                                {
+                                    <tr>
+                                        <td class="fw-semibold">
+                                            <i class="bi bi-person-circle me-2" style="color: #8C1B1B;"></i>
+                                            @teacher.TeacherName
+                                        </td>
+                                        <td>
+                                            <div class="d-flex flex-wrap gap-1">
+                                                @foreach (var grp in teacher.Groups)
+                                                {
+                                                    <span class="badge d-inline-flex align-items-center gap-1"
+                                                          style="background-color: #e9ecef; color: #1f2937; border-radius: 20px; padding: 6px 10px;">
+                                                        @grp.GroupName
+                                                        <form asp-action="RemoveTeacherGroup" method="post" class="d-inline m-0 p-0">
+                                                            <input type="hidden" name="teacherSubjectGroupId" value="@grp.TeacherSubjectGroupId" />
+                                                            <input type="hidden" name="subjectId" value="@Model.SubjectId" />
+                                                            <button type="submit"
+                                                                    class="btn btn-link p-0 m-0 border-0"
+                                                                    style="color: #dc3545; font-size: .75rem; line-height:1;"
+                                                                    title="Quitar grupo"
+                                                                    onclick="return confirm('¿Quitar el grupo @grp.GroupName a este profesor?')">
+                                                                <i class="bi bi-x-circle-fill"></i>
+                                                            </button>
+                                                        </form>
+                                                    </span>
+                                                }
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+                else
+                {
+                    <div class="text-center py-4">
+                        <i class="bi bi-person-x" style="font-size: 2.5rem; color: #B1A596;"></i>
+                        <p class="text-muted mt-2 mb-0">Ningún profesor asignado aún</p>
+                    </div>
+                }
+            </div>
+
         </div>
     </div>
 </div>
+
+@section Scripts {
+    <script>
+        // Cuando se selecciona un profesor, resaltar los grupos que YA tiene en esta materia
+        // para que no los vuelva a marcar (los realmente bloqueados son los de OTRO profe)
+        const teacherSelect = document.getElementById('teacherSelect');
+
+        // Mapa teacherId → array de groupIds que ya tiene
+        const teacherGroups = {
+            @foreach (var t in Model.Teachers)
+            {
+                @:@t.TeacherId: [@string.Join(",", t.Groups.Select(g => g.GroupId))],
+            }
+        };
+
+        teacherSelect.addEventListener('change', function () {
+            const tid = parseInt(this.value);
+            const myGroups = teacherGroups[tid] || [];
+
+            document.querySelectorAll('.group-cb').forEach(cb => {
+                if (cb.disabled) return; // ya bloqueado por otro profe, no tocar
+                if (myGroups.includes(parseInt(cb.value))) {
+                    cb.checked  = true;   // ya tiene este grupo → pre-seleccionar
+                    cb.disabled = false;  // puede quitarlo si quiere
+                    cb.closest('.form-check').querySelector('label').style.background = '#e8f5e9';
+                    cb.closest('.form-check').querySelector('label').style.borderColor = '#28a745';
+                } else {
+                    cb.checked  = false;
+                    cb.closest('.form-check').querySelector('label').style.background = 'white';
+                    cb.closest('.form-check').querySelector('label').style.borderColor = '#dee2e6';
+                }
+            });
+        });
+    </script>
+}

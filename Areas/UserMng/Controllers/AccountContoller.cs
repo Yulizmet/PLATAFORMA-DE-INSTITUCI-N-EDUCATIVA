@@ -146,9 +146,11 @@ namespace SchoolManager.Areas.UserMng.Controllers
         {
             return View();
         }
-        
+
         private IActionResult RedirectByRole(ClaimsPrincipal principal)
         {
+            return RedirectToAction("Index", "MainScreen", new { area = "MainScreen" });
+
 
             if (principal.IsInRole("Administrator"))
             {
@@ -156,8 +158,8 @@ namespace SchoolManager.Areas.UserMng.Controllers
             }
 
             if (principal.IsInRole("Teacher"))
-                return RedirectToAction("Index", "Teachers", new { area = "UserMng" });
-
+                return RedirectToAction("Extension", "MainScreen", new { area = "MainScreen" });
+            
             if (principal.IsInRole("Nurse"))
                 return RedirectToAction("Extension", "MainScreen", new { area = "MainScreen" }); // RAMOS actualiza cuando tengas tu vista, los puse para que funcionara el mio ServicioSocial
 

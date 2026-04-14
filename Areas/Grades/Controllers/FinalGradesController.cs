@@ -1,20 +1,26 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SchoolManager.Areas.Grades.ViewModels.FinalGrades;
 using SchoolManager.Data;
+using SchoolManager.Grades.Services;
 using SchoolManager.Helpers;
 using SchoolManager.Models;
 
 namespace SchoolManager.Areas.Grades.Controllers
 {
     [Area("Grades")]
+    [Authorize(Roles = "Teacher")]
+
     public class FinalGradesController : Controller
     {
         private readonly AppDbContext _context;
+        private readonly ITeacherAccessService _access;
 
-        public FinalGradesController(AppDbContext context)
+        public FinalGradesController(AppDbContext context, ITeacherAccessService access)
         {
             _context = context;
+            _access = access;
         }
 
         // GET: FinalGrades/Index
@@ -44,6 +50,9 @@ namespace SchoolManager.Areas.Grades.Controllers
         // GET: FinalGrades/Details/5
         public async Task<IActionResult> Details(int groupId, int subjectId)
         {
+            var teacherId = User.GetUserId();
+            if (!await _access.OwnsGroupSubjectAsync(teacherId, groupId, subjectId))
+                return Forbid();
             var group = await _context.grades_GradeGroups
                 .Include(g => g.GradeLevel)
                 .Include(g => g.Enrollments)
@@ -91,7 +100,11 @@ namespace SchoolManager.Areas.Grades.Controllers
                     {
                         StudentId = s.UserId,
                         StudentName = $"{s.Person.FirstName} {s.Person.LastNamePaternal} {s.Person.LastNameMaternal}",
-                        Matricula = s.Person.Curp ?? "S/N",
+                        Matricula = s.Preenrollments
+                            .Where(p => p.Matricula != null)
+                            .OrderByDescending(p => p.CreateStat)
+                            .Select(p => p.Matricula)
+                            .FirstOrDefault() ?? "S/N",
                         FinalGrade = finalGrade?.Value,
                         Passed = finalGrade?.Passed ?? false,
                         FinalGradeId = finalGrade?.FinalGradeId,
@@ -121,6 +134,9 @@ namespace SchoolManager.Areas.Grades.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Calculate(int groupId, int subjectId)
         {
+            var teacherId = User.GetUserId();
+            if (!await _access.OwnsGroupSubjectAsync(teacherId, groupId, subjectId))
+                return Forbid();
             // 1. Validar grupo
             var group = await _context.grades_GradeGroups
                 .Include(g => g.GradeLevel)
@@ -262,6 +278,9 @@ namespace SchoolManager.Areas.Grades.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> AddExtraordinary(int finalGradeId, decimal extraordinaryValue)
         {
+            var teacherId = User.GetUserId();
+            if (!await _access.OwnsFinalGradeAsync(teacherId, finalGradeId))
+                return Forbid();
             var finalGrade = await _context.grades_FinalGrades
                 .Include(f => f.ExtraordinaryGrade)
                 .FirstOrDefaultAsync(f => f.FinalGradeId == finalGradeId);
@@ -312,6 +331,10 @@ namespace SchoolManager.Areas.Grades.Controllers
                 .FirstOrDefaultAsync(e => e.ExtraordinaryGradeId == extraordinaryId);
 
             if (extraordinary == null) return NotFound();
+
+            var teacherId = User.GetUserId();
+            if (!await _access.OwnsFinalGradeAsync(teacherId, extraordinary.FinalGradeId))
+                return Forbid();
 
             var finalGrade = extraordinary.FinalGrade;
             var groupId = finalGrade.GroupId;

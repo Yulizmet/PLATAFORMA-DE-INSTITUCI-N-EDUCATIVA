@@ -1,98 +1,122 @@
-﻿@using SchoolManager.Areas.Grades.ViewModels.Wizard
-@* /Areas/Grades/Views/SchoolCycleWizard/Step3.cshtml *@
+﻿@* /Areas/Grades/Views/SchoolCycleWizard/Step3.cshtml *@
+@using SchoolManager.Areas.Grades.ViewModels.Wizard
 @model SchoolCycleWizardViewModel
 
 @{
-    ViewData["Title"] = "Paso 3: Crear Grupos";
+    ViewData["Title"] = "Nuevo Ciclo Escolar";
     Layout = "~/Areas/MainScreen/Views/Shared/_Layout.cshtml";
 }
 
-<div class="container py-4">
-    <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="sistema-card">
-                <!-- Barra de progreso -->
-                <div class="progress mb-4" style="height: 10px;">
-                    <div class="progress-bar bg-success" role="progressbar" style="width: 60%;" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100"></div>
-                </div>
+<section class="sistema-section">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-7">
 
-                <div class="d-flex justify-content-between align-items-center mb-4">
-                    <h3 class="fw-bold mb-0">Paso 3/5: Crear Grupos</h3>
-                    <span class="badge bg-info" style="font-size: 1rem;">
-                        Nivel: @Model.LevelName
-                    </span>
-                </div>
+                <div class="sistema-card border-calificaciones">
 
-                <p class="text-muted mb-4">
-                    Agrega los grupos para este nivel (ej. 101, 102, A, B, etc.)
-                </p>
-
-                <form asp-action="Step3" method="post" id="groupsForm">
-                    <!-- Campos ocultos para conservar las materias -->
-                    @for (int i = 0; i < Model.Subjects.Count; i++)
-                    {
-                        <input type="hidden" name="Subjects[@i].TempId" value="@Model.Subjects[i].TempId" />
-                        <input type="hidden" name="Subjects[@i].Name" value="@Model.Subjects[i].Name" />
-
-                        @for (int j = 0; j < Model.Subjects[i].Units.Count; j++)
-                        {
-                            <input type="hidden" name="Subjects[@i].Units[@j].Number" value="@Model.Subjects[i].Units[j].Number" />
-                            <input type="hidden" name="Subjects[@i].Units[@j].IsOpen" value="@Model.Subjects[i].Units[j].IsOpen" />
-                        }
-                    }
-
-                    <!-- También conservar los datos del nivel -->
-                    <input type="hidden" name="LevelName" value="@Model.LevelName" />
-                    <input type="hidden" name="StartDate" value="@Model.StartDate?.ToString("yyyy-MM-dd")" />
-                    <input type="hidden" name="EndDate" value="@Model.EndDate?.ToString("yyyy-MM-dd")" />
-                    <input type="hidden" name="MinPassingGrade" value="@Model.MinPassingGrade" />
-                    <!-- Lista de grupos -->
-                    <div id="groupsContainer">
-                        @for (int i = 0; i < Model.Groups.Count; i++)
-                        {
-                            <div class="group-item input-group mb-3" data-index="@i">
-                                <input type="hidden" name="Groups[@i].TempId" value="@Model.Groups[i].TempId" />
-                                <input type="text" name="Groups[@i].Name" value="@Model.Groups[i].Name"
-                                       class="form-control group-name" placeholder="Nombre del grupo (ej. 101)" required />
-                                <button type="button" class="btn btn-outline-danger remove-group">
-                                    <i class="bi bi-trash"></i>
-                                </button>
-                            </div>
-                        }
+                    <!-- Indicador de pasos -->
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="text-muted small">Paso 3 de 4</span>
+                        <span class="badge" style="background-color: var(--rojo-principal); font-size: 0.85rem;">
+                            @Model.LevelName
+                        </span>
                     </div>
-
-                    <!-- Botón para agregar grupo -->
-                    <div class="text-center my-4">
-                        <button type="button" id="addGroupBtn" class="btn btn-outline-primary">
-                            <i class="bi bi-plus-circle me-2"></i>Agregar Grupo
-                        </button>
-                    </div>
-
-                    <!-- Botones de navegación -->
-                    <div class="d-flex justify-content-between mt-4">
-                        <a asp-action="Step2" class="btn btn-secondary">
-                            <i class="bi bi-arrow-left me-2"></i>Regresar
-                        </a>
-                        <div>
-                            <button type="submit" name="saveType" value="draft" class="btn btn-outline-secondary me-2">
-                                Guardar Borrador
-                            </button>
-                            <button type="submit" class="btn btn-calificaciones">
-                                Continuar <i class="bi bi-arrow-right ms-2"></i>
-                            </button>
+                    <div class="progress mb-4" style="height: 6px; border-radius: 4px;">
+                        <div class="progress-bar" role="progressbar"
+                             style="width: 75%; background-color: var(--rojo-principal);">
                         </div>
                     </div>
-                </form>
+
+                    <div class="d-flex align-items-center gap-3 mb-4">
+                        <div class="sistema-icon icon-calificaciones mb-0" style="flex-shrink:0;">
+                            <i class="bi bi-people"></i>
+                        </div>
+                        <div>
+                            <h3 class="sistema-title mb-0" style="font-size: 1.5rem;">Crear Grupos</h3>
+                            <p class="text-muted mb-0 small">Agrega los grupos del nivel (ej. 101, A, Matutino)</p>
+                        </div>
+                    </div>
+
+                    <form asp-action="Step3" method="post" id="groupsForm">
+                        @Html.AntiForgeryToken()
+
+                        <!-- Datos ocultos: nivel -->
+                        <input type="hidden" name="LevelName" value="@Model.LevelName" />
+                        <input type="hidden" name="StartDate" value="@Model.StartDate?.ToString("yyyy-MM-dd")" />
+                        <input type="hidden" name="EndDate" value="@Model.EndDate?.ToString("yyyy-MM-dd")" />
+                        <input type="hidden" name="MinPassingGrade" value="@Model.MinPassingGrade" />
+
+                        <!-- Datos ocultos: materias -->
+                        @for (int i = 0; i < Model.Subjects.Count; i++)
+                        {
+                            <input type="hidden" name="Subjects[@i].TempId" value="@Model.Subjects[i].TempId" />
+                            <input type="hidden" name="Subjects[@i].Name" value="@Model.Subjects[i].Name" />
+                            @for (int j = 0; j < Model.Subjects[i].Units.Count; j++)
+                            {
+                                <input type="hidden" name="Subjects[@i].Units[@j].Number" value="@Model.Subjects[i].Units[j].Number" />
+                                <input type="hidden" name="Subjects[@i].Units[@j].IsOpen" value="@Model.Subjects[i].Units[j].IsOpen" />
+                            }
+                        }
+
+                        <!-- Lista de grupos -->
+                        <div id="groupsContainer">
+                            @for (int i = 0; i < Model.Groups.Count; i++)
+                            {
+                                <div class="group-item input-group mb-3" data-index="@i">
+                                    <input type="hidden" name="Groups[@i].TempId" value="@Model.Groups[i].TempId" />
+                                    <input type="text" name="Groups[@i].Name" value="@Model.Groups[i].Name"
+                                           class="form-control group-name"
+                                           placeholder="Nombre del grupo (ej. 101)" required />
+                                    <button type="button" class="btn btn-outline-danger remove-group">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </div>
+                            }
+                        </div>
+
+                        <!-- Botón agregar grupo -->
+                        <div class="text-center my-4">
+                            <button type="button" id="addGroupBtn" class="btn btn-outline-secondary">
+                                <i class="bi bi-plus-circle me-2"></i>Agregar Grupo
+                            </button>
+                        </div>
+
+                        <!-- Resumen materias (solo lectura) -->
+                        @if (Model.Subjects.Any())
+                        {
+                            <div class="alert" style="background-color: rgba(212,45,45,0.08); border: 1px solid rgba(212,45,45,0.25); border-radius: 10px;">
+                                <div class="small text-muted mb-1"><i class="bi bi-book me-1"></i>Materias del ciclo (@Model.Subjects.Count)</div>
+                                @foreach (var s in Model.Subjects)
+                                {
+                                    <span class="badge me-1 mb-1" style="background-color: var(--rojo-principal);">@s.Name</span>
+                                }
+                            </div>
+                        }
+
+                        <!-- Navegación -->
+                        <div class="d-flex justify-content-between align-items-center pt-2 border-top mt-2">
+                            <button type="submit" formaction="@Url.Action("Step3Back")"
+                                    class="btn btn-outline-secondary">
+                                <i class="bi bi-arrow-left me-2"></i>Regresar
+                            </button>
+                            <button type="submit" class="btn btn-calificaciones">
+                                Siguiente <i class="bi bi-arrow-right ms-2"></i>
+                            </button>
+                        </div>
+                    </form>
+
+                </div>
             </div>
         </div>
     </div>
-</div>
+</section>
 
-<!-- Template para nuevo grupo -->
+<!-- Template grupo -->
 <template id="group-template">
     <div class="group-item input-group mb-3" data-index="__INDEX__">
         <input type="hidden" name="Groups[__INDEX__].TempId" value="__TEMPID__" />
-        <input type="text" name="Groups[__INDEX__].Name" class="form-control group-name" placeholder="Nombre del grupo (ej. 101)" required />
+        <input type="text" name="Groups[__INDEX__].Name" class="form-control group-name"
+               placeholder="Nombre del grupo (ej. 101)" required />
         <button type="button" class="btn btn-outline-danger remove-group">
             <i class="bi bi-trash"></i>
         </button>
@@ -101,61 +125,27 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
-
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Inicializar contador basado en elementos existentes
+        document.addEventListener('DOMContentLoaded', function () {
             let groupCount = document.querySelectorAll('.group-item').length;
 
-            // Agregar nuevo grupo
-            document.getElementById('addGroupBtn').addEventListener('click', function() {
+            document.getElementById('addGroupBtn').addEventListener('click', function () {
                 const template = document.getElementById('group-template');
                 const newIndex = groupCount;
-                const tempId = -newIndex - 200; // ID temporal negativo para grupos
-
+                const tempId   = -(newIndex + 200);
                 let html = template.innerHTML
                     .replace(/__INDEX__/g, newIndex)
                     .replace(/__TEMPID__/g, tempId);
-
-                const tempDiv = document.createElement('div');
-                tempDiv.innerHTML = html;
-                const newGroup = tempDiv.firstElementChild;
-
-                document.getElementById('groupsContainer').appendChild(newGroup);
-
-                // Incrementar contador
+                const div = document.createElement('div');
+                div.innerHTML = html;
+                document.getElementById('groupsContainer').appendChild(div.firstElementChild);
                 groupCount++;
             });
 
-            // Eliminar grupo
-            document.addEventListener('click', function(e) {
+            document.addEventListener('click', function (e) {
                 if (e.target.closest('.remove-group')) {
-                    const btn = e.target.closest('.remove-group');
-                    const groupItem = btn.closest('.group-item');
-                    if (groupItem && confirm('¿Estás seguro de eliminar este grupo?')) {
-                        groupItem.remove();
-                    }
-                }
-            });
-
-            // Validación del formulario
-            document.getElementById('groupsForm').addEventListener('submit', function(e) {
-                const groups = document.querySelectorAll('.group-item');
-                let isValid = true;
-
-                groups.forEach(group => {
-                    const nameInput = group.querySelector('.group-name');
-                    if (nameInput && !nameInput.value.trim()) {
-                        nameInput.classList.add('is-invalid');
-                        isValid = false;
-                    } else if (nameInput) {
-                        nameInput.classList.remove('is-invalid');
-                    }
-                });
-
-                if (!isValid) {
-                    e.preventDefault();
-                    alert('Por favor, llena todos los nombres de los grupos.');
+                    const item = e.target.closest('.group-item');
+                    if (item && confirm('¿Eliminar este grupo?')) item.remove();
                 }
             });
         });

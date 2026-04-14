@@ -1,19 +1,22 @@
 using DinkToPdf;
 using DinkToPdf.Contracts;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using SchoolManager.Areas.Procedures.Filters;
 using SchoolManager.Data;
+using SchoolManager.Grades.Services;
 using SchoolManager.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // --- SERVICES ---
-builder.Services.AddScoped<ISearchService, SearchService > ();
+builder.Services.AddScoped<ISearchService, SearchService>();
 builder.Services.AddScoped<IStorageService, AzureStorageService>();
 builder.Services.AddTransient<IEmailSender, OutlookEmailSender>();
 builder.Services.AddScoped<ProcedureRouteAuthorizeAttribute>();
 builder.Services.AddScoped<EmailService>();
+builder.Services.AddScoped<ITeacherAccessService, TeacherAccessService>();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddSession(options =>
 {
@@ -22,13 +25,17 @@ builder.Services.AddSession(options =>
     options.Cookie.IsEssential = true;
 });
 builder.Services.AddRazorPages();
+builder.Services.AddAuthorizationBuilder()
+    .SetFallbackPolicy(new AuthorizationPolicyBuilder()
+        .RequireAuthenticatedUser()
+        .Build());
 builder.Services.AddControllersWithViews(options =>
 {
     options.Filters.Add<SchoolManager.Areas.Medical.Filters.MedicalPermissionFilter>();
 });
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(
-        builder.Configuration.GetConnectionString("DefaultConnection")));
+        builder.Configuration.GetConnectionString("UttDeployConnection")));
 
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
@@ -38,27 +45,29 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
         options.ExpireTimeSpan = TimeSpan.FromHours(8);
         options.SlidingExpiration = true;
         options.Cookie.Name = "SchoolManager.Auth";
-        options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+        options.Cookie.SecurePolicy = CookieSecurePolicy.None;
         options.Cookie.HttpOnly = true;
         options.Cookie.SameSite = SameSiteMode.Strict;
     });
 
-// -- PROCEDURE REPORTS ---
+// --- CORS ---
+
+// --- PROCEDURE REPORTS ---
 builder.Services.AddSingleton(typeof(IConverter), new SynchronizedConverter(new PdfTools()));
 
 var app = builder.Build();
 
 // --- MIDDLEWARE ---
-
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Error");
     app.UseHsts();
 }
-
+app.UseDeveloperExceptionPage();
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseRouting();
+app.UseCors("AllowAdmin");
 app.UseSession();
 app.UseAuthentication();
 app.UseAuthorization();

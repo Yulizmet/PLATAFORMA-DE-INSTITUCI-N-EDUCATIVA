@@ -1,0 +1,51 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>@ViewData["Title"]</title>
+
+    <link href="~/css/app.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@300;400;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+
+    <link rel="shortcut icon" href="~/img/icons/icon-48x48.png" />
+
+    <style>
+        :root {
+            --info-primary: #8C1B1B;
+            --info-primary-light: #D42D2D;
+            --info-dark: #620900;
+            --info-page: #f4f4f4;
+            --info-card: #ffffff;
+            --info-shadow: 0 10px 26px rgba(140,27,27,.18);
+        }
+
+        body {
+            background: linear-gradient(135deg, var(--info-dark), var(--info-primary)) !important;
+            font-family: 'Inter', sans-serif !important;
+        }
+
+        .content {
+            background: transparent !important;
+            min-height: 100vh;
+            padding: 2rem 1rem;
+        }
+
+        .card {
+            border-radius: 22px !important;
+            overflow: hidden;
+            border: none !important;
+            box-shadow: var(--info-shadow) !important;
+            background: var(--info-card) !important;
+        }
+
+        h1, h2, h3, h4, h5, h6, .card-title {
+            font-family: 'Merriweather', serif !important;
+        }
+    </style>
+</head>
+<body>
+    @RenderBody()
+</body>
+</html>

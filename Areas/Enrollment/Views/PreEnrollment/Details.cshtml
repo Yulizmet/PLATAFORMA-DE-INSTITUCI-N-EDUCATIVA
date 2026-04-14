@@ -1,0 +1,547 @@
+﻿@{
+    ViewData["Title"] = "Aspirante";
+    Layout = "~/Areas/Enrollment/Views/_LayoutAdmin.cshtml";
+}
+
+@section Styles {
+    <style>
+        .page-actions .btn {
+            white-space: nowrap;
+        }
+
+        .table td, .table th {
+            vertical-align: middle;
+        }
+
+        @@media (max-width: 576px) {
+            .table-responsive
+
+        {
+            border: 1px solid rgba(0,0,0,.1);
+            border-radius: .5rem;
+        }
+
+        }
+    </style>
+}
+
+<div class="container-fluid p-0">
+
+    <div id="loading" class="text-center py-5">
+        <div class="spinner-border text-primary" role="status"></div>
+        <p class="mt-2 text-muted">Cargando datos del aspirante...</p>
+    </div>
+
+    <div id="error" class="alert alert-danger d-none" role="alert">
+        No se pudo cargar la información del aspirante.
+    </div>
+
+    <div id="contenido" class="d-none">
+
+        <div class="mb-3 d-flex align-items-center justify-content-between flex-wrap gap-2">
+            <div class="d-flex align-items-center gap-3">
+                <a id="btn-regresar" href="#" class="btn btn-outline-secondary btn-sm">
+                    <i data-feather="arrow-left" style="width:16px;height:16px;"></i>
+                </a>
+                <h1 class="h3 mb-0">Aspirante</h1>
+            </div>
+
+            <div>
+                <button id="btn-editar" class="btn btn-primary btn-sm">
+                    <i data-feather="edit" style="width:16px;height:16px;"></i>
+                    Editar
+                </button>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-4 col-xl-3">
+                <div class="card mb-3">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">Detalles del aspirante</h5>
+                    </div>
+
+                    <div class="card-body text-center">
+                        <img src="@Url.Content("~/enrollment/admin/img/avatars/avatar.jpg")"
+                             alt="Avatar"
+                             class="img-fluid rounded-circle mb-2"
+                             width="128"
+                             height="128" />
+                        <h5 class="card-title mb-0" id="card-nombre"></h5>
+                        <div class="text-muted mb-2">Aspirante</div>
+                        <div class="text-muted mb-2" id="card-carrera"></div>
+                        <div class="text-muted mb-2" id="card-folio"></div>
+                    </div>
+
+                    <hr class="my-0" />
+
+                    <div class="card-body">
+                        <h5 class="h6 card-title">Generación</h5>
+                        <div class="text-muted mb-2" id="card-generacion"></div>
+                    </div>
+
+                    <hr class="my-0" />
+
+                    <div class="card-body">
+                        <h5 class="h6 card-title">Dirección</h5>
+                        <ul class="list-unstyled mb-0">
+                            <li class="mb-1">
+                                <span data-feather="home" class="feather-sm me-1"></span>
+                                Vive en <span id="card-ciudad"></span>
+                            </li>
+                            <li class="mb-1">
+                                <span data-feather="map-pin" class="feather-sm me-1"></span>
+                                <span id="card-direccion"></span>
+                            </li>
+                            <li class="mb-1">
+                                <span data-feather="map" class="feather-sm me-1"></span>
+                                Colonia <span id="card-colonia"></span>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <hr class="my-0" />
+
+                    <div class="card-body">
+                        <h5 class="h6 card-title">Contacto</h5>
+                        <ul class="list-unstyled mb-0">
+                            <li class="mb-1"><span id="card-email"></span></li>
+                            <li class="mb-1"><span id="card-telefono"></span></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-8 col-xl-9">
+
+                <div class="card mb-3">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">Datos generales</h5>
+                    </div>
+
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-lg-8">
+                                <div class="row g-3">
+
+                                    <div class="col-md-6">
+                                        <label class="form-label">Folio</label>
+                                        <input id="f-folio" type="text" class="form-control" disabled>
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        <label class="form-label">Matrícula</label>
+                                        <input id="f-matricula" type="text" class="form-control" disabled>
+                                    </div>
+
+                                    <div class="col-md-4">
+                                        <label class="form-label">Ap. Paterno</label>
+                                        <input id="f-ap-paterno" type="text" class="form-control editable" disabled>
+                                    </div>
+
+                                    <div class="col-md-4">
+                                        <label class="form-label">Ap. Materno</label>
+                                        <input id="f-ap-materno" type="text" class="form-control editable" disabled>
+                                    </div>
+
+                                    <div class="col-md-4">
+                                        <label class="form-label">Nombre</label>
+                                        <input id="f-nombre" type="text" class="form-control editable" disabled>
+                                    </div>
+
+                                    <div class="col-md-4">
+                                        <label class="form-label">Sexo</label>
+                                        <input id="f-genero" type="text" class="form-control editable" disabled>
+                                    </div>
+
+                                    <div class="col-md-4">
+                                        <label class="form-label">Nacionalidad</label>
+                                        <input id="f-nacionalidad" type="text" class="form-control editable" disabled>
+                                    </div>
+
+                                    <div class="col-md-4">
+                                        <label class="form-label">Estado Civil</label>
+                                        <input id="f-estado-civil" type="text" class="form-control editable" disabled>
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        <label class="form-label">Ciudad</label>
+                                        <input id="f-ciudad" type="text" class="form-control editable" disabled>
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        <label class="form-label">Estado</label>
+                                        <input id="f-estado" type="text" class="form-control editable" disabled>
+                                    </div>
+
+                                    <div class="col-md-8">
+                                        <label class="form-label">CURP</label>
+                                        <input id="f-curp" type="text" class="form-control editable" disabled>
+                                    </div>
+
+                                    <div class="col-md-4">
+                                        <label class="form-label">Tipo de sangre</label>
+                                        <input id="f-sangre" type="text" class="form-control editable" disabled>
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        <label class="form-label">Correo</label>
+                                        <input id="f-email" type="text" class="form-control editable" disabled>
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        <label class="form-label">Teléfono</label>
+                                        <input id="f-telefono" type="text" class="form-control editable" disabled>
+                                    </div>
+
+                                </div>
+                            </div>
+
+                            <div class="col-lg-4">
+                                <div class="d-flex flex-column align-items-center gap-3">
+                                    <div class="ratio ratio-3x4 w-100" style="max-width: 220px;">
+                                        <img src="@Url.Content("~/enrollment/admin/img/avatars/avatar.jpg")"
+                                             class="rounded border object-fit-cover"
+                                             alt="Foto">
+                                    </div>
+                                    <div class="w-100">
+                                        <label class="form-label">Fecha de nacimiento</label>
+                                        <input id="f-fecha-nac" type="text" class="form-control" disabled>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card mb-3">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">Domicilio</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-md-8">
+                                <label class="form-label">Calle</label>
+                                <input id="f-calle" type="text" class="form-control editable" disabled>
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label">Núm. Ext.</label>
+                                <input id="f-num-ext" type="text" class="form-control editable" disabled>
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label">Núm. Int.</label>
+                                <input id="f-num-int" type="text" class="form-control editable" disabled>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Colonia</label>
+                                <input id="f-colonia" type="text" class="form-control editable" disabled>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Ciudad</label>
+                                <input id="f-ciudad2" type="text" class="form-control editable" disabled>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Código Postal</label>
+                                <input id="f-cp" type="text" class="form-control editable" disabled>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card mb-3">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">Datos escolares</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-12">
+                                <label class="form-label">Escuela de Procedencia</label>
+                                <input id="f-escuela" type="text" class="form-control editable" disabled>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Estado</label>
+                                <input id="f-esc-estado" type="text" class="form-control editable" disabled>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Ciudad</label>
+                                <input id="f-esc-ciudad" type="text" class="form-control editable" disabled>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Promedio</label>
+                                <input id="f-promedio" type="text" class="form-control editable" disabled>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Fecha inicio</label>
+                                <input id="f-esc-inicio" type="text" class="form-control" disabled>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Fecha fin</label>
+                                <input id="f-esc-fin" type="text" class="form-control" disabled>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Sistema de estudio</label>
+                                <input id="f-sistema" type="text" class="form-control" disabled>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Tipo de bachillerato</label>
+                                <input id="f-tipo-bach" type="text" class="form-control" disabled>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card mb-3">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">Información adicional</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Beca</label>
+                                <input id="f-beca" type="text" class="form-control editable" disabled>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Comunidad indígena</label>
+                                <input id="f-comu-indi" type="text" class="form-control editable" disabled>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Lengua indígena</label>
+                                <input id="f-lengua-indi" type="text" class="form-control editable" disabled>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Discapacidad</label>
+                                <input id="f-discapacidad" type="text" class="form-control editable" disabled>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Enfermedad</label>
+                                <input id="f-enfermedad" type="text" class="form-control editable" disabled>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label">Comentarios</label>
+                                <textarea id="f-comentario" class="form-control editable" rows="3" disabled></textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        const params = new URLSearchParams(window.location.search);
+        const idGeneration = params.get('idGeneration');
+        const idData = window.location.pathname.split('/').pop();
+
+        const btnRegresar = document.getElementById('btn-regresar');
+        const loading = document.getElementById('loading');
+        const error = document.getElementById('error');
+        const contenido = document.getElementById('contenido');
+        const btnEditar = document.getElementById('btn-editar');
+
+        let modoEdicion = false;
+
+        function formatearFecha(fechaStr) {
+            if (!fechaStr) return '';
+            const fecha = new Date(fechaStr);
+            return fecha.toLocaleDateString('es-MX');
+        }
+
+        function bool(valor) {
+            return valor ? 'Sí' : 'No';
+        }
+
+        function set(id, valor) {
+            const el = document.getElementById(id);
+            if (!el) return;
+            el.value = valor ?? '';
+        }
+
+        async function cargarAspirante() {
+            if (!idData) {
+                loading.classList.add('d-none');
+                error.classList.remove('d-none');
+                return;
+            }
+
+            try {
+                const response = await fetch('@Url.Action("GetAspiranteDetalle", "PreEnrollment", new { area = "Enrollment" })' + '?idData=' + idData);
+
+                if (!response.ok) {
+                    throw new Error('Error al obtener aspirante');
+                }
+
+                const d = await response.json();
+
+                loading.classList.add('d-none');
+
+                if (idGeneration) {
+                    btnRegresar.href = '@Url.Action("AspirantesLista", "PreEnrollment", new { area = "Enrollment" })' + '?idGeneration=' + idGeneration;
+                } else {
+                    btnRegresar.href = '@Url.Action("Aspirantes", "PreEnrollment", new { area = "Enrollment" })';
+                }
+
+                document.getElementById('card-nombre').textContent =
+                    `${d.nombre} ${d.apellidoPaterno} ${d.apellidoMaterno}`;
+                document.getElementById('card-carrera').textContent = d.carrera;
+                document.getElementById('card-folio').textContent = d.folio;
+                document.getElementById('card-generacion').textContent = `Generación ${d.generacion}`;
+                document.getElementById('card-ciudad').textContent = `${d.ciudad}, ${d.estado}`;
+                document.getElementById('card-direccion').textContent = `${d.calle} ${d.numExterior}`;
+                document.getElementById('card-colonia').textContent = d.colonia;
+                document.getElementById('card-email').textContent = d.email;
+                document.getElementById('card-telefono').textContent = d.telefono;
+
+                set('f-folio', d.folio);
+                set('f-matricula', d.matricula);
+                set('f-ap-paterno', d.apellidoPaterno);
+                set('f-ap-materno', d.apellidoMaterno);
+                set('f-nombre', d.nombre);
+                set('f-genero', d.genero);
+                set('f-nacionalidad', d.nacionalidad);
+                set('f-estado-civil', d.estadoCivil);
+                set('f-ciudad', d.ciudad);
+                set('f-estado', d.estado);
+                set('f-curp', d.curp);
+                set('f-sangre', d.tipoSangre);
+                set('f-fecha-nac', formatearFecha(d.fechaNacimiento));
+                set('f-email', d.email);
+                set('f-telefono', d.telefono);
+                set('f-calle', d.calle);
+                set('f-num-ext', d.numExterior);
+                set('f-num-int', d.numInterior);
+                set('f-colonia', d.colonia);
+                set('f-ciudad2', d.ciudad);
+                set('f-cp', d.codigoPostal);
+                set('f-escuela', d.escuela);
+                set('f-esc-estado', d.escuelaEstado);
+                set('f-esc-ciudad', d.escuelaCiudad);
+                set('f-promedio', d.promedio);
+                set('f-esc-inicio', formatearFecha(d.fechaInicioEsc));
+                set('f-esc-fin', formatearFecha(d.fechaFinEsc));
+                set('f-sistema', d.sistemaEstudio);
+                set('f-tipo-bach', d.tipoBachillerato);
+                set('f-beca', d.beca);
+                set('f-comu-indi', bool(d.comunidadIndi));
+                set('f-lengua-indi', bool(d.lenguaIndi));
+                set('f-discapacidad', bool(d.discapacidad));
+                set('f-enfermedad', bool(d.enfermedad));
+                set('f-comentario', d.comentario);
+
+                contenido.classList.remove('d-none');
+
+                if (window.feather) {
+                    feather.replace();
+                }
+
+            } catch (err) {
+                loading.classList.add('d-none');
+                error.classList.remove('d-none');
+                console.error(err);
+            }
+        }
+
+        function activarEdicion() {
+            const campos = document.querySelectorAll('.editable');
+            campos.forEach(c => c.disabled = false);
+
+            modoEdicion = true;
+
+            btnEditar.innerHTML = `
+                <i data-feather="save" style="width:16px;height:16px;"></i>
+                Guardar
+            `;
+
+            if (window.feather) {
+                feather.replace();
+            }
+        }
+
+        function desactivarEdicion() {
+            const campos = document.querySelectorAll('.editable');
+            campos.forEach(c => c.disabled = true);
+
+            modoEdicion = false;
+
+            btnEditar.innerHTML = `
+                <i data-feather="edit" style="width:16px;height:16px;"></i>
+                Editar
+            `;
+
+            if (window.feather) {
+                feather.replace();
+            }
+        }
+
+        async function guardarCambios() {
+            try {
+                const data = {
+                    idData: parseInt(idData),
+
+                    nombre: document.getElementById('f-nombre').value,
+                    apellidoPaterno: document.getElementById('f-ap-paterno').value,
+                    apellidoMaterno: document.getElementById('f-ap-materno').value,
+                    email: document.getElementById('f-email').value,
+                    telefono: document.getElementById('f-telefono').value,
+                    genero: document.getElementById('f-genero').value,
+                    curp: document.getElementById('f-curp').value,
+
+                    nacionalidad: document.getElementById('f-nacionalidad').value,
+                    estadoCivil: document.getElementById('f-estado-civil').value,
+                    tipoSangre: document.getElementById('f-sangre').value,
+
+                    calle: document.getElementById('f-calle').value,
+                    numExt: document.getElementById('f-num-ext').value,
+                    numInt: document.getElementById('f-num-int').value,
+                    colonia: document.getElementById('f-colonia').value,
+                    ciudad: document.getElementById('f-ciudad2').value,
+                    estado: document.getElementById('f-estado').value,
+                    cp: document.getElementById('f-cp').value,
+
+                    escuela: document.getElementById('f-escuela').value,
+                    promedio: parseFloat(document.getElementById('f-promedio').value) || null,
+                    escuelaCiudad: document.getElementById('f-esc-ciudad').value,
+                    escuelaEstado: document.getElementById('f-esc-estado').value,
+
+                    beca: document.getElementById('f-beca').value,
+                    comunidadIndi: document.getElementById('f-comu-indi').value === "Sí",
+                    lenguaIndi: document.getElementById('f-lengua-indi').value === "Sí",
+                    discapacidad: document.getElementById('f-discapacidad').value === "Sí",
+                    enfermedad: document.getElementById('f-enfermedad').value === "Sí",
+                    comentario: document.getElementById('f-comentario').value
+                };
+
+                const response = await fetch('@Url.Action("UpdateAspirante", "PreEnrollment", new { area = "Enrollment" })', {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                if (!response.ok) {
+                    throw new Error("Error al guardar");
+                }
+
+                await cargarAspirante();
+                desactivarEdicion();
+
+            } catch (err) {
+                console.error(err);
+                alert("Error al guardar los cambios");
+            }
+        }
+
+        btnEditar.addEventListener('click', async () => {
+            if (!modoEdicion) {
+                activarEdicion();
+            } else {
+                await guardarCambios();
+            }
+        });
+
+        cargarAspirante();
+    </script>
+}

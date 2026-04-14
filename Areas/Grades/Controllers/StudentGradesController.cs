@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SchoolManager.Areas.Grades.ViewModels.StudentGrades;
 using SchoolManager.Data;
@@ -8,6 +9,8 @@ using SchoolManager.Models;
 namespace SchoolManager.Areas.Grades.Controllers
 {
     [Area("Grades")]
+    [Authorize(Roles = "Student")]
+
     public class StudentGradesController : Controller
     {
         private readonly AppDbContext _context;
@@ -30,9 +33,15 @@ namespace SchoolManager.Areas.Grades.Controllers
         // GET: StudentGrades/Details/5
         public async Task<IActionResult> Details(int studentId)
         {
+            var currentUserId = User.GetUserId();
+
+            // Si es estudiante, ignorar el parámetro y usar su propio ID
+            if (User.IsInRole("Student"))
+                studentId = currentUserId;
             // 1. Obtener información del estudiante (SIN Enrollments)
             var student = await _context.Users
                 .Include(u => u.Person)
+                .Include(u => u.Preenrollments)
                 .FirstOrDefaultAsync(u => u.UserId == studentId);
 
             if (student == null)
@@ -133,7 +142,12 @@ namespace SchoolManager.Areas.Grades.Controllers
             {
                 StudentId = student.UserId,
                 StudentName = $"{student.Person.FirstName} {student.Person.LastNamePaternal} {student.Person.LastNameMaternal}",
-                Matricula = student.Person.Curp ?? "S/N",
+                // student = users_user
+                Matricula = student.Preenrollments
+                    .Where(p => p.Matricula != null)
+                    .OrderByDescending(p => p.CreateStat)
+                    .Select(p => p.Matricula)
+                    .FirstOrDefault() ?? "S/N",
                 GradeLevel = gradeLevel.Name,
                 GroupName = group.Name,
                 Subjects = subjectGrades,

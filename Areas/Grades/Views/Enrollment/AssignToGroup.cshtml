@@ -1,4 +1,5 @@
-﻿@model SchoolManager.Areas.Grades.ViewModels.Enrollment.EnrollmentCreateViewModel
+@using SchoolManager.Areas.Grades.ViewModels.Breadcrumbs;
+@model SchoolManager.Areas.Grades.ViewModels.Enrollment.EnrollmentCreateViewModel
 
 @{
     ViewData["Title"] = $"Asignar Estudiantes - {Model.GroupName}";
@@ -6,18 +7,17 @@
 
     var gradeLevels = ViewBag.GradeLevels as IEnumerable<dynamic> ?? Enumerable.Empty<dynamic>();
     var allGroups = ViewBag.AllGroups as IEnumerable<dynamic> ?? Enumerable.Empty<dynamic>();
+    var breadcrumbs = new BreadcrumbViewModel();
+
+    breadcrumbs.AddItem("Panel Administrativo", "/PanelAdministrativo");
+    breadcrumbs.AddItem("Grupos", "/Grades/Groups");
+    breadcrumbs.AddItem(Model.GroupName, $"/Grades/Groups/Details/{Model.GroupId}");
+    breadcrumbs.AddItem("Asignar Estudiantes");
 }
+<partial name="_Breadcrumb" model="breadcrumbs" />
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.8/css/dataTables.bootstrap5.min.css" />
 
 <div class="container-fluid py-4">
-    <nav aria-label="breadcrumb" class="mb-4">
-        <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="/PanelAdministrativo">Panel Administrativo</a></li>
-            <li class="breadcrumb-item">
-                <a asp-controller="Groups" asp-action="Details" asp-route-id="@Model.GroupId">@Model.GroupName</a>
-            </li>
-            <li class="breadcrumb-item active">Asignar Estudiantes</li>
-        </ol>
-    </nav>
 
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
@@ -37,25 +37,20 @@
         </div>
     </div>
 
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert"
+             style="background-color: #d4edda; color: #155724; border-left: 5px solid #28a745;">
+            <i class="bi bi-check-circle-fill me-2"></i>@TempData["Success"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
     <div class="sistema-card">
 
-        <!-- Filtros principales -->
+        <!-- Filtro de inscripción -->
         <div class="d-flex flex-wrap gap-3 mb-3 align-items-center">
-
-            <!-- Buscador -->
-            <div style="min-width: 260px; flex-grow: 1; max-width: 350px;">
-                <div class="input-group">
-                    <span class="input-group-text" style="background: #f8f9fa; border-right: none;">
-                        <i class="bi bi-search" style="color: #8C1B1B;"></i>
-                    </span>
-                    <input type="text" id="searchInput" class="form-control"
-                           placeholder="Buscar por nombre o matrícula..."
-                           style="border-left: none;">
-                </div>
-            </div>
-
-            <!-- Toggle inscripción -->
-            <div class="btn-group" role="group" id="enrollFilter">
+            <div class="btn-group" role="group">
                 <input type="radio" class="btn-check" name="enrollOpt" id="optAll" autocomplete="off" checked>
                 <label class="btn btn-outline-secondary btn-sm" for="optAll">Todos</label>
 
@@ -64,17 +59,20 @@
                     <i class="bi bi-check-circle me-1"></i>Inscritos aquí
                 </label>
 
-                <input type="radio" class="btn-check" name="enrollOpt" id="optAvailable" autocomplete="off">
-                <label class="btn btn-outline-secondary btn-sm" for="optAvailable">
-                    <i class="bi bi-person-plus me-1"></i>No inscritos
+                <input type="radio" class="btn-check" name="enrollOpt" id="optNone" autocomplete="off">
+                <label class="btn btn-outline-secondary btn-sm" for="optNone">
+                    <i class="bi bi-dash-circle me-1"></i>Sin grupo
+                </label>
+
+                <input type="radio" class="btn-check" name="enrollOpt" id="optOther" autocomplete="off">
+                <label class="btn btn-outline-secondary btn-sm" for="optOther">
+                    <i class="bi bi-arrow-left-right me-1"></i>En otro grupo
                 </label>
             </div>
-
-            <span id="filterCount" class="text-muted small"></span>
         </div>
 
-        <!-- Filtros secundarios (solo visibles en modo "no inscritos") -->
-        <div id="extraFilters" class="d-flex flex-wrap gap-3 mb-4 align-items-center d-none">
+        <!-- Filtros secundarios (solo en modo "En otro grupo") -->
+        <div id="extraFilters" class="d-flex flex-wrap gap-3 mb-3 align-items-center d-none">
             <div style="min-width: 200px;">
                 <select id="filterGradeLevel" class="form-select form-select-sm">
                     <option value="">Todos los semestres</option>
@@ -90,7 +88,7 @@
                     @foreach (var g in allGroups)
                     {
                         <option value="@g.GroupId" data-gradelevel="@g.GradeLevelId">
-                            @g.Name — @g.GradeLevelName
+                            @g.GradeLevelName — @g.Name
                         </option>
                     }
                 </select>
@@ -100,244 +98,327 @@
             </button>
         </div>
 
-        <form asp-action="SaveAssignments" method="post" id="assignForm">
-            <input type="hidden" name="groupId" value="@Model.GroupId" />
+        @if (Model.AvailableStudents.Any())
+        {
+            <form id="assignForm" asp-action="SaveAssignments" method="post">
+                <input type="hidden" name="groupId" value="@Model.GroupId" />
+                <div id="selectedIdsContainer"></div>
 
-            <div class="table-responsive">
-                <table class="table table-hover align-middle" id="studentsTable">
-                    <thead class="table-light">
-                        <tr>
-                            <th style="width: 50px;">
-                                <input type="checkbox" class="form-check-input" id="selectAll"
-                                       title="Seleccionar todos los visibles" />
-                            </th>
-                            <th>Matrícula</th>
-                            <th>Nombre</th>
-                            <th>Email</th>
-                            <th class="text-center">Estado</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (var student in Model.AvailableStudents)
-                        {
-                            <tr class="student-row @(student.IsSelected ? "table-success" : "")"
-                                data-name="@student.FullName.ToLower()"
-                                data-matricula="@(student.Matricula?.ToLower() ?? "")"
-                                data-enrolled="@(student.IsSelected ? "here" : (student.CurrentGroupName != null ? "other" : "none"))"
-                                data-groupid="@(student.CurrentGroupName != null ? "has" : "")"
-                                data-gradelevelname="@(student.CurrentGradeLevelName ?? "")"
-                                data-currentgroup="@(student.CurrentGroupName ?? "")">
-                                <td>
-                                    <input type="checkbox"
-                                           name="selectedStudentIds"
-                                           value="@student.StudentId"
-                                           class="form-check-input student-checkbox"
-                                           @(student.IsSelected ? "checked" : "") />
-                                </td>
-                                <td class="fw-semibold">@student.Matricula</td>
-                                <td>@student.FullName</td>
-                                <td class="text-muted small">@student.Email</td>
-                                <td class="text-center status-cell">
-                                    @if (student.IsSelected)
-                                    {
-                                        <span class="badge" style="background-color: #28a745;">
-                                            <i class="bi bi-check-circle me-1"></i>Inscrito aquí
-                                        </span>
-                                    }
-                                    else if (student.CurrentGroupName != null)
-                                    {
-                                        <span class="badge" style="background-color: #fd7e14;"
-                                              title="@student.CurrentGradeLevelName">
-                                            <i class="bi bi-arrow-left-right me-1"></i>@student.CurrentGroupName
-                                        </span>
-                                    }
-                                    else
-                                    {
-                                        <span class="badge bg-secondary">
-                                            <i class="bi bi-dash-circle me-1"></i>Sin inscribir
-                                        </span>
-                                    }
-                                </td>
+                <div class="table-responsive">
+                    <table id="studentsTable" class="table table-hover align-middle mb-0" style="width:100%">
+                        <thead class="table-light">
+                            <tr>
+                                <th style="width: 50px;">
+                                    <input type="checkbox" class="form-check-input" id="selectAll"
+                                           title="Seleccionar todos en esta página" />
+                                </th>
+                                <th>Matricula</th>
+                                <th>Nombre</th>
+                                <th>Email</th>
+                                <th class="text-center">Estado / Grupo actual</th>
                             </tr>
-                        }
-                    </tbody>
-                </table>
-            </div>
+                        </thead>
+                        <tbody>
+                            @foreach (var student in Model.AvailableStudents)
+                            {
+                                var enrolledStatus = student.IsSelected ? "here" : (student.CurrentGroupName != null ? "other" : "none");
+                                <tr class="@(student.IsSelected ? "table-success" : "")"
+                                    data-studentid="@student.StudentId"
+                                    data-enrolled="@enrolledStatus"
+                                    data-gradelevelid="@(student.CurrentGradeLevelId?.ToString() ?? "")"
+                                    data-gradelevelname="@(student.CurrentGradeLevelName ?? "")"
+                                    data-currentgroupid="@(student.CurrentGroupId?.ToString() ?? "")"
+                                    data-currentgroup="@(student.CurrentGroupName ?? "")">
+                                    <td>
+                                        <input type="checkbox"
+                                               class="form-check-input student-checkbox"
+                                               data-id="@student.StudentId"
+                                               @(student.IsSelected ? "checked" : "") />
+                                    </td>
+                                    <td class="fw-semibold">@student.Matricula</td>
+                                    <td>@student.FullName</td>
+                                    <td class="text-muted small">@student.Email</td>
+                                    <td class="text-center status-cell">
+                                        @if (student.IsSelected)
+                                        {
+                                            <span class="badge" style="background-color: #28a745;">
+                                                <i class="bi bi-check-circle me-1"></i>Inscrito aquí
+                                            </span>
+                                        }
+                                        else if (student.CurrentGroupName != null)
+                                        {
+                                            <span class="badge" style="background-color: #fd7e14;">
+                                                <i class="bi bi-arrow-left-right me-1"></i>
+                                                @student.CurrentGradeLevelName — @student.CurrentGroupName
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-secondary">
+                                                <i class="bi bi-dash-circle me-1"></i>Sin inscribir
+                                            </span>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
 
-            <div id="noResults" class="text-center py-4 d-none">
-                <i class="bi bi-search" style="font-size: 2.5rem; color: #B1A596;"></i>
-                <p class="text-muted mt-2">Sin resultados para los filtros aplicados</p>
+                <div class="d-flex gap-2 justify-content-end mt-4">
+                    <a asp-controller="Groups" asp-action="Details" asp-route-id="@Model.GroupId"
+                       class="btn btn-secondary" style="border-radius: 10px; padding: 10px 25px;">
+                        <i class="bi bi-x-circle me-2"></i>Cancelar
+                    </a>
+                    <button type="submit" class="btn btn-calificaciones" style="padding: 10px 25px;">
+                        <i class="bi bi-save me-2"></i>Guardar Asignaciones
+                    </button>
+                </div>
+            </form>
+        }
+        else
+        {
+            <div class="text-center py-5">
+                <i class="bi bi-people" style="font-size: 3rem; color: #B1A596;"></i>
+                <p class="text-muted mt-3">No hay estudiantes disponibles para asignar</p>
             </div>
-
-            <div class="d-flex gap-2 justify-content-end mt-4">
-                <a asp-controller="Groups" asp-action="Details" asp-route-id="@Model.GroupId"
-                   class="btn btn-secondary" style="border-radius: 10px; padding: 10px 25px;">
-                    <i class="bi bi-x-circle me-2"></i>Cancelar
-                </a>
-                <button type="submit" class="btn btn-calificaciones" style="padding: 10px 25px;">
-                    <i class="bi bi-save me-2"></i>Guardar Asignaciones
-                </button>
-            </div>
-        </form>
+        }
     </div>
 </div>
 
-@section Scripts {
-    <script>
-        const rows        = document.querySelectorAll('.student-row');
-        const checkboxes  = document.querySelectorAll('.student-checkbox');
-        const selectAll   = document.getElementById('selectAll');
-        const searchInput = document.getElementById('searchInput');
-        const badge       = document.getElementById('selectionBadge');
-        const countSpan   = document.getElementById('filterCount');
-        const noResults   = document.getElementById('noResults');
-        const extraFilters = document.getElementById('extraFilters');
-        const filterGL    = document.getElementById('filterGradeLevel');
-        const filterGrp   = document.getElementById('filterGroup');
+@if (Model.AvailableStudents.Any())
+{
+    @section Scripts {
+        <script src="https://cdn.datatables.net/1.13.8/js/jquery.dataTables.min.js"></script>
+        <script src="https://cdn.datatables.net/1.13.8/js/dataTables.bootstrap5.min.js"></script>
 
-        // Grupos disponibles en el select (para filtrar por semestre)
-        const allGroupOptions = [...document.querySelectorAll('#filterGroup option')].filter(o => o.value);
+        <script>
+            $(document).ready(function () {
 
-        function getEnrollOpt() {
-            if (document.getElementById('optEnrolled').checked)  return 'enrolled';
-            if (document.getElementById('optAvailable').checked) return 'available';
-            return 'all';
-        }
+                var selectedIds = new Set();
 
-        function updateBadge() {
-            const n = [...checkboxes].filter(c => c.checked).length;
-            badge.textContent = `${n} seleccionado${n !== 1 ? 's' : ''}`;
-        }
+                $('.student-checkbox:checked').each(function () {
+                    selectedIds.add($(this).data('id').toString());
+                });
 
-        function updateRowStyle(cb) {
-            const row = cb.closest('tr');
-            row.classList.toggle('table-success', cb.checked);
-            const cell = row.querySelector('.status-cell');
-            const enrolled = row.dataset.enrolled;
-            if (cb.checked) {
-                cell.innerHTML = `<span class="badge" style="background-color:#28a745;"><i class="bi bi-check-circle me-1"></i>Inscrito aquí</span>`;
-            } else if (enrolled === 'other') {
-                const grp = row.dataset.currentgroup;
-                const lvl = row.dataset.gradelevelname;
-                cell.innerHTML = `<span class="badge" style="background-color:#fd7e14;" title="${lvl}"><i class="bi bi-arrow-left-right me-1"></i>${grp}</span>`;
-            } else {
-                cell.innerHTML = `<span class="badge bg-secondary"><i class="bi bi-dash-circle me-1"></i>Sin inscribir</span>`;
-            }
-        }
+                var allGroupOptions = $('#filterGroup option').filter(function () { return this.value; });
 
-        function applyFilters() {
-            const query    = searchInput.value.toLowerCase().trim();
-            const opt      = getEnrollOpt();
-            const selGL    = filterGL.value;
-            const selGrp   = filterGrp.value;
-            let visible    = 0;
+                function getEnrollOpt() {
+                    if ($('#optEnrolled').is(':checked')) return 'enrolled';
+                    if ($('#optNone').is(':checked'))     return 'none';
+                    if ($('#optOther').is(':checked'))    return 'other';
+                    return 'all';
+                }
 
-            rows.forEach(row => {
-                const name      = row.dataset.name || '';
-                const matricula = row.dataset.matricula || '';
-                const enrolled  = row.dataset.enrolled; // 'here' | 'other' | 'none'
-                const glName    = row.dataset.gradelevelname || '';
-                const grpName   = row.dataset.currentgroup || '';
+                function buildStatusHtml(enrolled, grp, lvl) {
+                    if (enrolled === 'here')
+                        return '<span class="badge" style="background-color:#28a745;"><i class="bi bi-check-circle me-1"></i>Inscrito aquí</span>';
+                    if (enrolled === 'other')
+                        return '<span class="badge" style="background-color:#fd7e14;"><i class="bi bi-arrow-left-right me-1"></i>' + lvl + ' — ' + grp + '</span>';
+                    return '<span class="badge bg-secondary"><i class="bi bi-dash-circle me-1"></i>Sin inscribir</span>';
+                }
 
-                // Filtro toggle inscripción
-                let matchEnroll = true;
-                if (opt === 'enrolled')  matchEnroll = enrolled === 'here';
-                if (opt === 'available') matchEnroll = enrolled !== 'here';
+                function updateBadge() {
+                    var n = selectedIds.size;
+                    $('#selectionBadge').text(n + ' seleccionado' + (n !== 1 ? 's' : ''));
+                }
 
-                // Filtros extra (semestre/grupo — solo aplican sobre los "no inscritos aquí")
-                let matchGL  = true;
-                let matchGrp = true;
-                if (opt === 'available' && enrolled === 'other') {
-                    if (selGL) {
-                        // Comparamos por nombre de nivel porque el data-attribute tiene el nombre
-                        const selGLName = filterGL.options[filterGL.selectedIndex]?.text || '';
-                        matchGL = glName === selGLName;
+                function updateRowVisual($row, isChecked) {
+                    var enrolled = $row.attr('data-enrolled');
+                    var grp      = $row.attr('data-currentgroup');
+                    var lvl      = $row.attr('data-gradelevelname');
+
+                    $row.toggleClass('table-success', isChecked);
+                    $row.find('.status-cell').html(
+                        isChecked ? buildStatusHtml('here', grp, lvl)
+                                  : buildStatusHtml(enrolled, grp, lvl)
+                    );
+                }
+
+                function syncSelectAll() {
+                    var $visible = table.rows({ page: 'current', search: 'applied' })
+                                        .nodes().to$().find('.student-checkbox');
+                    var total   = $visible.length;
+                    var checked = $visible.filter(':checked').length;
+                    var el      = document.getElementById('selectAll');
+
+                    el.checked       = total > 0 && checked === total;
+                    el.indeterminate = checked > 0 && checked < total;
+                }
+
+                // ── 1. Inicializar DataTable PRIMERO ─────────────────────
+                var table = $('#studentsTable').DataTable({
+                    language: {
+                        search: "",
+                        searchPlaceholder: "Buscar por nombre o CURP...",
+                        lengthMenu: "Mostrar _MENU_ estudiantes",
+                        info: "Mostrando _START_ a _END_ de _TOTAL_ estudiantes",
+                        infoEmpty: "Sin estudiantes",
+                        infoFiltered: "(filtrado de _MAX_ totales)",
+                        zeroRecords: "No se encontraron estudiantes",
+                        paginate: {
+                            next: "<i class='bi bi-chevron-right'></i>",
+                            previous: "<i class='bi bi-chevron-left'></i>"
+                        }
+                    },
+                    pageLength: 25,
+                    lengthMenu: [10, 25, 50, 100],
+                    order: [[2, 'asc']],
+                    columnDefs: [
+                        { orderable: false, searchable: false, targets: 0 },
+                        { orderable: false, searchable: false, targets: 4 }
+                    ],
+                    dom: '<"d-flex justify-content-between align-items-center mb-3"lf>t<"d-flex justify-content-between align-items-center mt-3"ip>'
+                });
+
+                // ── 2. Registrar filtro DESPUÉS de init ──────────────────
+                $.fn.dataTable.ext.search.push(function (settings, data, dataIndex) {
+                    if (settings.nTable.id !== 'studentsTable') return true;
+
+                    var opt = getEnrollOpt();
+                    if (opt === 'all') return true;
+
+                    var $row = $(table.row(dataIndex).node());
+                    if (!$row.length) return true;
+
+                    var enrolled = $row.attr('data-enrolled') || '';
+
+                    if (opt === 'enrolled') return enrolled === 'here';
+                    if (opt === 'none')     return enrolled === 'none';
+                    if (opt === 'other') {
+                        if (enrolled !== 'other') return false;
+                        var glId  = $row.attr('data-gradelevelid') || '';
+                        var grpId = $row.attr('data-currentgroupid') || '';
+                        var selGL  = $('#filterGradeLevel').val();
+                        var selGrp = $('#filterGroup').val();
+                        if (selGL  && glId  !== selGL)  return false;
+                        if (selGrp && grpId !== selGrp) return false;
+                        return true;
                     }
-                    if (selGrp) {
-                        const selGrpName = filterGrp.options[filterGrp.selectedIndex]?.text.split(' — ')[0].trim() || '';
-                        matchGrp = grpName === selGrpName;
+                    return true;
+                });
+
+                // ── 3. Eventos ───────────────────────────────────────────
+
+                table.on('draw', function () {
+                    $('#studentsTable tbody .student-checkbox').each(function () {
+                        var id = $(this).data('id').toString();
+                        var isChecked = selectedIds.has(id);
+                        this.checked = isChecked;
+                        updateRowVisual($(this).closest('tr'), isChecked);
+                    });
+                    syncSelectAll();
+                });
+
+                $('#studentsTable tbody').on('change', '.student-checkbox', function () {
+                    var id = $(this).data('id').toString();
+                    if (this.checked) selectedIds.add(id); else selectedIds.delete(id);
+                    updateRowVisual($(this).closest('tr'), this.checked);
+                    updateBadge();
+                    syncSelectAll();
+                });
+
+                $('#selectAll').on('change', function () {
+                    var isChecked = this.checked;
+                    table.rows({ page: 'current', search: 'applied' })
+                         .nodes().to$().find('.student-checkbox').each(function () {
+                        var id = $(this).data('id').toString();
+                        this.checked = isChecked;
+                        if (isChecked) selectedIds.add(id); else selectedIds.delete(id);
+                        updateRowVisual($(this).closest('tr'), isChecked);
+                    });
+                    updateBadge();
+                });
+
+                $('input[name="enrollOpt"]').on('change', function () {
+                    var isOther = $('#optOther').is(':checked');
+                    $('#extraFilters').toggleClass('d-none', !isOther);
+                    if (!isOther) {
+                        $('#filterGradeLevel').val('');
+                        $('#filterGroup').val('');
+                        allGroupOptions.each(function () { this.hidden = false; });
                     }
-                }
+                    table.draw();
+                });
 
-                const matchSearch = !query || name.includes(query) || matricula.includes(query);
-                const show = matchEnroll && matchGL && matchGrp && matchSearch;
+                $('#filterGradeLevel').on('change', function () {
+                    var selId = this.value;
+                    allGroupOptions.each(function () {
+                        this.hidden = selId ? $(this).data('gradelevel').toString() !== selId : false;
+                    });
+                    var sel = $('#filterGroup')[0];
+                    if (sel.options[sel.selectedIndex] && sel.options[sel.selectedIndex].hidden) sel.value = '';
+                    table.draw();
+                });
 
-                row.classList.toggle('d-none', !show);
-                if (show) visible++;
-            });
+                $('#filterGroup').on('change', function () { table.draw(); });
 
-            countSpan.textContent = visible < rows.length ? `${visible} de ${rows.length} estudiantes` : '';
-            noResults.classList.toggle('d-none', visible > 0);
+                $('#btnClearExtra').on('click', function () {
+                    $('#filterGradeLevel').val('');
+                    $('#filterGroup').val('');
+                    allGroupOptions.each(function () { this.hidden = false; });
+                    table.draw();
+                });
 
-            // Sincronizar selectAll
-            const visibleChecks = [...rows]
-                .filter(r => !r.classList.contains('d-none'))
-                .map(r => r.querySelector('.student-checkbox'));
-            selectAll.checked = visibleChecks.length > 0 && visibleChecks.every(c => c.checked);
-            selectAll.indeterminate = !selectAll.checked && visibleChecks.some(c => c.checked);
-        }
+                $('#assignForm').on('submit', function () {
+                    var $c = $('#selectedIdsContainer').empty();
+                    selectedIds.forEach(function (id) {
+                        $('<input>').attr({ type: 'hidden', name: 'selectedStudentIds', value: id }).appendTo($c);
+                    });
+                });
 
-        // Mostrar/ocultar filtros extra según el toggle
-        document.querySelectorAll('input[name="enrollOpt"]').forEach(radio => {
-            radio.addEventListener('change', () => {
-                const isAvailable = document.getElementById('optAvailable').checked;
-                extraFilters.classList.toggle('d-none', !isAvailable);
-                if (!isAvailable) {
-                    filterGL.value  = '';
-                    filterGrp.value = '';
-                    // Restaurar todas las opciones de grupo
-                    allGroupOptions.forEach(o => o.hidden = false);
-                }
-                applyFilters();
-            });
-        });
-
-        // Filtrar opciones de grupo según semestre seleccionado
-        filterGL.addEventListener('change', function () {
-            const selId = this.value;
-            allGroupOptions.forEach(o => {
-                o.hidden = selId ? o.dataset.gradelevel !== selId : false;
-            });
-            if (filterGrp.value && filterGrp.options[filterGrp.selectedIndex]?.hidden) {
-                filterGrp.value = '';
-            }
-            applyFilters();
-        });
-
-        filterGrp.addEventListener('change', applyFilters);
-
-        document.getElementById('btnClearExtra').addEventListener('click', () => {
-            filterGL.value  = '';
-            filterGrp.value = '';
-            allGroupOptions.forEach(o => o.hidden = false);
-            applyFilters();
-        });
-
-        // Select all (solo filas visibles)
-        selectAll.addEventListener('change', function () {
-            rows.forEach(row => {
-                if (!row.classList.contains('d-none')) {
-                    const cb = row.querySelector('.student-checkbox');
-                    cb.checked = this.checked;
-                    updateRowStyle(cb);
-                }
-            });
-            updateBadge();
-        });
-
-        // Individual checkbox
-        checkboxes.forEach(cb => {
-            cb.addEventListener('change', function () {
-                updateRowStyle(this);
                 updateBadge();
-                applyFilters();
             });
-        });
+        </script>
 
-        searchInput.addEventListener('input', applyFilters);
+        <style>
+            .dataTables_length select {
+                border-radius: 10px !important;
+                border: 1px solid #dee2e6 !important;
+                padding: 4px 30px 4px 10px !important;
+                min-width: 70px !important;
+            }
 
-        // Init
-        updateBadge();
-        applyFilters();
-    </script>
+            .dataTables_filter input {
+                border-radius: 10px !important;
+                border: 1px solid #dee2e6 !important;
+                padding: 6px 12px !important;
+                margin-left: 8px !important;
+            }
+
+                .dataTables_filter input:focus {
+                    border-color: #8C1B1B !important;
+                    box-shadow: 0 0 0 0.2rem rgba(140, 27, 27, 0.15) !important;
+                }
+
+            .page-item.active .page-link {
+                background-color: #8C1B1B !important;
+                border-color: #8C1B1B !important;
+                color: white !important;
+                border-radius: 8px !important;
+            }
+
+            .page-link {
+                color: #8C1B1B !important;
+                border-radius: 8px !important;
+                margin: 0 2px;
+                border: 1px solid #dee2e6 !important;
+            }
+
+                .page-link:hover {
+                    background-color: rgba(140, 27, 27, 0.1) !important;
+                }
+
+            .page-item.disabled .page-link {
+                color: #adb5bd !important;
+                background-color: #f8f9fa !important;
+                border-color: #dee2e6 !important;
+            }
+
+            .dataTables_info {
+                color: #6c757d !important;
+                font-size: 0.875rem;
+            }
+        </style>
+    }
 }

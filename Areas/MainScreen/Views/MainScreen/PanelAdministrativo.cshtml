@@ -17,6 +17,30 @@
 
         <div class="row justify-content-center g-5">
 
+            <!-- NUEVO CICLO ESCOLAR (WIZARD) -->
+            <div class="col-lg-5 col-md-6">
+                <div class="sistema-card border-calificaciones text-start">
+                    <div class="sistema-icon icon-calificaciones">
+                        <i class="bi bi-magic"></i>
+                    </div>
+                    <h4>Nuevo Ciclo Escolar</h4>
+                    <p class="text-muted mt-3">
+                        Configura un ciclo completo paso a paso: nivel, materias, grupos y asignación de profesores.
+                    </p>
+                    <div class="mt-4">
+                        <a asp-area="Grades"
+                           asp-controller="SchoolCycleWizard"
+                           asp-action="Step1"
+                           class="btn btn-calificaciones w-100">
+                            <i class="bi bi-play-circle"></i> Iniciar Asistente
+                        </a>
+                    </div>
+                    <p class="text-muted small mt-3 mb-0">
+                        <i class="bi bi-info-circle"></i> El asistente te guiará en 4 pasos para configurar todo el ciclo.
+                    </p>
+                </div>
+            </div>
+
             <!-- CONFIGURACIÓN ACADÉMICA -->
             <div class="col-lg-5 col-md-6">
                 <div class="sistema-card border-calificaciones text-start">
@@ -28,111 +52,75 @@
                         Crea y administra niveles escolares, materias y grupos para el ciclo actual.
                     </p>
                     <div class="d-flex gap-2 mt-4">
-                        <a href="/Grades/GradeLevels" class="btn btn-calificaciones flex-fill">
+                        <a asp-area="Grades" asp-controller="GradeLevels" asp-action="Index"
+                           class="btn btn-calificaciones flex-fill">
                             Niveles
                         </a>
-                        <a href="/Grades/Subjects" class="btn btn-calificaciones flex-fill">
+                        <a asp-area="Grades" asp-controller="Subjects" asp-action="Index"
+                           class="btn btn-calificaciones flex-fill">
                             Materias
                         </a>
-                        <a href="/Grades/Groups" class="btn btn-calificaciones flex-fill">
+                        <a asp-area="Grades" asp-controller="Groups" asp-action="Index"
+                           class="btn btn-calificaciones flex-fill">
                             Grupos
                         </a>
                     </div>
                 </div>
             </div>
 
-            <!-- ASIGNACIONES -->
+@*             <!-- ASIGNACIONES -->
             <div class="col-lg-5 col-md-6">
-                <div class="sistema-card border-servicio text-start">
-                    <div class="sistema-icon icon-servicio">
+                <div class="sistema-card border-calificaciones text-start">
+                    <div class="sistema-icon icon-calificaciones">
                         <i class="bi bi-person-badge"></i>
                     </div>
                     <h4>Asignaciones</h4>
                     <p class="text-muted mt-3">
                         Asigna profesores a materias y gestiona los grupos de cada asignación.
                     </p>
-
-                    <!-- Acciones rápidas -->
                     <div class="mt-4">
-                        <a href="/Grades/TeacherSubject/Create" class="btn btn-servicio w-100 mb-2">
+                        <a asp-area="Grades" asp-controller="TeacherSubject" asp-action="Create"
+                           class="btn btn-calificaciones w-100 mb-2">
                             <i class="bi bi-plus-circle"></i> Nueva Asignación
                         </a>
-
-                        <a href="/Grades/TeacherSubject" class="btn btn-outline-secondary w-100">
+                        <a asp-area="Grades" asp-controller="TeacherSubject" asp-action="Index"
+                           class="btn btn-outline-secondary w-100">
                             <i class="bi bi-list"></i> Gestionar Asignaciones
                         </a>
                     </div>
-
-                    <hr />
-
-                    <!-- Asignaciones recientes (últimas 3) -->
-@*                     <h6 class="fw-semibold">Recientes:</h6>
-                    @foreach (var item in Model.Asignaciones.Take(3))
-                    {
-                        <div class="d-flex justify-content-between align-items-center small mt-2">
-                            <span>@item.TeacherName - @item.SubjectName (@item.GradeLevelName)</span>
-                            <a href="/TeacherSubject/AssignGroups?id=@item.TeacherSubjectId"
-                               class="text-decoration-none">
-                                Grupos →
-                            </a>
-                        </div>
-                    } *@
                 </div>
             </div>
+
             <!-- INSCRIPCIONES -->
             <div class="col-lg-5 col-md-6">
                 <div class="sistema-card border-calificaciones text-start">
                     <div class="sistema-icon icon-calificaciones">
                         <i class="bi bi-person-plus"></i>
                     </div>
-
                     <h4>Asignar Estudiantes a Grupos</h4>
                     <p class="text-muted mt-3">
                         Administra los estudiantes en los grupos escolares.
                     </p>
-
-                    <!-- Acciones rápidas - llevan al selector -->
                     <div class="mt-4">
-                        <a href="/Grades/Enrollment/SelectGroupForAssignment" class="btn btn-calificaciones w-100 mb-2">
+                       <a asp-area="Grades" asp-controller="Enrollment" asp-action="SelectGroupForAssignment"
+                           class="btn btn-calificaciones w-100 mb-2">
                             <i class="bi bi-person-plus"></i> Asignar Estudiante a Grupo
                         </a>
-
-                        <a href="/Grades/Enrollment/SelectGroupForViewing" class="btn btn-outline-secondary w-100 mb-2">
+                        <a asp-area="Grades" asp-controller="Enrollment" asp-action="SelectGroupForViewing"
+                           class="btn btn-outline-secondary w-100 mb-2">
                             <i class="bi bi-people"></i> Ver Estudiantes por Grupo
-                        </a>
-
-                        <a href="/Grades/Groups" class="btn btn-outline-secondary w-100">
+                        </a> 
+                        <a asp-area="Grades" asp-controller="Groups" asp-action="Index"
+                           class="btn btn-calificaciones w-100">
                             <i class="bi bi-gear"></i> Gestionar Grupos
                         </a>
                     </div>
-
                     <p class="text-muted small mt-3 mb-0">
                         <i class="bi bi-info-circle"></i> Selecciona el grupo en la siguiente pantalla.
                     </p>
                 </div>
-            </div>
-
-            @if (User.IsInRole("Teacher"))
-            {
-                <!-- REPORTES -->
-                <div class="col-lg-5 col-md-6">
-                    <div class="sistema-card border-calificaciones text-start">
-                        <div class="sistema-icon icon-calificaciones">
-                            <i class="bi bi-bar-chart"></i>
-                        </div>
-                        <h4>Reportes</h4>
-                        <p class="text-muted mt-3">
-                            Visualiza estadísticas de aprovechamiento y rendimiento académico.
-                        </p>
-                        <a href="/Estadisticas" class="btn btn-nav-blue mt-4">
-                            Ver Reportes →
-                        </a>
-                    </div>
-                </div>
-            }
+            </div> *@
 
         </div>
     </div>
 </section>
-
-

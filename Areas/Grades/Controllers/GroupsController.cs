@@ -1,12 +1,15 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using SchoolManager.Areas.Grades.ViewModels.Groups;
 using SchoolManager.Data;
 using SchoolManager.Models;
-using SchoolManager.Areas.Grades.ViewModels.Groups;
 
 namespace SchoolManager.Areas.Grades.Controllers
 {
     [Area("Grades")]
+    [Authorize(Roles = "Teacher,Administrator")]
+
     public class GroupsController : Controller
     {
         private readonly AppDbContext _context;
@@ -17,19 +20,12 @@ namespace SchoolManager.Areas.Grades.Controllers
         }
 
         // GET: Groups
-        public async Task<IActionResult> Index(int? gradeLevelId)
+        public async Task<IActionResult> Index()
         {
-            var query = _context.grades_GradeGroups
+            var groups = await _context.grades_GradeGroups
                 .Include(g => g.GradeLevel)
                 .Include(g => g.TeacherSubjectGroups)
-                .AsQueryable();
-
-            if (gradeLevelId.HasValue)
-            {
-                query = query.Where(g => g.GradeLevelId == gradeLevelId.Value);
-            }
-
-            var groups = await query
+                .Where(g => g.GradeLevel.IsOpen)
                 .Select(g => new GroupViewModel
                 {
                     GroupId = g.GroupId,
@@ -37,22 +33,20 @@ namespace SchoolManager.Areas.Grades.Controllers
                     GradeLevelId = g.GradeLevelId,
                     GradeLevelName = g.GradeLevel.Name,
                     SubjectsCount = g.TeacherSubjectGroups.Count,
-                    StudentsCount = 0 // Por ahora, hasta que tengamos inscripciones
+                    StudentsCount = g.Enrollments.Count(e => e.IsActive)
                 })
                 .OrderBy(g => g.GradeLevelName)
                 .ThenBy(g => g.Name)
                 .ToListAsync();
 
             ViewBag.GradeLevels = await _context.grades_GradeLevels
+                .Where(gl => gl.IsOpen)
                 .OrderBy(gl => gl.Name)
                 .Select(gl => new { gl.GradeLevelId, gl.Name })
                 .ToListAsync();
 
-            ViewBag.SelectedGradeLevel = gradeLevelId;
-
             return View(groups);
         }
-
         // GET: Groups/Create
         public IActionResult Create(int? gradeLevelId)
         {
@@ -180,31 +174,42 @@ namespace SchoolManager.Areas.Grades.Controllers
                     .ThenInclude(e => e.Student)
                         .ThenInclude(s => s.Person)
                 .Where(g => g.GroupId == id)
-                .Select(g => new GroupDetailsViewModel
-                {
-                    GroupId = g.GroupId,
-                    Name = g.Name,
-                    GradeLevelId = g.GradeLevelId,
-                    GradeLevelName = g.GradeLevel.Name,
-                    Subjects = g.TeacherSubjectGroups.Select(tsg => new GroupSubjectViewModel
-                    {
-                        TeacherSubjectGroupId = tsg.TeacherSubjectGroupId,
-                        SubjectName = tsg.TeacherSubject.Subject.Name,
-                        TeacherName = tsg.TeacherSubject.Teacher.Person.FirstName + " " +
-                                     tsg.TeacherSubject.Teacher.Person.LastNamePaternal
-                    }).ToList(),
-                    StudentsCount = g.Enrollments.Count,
-                    Students = g.Enrollments.Select(e => new GroupStudentViewModel
-                    {
-                        EnrollmentId = e.EnrollmentId,
-                        StudentId = e.StudentId,
-                        FullName = e.Student.Person.FirstName + " " +
-                                  e.Student.Person.LastNamePaternal + " " +
-                                  e.Student.Person.LastNameMaternal,
-                        Matricula = e.Student.Person.Curp, //Matricula no se donde esta aun
-                        Email = e.Student.Email
-                    }).ToList()
-                })
+
+.Select(g => new GroupDetailsViewModel
+{
+    GroupId = g.GroupId,
+    Name = g.Name,
+    GradeLevelId = g.GradeLevelId,
+    GradeLevelName = g.GradeLevel.Name,
+    Subjects = g.TeacherSubjectGroups.Select(tsg => new GroupSubjectViewModel
+    {
+        TeacherSubjectGroupId = tsg.TeacherSubjectGroupId,
+        SubjectName = tsg.TeacherSubject.Subject.Name,
+        TeacherName = tsg.TeacherSubject.Teacher.Person.FirstName + " " +
+                     tsg.TeacherSubject.Teacher.Person.LastNamePaternal
+    }).ToList(),
+
+    StudentsCount = g.Enrollments.Count(e => e.IsActive),
+    Students = g.Enrollments
+        .Where(e => e.IsActive)                         
+        .Select(e => new GroupStudentViewModel
+        {
+            EnrollmentId = e.EnrollmentId,
+            StudentId = e.StudentId,
+            FullName = e.Student.Person.FirstName + " " +
+                      e.Student.Person.LastNamePaternal + " " +
+                      e.Student.Person.LastNameMaternal,
+            // e.Student = users_user
+            Matricula = e.Student.Preenrollments
+                .Where(p => p.Matricula != null)
+                .OrderByDescending(p => p.CreateStat)
+                .Select(p => p.Matricula)
+                .FirstOrDefault() ?? "S/N",
+            Email = e.Student.Email
+        }).ToList()
+})
+
+
                 .FirstOrDefaultAsync();
 
             if (group == null) return NotFound();

@@ -72,12 +72,34 @@
                         <label class="fw-bold text-uppercase">Rol</label>
                         <select name="RoleId" id="selectRol" class="form-control" required>
                             <option value="">Seleccionar rol</option>
-                            <option value="4">Enfermero</option>
-                            <option value="5">Psicólogo</option>
-                            <option value="6">Jefe de Enfermería</option>
-                            <option value="7">Jefe de Psicología</option>
-                            <option value="9">Coordinador</option>
-                            <option value="10">Master</option>
+
+                            @if (User.IsInRole("Head Nurse"))
+                            {
+                                <option value="4">Enfermero</option>
+                            }
+
+                            @if (User.IsInRole("Head of Psychology"))
+                            {
+                                <option value="5">Psicólogo</option>
+                            }
+
+                            @if (User.IsInRole("Coordinator"))
+                            {
+                                <option value="4">Enfermero</option>
+                                <option value="5">Psicólogo</option>
+                                <option value="6">Jefe de Enfermería</option>
+                                <option value="7">Jefe de Psicología</option>
+                            }
+
+                            @if (User.IsInRole("Master"))
+                            {
+                                <option value="4">Enfermero</option>
+                                <option value="5">Psicólogo</option>
+                                <option value="6">Jefe de Enfermería</option>
+                                <option value="7">Jefe de Psicología</option>
+                                <option value="9">Coordinador</option>
+                                <option value="10">Master</option>
+                            }
                         </select>
                     </div>
                 </div>

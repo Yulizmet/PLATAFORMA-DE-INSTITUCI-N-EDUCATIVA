@@ -23,7 +23,7 @@ const Toast = Swal.mixin({
         const icon = Swal.getIcon();
         if (icon) {
             if (icon.classList.contains('swal2-success')) toast.style.backgroundColor = '#7ed957'; // Verde
-            if (icon.classList.contains('swal2-error')) toast.style.backgroundColor = 'ff3131';    // Rojo
+            if (icon.classList.contains('swal2-error')) toast.style.backgroundColor = '#ff3131';    // Rojo
             if (icon.classList.contains('swal2-warning')) toast.style.backgroundColor = '#ffde59'; // Amarillo
             if (icon.classList.contains('swal2-info')) toast.style.backgroundColor = '#38b6ff';    // Azul
         }

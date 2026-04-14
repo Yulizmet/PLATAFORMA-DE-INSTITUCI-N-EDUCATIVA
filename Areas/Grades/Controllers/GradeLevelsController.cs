@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SchoolManager.Areas.Grades.ViewModels;
 using SchoolManager.Areas.Grades.ViewModels.GradeLevels;
@@ -9,6 +10,8 @@ using SchoolManager.Models;
 namespace SchoolManager.Areas.Grades.Controllers
 {
     [Area("Grades")]
+    [Authorize(Roles = "Administrator")]
+
     public class GradeLevelsController : Controller
     {
         private readonly AppDbContext _context;
@@ -19,20 +22,11 @@ namespace SchoolManager.Areas.Grades.Controllers
         }
 
         // GET: GradeLevels
-        public async Task<IActionResult> Index(string estado = "abiertos")
+        public async Task<IActionResult> Index()
         {
-            var query = _context.grades_GradeLevels
+            var gradeLevels = await _context.grades_GradeLevels
                 .Include(g => g.Groups)
                 .Include(g => g.Subjects)
-                .AsQueryable();
-
-            // Filtrar por estado
-            if (estado == "abiertos")
-            {
-                query = query.Where(g => g.IsOpen);
-            }
-
-            var gradeLevels = await query
                 .Select(g => new GradeLevelViewModel
                 {
                     GradeLevelId = g.GradeLevelId,
@@ -49,8 +43,7 @@ namespace SchoolManager.Areas.Grades.Controllers
                 .ToListAsync();
 
             return View(gradeLevels);
-        }
-        // GET: GradeLevels/Details/5
+        }        // GET: GradeLevels/Details/5
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
@@ -93,7 +86,15 @@ namespace SchoolManager.Areas.Grades.Controllers
         // GET: GradeLevels/Create
         public IActionResult Create()
         {
-            return View(new GradeLevelViewModel());
+            var viewModel = new GradeLevelViewModel
+            {
+                StartDate = DateOnly.FromDateTime(DateTime.Today),
+                EndDate = DateOnly.FromDateTime(DateTime.Today.AddMonths(6)),
+                IsOpen = true,
+                MinPassingGrade = 6.0m
+            };
+
+            return View(viewModel);
         }
 
         // POST: GradeLevels/Create
@@ -135,7 +136,8 @@ namespace SchoolManager.Areas.Grades.Controllers
                     Name = gl.Name,
                     StartDate = gl.StartDate,
                     EndDate = gl.EndDate,
-                    IsOpen = gl.IsOpen
+                    IsOpen = gl.IsOpen,
+                    MinPassingGrade = gl.MinPassingGrade
                 })
                 .FirstOrDefaultAsync();
 

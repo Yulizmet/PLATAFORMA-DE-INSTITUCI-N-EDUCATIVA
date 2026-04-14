@@ -1,66 +1,66 @@
-﻿@model SchoolManager.Models.users_user
+﻿
+@model SchoolManager.Models.users_user
+@using System.Linq
 
 @{
     ViewData["Title"] = "Seguimiento Académico";
 
     var historial = ViewBag.Historial as List<SchoolManager.Models.tutorship_monitoring> ?? new List<SchoolManager.Models.tutorship_monitoring>();
+    var bitacoras = ViewBag.BitacorasPsicologia as IEnumerable<dynamic>;
 }
 
-<div class="container mt-4">
-
-    @if (TempData["Error"] != null)
-    {
-        <div class="alert alert-danger text-center">@TempData["Error"]</div>
-    }
-    @if (TempData["Exito"] != null)
-    {
-        <div class="alert alert-success text-center">@TempData["Exito"]</div>
-    }
-
-    <div class="row justify-content-center mb-5">
-        <div class="col-md-8">
-            <form method="get" asp-action="Seguimiento">
-                <div class="input-group input-group-lg shadow-sm">
-                    <input type="text" name="matriculaBuscar" class="form-control" placeholder="Buscar por Matrícula..."
-                           value="@ViewBag.Matricula" style="border-color: var(--utt-red);" required>
-                    <button class="btn btn-utt-primary" type="submit">
-                        <i class="bi bi-search"></i> Buscar Alumno
-                    </button>
-                </div>
-            </form>
+<div class="container mt-4 mb-4">
+    <div class="position-relative mb-3 text-center">
+        <div class="position-absolute top-50 start-0 translate-middle-y">
+            <button type="button" onclick="history.back()" class="btn btn-sm btn-outline-secondary fw-bold shadow-sm px-3" style="border-radius: 20px;">
+                <i class="bi bi-arrow-left me-1"></i> Regresar
+            </button>
         </div>
+
+        <h2 class="fw-bold m-0" style="color: var(--brand-dark);">Historial de Seguimiento</h2>
     </div>
-
-    @if (Model != null)
+    
+    @if (!string.IsNullOrEmpty(ViewBag.Matricula))
     {
-        string nombreCompleto = $"{Model.Person.FirstName} {Model.Person.LastNamePaternal}";
+        <div class="text-center mb-5">
+            <span class="badge bg-white text-dark border shadow-sm px-4 py-2" style="border-radius: 20px; font-size: 1rem;">
+                <i class="bi bi-person-badge me-2" style="color: var(--brand-secondary);"></i> Matrícula: <span class="fw-bold" style="color: var(--brand-dark);">@ViewBag.Matricula</span>
+            </span>
+        </div>
+    }
+</div>
 
-        <div class="row">
+@if (Model != null)
+{
+    string nombreCompleto = $"{Model.Person.FirstName} {Model.Person.LastNamePaternal}";
+
+    <div class="container">
+        <div class="row g-4 justify-content-center">
+            
             <div class="col-md-4">
-                <div class="card border-0 shadow-sm" style="background-color: var(--utt-light);">
+                <div class="card border-0 shadow-sm" style="background-color: var(--brand-white); border-radius: 12px; overflow: hidden;">
 
-                    <div class="card-header bg-transparent border-0 pt-3 d-flex justify-content-between align-items-center">
-                        <h5 class="fw-bold m-0" style="color: var(--utt-dark-red);">Nuevo Feedback</h5>
+                    <div class="card-header bg-transparent border-0 pt-4 d-flex justify-content-between align-items-center px-4">
+                        <h5 class="fw-bold m-0" style="color: var(--brand-dark);">Nuevo Feedback</h5>
 
-                        <a asp-controller="Tutorship" asp-action="VerEntrevistaAlumno" asp-route-id="@Model.UserId"
-                           class="btn btn-sm btn-outline-secondary rounded-circle d-flex align-items-center justify-content-center"
-                           style="width: 30px; height: 30px;"
-                           title="Ver Expediente del Alumno">
+                        <a asp-controller="Entrevista" asp-action="VerEntrevistaAlumno" asp-route-id="@Model.UserId"
+                               class="btn btn-sm btn-secondary-brand rounded-circle d-flex align-items-center justify-content-center"
+                               style="width: 32px; height: 32px;"
+                               title="Ver Expediente Completo">
                             <i class="bi bi-info-lg"></i>
                         </a>
                     </div>
 
-                    <div class="card-body">
-                        <h6 class="mb-3 text-muted">Alumno: @nombreCompleto</h6>
+                    <div class="card-body p-4 pt-3">
+                        <h6 class="mb-4 text-muted border-bottom pb-2"><i class="bi bi-person-fill me-1"></i> @nombreCompleto</h6>
 
-                        <form asp-action="GuardarSeguimiento" method="post" enctype="multipart/form-data">
-
+                        <form asp-controller="Seguimiento" asp-action="GuardarSeguimiento" method="post" enctype="multipart/form-data">
                             <input type="hidden" name="studentId" value="@Model.UserId" />
                             <input type="hidden" name="matricula" value="@ViewBag.Matricula" />
 
                             <div class="mb-3">
-                                <label class="form-label fw-bold">Tipo</label>
-                                <select class="form-select" name="tipo" style="border-color: var(--utt-beige);">
+                                <label class="form-label fw-bold">Tipo de Reporte</label>
+                                <select class="form-select shadow-sm" name="tipo" style="border-color: var(--brand-secondary);">
                                     <option value="Académico">Académico</option>
                                     <option value="Conductual">Conductual</option>
                                     <option value="Psicológico">Psicológico</option>
@@ -69,72 +69,192 @@
 
                             <div class="mb-3">
                                 <label class="form-label fw-bold">Observaciones</label>
-                                <textarea class="form-control" name="observaciones" rows="5" style="border-color: var(--utt-beige);" required></textarea>
+                                <textarea class="form-control shadow-sm" name="observaciones" rows="5" style="border-color: var(--brand-secondary); resize: none;" required></textarea>
                             </div>
 
                             <div class="mb-4">
                                 <label class="form-label fw-bold">Adjuntar Evidencia</label>
-                                <div class="input-group">
-                                    <input type="file" class="form-control" name="ArchivoAdjunto"
+    
+                                <div class="position-relative shadow-sm" style="border-radius: 8px; border: 1px solid var(--brand-secondary); overflow: hidden;">
+                                    <input type="file" name="ArchivoAdjunto" id="evidenciaUpload" class="d-none"
                                            accept=".pdf,.jpg,.jpeg,.png"
-                                           style="border-color: var(--utt-beige);">
-                                    <label class="input-group-text bg-white" style="border-color: var(--utt-beige);">
-                                        <i class="bi bi-paperclip text-muted"></i>
+                                           onchange="document.getElementById('fileName').textContent = this.files.length > 0 ? this.files[0].name : 'Ningún archivo seleccionado';">
+        
+                                    <label for="evidenciaUpload" class="d-flex align-items-center m-0 w-100" style="cursor: pointer; background-color: #ffffff;">
+                                        <div class="px-3 py-2 fw-bold text-dark text-center" style="background-color: #f8f9fa; border-right: 1px solid var(--brand-secondary); min-width: 140px;">
+                                            Elegir archivo
+                                        </div>
+                                        <div id="fileName" class="px-3 text-muted flex-grow-1 text-truncate" style="font-size: 0.95rem;">
+                                            Ningún archivo seleccionado
+                                        </div>
+                                        <div class="px-3 border-start" style="border-color: #eee !important;">
+                                            <i class="bi bi-paperclip text-muted"></i>
+                                        </div>
                                     </label>
                                 </div>
-                                <div class="form-text small text-muted">
+    
+                                <div class="form-text small text-muted mt-2">
                                     * Justificantes médicos, reportes firmados (PDF o Imagen).
                                 </div>
                             </div>
 
-                            <button type="submit" class="btn btn-utt-primary w-100">Guardar Reporte</button>
+                            <button type="submit" class="btn btn-primary-brand w-100 fw-bold shadow">
+                                <i class="bi bi-save me-2"></i> Guardar Reporte
+                            </button>
                         </form>
                     </div>
                 </div>
             </div>
 
             <div class="col-md-8">
-                <h4 class="mb-3 fw-bold" style="color: var(--utt-black);">Historial de Seguimiento</h4>
-
+                
+                <h4 class="mb-4 fw-bold" style="color: var(--brand-black);">
+                    @* <i class="bi bi-journal-bookmark-fill me-2" style="color: var(--brand-secondary);"></i> *@ Historial de Seguimiento
+                </h4>
                 @if (!historial.Any())
                 {
-                    <div class="alert alert-light border text-center text-muted">
-                        Este alumno no tiene reportes previos.
+                    <div class="text-center p-5 bg-white rounded shadow-sm border mt-3 mb-5">
+                        <i class="bi bi-folder2-open" style="font-size: 3rem; color: var(--brand-secondary);"></i>
+                        <h5 class="mt-3 text-dark fw-bold">Sin reportes</h5>
+                        <p class="text-muted mb-0">Este alumno no tiene reportes previos en su expediente.</p>
                     </div>
                 }
                 else
                 {
-                    foreach (var reporte in historial)
-                    {
-                        
-                        string colorBorde = reporte.PerformanceLevel == "Conductual" ? "var(--utt-beige)" : "var(--utt-red)";
+                    <div class="mb-5 scroll-historial">
+                        @foreach (var reporte in historial)
+                        {
+                            <div class="card mb-3 dashboard-card-hover border-0 shadow-sm">
+                                <div class="card-body p-4">
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <div class="d-flex align-items-center gap-2">
+                                            <h6 class="mb-0 fw-bold" style="color: var(--brand-black);">
+                                                Reporte de Tutoría
+                                            </h6>
 
-                        <div class="card mb-3 shadow-sm border-0" style="border-left: 5px solid @colorBorde !important;">
-                            <div class="card-body">
-                                <div class="d-flex justify-content-between align-items-center mb-2">
-                                    <div class="d-flex align-items-center gap-2">
-                                        <h6 class="mb-0 fw-bold" style="color: var(--utt-black);">
-                                            Reporte de Tutoría
-                                        </h6>
+                                            @if (reporte.FilePath != "Sin archivo")
+                                            {
+                                                <a href="@reporte.FilePath" target="_blank" class="badge text-decoration-none" style="background-color: var(--btn-ver); color: white;">
+                                                    <i class="bi bi-paperclip"></i> Ver Archivo
+                                                </a>
+                                            }
+                                        </div>
+                                        <div class="text-end">
+                                            <small class="text-muted d-block">@reporte.Date.ToString("dd MMM yyyy")</small>
+                                            <small class="badge bg-light text-secondary border">@reporte.PerformanceLevel</small>
+                                        </div>
+                                    </div>
+                                    <p class="card-text mt-3 p-3 bg-light rounded text-dark" style="font-size: 0.95rem; border: 1px solid rgba(0,0,0,0.05);">
+                                        @reporte.DetailedObservations
+                                    </p>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
 
-                                        @if (reporte.FilePath != "Sin archivo")
+                <hr class="mb-4" style="opacity: 0.1;" />
+                <h4 class="mb-4 fw-bold" style="color: var(--brand-black);">
+                    @* <i class="bi bi-chat-heart-fill me-2" style="color: #38b6ff;"></i> *@ Intervenciones Psicológicas
+                </h4>
+
+                @if (bitacoras == null || !bitacoras.Any())
+                {
+                    <div class="text-center p-4 bg-light rounded shadow-sm border mt-3 mb-4">
+                        <i class="bi bi-journal-x" style="font-size: 2rem; color: #ccc;"></i>
+                        <p class="text-muted mb-0 mt-2">No hay registros psicológicos para este alumno.</p>
+                    </div>
+                }
+                else
+                {
+                    <div class="scroll-historial mb-4">
+                        @foreach (var psic in bitacoras)
+                        {
+                            <div class="card mb-3 border-0 shadow-sm" @* style="border-left: 5px solid #38b6ff !important;" *@>
+                                <div class="card-body p-4">
+                                    <div class="d-flex align-items-center mb-2 gap-2">
+                                        <span class="badge" style="background-color: #38b6ff; color: white;">Folio: @psic.Fol</span>
+                                        <small class="text-muted fw-bold">@psic.AppointmentDatetime.ToString("dd MMM yyyy - hh:mm tt")</small>
+                                        
+                                        @if (psic.AttendanceStatus == "Asistió")
                                         {
-                                            <a href="@reporte.FilePath" target="_blank" class="badge bg-light text-primary border text-decoration-none">
-                                                <i class="bi bi-paperclip"></i> Ver Archivo
-                                            </a>
+                                            <span class="badge bg-success" style="font-size:0.7rem;">Asistió</span>
+                                        }
+                                        else if (psic.AttendanceStatus == "No asistió")
+                                        {
+                                            <span class="badge bg-danger" style="font-size:0.7rem;">Falta</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-warning text-dark" style="font-size:0.7rem;">Justificado</span>
                                         }
                                     </div>
-                                    <div class="text-end">
-                                        <small class="text-muted d-block">@reporte.Date.ToString("dd MMM yyyy")</small>
-                                        <small class="badge bg-light text-secondary border">@reporte.PerformanceLevel</small>
-                                    </div>
+                                    
+                                    <p class="mb-0 text-dark" style="font-size: 0.95rem;">
+                                        @(string.IsNullOrEmpty(psic.PsychologyObservations) ? "Sin observaciones previas." : psic.PsychologyObservations)
+                                    </p>
                                 </div>
-                                <p class="card-text text-secondary mt-2">@reporte.DetailedObservations</p>
                             </div>
-                        </div>
-                    }
+                        }
+                    </div>
                 }
+
+                <hr class="mb-4" style="opacity: 0.1;" />
+                <h4 class="mb-4 fw-bold" style="color: var(--brand-black);">
+                    @* <i class="bi bi-heart-pulse-fill me-2" style="color: #e53935;"></i> *@ Atención Clínica
+                </h4>
+
+                @{
+                    var clinicas = ViewBag.BitacorasClinicas as IEnumerable<dynamic>;
+                }
+
+                @if (clinicas == null || !clinicas.Any())
+                {
+                    <div class="text-center p-4 bg-light rounded shadow-sm border mt-3 mb-4">
+                        <i class="bi bi-clipboard2-pulse" style="font-size: 2rem; color: #ccc;"></i>
+                        <p class="text-muted mb-0 mt-2">No hay registros de atención clínica para este alumno.</p>
+                    </div>
+                }
+                else
+                {
+                    <div class="scroll-historial mb-4">
+                        @foreach (var clinica in clinicas)
+                        {
+                            <div class="card mb-3 border-0 shadow-sm">
+                            <div class="card-body p-4">
+                            <div class="d-flex align-items-center mb-2 gap-2">
+                                <span class="badge" style="background-color: #e53935; color: white;">Folio: @clinica.Folio</span>
+                                <small class="text-muted fw-bold">@clinica.FechaHora.ToString("dd MMM yyyy - hh:mm tt")</small>
+                                        
+                                @if (clinica.Estado == "Estable")
+                                {
+                                    <span class="badge bg-success" style="font-size:0.7rem;">Estable</span>
+                                }
+                                else if (clinica.Estado == "Grave" || clinica.Estado == "Traslado")
+                                {
+                                    <span class="badge bg-danger" style="font-size:0.7rem;">@clinica.Estado</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-warning text-dark" style="font-size:0.7rem;">@clinica.Estado</span>
+                                }
+                            </div>
+                                    
+                            <p class="mb-2 text-dark" style="font-size: 0.95rem;">
+                                <strong style="color: #e53935;">Motivo:</strong> @(string.IsNullOrEmpty(clinica.MotivoConsulta) ? "No especificado." : clinica.MotivoConsulta)
+                            </p>
+                            <p class="mb-0 text-muted" style="font-size: 0.90rem;">
+                                <strong>Acción / Tratamiento:</strong> @(string.IsNullOrEmpty(clinica.Tratamiento) ? "Ninguno registrado." : clinica.Tratamiento)
+                            </p>
+                            </div>
+                            </div>
+                        }
+                    </div>
+                }
+
             </div>
+            
         </div>
-    }
-</div>
+    </div>
+    
+}
