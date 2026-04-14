@@ -99,9 +99,17 @@ namespace SchoolManager.Areas.Enrollment.Controllers
             return Ok(new { success = true });
         }
 
+        
+
         // =====================================================================
         // FLUJO 1: REGISTRO INICIAL + GENERACIÓN DE FOLIO
         // =====================================================================
+
+        [Authorize(Roles = "Administrator")]
+        public IActionResult AdminDashboard()
+        {
+            return View("AspirantesLista");
+        }
 
         // GET: Enrollment/PreEnrollment/Create
         [AllowAnonymous]

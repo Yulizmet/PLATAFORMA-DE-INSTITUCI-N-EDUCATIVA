@@ -16,24 +16,34 @@
             <!-- Procesos de Inscripción -->
             <div class="col-lg-5 col-md-6">
                 <div class="sistema-card border-calificaciones text-start">
-
                     <div class="sistema-icon icon-calificaciones">
                         <i class="bi bi-pencil-square"></i>
                     </div>
 
                     <h4>Procesos de Inscripción</h4>
-
                     <p class="text-muted mt-3">
                         Inicia y consulta tus procesos académicos de inscripción.
                     </p>
 
-                    <a asp-area="MainScreen"
-                       asp-controller="MainScreen"
-                       asp-action="ProcesosInscripcion"
+                    @{
+                        string accionDestino;
+
+                        if (User.Identity.IsAuthenticated && User.IsInRole("Administrator"))
+                        {
+                            accionDestino = "AdminDashboard";
+                        }
+                        else
+                        {
+                            accionDestino = "Create";
+                        }
+                    }
+
+                    <a asp-area="Enrollment"
+                       asp-controller="PreEnrollment"
+                       asp-action="@accionDestino"
                        class="btn btn-calificaciones mt-4">
                         Ir a Procesos de Inscripción →
                     </a>
-
                 </div>
             </div>
 

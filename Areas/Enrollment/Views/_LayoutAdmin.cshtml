@@ -25,7 +25,7 @@
             <div class="sidebar-content js-simplebar">
                 <a class="sidebar-brand" asp-area="Enrollment" asp-controller="PreEnrollment" asp-action="Index">
                     <span class="align-middle ms-3">
-                        <img src="~/enrollment/admin/src/img/photos/icon-icons.png" alt="Logo" height="60" class="d-inline-block align-text-top" />
+                        <img src="~/enrollment/admin/src/img/photos/icon-icons.png" alt="Logo" height="80" class="d-inline-block align-text-top" />
                     </span>
                 </a>
 
@@ -84,7 +84,7 @@
 
                             <a class="nav-link dropdown-toggle d-none d-sm-inline-block" href="#" data-bs-toggle="dropdown">
                                 <img src="~/enrollment/admin/src/img/avatars/avatar.jpg" class="avatar img-fluid rounded me-1" alt="user-name" />
-                                <span class="text-dark">User</span>
+                                <span class="text-dark">@User.Identity?.Name</span>
                             </a>
 
                             <div class="dropdown-menu dropdown-menu-end">
