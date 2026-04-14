@@ -1,5 +1,6 @@
 ﻿
 @model SchoolManager.Models.users_user
+@using System.Linq
 
 @{
     ViewData["Title"] = "Seguimiento Académico";
@@ -219,33 +220,33 @@
                     <div class="scroll-historial mb-4">
                         @foreach (var clinica in clinicas)
                         {
-                            <div class="card mb-3 border-0 shadow-sm" @* style="border-left: 5px solid #e53935 !important; *@">
-                                <div class="card-body p-4">
-                                    <div class="d-flex align-items-center mb-2 gap-2">
-                                        <span class="badge" style="background-color: #e53935; color: white;">Folio: @clinica.Folio</span>
-                                        <small class="text-muted fw-bold">@clinica.FechaHora.ToString("dd MMM yyyy - hh:mm tt")</small>
+                            <div class="card mb-3 border-0 shadow-sm">
+                            <div class="card-body p-4">
+                            <div class="d-flex align-items-center mb-2 gap-2">
+                                <span class="badge" style="background-color: #e53935; color: white;">Folio: @clinica.Folio</span>
+                                <small class="text-muted fw-bold">@clinica.FechaHora.ToString("dd MMM yyyy - hh:mm tt")</small>
                                         
-                                        @if (clinica.Estado == "Estable")
-                                        {
-                                            <span class="badge bg-success" style="font-size:0.7rem;">Estable</span>
-                                        }
-                                        else if (clinica.Estado == "Grave" || clinica.Estado == "Traslado")
-                                        {
-                                            <span class="badge bg-danger" style="font-size:0.7rem;">@clinica.Estado</span>
-                                        }
-                                        else
-                                        {
-                                            <span class="badge bg-warning text-dark" style="font-size:0.7rem;">@clinica.Estado</span>
-                                        }
-                                    </div>
+                                @if (clinica.Estado == "Estable")
+                                {
+                                    <span class="badge bg-success" style="font-size:0.7rem;">Estable</span>
+                                }
+                                else if (clinica.Estado == "Grave" || clinica.Estado == "Traslado")
+                                {
+                                    <span class="badge bg-danger" style="font-size:0.7rem;">@clinica.Estado</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-warning text-dark" style="font-size:0.7rem;">@clinica.Estado</span>
+                                }
+                            </div>
                                     
-                                    <p class="mb-2 text-dark" style="font-size: 0.95rem;">
-                                        <strong style="color: #e53935;">Motivo:</strong> @(string.IsNullOrEmpty(clinica.MotivoConsulta) ? "No especificado." : clinica.MotivoConsulta)
-                                    </p>
-                                    <p class="mb-0 text-muted" style="font-size: 0.90rem;">
-                                        <strong>Acción / Tratamiento:</strong> @(string.IsNullOrEmpty(clinica.Tratamiento) ? "Ninguno registrado." : clinica.Tratamiento)
-                                    </p>
-                                </div>
+                            <p class="mb-2 text-dark" style="font-size: 0.95rem;">
+                                <strong style="color: #e53935;">Motivo:</strong> @(string.IsNullOrEmpty(clinica.MotivoConsulta) ? "No especificado." : clinica.MotivoConsulta)
+                            </p>
+                            <p class="mb-0 text-muted" style="font-size: 0.90rem;">
+                                <strong>Acción / Tratamiento:</strong> @(string.IsNullOrEmpty(clinica.Tratamiento) ? "Ninguno registrado." : clinica.Tratamiento)
+                            </p>
+                            </div>
                             </div>
                         }
                     </div>
@@ -255,4 +256,5 @@
             
         </div>
     </div>
+    
 }
