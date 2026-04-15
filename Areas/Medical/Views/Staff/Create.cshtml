@@ -75,30 +75,30 @@
 
                             @if (User.IsInRole("Head Nurse"))
                             {
-                                <option value="4">Enfermero</option>
+                                <option value="18">Enfermero</option>
                             }
 
                             @if (User.IsInRole("Head of Psychology"))
                             {
-                                <option value="5">Psicólogo</option>
+                                <option value="19">Psicólogo</option>
                             }
 
                             @if (User.IsInRole("Coordinator"))
                             {
-                                <option value="4">Enfermero</option>
-                                <option value="5">Psicólogo</option>
-                                <option value="6">Jefe de Enfermería</option>
-                                <option value="7">Jefe de Psicología</option>
+                                <option value="18">Enfermero</option>
+                                <option value="19">Psicólogo</option>
+                                <option value="20">Jefe de Enfermería</option>
+                                <option value="21">Jefe de Psicología</option>
                             }
 
                             @if (User.IsInRole("Master"))
                             {
-                                <option value="4">Enfermero</option>
-                                <option value="5">Psicólogo</option>
-                                <option value="6">Jefe de Enfermería</option>
-                                <option value="7">Jefe de Psicología</option>
-                                <option value="9">Coordinador</option>
-                                <option value="10">Master</option>
+                                <option value="18">Enfermero</option>
+                                <option value="19">Psicólogo</option>
+                                <option value="20">Jefe de Enfermería</option>
+                                <option value="21">Jefe de Psicología</option>
+                                <option value="22">Coordinador</option>
+                                <option value="6">Master</option>
                             }
                         </select>
                     </div>
@@ -212,15 +212,15 @@
 
         // Permisos por rol
         const permisosPorRol = {
-            "4":  { ver: true, agregar: true,  modificar: false, borrar: false },
-            "5":  { ver: true, agregar: true,  modificar: false, borrar: false },
+            "18": { ver: true, agregar: true,  modificar: false, borrar: false },
+            "19": { ver: true, agregar: true,  modificar: false, borrar: false },
+            "20": { ver: true, agregar: true,  modificar: true,  borrar: true  },
+            "21": { ver: true, agregar: true,  modificar: true,  borrar: true  },
+            "22": { ver: true, agregar: true,  modificar: true,  borrar: true  },
             "6":  { ver: true, agregar: true,  modificar: true,  borrar: true  },
-            "7":  { ver: true, agregar: true,  modificar: true,  borrar: true  },
-            "9":  { ver: true, agregar: true,  modificar: true,  borrar: true  },
-            "10": { ver: true, agregar: true,  modificar: true,  borrar: true  },
         };
 
-        const rolesSuperior = ["6", "7", "9", "10"];
+        const rolesSuperior = ["20", "21", "22", "6"];
 
         document.querySelector("select[name='RoleId']").addEventListener("change", function () {
             var rolId = this.value;

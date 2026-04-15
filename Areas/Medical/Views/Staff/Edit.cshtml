@@ -54,35 +54,35 @@
                         @if (User.IsInRole("Head Nurse"))
                         {
                             <select asp-for="RoleId" class="form-control" required>
-                                <option value="4">Enfermero</option>
+                                <option value="18">Enfermero</option>
                             </select>
                         }
                         else if (User.IsInRole("Head of Psychology"))
                         {
                             <select asp-for="RoleId" class="form-control" required>
-                                <option value="5">Psicólogo</option>
+                                <option value="19">Psicólogo</option>
                             </select>
                         }
                         else if (User.IsInRole("Coordinator"))
                         {
                             <select asp-for="RoleId" class="form-control" required>
                                 <option value="">Seleccionar rol</option>
-                                <option value="4">Enfermero</option>
-                                <option value="5">Psicólogo</option>
-                                <option value="6">Jefe de Enfermería</option>
-                                <option value="7">Jefe de Psicología</option>
+                                <option value="18">Enfermero</option>
+                                <option value="19">Psicólogo</option>
+                                <option value="20">Jefe de Enfermería</option>
+                                <option value="21">Jefe de Psicología</option>
                             </select>
                         }
                         else if (User.IsInRole("Master"))
                         {
                             <select asp-for="RoleId" class="form-control" required>
                                 <option value="">Seleccionar rol</option>
-                                <option value="4">Enfermero</option>
-                                <option value="5">Psicólogo</option>
-                                <option value="6">Jefe de Enfermería</option>
-                                <option value="7">Jefe de Psicología</option>
-                                <option value="9">Coordinador</option>
-                                <option value="10">Master</option>
+                                <option value="18">Enfermero</option>
+                                <option value="19">Psicólogo</option>
+                                <option value="20">Jefe de Enfermería</option>
+                                <option value="21">Jefe de Psicología</option>
+                                <option value="22">Coordinador</option>
+                                <option value="6">Master</option>
                             </select>
                         }
 
@@ -104,52 +104,17 @@
             <hr class="section-divider" />
 
             <h5 class="section-title">PERMISOS DEL PERSONAL</h5>
-            <p class="text-muted small">Ajusta los permisos según el rol asignado.</p>
 
             <div class="row g-4" id="seccionPermisos">
-                <div class="col-md-3">
-                    <div class="form-check">
-                        <input class="form-check-input" type="checkbox" asp-for="Ver" id="permisoVer" />
-                        <label class="form-check-label fw-bold" for="permisoVer">
-                            <i class="bi bi-eye"></i> Ver bitácoras
-                        </label>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="form-check">
-                        <input class="form-check-input" type="checkbox" asp-for="Agregar" id="permisoAgregar" />
-                        <label class="form-check-label fw-bold" for="permisoAgregar">
-                            <i class="bi bi-plus-circle"></i> Agregar bitácoras
-                        </label>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="form-check">
-                        <input class="form-check-input" type="checkbox" asp-for="Modificar" id="permisoModificar" />
-                        <label class="form-check-label fw-bold" for="permisoModificar">
-                            <i class="bi bi-pencil"></i> Modificar bitácoras
-                        </label>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="form-check">
-                        <input class="form-check-input" type="checkbox" asp-for="Borrar" id="permisoBorrar" />
-                        <label class="form-check-label fw-bold" for="permisoBorrar">
-                            <i class="bi bi-trash"></i> Borrar bitácoras
-                        </label>
-                    </div>
-                </div>
+                <div class="col-md-3"><input type="checkbox" asp-for="Ver" id="permisoVer" /> Ver</div>
+                <div class="col-md-3"><input type="checkbox" asp-for="Agregar" id="permisoAgregar" /> Agregar</div>
+                <div class="col-md-3"><input type="checkbox" asp-for="Modificar" id="permisoModificar" /> Modificar</div>
+                <div class="col-md-3"><input type="checkbox" asp-for="Borrar" id="permisoBorrar" /> Borrar</div>
             </div>
 
-            <hr class="section-divider" />
-
             <div class="d-flex justify-content-between mt-4">
-                <a asp-action="Index" class="btn" style="border: 1.5px solid #6c757d;">
-                    CANCELAR
-                </a>
-                <button type="submit" class="btn" style="border: 1.5px solid #6c757d;">
-                    GUARDAR CAMBIOS
-                </button>
+                <a asp-action="Index" class="btn">CANCELAR</a>
+                <button type="submit" class="btn">GUARDAR</button>
             </div>
 
         </form>
@@ -159,43 +124,14 @@
 @section Scripts {
     <script>
         const permisosPorRol = {
-            "4":  { ver: true,  agregar: true,  modificar: false, borrar: false },
-            "5":  { ver: true,  agregar: true,  modificar: false, borrar: false },
-            "6":  { ver: true,  agregar: true,  modificar: true,  borrar: true  },
-            "7":  { ver: true,  agregar: true,  modificar: true,  borrar: true  },
-            "9":  { ver: true,  agregar: true,  modificar: true,  borrar: true  },
-            "10": { ver: true,  agregar: true,  modificar: true,  borrar: true  },
+            "18": { ver:true, agregar:true, modificar:false, borrar:false },
+            "19": { ver:true, agregar:true, modificar:false, borrar:false },
+            "20": { ver:true, agregar:true, modificar:true, borrar:true },
+            "21": { ver:true, agregar:true, modificar:true, borrar:true },
+            "22": { ver:true, agregar:true, modificar:true, borrar:true },
+            "6":  { ver:true, agregar:true, modificar:true, borrar:true }
         };
 
-        const rolesSuperior = ["6", "7", "9", "10"];
-
-        document.querySelector("select[name='RoleId']").addEventListener("change", function () {
-            var rolId = this.value;
-            if (rolId === "") return;
-
-            var permisos = permisosPorRol[rolId];
-            if (permisos) {
-                document.getElementById("permisoVer").checked       = permisos.ver;
-                document.getElementById("permisoAgregar").checked   = permisos.agregar;
-                document.getElementById("permisoModificar").checked = permisos.modificar;
-                document.getElementById("permisoBorrar").checked    = permisos.borrar;
-            }
-
-            var esSuperior = rolesSuperior.includes(rolId);
-            document.getElementById("permisoVer").disabled       = esSuperior;
-            document.getElementById("permisoAgregar").disabled   = esSuperior;
-            document.getElementById("permisoModificar").disabled = esSuperior;
-            document.getElementById("permisoBorrar").disabled    = esSuperior;
-        });
-
-        (function () {
-            var rolId = document.querySelector("select[name='RoleId']").value;
-            if (rolesSuperior.includes(rolId)) {
-                document.getElementById("permisoVer").disabled       = true;
-                document.getElementById("permisoAgregar").disabled   = true;
-                document.getElementById("permisoModificar").disabled = true;
-                document.getElementById("permisoBorrar").disabled    = true;
-            }
-        })();
+        const rolesSuperior = ["20","21","22","6"];
     </script>
 }

@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using SchoolManager.Areas.Medical.Filters;
 using SchoolManager.Data;
 using SchoolManager.Models;
 using SchoolManager.ViewModels;
@@ -11,6 +12,8 @@ namespace SchoolManager.Areas.Medical.Controllers
 {
     [Area("Medical")]
     [Authorize(Roles = "Nurse,Head Nurse,Coordinator,Master")]
+    
+    [ServiceFilter(typeof(MedicalPermissionFilter))]
     public class LogbookController : Controller
     {
         private readonly AppDbContext _context;

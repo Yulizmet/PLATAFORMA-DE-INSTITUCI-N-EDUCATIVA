@@ -58,7 +58,7 @@ namespace SchoolManager.Areas.Medical.Filters
                 _ => true
             };
 
-            var rolesSuperior = new[] { 6, 7, 9, 10 };
+            var rolesSuperior = new[] { 6, 20, 21, 22 };
 
             var staffRoleClaim = context.HttpContext.User.FindFirst("StaffRoleId");
             if (staffRoleClaim != null)
@@ -71,9 +71,9 @@ namespace SchoolManager.Areas.Medical.Filters
                     return;
                 }
 
-                if (controller == "Logbook" && roleId == 5) tieneAcceso = false;
+                if (controller == "Logbook" && roleId == 19) tieneAcceso = false;
 
-                if (controller == "Psychology" && roleId == 4) tieneAcceso = false;
+                if (controller == "Psychology" && roleId == 18) tieneAcceso = false;
             }
 
             if (!tieneAcceso)
