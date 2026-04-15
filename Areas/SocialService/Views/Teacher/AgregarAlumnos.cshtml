@@ -35,11 +35,8 @@
         <form method="get" class="mb-4" id="searchForm">
             <input type="hidden" name="sortBy" value="@ViewBag.CurrentSort" />
             <input type="hidden" name="sortOrder" value="@ViewBag.CurrentOrder" />
-            <input type="hidden" name="semesterFilter" value="@ViewBag.SemesterFilter" />
-            <input type="hidden" name="groupFilter" value="@ViewBag.GroupFilter" />
-
             <div class="row align-items-end g-3">
-                <div class="col-md-4">
+                <div class="col-md-3">
                     <label class="form-label">
                         Buscar por nombre
                     </label>
@@ -52,7 +49,7 @@
                            autocomplete="off">
                 </div>
 
-                <div class="col-md-3">
+                <div class="col-md-2">
                     <label class="form-label">Semestre</label>
                     <select class="form-select" name="semesterFilter" onchange="this.form.submit()">
                         <option value="">Todos los semestres</option>
@@ -68,7 +65,7 @@
                     </select>
                 </div>
 
-                <div class="col-md-3">
+                <div class="col-md-2">
                     <label class="form-label">Grupo</label>
                     <select class="form-select" name="groupFilter" onchange="this.form.submit()">
                         <option value="">Todos los grupos</option>
@@ -78,6 +75,22 @@
                             {
                                 <option value="@group" selected="@(ViewBag.GroupFilter == group)">
                                     @group
+                                </option>
+                            }
+                        }
+                    </select>
+                </div>
+
+                <div class="col-md-2">
+                    <label class="form-label">Carrera</label>
+                    <select class="form-select" name="careerFilter" onchange="this.form.submit()">
+                        <option value="">Todas las carreras</option>
+                        @if (ViewBag.Careers != null)
+                        {
+                            foreach (var career in ViewBag.Careers)
+                            {
+                                <option value="@career" selected="@(ViewBag.CareerFilter == career)">
+                                    @career
                                 </option>
                             }
                         }
@@ -119,8 +132,8 @@
                 Mostrando @Model.Count() de @ViewBag.TotalRecords estudiantes
             </div>
 
-            <div class="table-responsive">
-                <table class="table table-hover ss-table-cards">
+            <div class="table-responsive ss-table-scroll-wrapper">
+                <table class="table table-hover ss-table-scroll">
                     <thead>
                         <tr>
                             <th style="width:40%">
@@ -130,14 +143,38 @@
                                        searchName = ViewBag.SearchName,
                                        semesterFilter = ViewBag.SemesterFilter,
                                        groupFilter = ViewBag.GroupFilter,
+                                       careerFilter = ViewBag.CareerFilter,
                                        page = 1,
                                        pageSize = ViewBag.PageSize
                                    })"
-                                   class="text-decoration-none text-dark">
+                                   class="text-decoration-none text-white">
                                     NOMBRE
                                     @if (ViewBag.CurrentSort == "name")
                                     {
                                         <i class="bi bi-@(ViewBag.CurrentOrder == "asc" ? "sort-alpha-down" : "sort-alpha-up")"></i>
+                                    }
+                                    else
+                                    {
+                                        <i class="bi bi-filter text-muted"></i>
+                                    }
+                                </a>
+                            </th>
+                            <th class="text-center">
+                                <a href="@Url.Action("AgregarAlumnos", new {
+                                       sortBy = "career",
+                                       sortOrder = ViewBag.CurrentSort == "career" ? ViewBag.NextOrder : "asc",
+                                       searchName = ViewBag.SearchName,
+                                       semesterFilter = ViewBag.SemesterFilter,
+                                       groupFilter = ViewBag.GroupFilter,
+                                       careerFilter = ViewBag.CareerFilter,
+                                       page = 1,
+                                       pageSize = ViewBag.PageSize
+                                   })"
+                                   class="text-decoration-none text-white">
+                                    CARRERA
+                                    @if (ViewBag.CurrentSort == "career")
+                                    {
+                                        <i class="bi bi-@(ViewBag.CurrentOrder == "asc" ? "sort-down" : "sort-up")"></i>
                                     }
                                     else
                                     {
@@ -152,10 +189,11 @@
                                        searchName = ViewBag.SearchName,
                                        semesterFilter = ViewBag.SemesterFilter,
                                        groupFilter = ViewBag.GroupFilter,
+                                       careerFilter = ViewBag.CareerFilter,
                                        page = 1,
                                        pageSize = ViewBag.PageSize
                                    })"
-                                   class="text-decoration-none text-dark">
+                                   class="text-decoration-none text-white">
                                     SEMESTRE
                                     @if (ViewBag.CurrentSort == "semester")
                                     {
@@ -174,10 +212,11 @@
                                        searchName = ViewBag.SearchName,
                                        semesterFilter = ViewBag.SemesterFilter,
                                        groupFilter = ViewBag.GroupFilter,
+                                       careerFilter = ViewBag.CareerFilter,
                                        page = 1,
                                        pageSize = ViewBag.PageSize
                                    })"
-                                   class="text-decoration-none text-dark">
+                                   class="text-decoration-none text-white">
                                     GRUPO
                                     @if (ViewBag.CurrentSort == "group")
                                     {
@@ -197,6 +236,17 @@
                         {
                             <tr>
                                 <td>@student.FullName</td>
+
+                                <td class="text-center">
+                                    @if (!string.IsNullOrEmpty(student.CareerName))
+                                    {
+                                        @student.CareerName
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">N/A</span>
+                                    }
+                                </td>
 
                                 <td class="text-center">
                                     @if (!string.IsNullOrEmpty(student.SemesterName))
@@ -248,6 +298,7 @@
                                    searchName = ViewBag.SearchName,
                                    semesterFilter = ViewBag.SemesterFilter,
                                    groupFilter = ViewBag.GroupFilter,
+                                    careerFilter = ViewBag.CareerFilter,
                                    pageSize = ViewBag.PageSize
                                })">
                                 «
@@ -265,6 +316,7 @@
                                        searchName = ViewBag.SearchName,
                                        semesterFilter = ViewBag.SemesterFilter,
                                        groupFilter = ViewBag.GroupFilter,
+                                        careerFilter = ViewBag.CareerFilter,
                                        pageSize = ViewBag.PageSize
                                    })">
                                     @i
@@ -281,6 +333,7 @@
                                    searchName = ViewBag.SearchName,
                                    semesterFilter = ViewBag.SemesterFilter,
                                    groupFilter = ViewBag.GroupFilter,
+                                    careerFilter = ViewBag.CareerFilter,
                                    pageSize = ViewBag.PageSize
                                })">
                                 »

@@ -67,11 +67,11 @@
         <thead>
             <tr>
                 <th>Alumno</th>
+                <th>Carrera</th>
                 <th>Semestre</th>
                 <th>Grupo</th>
                 <th>Asesor</th>
                 <th>Bitácoras</th>
-                <th>Pendientes</th>
                 <th>Hrs Prácticas</th>
                 <th>Hrs Servicio</th>
                 <th>Validación</th>
@@ -85,11 +85,11 @@
 
                 <tr>
                     <td>@alumno.StudentName</td>
+                    <td>@(alumno.CareerName ?? "N/A")</td>
                     <td>@(alumno.SemesterName ?? "N/A")</td>
                     <td>@(alumno.GroupName ?? "N/A")</td>
                     <td>@alumno.TeacherName</td>
                     <td>@alumno.TotalBitacoras</td>
-                    <td>@alumno.BitacorasPendientes</td>
                     <td>@alumno.TotalHorasPracticas / 240</td>
                     <td>@alumno.TotalHorasServicioSocial / 480</td>
                     <td>

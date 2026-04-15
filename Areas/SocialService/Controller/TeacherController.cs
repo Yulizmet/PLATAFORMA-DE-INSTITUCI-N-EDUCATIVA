@@ -66,7 +66,7 @@ namespace SchoolManager.Areas.SocialService.Controllers
             return View();
         }
 
-        public async Task<IActionResult> Alumnos(string searchName, string sortBy = "name", string sortOrder = "asc", string semesterFilter = "", string groupFilter = "", int page = 1, int pageSize = 10)
+        public async Task<IActionResult> Alumnos(string searchName, string sortBy = "name", string sortOrder = "asc", string semesterFilter = "", string groupFilter = "", string careerFilter = "", int page = 1, int pageSize = 10)
         {
             int currentTeacherId = GetCurrentTeacherId();
             int[] allowedPageSizes = { 10, 25, 50, 100 };
@@ -83,6 +83,9 @@ namespace SchoolManager.Areas.SocialService.Controllers
                     .ThenInclude(s => s.Person)
                 .Include(a => a.Student.UserRoles)
                     .ThenInclude(ur => ur.Role)
+                .Include(a => a.Student)
+                    .ThenInclude(s => s.Preenrollments)
+                        .ThenInclude(p => p.Career)
                 .Where(a => a.TeacherId == currentTeacherId && a.IsActive)
                 .ToListAsync();
 
@@ -103,6 +106,11 @@ namespace SchoolManager.Areas.SocialService.Controllers
                     assignment.SemesterName = enrollment.Group?.GradeLevel?.Name;
                     assignment.GroupName = enrollment.Group?.Name;
                 }
+
+                assignment.CareerName = assignment.Student?.Preenrollments?
+                    .OrderByDescending(p => p.CreateStat)
+                    .Select(p => p.Career != null ? p.Career.name_career : null)
+                    .FirstOrDefault();
             }
 
             // Filtrar por nombre
@@ -132,10 +140,19 @@ namespace SchoolManager.Areas.SocialService.Controllers
                 assignedStudents = assignedStudents.Where(a => a.GroupName == groupFilter).ToList();
             }
 
+            // Filtrar por carrera
+            if (!string.IsNullOrWhiteSpace(careerFilter))
+            {
+                assignedStudents = assignedStudents.Where(a => a.CareerName == careerFilter).ToList();
+            }
+
             // Obtener listas únicas para los filtros
             var allAssignments = await _context.SocialServiceAssignments
                 .Include(a => a.Student)
                     .ThenInclude(s => s.Person)
+                .Include(a => a.Student)
+                    .ThenInclude(s => s.Preenrollments)
+                        .ThenInclude(p => p.Career)
                 .Where(a => a.TeacherId == currentTeacherId && a.IsActive)
                 .ToListAsync();
 
@@ -154,6 +171,11 @@ namespace SchoolManager.Areas.SocialService.Controllers
                     assignment.SemesterName = enrollment.Group?.GradeLevel?.Name;
                     assignment.GroupName = enrollment.Group?.Name;
                 }
+
+                assignment.CareerName = assignment.Student?.Preenrollments?
+                    .OrderByDescending(p => p.CreateStat)
+                    .Select(p => p.Career != null ? p.Career.name_career : null)
+                    .FirstOrDefault();
             }
 
             var semesters = allAssignments
@@ -168,6 +190,13 @@ namespace SchoolManager.Areas.SocialService.Controllers
                 .Select(a => a.GroupName)
                 .Distinct()
                 .OrderBy(g => g)
+                .ToList();
+
+            var careers = allAssignments
+                .Where(a => !string.IsNullOrEmpty(a.CareerName))
+                .Select(a => a.CareerName)
+                .Distinct()
+                .OrderBy(c => c)
                 .ToList();
 
             // Aplicar ordenamiento
@@ -188,6 +217,10 @@ namespace SchoolManager.Areas.SocialService.Controllers
                 "group" => sortOrder == "asc"
                     ? assignedStudents.OrderBy(a => a.GroupName ?? "").ToList()
                     : assignedStudents.OrderByDescending(a => a.GroupName ?? "").ToList(),
+
+                "career" => sortOrder == "asc"
+                    ? assignedStudents.OrderBy(a => a.CareerName ?? "").ToList()
+                    : assignedStudents.OrderByDescending(a => a.CareerName ?? "").ToList(),
 
                 "date" => sortOrder == "asc"
                     ? assignedStudents.OrderBy(a => a.AssignedDate).ToList()
@@ -217,14 +250,16 @@ namespace SchoolManager.Areas.SocialService.Controllers
             ViewBag.NextOrder = sortOrder == "asc" ? "desc" : "asc";
             ViewBag.Semesters = semesters;
             ViewBag.Groups = groups;
+            ViewBag.Careers = careers;
             ViewBag.SemesterFilter = semesterFilter;
             ViewBag.GroupFilter = groupFilter;
+            ViewBag.CareerFilter = careerFilter;
             ViewBag.PageSize = pageSize;
 
             return View(paginatedStudents);
         }
 
-        public async Task<IActionResult> AgregarAlumnos(string searchName, string sortBy = "name", string sortOrder = "asc", string semesterFilter = "", string groupFilter = "", int page = 1, int pageSize = 10)
+        public async Task<IActionResult> AgregarAlumnos(string searchName, string sortBy = "name", string sortOrder = "asc", string semesterFilter = "", string groupFilter = "", string careerFilter = "", int page = 1, int pageSize = 10)
         {
             int currentTeacherId = GetCurrentTeacherId();
             int[] allowedPageSizes = { 10, 25, 50, 100 };
@@ -239,6 +274,8 @@ namespace SchoolManager.Areas.SocialService.Controllers
                 .Include(u => u.Person)
                 .Include(u => u.UserRoles)
                     .ThenInclude(ur => ur.Role)
+                .Include(u => u.Preenrollments)
+                    .ThenInclude(p => p.Career)
                 .Where(u => u.UserRoles.Any(ur => ur.Role.Name == "Student" && ur.IsActive)
                     && !assignedStudentIds.Contains(u.UserId)
                     && u.IsActive);
@@ -276,12 +313,17 @@ namespace SchoolManager.Areas.SocialService.Controllers
             foreach (var student in availableStudents)
             {
                 var enrollment = enrollments.FirstOrDefault(e => e.StudentId == student.UserId);
+                var careerName = student.Preenrollments
+                    .OrderByDescending(p => p.CreateStat)
+                    .Select(p => p.Career != null ? p.Career.name_career : null)
+                    .FirstOrDefault();
 
                 viewModel.Add(new AvailableStudentViewModel
                 {
                     UserId = student.UserId,
                     FullName = $"{student.Person.LastNamePaternal} {student.Person.LastNameMaternal} {student.Person.FirstName}",
                     Email = student.Email,
+                    CareerName = careerName,
                     SemesterName = enrollment?.Group?.GradeLevel?.Name,
                     GroupName = enrollment?.Group?.Name
                 });
@@ -297,6 +339,12 @@ namespace SchoolManager.Areas.SocialService.Controllers
             if (!string.IsNullOrWhiteSpace(groupFilter))
             {
                 viewModel = viewModel.Where(s => s.GroupName == groupFilter).ToList();
+            }
+
+            // Filtrar por carrera
+            if (!string.IsNullOrWhiteSpace(careerFilter))
+            {
+                viewModel = viewModel.Where(s => s.CareerName == careerFilter).ToList();
             }
 
             // Obtener lista de semestres únicos para el filtro
@@ -315,6 +363,13 @@ namespace SchoolManager.Areas.SocialService.Controllers
                 .OrderBy(g => g)
                 .ToList();
 
+            var careers = viewModel
+                .Where(s => !string.IsNullOrEmpty(s.CareerName))
+                .Select(s => s.CareerName)
+                .Distinct()
+                .OrderBy(c => c)
+                .ToList();
+
             // Aplicar ordenamiento
             viewModel = sortBy.ToLower() switch
             {
@@ -325,6 +380,10 @@ namespace SchoolManager.Areas.SocialService.Controllers
                 "semester" => sortOrder == "asc"
                     ? viewModel.OrderBy(s => s.SemesterName ?? "").ToList()
                     : viewModel.OrderByDescending(s => s.SemesterName ?? "").ToList(),
+
+                "career" => sortOrder == "asc"
+                    ? viewModel.OrderBy(s => s.CareerName ?? "").ToList()
+                    : viewModel.OrderByDescending(s => s.CareerName ?? "").ToList(),
 
                 "group" => sortOrder == "asc"
                     ? viewModel.OrderBy(s => s.GroupName ?? "").ToList()
@@ -354,8 +413,10 @@ namespace SchoolManager.Areas.SocialService.Controllers
             ViewBag.NextOrder = sortOrder == "asc" ? "desc" : "asc";
             ViewBag.Semesters = semesters;
             ViewBag.Groups = groups;
+            ViewBag.Careers = careers;
             ViewBag.SemesterFilter = semesterFilter;
             ViewBag.GroupFilter = groupFilter;
+            ViewBag.CareerFilter = careerFilter;
             ViewBag.PageSize = pageSize;
 
             return View(paginatedStudents);
@@ -628,7 +689,7 @@ namespace SchoolManager.Areas.SocialService.Controllers
             return RedirectToAction("RevisarBitacorasAlumno", new { id = studentId });
         }
 
-        public async Task<IActionResult> AsignarHoras(string searchName = "", string sortBy = "name", string sortOrder = "asc", int page = 1, int pageSize = 10, string semesterFilter = "", string groupFilter = "")
+        public async Task<IActionResult> AsignarHoras(string searchName = "", string sortBy = "name", string sortOrder = "asc", int page = 1, int pageSize = 10, string semesterFilter = "", string groupFilter = "", string careerFilter = "")
         {
             int currentTeacherId = GetCurrentTeacherId();
             int[] allowedPageSizes = { 10, 25, 50, 100 };
@@ -637,6 +698,9 @@ namespace SchoolManager.Areas.SocialService.Controllers
             var assignments = await _context.SocialServiceAssignments
                 .Include(a => a.Student)
                     .ThenInclude(s => s.Person)
+                .Include(a => a.Student)
+                    .ThenInclude(s => s.Preenrollments)
+                        .ThenInclude(p => p.Career)
                 .Where(a => a.TeacherId == currentTeacherId && a.IsActive)
                 .ToListAsync();
 
@@ -672,6 +736,10 @@ namespace SchoolManager.Areas.SocialService.Controllers
 
                 var pendingLogs = studentLogs.Where(l => !l.IsApproved).ToList();
                 var approvedLogs = studentLogs.Where(l => l.IsApproved).ToList();
+                var careerName = assignment.Student?.Preenrollments?
+                    .OrderByDescending(p => p.CreateStat)
+                    .Select(p => p.Career != null ? p.Career.name_career : null)
+                    .FirstOrDefault();
 
                 var fullName = $"{assignment.Student.Person.LastNamePaternal} {assignment.Student.Person.LastNameMaternal} {assignment.Student.Person.FirstName}";
 
@@ -679,6 +747,7 @@ namespace SchoolManager.Areas.SocialService.Controllers
                 {
                     StudentId = assignment.StudentId,
                     StudentName = fullName,
+                    CareerName = careerName,
                     SemesterName = semesterName,
                     GroupName = groupName,
                     TotalBitacoras = studentLogs.Count,
@@ -701,6 +770,7 @@ namespace SchoolManager.Areas.SocialService.Controllers
             // Obtener todos los semestres y grupos posibles ANTES de filtrar
             var allSemesters = allViewModel.Select(x => x.SemesterName).Where(x => !string.IsNullOrEmpty(x)).Distinct().OrderBy(x => x).ToList();
             var allGroups = allViewModel.Select(x => x.GroupName).Where(x => !string.IsNullOrEmpty(x)).Distinct().OrderBy(x => x).ToList();
+            var allCareers = allViewModel.Select(x => x.CareerName).Where(x => !string.IsNullOrEmpty(x)).Distinct().OrderBy(x => x).ToList();
 
             // Filtrar por nombre
             if (!string.IsNullOrWhiteSpace(searchName))
@@ -723,12 +793,21 @@ namespace SchoolManager.Areas.SocialService.Controllers
                 allViewModel = allViewModel.Where(v => v.GroupName == groupFilter).ToList();
             }
 
+            // Filtrar por carrera
+            if (!string.IsNullOrWhiteSpace(careerFilter))
+            {
+                allViewModel = allViewModel.Where(v => v.CareerName == careerFilter).ToList();
+            }
+
             // Aplicar ordenamiento
             allViewModel = sortBy.ToLower() switch
             {
                 "name" => sortOrder == "asc"
                     ? allViewModel.OrderBy(a => a.StudentName).ToList()
                     : allViewModel.OrderByDescending(a => a.StudentName).ToList(),
+                "career" => sortOrder == "asc"
+                    ? allViewModel.OrderBy(a => a.CareerName ?? "").ToList()
+                    : allViewModel.OrderByDescending(a => a.CareerName ?? "").ToList(),
                 "semester" => sortOrder == "asc"
                     ? allViewModel.OrderBy(a => a.SemesterName ?? "").ToList()
                     : allViewModel.OrderByDescending(a => a.SemesterName ?? "").ToList(),
@@ -771,8 +850,10 @@ namespace SchoolManager.Areas.SocialService.Controllers
                 .ToList();
 
             // Para los selects de filtro (usar todos los posibles, no solo los filtrados)
+            ViewBag.Careers = allCareers;
             ViewBag.Semesters = allSemesters;
             ViewBag.Groups = allGroups;
+            ViewBag.CareerFilter = careerFilter;
             ViewBag.SemesterFilter = semesterFilter;
             ViewBag.GroupFilter = groupFilter;
             ViewBag.SearchName = searchName;
@@ -1003,11 +1084,14 @@ namespace SchoolManager.Areas.SocialService.Controllers
             return RedirectToAction("Asistencia", new { sortOrder, groupFilter, searchName, page, pageSize, dateFrom, dateTo });
         }
 
-        private async Task<List<AsignarHorasViewModel>> GetAvanceData(int teacherId, string searchName = "")
+        private async Task<List<AsignarHorasViewModel>> GetAvanceData(int teacherId, string searchName = "", string semesterFilter = "", string groupFilter = "", string careerFilter = "")
         {
             var assignments = await _context.SocialServiceAssignments
                 .Include(a => a.Student)
                     .ThenInclude(s => s.Person)
+                .Include(a => a.Student)
+                    .ThenInclude(s => s.Preenrollments)
+                        .ThenInclude(p => p.Career)
                 .Where(a => a.TeacherId == teacherId && a.IsActive)
                 .OrderBy(a => a.Student.Person.LastNamePaternal)
                     .ThenBy(a => a.Student.Person.LastNameMaternal)
@@ -1041,11 +1125,16 @@ namespace SchoolManager.Areas.SocialService.Controllers
 
                 var pendingLogs = studentLogs.Where(l => !l.IsApproved).ToList();
                 var approvedLogs = studentLogs.Where(l => l.IsApproved).ToList();
+                var careerName = assignment.Student?.Preenrollments?
+                    .OrderByDescending(p => p.CreateStat)
+                    .Select(p => p.Career != null ? p.Career.name_career : null)
+                    .FirstOrDefault();
 
                 result.Add(new AsignarHorasViewModel
                 {
                     StudentId = assignment.StudentId,
                     StudentName = $"{assignment.Student.Person.LastNamePaternal} {assignment.Student.Person.LastNameMaternal} {assignment.Student.Person.FirstName}",
+                    CareerName = careerName,
                     SemesterName = enrollment?.Group?.GradeLevel?.Name,
                     GroupName = enrollment?.Group?.Name ?? assignment.GroupName,
                     TotalBitacoras = studentLogs.Count,
@@ -1063,21 +1152,36 @@ namespace SchoolManager.Areas.SocialService.Controllers
                     .ToList();
             }
 
+            if (!string.IsNullOrWhiteSpace(semesterFilter))
+            {
+                result = result.Where(v => v.SemesterName == semesterFilter).ToList();
+            }
+
+            if (!string.IsNullOrWhiteSpace(groupFilter))
+            {
+                result = result.Where(v => v.GroupName == groupFilter).ToList();
+            }
+
+            if (!string.IsNullOrWhiteSpace(careerFilter))
+            {
+                result = result.Where(v => v.CareerName == careerFilter).ToList();
+            }
+
             return result;
         }
 
-        public async Task<IActionResult> ExportAvanceExcel(string searchName = "")
+        public async Task<IActionResult> ExportAvanceExcel(string searchName = "", string semesterFilter = "", string groupFilter = "", string careerFilter = "")
         {
             int currentTeacherId = GetCurrentTeacherId();
             if (currentTeacherId == 0) return RedirectToAction("Login", "Account", new { area = "UserMng" });
 
-            var data = await GetAvanceData(currentTeacherId, searchName);
+            var data = await GetAvanceData(currentTeacherId, searchName, semesterFilter, groupFilter, careerFilter);
 
             using var workbook = new XLWorkbook();
             var ws = workbook.Worksheets.Add("Avance del Alumno");
 
             // Encabezados
-            var headers = new[] { "Alumno", "Semestre", "Grupo", "Total Bitácoras", "Bitácoras Pendientes", "Horas Prácticas", "Horas Servicio Social", "Validación" };
+            var headers = new[] { "Alumno", "Carrera", "Semestre", "Grupo", "Total Bitácoras", "Bitácoras Pendientes", "Horas Prácticas", "Horas Servicio Social", "Validación" };
             for (int i = 0; i < headers.Length; i++)
             {
                 var cell = ws.Cell(1, i + 1);
@@ -1098,15 +1202,16 @@ namespace SchoolManager.Areas.SocialService.Controllers
                 string validacion = porcentaje >= 100 ? "100%" : porcentaje >= 75 ? "75%" : porcentaje >= 50 ? "50%" : porcentaje >= 25 ? "25%" : "0%";
 
                 ws.Cell(row, 1).Value = alumno.StudentName;
-                ws.Cell(row, 2).Value = alumno.SemesterName ?? "N/A";
-                ws.Cell(row, 3).Value = alumno.GroupName ?? "N/A";
-                ws.Cell(row, 4).Value = alumno.TotalBitacoras;
-                ws.Cell(row, 5).Value = alumno.BitacorasPendientesCount;
-                ws.Cell(row, 6).Value = $"{alumno.TotalHorasPracticas} h";
-                ws.Cell(row, 7).Value = $"{alumno.TotalHorasServicioSocial} h";
-                ws.Cell(row, 8).Value = validacion;
+                ws.Cell(row, 2).Value = alumno.CareerName ?? "N/A";
+                ws.Cell(row, 3).Value = alumno.SemesterName ?? "N/A";
+                ws.Cell(row, 4).Value = alumno.GroupName ?? "N/A";
+                ws.Cell(row, 5).Value = alumno.TotalBitacoras;
+                ws.Cell(row, 6).Value = alumno.BitacorasPendientesCount;
+                ws.Cell(row, 7).Value = $"{alumno.TotalHorasPracticas} h";
+                ws.Cell(row, 8).Value = $"{alumno.TotalHorasServicioSocial} h";
+                ws.Cell(row, 9).Value = validacion;
 
-                for (int c = 2; c <= 8; c++)
+                for (int c = 2; c <= 9; c++)
                     ws.Cell(row, c).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
 
                 row++;
@@ -1121,12 +1226,12 @@ namespace SchoolManager.Areas.SocialService.Controllers
                 $"Avance_Alumnos_{DateTime.Now:yyyyMMdd}.xlsx");
         }
 
-        public async Task<IActionResult> ExportAvancePdf(string searchName = "")
+        public async Task<IActionResult> ExportAvancePdf(string searchName = "", string semesterFilter = "", string groupFilter = "", string careerFilter = "")
         {
             int currentTeacherId = GetCurrentTeacherId();
             if (currentTeacherId == 0) return RedirectToAction("Login", "Account", new { area = "UserMng" });
 
-            var data = await GetAvanceData(currentTeacherId, searchName);
+            var data = await GetAvanceData(currentTeacherId, searchName, semesterFilter, groupFilter, careerFilter);
 
             string htmlContent = await this.RenderViewAsync("_AvancePdf", data, true);
 

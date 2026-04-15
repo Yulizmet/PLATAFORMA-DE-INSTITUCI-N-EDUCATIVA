@@ -55,14 +55,76 @@
 
             <!-- Menú de navegación -->
             <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+                @{ 
+                    var currentArea = ViewContext.RouteData.Values["area"]?.ToString();
+                    var currentController = ViewContext.RouteData.Values["controller"]?.ToString();
+                    var currentAction = ViewContext.RouteData.Values["action"]?.ToString();
+                    var isSocialServiceIndex = currentArea == "SocialService"
+                        && currentController == "Account"
+                        && currentAction == "Index";
+                }
                 <ul class="navbar-nav">
+                    @if (currentArea == "SocialService"
+                        && currentAction == "Dashboard"
+                        && (currentController == "Student"
+                            || currentController == "Teacher"
+                            || currentController == "Coordinator"))
+                    {
+                        <li class="nav-item me-2 pe-2">
+                            <a asp-area="SocialService"
+                               asp-controller="Account"
+                               asp-action="Index"
+                               class="nav-link">
+                                <i class="bi bi-arrow-left me-1"></i> Regresar
+                            </a>
+                        </li>
+                    }
                     <li class="nav-item">
-                        <a asp-area="MainScreen"
-                           asp-controller="MainScreen"
-                           asp-action="Extension"
-                           class="nav-link">
-                            <i class="bi bi-house-fill me-1"></i> Inicio
-                        </a>
+                        @if (isSocialServiceIndex)
+                        {
+                            <a asp-area="MainScreen"
+                               asp-controller="MainScreen"
+                               asp-action="Extension"
+                               class="nav-link">
+                                <i class="bi bi-house-fill me-1"></i> Inicio
+                            </a>
+                        }
+                        else if (User.IsInRole("Student"))
+                        {
+                            <a asp-area="SocialService"
+                               asp-controller="Student"
+                               asp-action="Dashboard"
+                               class="nav-link">
+                                <i class="bi bi-house-fill me-1"></i> Inicio
+                            </a>
+                        }
+                        else if (User.IsInRole("Teacher"))
+                        {
+                            <a asp-area="SocialService"
+                               asp-controller="Teacher"
+                               asp-action="Dashboard"
+                               class="nav-link">
+                                <i class="bi bi-house-fill me-1"></i> Inicio
+                            </a>
+                        }
+                        else if (User.IsInRole("Coordinator") || User.IsInRole("Master"))
+                        {
+                            <a asp-area="SocialService"
+                               asp-controller="Coordinator"
+                               asp-action="Dashboard"
+                               class="nav-link">
+                                <i class="bi bi-house-fill me-1"></i> Inicio
+                            </a>
+                        }
+                        else
+                        {
+                            <a asp-area="MainScreen"
+                               asp-controller="MainScreen"
+                               asp-action="Extension"
+                               class="nav-link">
+                                <i class="bi bi-house-fill me-1"></i> Inicio
+                            </a>
+                        }
                     </li>
                 </ul>
             </div>

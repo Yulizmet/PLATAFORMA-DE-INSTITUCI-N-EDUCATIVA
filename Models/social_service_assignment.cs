@@ -27,6 +27,10 @@ namespace SchoolManager.Models
         [NotMapped]
         public string? SemesterName { get; set; }
 
+        [MaxLength(150)]
+        [NotMapped]
+        public string? CareerName { get; set; }
+
         [Required]
         [Column("AssignedDate")]
         public DateTime AssignedDate { get; set; } = DateTime.Now;

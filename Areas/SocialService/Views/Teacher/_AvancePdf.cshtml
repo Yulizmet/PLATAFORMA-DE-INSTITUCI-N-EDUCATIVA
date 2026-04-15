@@ -67,6 +67,7 @@
         <thead>
             <tr>
                 <th>Alumno</th>
+                <th>Carrera</th>
                 <th>Semestre</th>
                 <th>Grupo</th>
                 <th>Total Bitácoras</th>
@@ -84,6 +85,7 @@
 
                 <tr>
                     <td>@alumno.StudentName</td>
+                    <td>@(alumno.CareerName ?? "N/A")</td>
                     <td>@(alumno.SemesterName ?? "N/A")</td>
                     <td>@(alumno.GroupName ?? "N/A")</td>
                     <td>@alumno.TotalBitacoras</td>
