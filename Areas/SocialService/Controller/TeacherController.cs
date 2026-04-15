@@ -817,9 +817,7 @@ namespace SchoolManager.Areas.SocialService.Controllers
                 "totalbitacoras" => sortOrder == "asc"
                     ? allViewModel.OrderBy(a => a.TotalBitacoras).ToList()
                     : allViewModel.OrderByDescending(a => a.TotalBitacoras).ToList(),
-                "pendientes" => sortOrder == "asc"
-                    ? allViewModel.OrderBy(a => a.BitacorasPendientesCount).ToList()
-                    : allViewModel.OrderByDescending(a => a.BitacorasPendientesCount).ToList(),
+                // 'pendientes' sorting removed as column is no longer displayed
                 "practicas" => sortOrder == "asc"
                     ? allViewModel.OrderBy(a => a.TotalHorasPracticas).ToList()
                     : allViewModel.OrderByDescending(a => a.TotalHorasPracticas).ToList(),
@@ -1181,7 +1179,7 @@ namespace SchoolManager.Areas.SocialService.Controllers
             var ws = workbook.Worksheets.Add("Avance del Alumno");
 
             // Encabezados
-            var headers = new[] { "Alumno", "Carrera", "Semestre", "Grupo", "Total Bitácoras", "Bitácoras Pendientes", "Horas Prácticas", "Horas Servicio Social", "Validación" };
+            var headers = new[] { "Alumno", "Carrera", "Semestre", "Grupo", "Total Bitácoras", "Horas Prácticas", "Horas Servicio Social", "Validación" };
             for (int i = 0; i < headers.Length; i++)
             {
                 var cell = ws.Cell(1, i + 1);
@@ -1206,12 +1204,11 @@ namespace SchoolManager.Areas.SocialService.Controllers
                 ws.Cell(row, 3).Value = alumno.SemesterName ?? "N/A";
                 ws.Cell(row, 4).Value = alumno.GroupName ?? "N/A";
                 ws.Cell(row, 5).Value = alumno.TotalBitacoras;
-                ws.Cell(row, 6).Value = alumno.BitacorasPendientesCount;
-                ws.Cell(row, 7).Value = $"{alumno.TotalHorasPracticas} h";
-                ws.Cell(row, 8).Value = $"{alumno.TotalHorasServicioSocial} h";
-                ws.Cell(row, 9).Value = validacion;
+                ws.Cell(row, 6).Value = $"{alumno.TotalHorasPracticas} h";
+                ws.Cell(row, 7).Value = $"{alumno.TotalHorasServicioSocial} h";
+                ws.Cell(row, 8).Value = validacion;
 
-                for (int c = 2; c <= 9; c++)
+                for (int c = 2; c <= 8; c++)
                     ws.Cell(row, c).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
 
                 row++;

@@ -187,11 +187,6 @@
                                         </a>
                                     </th>
                                     <th class="text-center">
-                                        <a href="@SortUrl("pendientes")" class="text-decoration-none">
-                                            Bitácoras Pendientes <i class="bi @SortIcon("pendientes")"></i>
-                                        </a>
-                                    </th>
-                                    <th class="text-center">
                                         <a href="@SortUrl("practicas")" class="text-decoration-none">
                                             Horas Prácticas <i class="bi @SortIcon("practicas")"></i>
                                         </a>
@@ -227,16 +222,7 @@
                                         <td class="text-center" data-label="Total Bitácoras">
                                             @alumno.TotalBitacoras
                                         </td>
-                                        <td class="text-center" data-label="Bitácoras Pendientes">
-                                            @if (alumno.BitacorasPendientesCount > 0)
-                                            {
-                                                @alumno.BitacorasPendientesCount
-                                            }
-                                            else
-                                            {
-                                                <text>0</text>
-                                            }
-                                        </td>
+                                        <!-- Bitácoras Pendientes cell removed -->
                                         <td class="text-center" data-label="Horas Prácticas">
                                             @alumno.TotalHorasPracticas h
                                         </td>
