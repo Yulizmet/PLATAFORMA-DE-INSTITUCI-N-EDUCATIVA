@@ -1,16 +1,18 @@
-﻿using System.Security.Cryptography;
+﻿using ClosedXML.Excel;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using SchoolManager.Areas.Enrollment.ViewModels;
 using SchoolManager.Data;
 using SchoolManager.Models;
 using SchoolManager.Models.ViewModels;
-using ClosedXML.Excel;
 using System.IO;
-using Microsoft.EntityFrameworkCore;
+using System.Security.Cryptography;
 
 namespace SchoolManager.Areas.Enrollment.Controllers
 {
@@ -188,6 +190,25 @@ namespace SchoolManager.Areas.Enrollment.Controllers
         // =====================================================================
         // CRUD DE GENERACIONES
         // =====================================================================
+
+
+        [HttpGet]
+        [AllowAnonymous]
+        public async Task<IActionResult> LogoutAndRedirect()
+        {
+            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+
+            HttpContext.Session.Clear();
+
+            foreach (var cookie in Request.Cookies.Keys)
+            {
+                Response.Cookies.Delete(cookie);
+            }
+
+            return Redirect("~/");
+        }
+
+
         [AllowAnonymous]
         [HttpPost]
         [ValidateAntiForgeryToken]
