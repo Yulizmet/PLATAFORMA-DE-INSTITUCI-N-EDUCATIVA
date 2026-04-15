@@ -89,8 +89,12 @@
 
                             <div class="dropdown-menu dropdown-menu-end">
                                 <div class="dropdown-divider"></div>
-                                <a class="dropdown-item" asp-area="" asp-controller="Account" asp-action="Logout">
-                                    Cerrar sesión
+
+                                <a class="dropdown-item"
+                                   asp-area="Enrollment"
+                                   asp-controller="PreEnrollment"
+                                   asp-action="LogoutAndRedirect">
+                                    <i class="align-middle me-1" data-feather="log-out"></i> Cerrar sesión
                                 </a>
                             </div>
                         </li>
