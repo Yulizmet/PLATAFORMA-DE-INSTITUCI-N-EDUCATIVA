@@ -112,7 +112,6 @@
                             </a>
                         </li>
                     }
-
                     @* Todos los autenticados *@
                     @if (User.Identity?.IsAuthenticated == true)
                     {
@@ -152,14 +151,20 @@
                         </li>
                     }
 
-                    <li class="nav-item">
-                        <a class="nav-link"
-                           asp-area="MainScreen"
-                           asp-controller="Foro"
-                           asp-action="ForoPublico">
-                            Foro
-                        </a>
-                    </li>
+                    @if (!User.IsInRole("Administrator"))
+                    {
+                        <li class="nav-item">
+                            <a class="nav-link"
+                               asp-area="MainScreen"
+                               asp-controller="Foro"
+                               asp-action="ForoPublico">
+                                Foro
+                            </a>
+                        </li>
+                    }
+
+
+
 
 
 
