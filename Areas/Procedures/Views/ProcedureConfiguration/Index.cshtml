@@ -331,26 +331,27 @@
 
 <div class="container-fluid px-4 pt-5">
 
-    <div class="d-flex justify-content-between align-items-start mb-4">
-        <div>
-            <h2 class="fw-bold mb-1 merriweather-font">
-                <i class="bi bi-pencil-square"></i> Trámites
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-end align-items-md-center gap-3 mb-4">
+        <div class="w-100">
+            <h2 class="fw-bold mb-0 merriweather-font">
+                <i class="bi bi-pencil-square me-2 text-dark"></i>Trámites
             </h2>
             <p class="text-muted small mb-0">Configura los documentos necesarios, el área responsable y la ruta de estados para cada trámite.</p>
         </div>
-
-        @if (HasPermission("btn-agregar"))
-        {
-            <button class="btn btn-burgundy shadow-sm" onclick="loadModal('/Procedures/ProcedureConfiguration/Create')">
-                <i class="bi bi-plus-circle me-2"></i> Agregar trámite
-            </button>
-        }
-        else
-        {
-            <button class="btn btn-burgundy shadow-sm" disabled title="No tienes permiso para agregar">
-                <i class="bi bi-plus-circle me-2"></i> Agregar trámite
-            </button>
-        }
+        <div class="flex-shrink-0">
+            @if (HasPermission("btn-agregar"))
+            {
+                <button class="btn btn-burgundy btn-sm px-4 shadow-sm" onclick="loadModal('/Procedures/ProcedureConfiguration/Create')">
+                    <i class="bi bi-plus-circle me-1"></i> Agregar trámite
+                </button>
+            }
+            else
+            {
+                <button class="btn btn-burgundy btn-sm px-4 shadow-sm" disabled title="No tienes permiso para agregar">
+                    <i class="bi bi-plus-circle me-1"></i> Agregar trámite
+                </button>
+            }
+        </div>
     </div>
     
     <partial name="_TableTools" />
@@ -378,123 +379,125 @@
 
     <div class="border-0 overflow-hidden">
         <div class="card-body p-0">
-            <table id="mainTable" class="table table-hover table-container-rounded">
-                <thead class="burgundy-header text-white">
-                    <tr>
-                        <th class="no-sort text-center"> <input type="checkbox" id="checkAll" class="form-check-input"> </th>
-                        <th style="width: 20%;">Nombre del Trámite</th>
-                        <th style="width: 17%;">Documentos</th>
-                        <th style="width: 13%;">Área</th>
-                        <th style="width: 25%;">Ruta de Proceso</th>
-                        <th style="width: 15%;">Modificación</th>
-                        <th class="no-sort text-center" style="width: 10%;">Acciones</th>
-                    </tr>
-                </thead>
-                <tbody class="table-white">
-                    @foreach (var item in Model)
-                    {
+            <div class="table-responsive">
+                <table id="mainTable" class="table mt-2 mb-2 table-hover table-container-rounded dataTable no-footer">
+                    <thead class="burgundy-header text-white">
                         <tr>
-                            <td class="text-center">
-                                <input type="checkbox" class="form-check-input row-checkbox" value="@item.Id" />
-                            </td>
-                            <td class="ps-4 fw-bold text-dark">@item.Name</td>
-                            <td>
-                                <div class="d-flex flex-wrap gap-1">
-                                    @if (item.Requirements != null && item.Requirements.Any())
-                                    {
-                                        foreach (var req in item.Requirements)
+                            <th class="no-sort text-center"> <input type="checkbox" id="checkAll" class="form-check-input"> </th>
+                            <th style="width: 20%;">Nombre del Trámite</th>
+                            <th style="width: 17%;">Documentos</th>
+                            <th style="width: 13%;">Área</th>
+                            <th style="width: 25%;">Ruta de Proceso</th>
+                            <th style="width: 15%;">Modificación</th>
+                            <th class="no-sort text-center" style="width: 10%;">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody class="table-white">
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td class="text-center">
+                                    <input type="checkbox" class="form-check-input row-checkbox" value="@item.Id" />
+                                </td>
+                                <td class="ps-4 fw-bold text-dark">@item.Name</td>
+                                <td>
+                                    <div class="d-flex flex-wrap gap-1">
+                                        @if (item.Requirements != null && item.Requirements.Any())
                                         {
-                                            <span class="badge border text-dark bg-light d-flex align-items-center"
-                                                  style="font-size: 0.7rem; font-weight: 500; border-radius: 50px;"
-                                                  title="@(req.IsRequired ? "Obligatorio" : "Opcional")">
-                                                <i class="bi @(req.IsRequired ? "bi-asterisk text-danger" : "bi-file-earmark text-muted") me-1"></i>
-                                                @(req.ProcedureTypeDocument?.Name ?? "Doc")
-                                            </span>
-                                        }
-                                    }
-                                    else
-                                    {
-                                        <span class="text-muted small"><em>Sin requisitos</em></span>
-                                    }
-                                </div>
-                            </td>
-                            <td>
-                                <span class="badge bg-secondary-subtle text-secondary border rounded-pill px-3">
-                                    @(item.ProcedureArea?.Name ?? "General")
-                                </span>
-                            </td>
-                            <td>
-                                <div class="d-flex flex-column gap-2">
-                                    @if (item.ProcedureFlow != null && item.ProcedureFlow.Any())
-                                    {
-                                        var sortedFlow = item.ProcedureFlow
-                                        .Where(f => f.ProcedureStatus?.Name != "Rechazado" && f.ProcedureStatus?.Name != "Cancelado")
-                                        .OrderBy(f => f.StepOrder)
-                                        .ToList();
-
-                                        if (sortedFlow.Any())
-                                        {
-                                            <div class="d-flex align-items-center flex-wrap gap-1">
-                                                @foreach (var step in sortedFlow.Where(f => f.StepOrder < 90))
-                                                {
-                                                    <span class="badge rounded-pill"
-                                                          style="background-color: @(step.ProcedureStatus?.BackgroundColor ?? "#eee"); color: @(step.ProcedureStatus?.TextColor ?? "#666"); font-size: 0.6rem; opacity: 0.8;">
-                                                        <i class="bi bi-check-all me-1"></i>@step.ProcedureStatus?.Name
-                                                    </span>
-                                                    @if (step != sortedFlow.Where(f => f.StepOrder < 90).LastOrDefault())
-                                                    {
-                                                        <i class="bi bi-chevron-right text-muted" style="font-size: 0.6rem;"></i>
-                                                    }
-                                                }
-                                            </div>
-
-                                            <div class="d-flex flex-wrap gap-1 mt-1 ps-2 border-start border-2">
-                                                @foreach (var step in sortedFlow.Where(f => f.StepOrder >= 90))
-                                                {
-                                                    <span class="badge rounded-pill"
-                                                          style="background-color: @(step.ProcedureStatus?.BackgroundColor ?? "#eee"); color: @(step.ProcedureStatus?.TextColor ?? "#666"); font-size: 0.6rem; opacity: 0.8;">
-                                                        <i class="bi bi-signpost-split me-1"></i>@step.ProcedureStatus?.Name
-                                                    </span>
-                                                }
-                                            </div>
+                                            foreach (var req in item.Requirements)
+                                            {
+                                                <span class="badge border text-dark bg-light d-flex align-items-center"
+                                                      style="font-size: 0.7rem; font-weight: 500; border-radius: 50px;"
+                                                      title="@(req.IsRequired ? "Obligatorio" : "Opcional")">
+                                                    <i class="bi @(req.IsRequired ? "bi-asterisk text-danger" : "bi-file-earmark text-muted") me-1"></i>
+                                                    @(req.ProcedureTypeDocument?.Name ?? "Doc")
+                                                </span>
+                                            }
                                         }
                                         else
                                         {
-                                            <span class="text-muted small"><em>Solo estados por defecto</em></span>
+                                            <span class="text-muted small"><em>Sin requisitos</em></span>
                                         }
-                                    }
-                                    else
-                                    {
-                                        <span class="text-muted small"><em>No configurado</em></span>
-                                    }
-                                </div>
-                            </td>
-                            <td class="text-muted small">
-                                <i class="bi bi-clock-history me-1"></i> @item.DateUpdated.ToString("dd/MM/yyyy hh:mm tt")
-                            </td>
-                            <td class="actions text-center pe-4">
-                                <div class="btn-group">
-                                    <button class="btn btn-sm btn-light border shadow-sm me-2"
-                                            style="width:32px; height:32px; padding:0;"
-                                            onclick="@(HasPermission("btn-editar") ? $"loadModal('/Procedures/ProcedureConfiguration/Edit/{item.Id}')" : "")"
-                                            @(HasPermission("btn-editar") ? "" : "disabled")
-                                            title="@(HasPermission("btn-editar") ? "Editar" : "Sin permiso")">
-                                        <i class="bi bi-pencil-square text-warning"></i>
-                                    </button>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="badge bg-secondary-subtle text-secondary border rounded-pill px-3">
+                                        @(item.ProcedureArea?.Name ?? "General")
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="d-flex flex-column gap-2">
+                                        @if (item.ProcedureFlow != null && item.ProcedureFlow.Any())
+                                        {
+                                            var sortedFlow = item.ProcedureFlow
+                                            .Where(f => f.ProcedureStatus?.Name != "Rechazado" && f.ProcedureStatus?.Name != "Cancelado")
+                                            .OrderBy(f => f.StepOrder)
+                                            .ToList();
 
-                                    <button class="btn btn-sm btn-light border shadow-sm"
-                                            style="width:32px; height:32px; padding:0;"
-                                            onclick="@(HasPermission("btn-eliminar") ? $"loadModal('/Procedures/ProcedureConfiguration/Delete/{item.Id}')" : "")"
-                                            @(HasPermission("btn-eliminar") ? "" : "disabled")
-                                            title="@(HasPermission("btn-eliminar") ? "Eliminar" : "Sin permiso")">
-                                        <i class="bi bi-trash-fill text-danger"></i>
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
+                                            if (sortedFlow.Any())
+                                            {
+                                                <div class="d-flex align-items-center flex-wrap gap-1">
+                                                    @foreach (var step in sortedFlow.Where(f => f.StepOrder < 90))
+                                                    {
+                                                        <span class="badge rounded-pill"
+                                                              style="background-color: @(step.ProcedureStatus?.BackgroundColor ?? "#eee"); color: @(step.ProcedureStatus?.TextColor ?? "#666"); font-size: 0.6rem; opacity: 0.8;">
+                                                            <i class="bi bi-check-all me-1"></i>@step.ProcedureStatus?.Name
+                                                        </span>
+                                                        @if (step != sortedFlow.Where(f => f.StepOrder < 90).LastOrDefault())
+                                                        {
+                                                            <i class="bi bi-chevron-right text-muted" style="font-size: 0.6rem;"></i>
+                                                        }
+                                                    }
+                                                </div>
+
+                                                <div class="d-flex flex-wrap gap-1 mt-1 ps-2 border-start border-2">
+                                                    @foreach (var step in sortedFlow.Where(f => f.StepOrder >= 90))
+                                                    {
+                                                        <span class="badge rounded-pill"
+                                                              style="background-color: @(step.ProcedureStatus?.BackgroundColor ?? "#eee"); color: @(step.ProcedureStatus?.TextColor ?? "#666"); font-size: 0.6rem; opacity: 0.8;">
+                                                            <i class="bi bi-signpost-split me-1"></i>@step.ProcedureStatus?.Name
+                                                        </span>
+                                                    }
+                                                </div>
+                                            }
+                                            else
+                                            {
+                                                <span class="text-muted small"><em>Solo estados por defecto</em></span>
+                                            }
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted small"><em>No configurado</em></span>
+                                        }
+                                    </div>
+                                </td>
+                                <td class="text-muted small">
+                                    <i class="bi bi-clock-history me-1"></i> @item.DateUpdated.ToString("dd/MM/yyyy hh:mm tt")
+                                </td>
+                                <td class="actions text-center pe-4">
+                                    <div class="btn-group">
+                                        <button class="btn btn-sm btn-light border shadow-sm me-2"
+                                                style="width:32px; height:32px; padding:0;"
+                                                onclick="@(HasPermission("btn-editar") ? $"loadModal('/Procedures/ProcedureConfiguration/Edit/{item.Id}')" : "")"
+                                                @(HasPermission("btn-editar") ? "" : "disabled")
+                                                title="@(HasPermission("btn-editar") ? "Editar" : "Sin permiso")">
+                                            <i class="bi bi-pencil-square text-warning"></i>
+                                        </button>
+
+                                        <button class="btn btn-sm btn-light border shadow-sm"
+                                                style="width:32px; height:32px; padding:0;"
+                                                onclick="@(HasPermission("btn-eliminar") ? $"loadModal('/Procedures/ProcedureConfiguration/Delete/{item.Id}')" : "")"
+                                                @(HasPermission("btn-eliminar") ? "" : "disabled")
+                                                title="@(HasPermission("btn-eliminar") ? "Eliminar" : "Sin permiso")">
+                                            <i class="bi bi-trash-fill text-danger"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 </div>

@@ -230,14 +230,21 @@
 <div id="modalContainer"></div>
 
 <div class="container-fluid  px-4 py-4 pt-5">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="fw-bold text-dark merriweather-font"><i class="bi bi-folder2-open me-2"></i>Expedientes Escolares</h2>
-        <button class="btn btn-burgundy shadow-sm"
-                onclick="@(HasPermission("btn-agregar") ? "loadQuickStudentModal()" : "")"
-                @(HasPermission("btn-agregar") ? "" : "disabled")
-                title="@(HasPermission("btn-agregar") ? "Añadir Alumno" : "Sin permiso para añadir alumnos")">
-            <i class="bi bi-plus-circle me-1"></i> Añadir Alumno
-        </button>
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-end align-items-md-center gap-3 mb-4">
+        <div class="w-100">
+            <h2 class="fw-bold mb-0 text-dark merriweather-font">
+                <i class="bi bi-folder2-open me-2"></i>Expedientes Escolares
+            </h2>
+        </div>
+
+        <div class="flex-shrink-0">
+            <button class="btn btn-burgundy shadow-sm px-4"
+                    onclick="@(HasPermission("btn-agregar") ? "loadQuickStudentModal()" : "")"
+                    @(HasPermission("btn-agregar") ? "" : "disabled")
+                    title="@(HasPermission("btn-agregar") ? "Añadir Alumno" : "Sin permiso para añadir alumnos")">
+                <i class="bi bi-plus-circle me-1"></i> Añadir Alumno
+            </button>
+        </div>
     </div>
 
     <partial name="_TableTools" />
@@ -245,7 +252,7 @@
     <div class="border-0 overflow-hidden">
         <div class="card-body p-0">
             <div class="table-responsive">
-                <table id="mainTable" class="table table-hover align-middle mb-0 table-container-rounded">
+                <table id="mainTable" class="table mt-2 mb-2 table-hover table-container-rounded dataTable no-footer">
                     <thead class="small bg-burgundy text-white">
                         <tr>
                             <th class="no-sort text-center"> <input type="checkbox" id="checkAll" class="form-check-input"> </th>
