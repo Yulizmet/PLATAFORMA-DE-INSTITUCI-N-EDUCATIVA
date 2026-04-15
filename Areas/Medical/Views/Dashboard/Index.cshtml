@@ -8,14 +8,6 @@
             <h2 class="text-white">Bienvenido, @(User.FindFirst("NombreCompleto")?.Value ?? User.Identity?.Name)</h2>
             <small>Sistema Médico - Panel de Control</small>
         </div>
-
-        <!-- DEBUG ROLES -->
-        <p>@User.IsInRole("Nurse")</p>
-        <p>@User.IsInRole("Head Nurse")</p>
-        <p>@User.IsInRole("Psychologist")</p>
-        <p>@User.IsInRole("Coordinator")</p>
-        <p>@User.IsInRole("Master")</p>
-
         <a asp-area="MainScreen" asp-controller="MainScreen" asp-action="Index" class="btn-header">
             <i class="bi bi-house-door-fill"></i> Inicio
         </a>

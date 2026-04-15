@@ -118,6 +118,8 @@ namespace SchoolManager.Areas.Medical.Controllers
             _context.Add(staff);
             await _context.SaveChangesAsync();
 
+            await SyncUserRole(model.PersonId, model.RoleId);
+
             _context.Add(new medical_permissions
             {
                 StaffId = staff.Id,
@@ -130,6 +132,29 @@ namespace SchoolManager.Areas.Medical.Controllers
 
             TempData["Mensaje"] = "Personal médico registrado correctamente.";
             return RedirectToAction(nameof(Index));
+        }
+
+        //SYNC USER ROLE (CORREGIDO)
+        private async Task SyncUserRole(int personId, int newRoleId)
+        {
+            var user = await _context.Users
+                .FirstOrDefaultAsync(u => u.PersonId == personId);
+
+            if (user == null) return;
+
+            var rolesActuales = _context.UserRoles
+                .Where(r => r.UserId == user.UserId);
+
+            _context.UserRoles.RemoveRange(rolesActuales);
+
+            _context.UserRoles.Add(new users_userrole
+            {
+                UserId = user.UserId,
+                RoleId = newRoleId,
+                IsActive = true
+            });
+
+            await _context.SaveChangesAsync();
         }
 
         [Authorize(Roles = "Head Nurse,Head of Psychology,Coordinator,Master")]
@@ -169,6 +194,7 @@ namespace SchoolManager.Areas.Medical.Controllers
             return View(vm);
         }
 
+        //EDIT POST
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "Head Nurse,Head of Psychology,Coordinator,Master")]
@@ -207,6 +233,8 @@ namespace SchoolManager.Areas.Medical.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+
+        //Delete
         public async Task<IActionResult> Delete(int id)
         {
             var data = await _context.Database

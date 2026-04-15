@@ -3,6 +3,7 @@ using DinkToPdf.Contracts;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
+using SchoolManager.Areas.Medical.Filters;
 using SchoolManager.Areas.Procedures.Filters;
 using SchoolManager.Data;
 using SchoolManager.Grades.Services;
@@ -29,6 +30,7 @@ builder.Services.AddAuthorizationBuilder()
     .SetFallbackPolicy(new AuthorizationPolicyBuilder()
         .RequireAuthenticatedUser()
         .Build());
+builder.Services.AddScoped<MedicalPermissionFilter>();
 builder.Services.AddControllersWithViews(options =>
 {
 });
