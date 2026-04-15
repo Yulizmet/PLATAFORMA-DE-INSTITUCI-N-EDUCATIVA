@@ -19,25 +19,25 @@
 
 <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
 
-<div class="container-fluid p-0 mt-4">
-    <div class="position-relative mb-4 text-center">
-        <div class="position-absolute top-50 start-0 translate-middle-y">
+<div class="container-fluid p-3 p-md-4 mt-2 mt-md-4">
+    
+    <div class="d-flex flex-column flex-md-row align-items-center justify-content-center position-relative mb-4 gap-3">
+        <div class="w-100 w-md-auto text-start text-md-center position-md-absolute start-0 top-50 translate-middle-y-md">
             <button type="button" onclick="history.back()" class="btn btn-sm btn-outline-secondary fw-bold shadow-sm px-3" style="border-radius: 20px;">
                 <i class="bi bi-arrow-left me-1"></i> Regresar
             </button>
         </div>
-
-        <h2 class="fw-bold m-0" style="color: var(--brand-dark);">Directorio de Alumnos</h2>
+        <h2 class="fw-bold m-0 text-center fs-4 fs-md-2" style="color: var(--brand-dark);">Directorio de Alumnos</h2>
     </div>
     
-    <div class="card border-0 shadow-sm mb-5" style="border-radius: 10px;">
-        <div class="card-body p-4">
+    <div class="card border-0 shadow-sm mb-4 mb-md-5" style="border-radius: 10px;">
+        <div class="card-body p-3 p-md-4">
             
             @if (roleId == 3)
             {
                 <form id="filtroForm" class="row g-3 align-items-end">
-                    <div class="col-md-4">
-                        <label class="form-label fw-bold text-dark">Grado</label>
+                    <div class="col-12 col-md-4">
+                        <label class="form-label fw-bold text-dark mb-1">Grado</label>
                         <select id="filtroGrado" class="form-select shadow-sm" name="grado" style="border-color: #ddd;">
                             <option value="">Todos los grados...</option>
                             @if (ViewBag.GradosDisponibles != null)
@@ -50,8 +50,8 @@
                         </select>
                     </div>
 
-                    <div class="col-md-5">
-                        <label class="form-label fw-bold text-dark">Grupo</label>
+                    <div class="col-12 col-md-5">
+                        <label class="form-label fw-bold text-dark mb-1">Grupo</label>
                         <select id="filtroGrupo" class="form-select shadow-sm" name="grupo" style="border-color: #ddd;">
                             <option value="">Todos los grupos...</option>
                             @if (ViewBag.GruposDisponibles != null)
@@ -64,8 +64,8 @@
                         </select>
                     </div>
 
-                    <div class="col-md-3">
-                        <button type="submit" class="btn btn-secondary-brand w-100 fw-bold shadow-sm">
+                    <div class="col-12 col-md-3 mt-4 mt-md-0">
+                        <button type="submit" class="btn btn-secondary-brand w-100 fw-bold shadow-sm py-2">
                             <i class="bi bi-funnel-fill"></i> Filtrar Lista
                         </button>
                     </div>
@@ -74,8 +74,8 @@
             else if (roleId == 2)
             {
                 <div class="row g-3 align-items-end">
-                    <div class="col-md-6">
-                        <label class="form-label fw-bold" style="color: var(--brand-dark);"><i class="bi bi-person-video3 me-2"></i>Mi Grupo Asignado</label>
+                    <div class="col-12 col-md-6">
+                        <label class="form-label fw-bold mb-1" style="color: var(--brand-dark);"><i class="bi bi-person-video3 me-2"></i>Mi Grupo Asignado</label>
                         <input type="text" class="form-control shadow-sm bg-light fw-bold" value="@nombreMiGrupo" readonly disabled style="border-color: #ddd; color: #555;">
                     </div>
                 </div>
@@ -90,17 +90,19 @@
         </div>
     </div>
 
-    <table id="tablaAlumnos" class="table table-cards w-100">
-        <thead>
-            <tr>
-                <th class="text-center" style="width: 80px;">Foto</th>
-                <th>Información del Alumno</th>
-                <th class="text-end" style="width: 320px; padding-right: 1.5rem;">Acciones</th>
-            </tr>
-        </thead>
-        <tbody>
-            </tbody>
-    </table>
+    <div class="table-responsive bg-white rounded shadow-sm border p-2 p-md-3">
+        <table id="tablaAlumnos" class="table table-hover table-cards w-100 mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th class="text-center py-3" style="min-width: 80px;">Foto</th>
+                    <th class="py-3 min-vw-25">Información del Alumno</th>
+                    <th class="text-start text-sm-end py-3" style="min-width: 280px; padding-right: 1.5rem;">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                </tbody>
+        </table>
+    </div>
 </div>
 
 @section Scripts {
@@ -109,6 +111,8 @@
         .dataTables_wrapper .row:last-child { margin-top: 1.5rem; padding: 0 0.5rem; }
         div.dataTables_wrapper div.dataTables_filter input {
             border-radius: 8px; border: 1px solid #ced4da; padding: 0.35rem 0.75rem; transition: all 0.15s ease-in-out;
+            width: 100%; 
+            max-width: 300px;
         }
         div.dataTables_wrapper div.dataTables_filter input:focus {
             outline: none; border-color: var(--brand-dark); box-shadow: 0 0 0 0.25rem rgba(140, 27, 27, 0.25); 
@@ -142,19 +146,19 @@
                     { 
                         data: null, 
                         orderable: false, 
-                        className: "text-center ps-3 align-middle",
+                        className: "text-center ps-2 ps-md-3 align-middle",
                         render: function(data, type, row) {
                             let imgSrc = row.foto ? row.foto : "https://ui-avatars.com/api/?name=" + encodeURIComponent(row.nombre) + "&background=8C1B1B&color=fff";
-                            return '<img src="' + imgSrc + '" alt="Foto" class="rounded-circle border" style="object-fit: cover; width: 55px; height: 55px; border-color: #ddd !important;">';
+                            return '<img src="' + imgSrc + '" alt="Foto" class="rounded-circle border" style="object-fit: cover; width: 50px; height: 50px; border-color: #ddd !important;">';
                         }
                     },
                     { 
                         data: "nombreCompleto",
                         className: "align-middle",
                         render: function(data, type, row) {
-                            return '<div class="fw-bold fs-6 text-dark mb-1">' + data + '</div>' +
-                                   '<div class="text-muted small">' +
-                                        '<span class="badge bg-light text-dark border me-2">Matrícula: ' + row.matricula + '</span>' +
+                            return '<div class="fw-bold fs-6 text-dark mb-1 text-wrap text-break">' + data + '</div>' +
+                                   '<div class="text-muted small d-flex flex-wrap gap-1">' +
+                                        '<span class="badge bg-light text-dark border">Matrícula: ' + row.matricula + '</span>' +
                                         '<span class="badge" style="background-color: var(--brand-secondary); color: var(--brand-white);">Grado y Grupo: ' + row.grupoTexto + '</span>' +
                                    '</div>';
                         }
@@ -162,14 +166,14 @@
                     { 
                         data: null, 
                         orderable: false, 
-                        className: "text-end pe-3 align-middle",
+                        className: "text-start text-sm-end pe-2 pe-md-3 align-middle",
                         render: function(data, type, row) {
                             let urlEntrevista = '@Url.Action("VerEntrevistaAlumno", "Entrevista", new { area = "Gestion" })/' + row.userId;
                             let urlSeguimiento = '@Url.Action("Seguimiento", "Seguimiento", new { area = "Gestion" })?matriculaBuscar=' + encodeURIComponent(row.matricula);
 
-                            return '<div class="d-flex gap-2 justify-content-end">' +
-                                        '<a href="' + urlEntrevista + '" class="btn btn-action-seguimiento shadow-sm btn-sm px-3 py-2"><i class="bi bi-file-text"></i> Entrevista</a>' +
-                                        '<a href="' + urlSeguimiento + '" class="btn btn-action-seguimiento shadow-sm btn-sm px-3 py-2"><i class="bi bi-graph-up"></i> Seguimiento</a>' +
+                            return '<div class="d-flex flex-column flex-sm-row gap-2 justify-content-sm-end mt-2 mt-sm-0">' +
+                                        '<a href="' + urlEntrevista + '" class="btn btn-action-seguimiento shadow-sm btn-sm px-3 py-2 text-center w-100 w-sm-auto"><i class="bi bi-file-text me-1"></i> Entrevista</a>' +
+                                        '<a href="' + urlSeguimiento + '" class="btn btn-action-seguimiento shadow-sm btn-sm px-3 py-2 text-center w-100 w-sm-auto"><i class="bi bi-graph-up me-1"></i> Seguimiento</a>' +
                                    '</div>';
                         }
                     }

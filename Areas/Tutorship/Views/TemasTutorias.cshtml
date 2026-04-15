@@ -3,10 +3,10 @@
     ViewData["Title"] = "Planeación de Tutorías";
 }
 
-<div class="container mt-4 mb-4">
-    <div class="position-relative mb-4 text-center">
-        <h2 class="fw-bold m-0" style="color: var(--brand-dark);">Temas Sugeridos para Tutorías</h2>
-       @*  <p class="text-muted mt-2">Crea los lineamientos y materiales que los maestros verán en su pase de asistencia semanal.</p> *@
+<div class="container-fluid px-3 px-md-4 mt-4 mt-md-5 mb-5">
+    
+    <div class="position-relative mb-4 mb-md-5 text-center">
+        <h2 class="fw-bold m-0 fs-4 fs-md-2" style="color: var(--brand-dark);">Temas Sugeridos para Tutorías</h2>
     </div>
 
     @if (TempData["Exito"] != null)
@@ -18,13 +18,13 @@
 
     <div class="row g-4 justify-content-center">
         
-        <div class="col-md-4">
+        <div class="col-12 col-lg-4">
             <div class="card border-0 shadow-sm" style="background-color: var(--brand-white); border-radius: 12px;">
-                <div class="card-header bg-transparent border-0 pt-4 px-4">
-                    <h5 class="fw-bold m-0" style="color: var(--brand-dark);">Nuevo Tema</h5>
+                <div class="card-header bg-transparent border-0 pt-4 px-3 px-md-4">
+                    <h5 class="fw-bold m-0 fs-5" style="color: var(--brand-dark);">Nuevo Tema</h5>
                 </div>
 
-                <div class="card-body p-4 pt-3">
+                <div class="card-body p-3 p-md-4 pt-3">
                     <form asp-action="CrearTema" method="post" enctype="multipart/form-data">
                         
                         <div class="mb-3">
@@ -33,11 +33,11 @@
                         </div>
 
                         <div class="row">
-                            <div class="col-md-6 mb-3">
+                            <div class="col-12 col-sm-6 mb-3">
                                 <label class="form-label fw-bold">Fecha Inicio</label>
                                 <input type="date" class="form-control shadow-sm" name="fechaInicio" required />
                             </div>
-                            <div class="col-md-6 mb-3">
+                            <div class="col-12 col-sm-6 mb-3">
                                 <label class="form-label fw-bold">Fecha Fin</label>
                                 <input type="date" class="form-control shadow-sm" name="fechaFin" required />
                             </div>
@@ -54,129 +54,113 @@
                                 <input type="file" name="ArchivoAdjunto" id="archivoUpload" class="d-none" accept=".pdf,.pptx,.docx"
                                        onchange="document.getElementById('fileLabelName').textContent = this.files.length > 0 ? this.files[0].name : 'Elegir archivo';">
                                 <label for="archivoUpload" class="d-flex align-items-center m-0 w-100" style="cursor: pointer; background-color: #fff;">
-                                    <div class="px-3 py-2 fw-bold text-dark border-end bg-light">Examinar</div>
-                                    <div id="fileLabelName" class="px-3 text-muted flex-grow-1 text-truncate" style="font-size: 0.95rem;">Elegir archivo</div>
+                                    <div class="px-2 px-md-3 py-2 fw-bold text-dark border-end bg-light" style="min-width: 90px; text-align: center;">Examinar</div>
+                                    <div id="fileLabelName" class="px-2 px-md-3 text-muted flex-grow-1 text-truncate" style="font-size: 0.90rem;">Elegir archivo</div>
                                 </label>
                             </div>
                         </div>
 
-                        <button type="submit" class="btn w-100 fw-bold shadow text-white" style="background-color: var(--brand-secondary);">
-                            @* <i class="bi bi-send-fill me-2"></i> *@ Publicar Tema
+                        <button type="submit" class="btn w-100 fw-bold shadow text-white py-2" style="background-color: var(--brand-secondary);">
+                            Publicar Tema
                         </button>
                     </form>
                 </div>
             </div>
         </div>
 
-        <div class="col-md-8">
-            <h4 class="mb-4 fw-bold" style="color: var(--brand-black);">
-                @* <i class="bi bi-calendar2-week-fill me-2" style="color: var(--brand-secondary);"></i> *@ Temas Programados
+        <div class="col-12 col-lg-8">
+            <h4 class="mb-3 mb-md-4 fw-bold fs-5 fs-md-4" style="color: var(--brand-black);">
+                Temas Programados
             </h4>
 
             @if (!Model.Any())
             {
-                <div class="text-center p-5 bg-white rounded shadow-sm border mt-3">
+                <div class="text-center p-4 p-md-5 bg-white rounded shadow-sm border mt-3">
                     <i class="bi bi-calendar-x" style="font-size: 3rem; color: #ccc;"></i>
-                    <p class="text-muted mt-3 mb-0">No hay temas programados todavía.</p>
+                    <p class="text-muted mt-3 mb-0 small small-md">No hay temas programados todavía.</p>
                 </div>
             }
             else
             {
-                <div class="scroll-historial" style="max-height: 600px; padding-right: 10px;">
+                <div class="scroll-historial" style="max-height: 600px; padding-right: 5px;">
                     @foreach (var tema in Model)
                     {
-                        <div class="card mb-3 border-0 shadow-sm dashboard-card-hover" @* style="border-left: 5px solid var(--brand-secondary) !important;" *@>
-                            <div class="card-body p-4">
-                                <div class="d-flex justify-content-between align-items-start mb-2">
+                        <div class="card mb-3 border-0 shadow-sm dashboard-card-hover">
+                            <div class="card-body p-3 p-md-4">
+                                
+                                <div class="d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center mb-3 gap-2">
                                     <div>
-                                        <h5 class="fw-bold mb-1" style="color: var(--brand-black);">@tema.Title</h5>
+                                        <h5 class="fw-bold mb-1 fs-6 fs-md-5" style="color: var(--brand-black);">@tema.Title</h5>
                                         <span class="badge bg-light text-dark border shadow-sm">
                                             <i class="bi bi-calendar-range me-1"></i>
                                             @tema.StartDate.ToString("dd MMM") al @tema.EndDate.ToString("dd MMM yyyy")
                                         </span>
                                     </div>
-                                
-                                    @* <div class="d-flex gap-2">
-                                        @if (tema.FilePath != "Sin archivo")
-                                        {
-                                            <a href="@tema.FilePath" target="_blank" class="btn btn-sm btn-outline-dark fw-bold rounded shadow-sm" title="Ver Material">
-                                                <i class="bi bi-file-earmark-pdf-fill text-danger"></i>
-                                            </a>
-                                        }
-                                        <button class="btn btn-sm btn-primary shadow-sm" data-bs-toggle="modal" data-bs-target="#editModal-@tema.Id" title="Editar">
-                                            <i class="bi bi-pencil-fill"></i>
-                                        </button>
-                                        <form id="form-delete-@tema.Id" asp-action="EliminarTema" method="post">
-                                            <input type="hidden" name="id" value="@tema.Id" />
-                                            <button type="button" class="btn btn-sm btn-danger shadow-sm" title="Eliminar" onclick="confirmarEliminacion(@tema.Id)">
-                                                <i class="bi bi-trash-fill"></i>
-                                            </button>
-                                        </form>
-                                    </div> *@
-                                    <div class="d-flex gap-2 align-items-center">
                                     
+                                    <div class="d-flex flex-wrap gap-2 align-items-center mt-2 mt-sm-0 w-100 w-sm-auto justify-content-start justify-content-sm-end">
+                                        
                                         @if (tema.FilePath != "Sin archivo")
                                         {
-                                            <a href="@tema.FilePath" target="_blank" class="btn btn-sm btn-outline-dark fw-bold px-3 shadow-sm">
+                                            <a href="@tema.FilePath" target="_blank" class="btn btn-sm btn-outline-dark fw-bold px-2 px-md-3 shadow-sm flex-grow-1 flex-sm-grow-0 text-center">
                                                 Ver Material
                                             </a>
                                         }
-                                    
-                                        <button class="btn btn-sm btn-primary fw-bold px-3 shadow-sm" data-bs-toggle="modal" data-bs-target="#editModal-@tema.Id">
+                                        
+                                        <button class="btn btn-sm btn-primary fw-bold px-2 px-md-3 shadow-sm flex-grow-1 flex-sm-grow-0" data-bs-toggle="modal" data-bs-target="#editModal-@tema.Id">
                                             Editar
                                         </button>
-                                    
-                                        <form id="form-delete-@tema.Id" asp-action="EliminarTema" method="post" class="m-0">
+                                        
+                                        <form id="form-delete-@tema.Id" asp-action="EliminarTema" method="post" class="m-0 flex-grow-1 flex-sm-grow-0">
                                             <input type="hidden" name="id" value="@tema.Id" />
-                                            <button type="button" class="btn btn-sm btn-danger fw-bold px-3 shadow-sm" onclick="confirmarEliminacion(@tema.Id)">
+                                            <button type="button" class="btn btn-sm btn-danger fw-bold px-2 px-md-3 shadow-sm w-100" onclick="confirmarEliminacion(@tema.Id)">
                                                 Eliminar
                                             </button>
                                         </form>
-                                    
+                                        
                                     </div>
-
                                 </div>
-                                <p class="mt-3 mb-0 text-dark bg-light p-3 rounded border" style="font-size: 0.95rem;">
+                                
+                                <p class="mt-2 mb-0 text-dark bg-light p-3 rounded border lh-sm" style="font-size: 0.90rem;">
                                     @tema.Description
                                 </p>
                             </div>
                         </div>
 
                         <div class="modal fade" id="editModal-@tema.Id" tabindex="-1" aria-hidden="true">
-                            <div class="modal-dialog modal-dialog-centered">
+                            <div class="modal-dialog modal-dialog-centered px-2 px-sm-0">
                                 <div class="modal-content border-0 shadow-lg">
                                     <div class="modal-header" style="background-color: var(--brand-secondary); color: white;">
-                                        <h5 class="modal-title fw-bold"><i class="bi bi-pencil-square me-2"></i>Editar Tema</h5>
+                                        <h5 class="modal-title fw-bold fs-6 fs-sm-5"><i class="bi bi-pencil-square me-2"></i>Editar Tema</h5>
                                         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                                     </div>
                                     <form asp-action="EditarTema" method="post">
-                                        <div class="modal-body p-4">
+                                        <div class="modal-body p-3 p-md-4">
                                             <input type="hidden" name="id" value="@tema.Id" />
-                                        
+                                            
                                             <div class="mb-3">
                                                 <label class="fw-bold">Título del Tema</label>
                                                 <input type="text" class="form-control" name="titulo" value="@tema.Title" required />
                                             </div>
-                                        
+                                            
                                             <div class="row">
-                                                <div class="col-md-6 mb-3">
+                                                <div class="col-12 col-sm-6 mb-3">
                                                     <label class="fw-bold">Fecha Inicio</label>
                                                     <input type="date" class="form-control" name="fechaInicio" value="@tema.StartDate.ToString("yyyy-MM-dd")" required />
                                                 </div>
-                                                <div class="col-md-6 mb-3">
+                                                <div class="col-12 col-sm-6 mb-3">
                                                     <label class="fw-bold">Fecha Fin</label>
                                                     <input type="date" class="form-control" name="fechaFin" value="@tema.EndDate.ToString("yyyy-MM-dd")" required />
                                                 </div>
                                             </div>
-                                        
+                                            
                                             <div class="mb-3">
                                                 <label class="fw-bold">Descripción</label>
                                                 <textarea class="form-control" name="descripcion" rows="4" required>@tema.Description</textarea>
                                             </div>
                                         </div>
-                                        <div class="modal-footer bg-light">
-                                            <button type="button" class="btn btn-secondary fw-bold" data-bs-dismiss="modal">Cancelar</button>
-                                            <button type="submit" class="btn fw-bold text-white" style="background-color: var(--brand-secondary);">Guardar Cambios</button>
+                                        <div class="modal-footer bg-light flex-nowrap">
+                                            <button type="button" class="btn btn-secondary fw-bold w-50" data-bs-dismiss="modal">Cancelar</button>
+                                            <button type="submit" class="btn fw-bold text-white w-50" style="background-color: var(--brand-secondary);">Guardar</button>
                                         </div>
                                     </form>
                                 </div>
@@ -189,7 +173,6 @@
     </div>
 </div>
 
-
 @section Scripts {
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
@@ -200,8 +183,8 @@
         text: "¡No podrás revertir esto y el tema desaparecerá del historial!",
         icon: 'warning',
         showCancelButton: true,
-        confirmButtonColor: '#8c1b1b', 
-        cancelButtonColor: '#6c757d', 
+        confirmButtonColor: '#8c1b1b',
+        cancelButtonColor: '#6c757d',
         confirmButtonText: '<i class="bi bi-trash-fill me-1"></i> Sí, eliminar',
         cancelButtonText: 'Cancelar',
         background: '#ffffff',
