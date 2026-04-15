@@ -28,7 +28,15 @@ namespace SchoolManager.Areas.Medical.Filters
                 return;
             }
 
-            // Verificar que el usuario tenga StaffId en sus claims
+            if (context.HttpContext.User.IsInRole("Master") ||
+                context.HttpContext.User.IsInRole("Coordinator") ||
+                context.HttpContext.User.IsInRole("Head Nurse") ||
+                context.HttpContext.User.IsInRole("Head of Psychology"))
+            {
+                await next();
+                return;
+            }
+
             var staffClaim = context.HttpContext.User.FindFirst("StaffId");
             if (staffClaim == null)
             {
@@ -38,7 +46,6 @@ namespace SchoolManager.Areas.Medical.Filters
 
             var staffId = int.Parse(staffClaim.Value);
 
-            // Consultar permisos en BD
             var permisos = await _context.MedicalPermissions
                 .FirstOrDefaultAsync(p => p.StaffId == staffId);
 
@@ -48,7 +55,6 @@ namespace SchoolManager.Areas.Medical.Filters
                 return;
             }
 
-            // Verificar permiso según el action
             bool tieneAcceso = action switch
             {
                 "Index" or "Details" => permisos.Ver,
@@ -58,21 +64,12 @@ namespace SchoolManager.Areas.Medical.Filters
                 _ => true
             };
 
-            var rolesSuperior = new[] { 6, 20, 21, 22 };
-
             var staffRoleClaim = context.HttpContext.User.FindFirst("StaffRoleId");
             if (staffRoleClaim != null)
             {
                 var roleId = int.Parse(staffRoleClaim.Value);
 
-                if (rolesSuperior.Contains(roleId))
-                {
-                    await next();
-                    return;
-                }
-
                 if (controller == "Logbook" && roleId == 19) tieneAcceso = false;
-
                 if (controller == "Psychology" && roleId == 18) tieneAcceso = false;
             }
 
