@@ -12,20 +12,20 @@
 
             <div class="modal-body text-center p-4">
                 <i class="bi bi-exclamation-triangle text-danger" style="font-size: 4rem;"></i>
-                <h4 class="fw-bold mt-3">¡Atención!</h4>
+                <h4 class="fw-bold mt-1">¡Atención!</h4>
                 <p class="mb-1 text-muted">Estás a punto de borrar:</p>
 
-                <h5 class="text-burgundy fw-bold my-3 p-2 bg-light rounded">
+                <h5 class="text-burgundy fw-bold my-2 p-2 rounded">
                     @ViewBag.ItemName
                 </h5>
 
-                <p class="text-dark small px-3">
+                <p class="text-dark small mb-1 px-3">
                     Esta acción eliminará <strong>@(ViewBag.IsModuleGroup == true ? "el módulo y todos sus botones asociados" : "el botón seleccionado")</strong>.
                     <span class="text-danger d-block mt-2">No se puede deshacer.</span>
                 </p>
             </div>
 
-            <div class="modal-footer border-0 bg-light justify-content-center pb-4">
+            <div class="modal-footer border-0 bg-light justify-content-end pb-4">
                 <button type="button" class="btn btn-light rounded-pill px-4 me-2" data-bs-dismiss="modal">
                     Cancelar
                 </button>
@@ -39,7 +39,7 @@
                         <input type="hidden" name="moduleName" value="@ViewBag.ItemName" />
                     }
 
-                    <button type="submit" class="btn btn-danger rounded-pill px-4">
+                    <button type="submit" class="btn btn-danger rounded-pill px-4 flex-end">
                         Eliminar permanentemente
                     </button>
                 </form>

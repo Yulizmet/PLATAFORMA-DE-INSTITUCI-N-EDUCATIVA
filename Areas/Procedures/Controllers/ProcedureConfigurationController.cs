@@ -156,11 +156,23 @@ namespace SchoolManager.Areas.Procedures.Controllers
             return Json(new { success = false });
         }
 
-        [HttpGet]
         public async Task<IActionResult> BulkEdit()
         {
             await LoadPermissions("Trámites");
-            await PrepareDropdowns();
+
+            ViewBag.StatusData = await _context.ProcedureStatus
+                .Select(s => new {
+                    id = s.Id,
+                    name = s.Name,
+                    bg = s.BackgroundColor,
+                    txt = s.TextColor,
+                    isTerminal = s.IsTerminalState
+                }).ToListAsync();
+
+            ViewBag.IdArea = new SelectList(_context.ProcedureAreas, "Id", "Name");
+            ViewBag.IdTypeDocument = new SelectList(_context.ProcedureTypeDocuments, "Id", "Name");
+            ViewBag.IdStatus = new SelectList(_context.ProcedureStatus, "Id", "Name");
+
             return PartialView("_BulkEditModal");
         }
 
@@ -285,9 +297,10 @@ namespace SchoolManager.Areas.Procedures.Controllers
         public async Task<IActionResult> SaveBulkUpdate([FromBody] BulkUpdateViewModel data)
         {
             await LoadPermissions("Trámites");
+
             if (data.FlowList != null && data.FlowList.Any(f => f.StepOrder >= 90))
             {
-                return Json(new { success = false, message = "No se pueden usar órdenes >= 90 (reservados para estados automáticos)." });
+                return Json(new { success = false, message = "No se pueden usar órdenes >= 90." });
             }
 
             using var transaction = await _context.Database.BeginTransactionAsync();
@@ -305,25 +318,39 @@ namespace SchoolManager.Areas.Procedures.Controllers
                     if (data.IdArea > 0) p.IdArea = data.IdArea;
                     p.DateUpdated = DateTime.Now;
 
-                    if (data.RequirementsList != null && data.RequirementsList.Any())
+                    if (data.RequirementsList != null)
                     {
                         _context.ProcedureTypeRequirements.RemoveRange(p.Requirements);
                         foreach (var req in data.RequirementsList)
                         {
-                            p.Requirements.Add(new procedure_type_requirements { IdTypeDocument = req.IdTypeDocument, IsRequired = req.IsRequired });
+                            p.Requirements.Add(new procedure_type_requirements
+                            {
+                                IdTypeDocument = req.IdTypeDocument,
+                                IsRequired = req.IsRequired
+                            });
                         }
                     }
 
-                    if (data.FlowList != null && data.FlowList.Any())
+                    if (data.FlowList != null)
                     {
-                        _context.ProcedureFlow.RemoveRange(p.ProcedureFlow);
-                        foreach (var flow in data.FlowList)
-                        {
-                            p.ProcedureFlow.Add(new procedure_flow { IdStatus = flow.IdStatus, StepOrder = flow.StepOrder });
-                        }
+                        var stepIds = p.ProcedureFlow.Select(f => f.Id).ToList();
+                        bool hasActiveRequests = await _context.ProcedureRequest.AnyAsync(r => stepIds.Contains(r.IdProcedureFlow));
 
-                        await EnsureDefaultFlow(p.Id);
+                        if (!hasActiveRequests)
+                        {
+                            _context.ProcedureFlow.RemoveRange(p.ProcedureFlow);
+                            foreach (var flow in data.FlowList)
+                            {
+                                p.ProcedureFlow.Add(new procedure_flow
+                                {
+                                    IdStatus = flow.IdStatus,
+                                    StepOrder = flow.StepOrder
+                                });
+                            }
+                        }
                     }
+
+                    await EnsureDefaultFlow(p.Id);
                 }
 
                 await _context.SaveChangesAsync();

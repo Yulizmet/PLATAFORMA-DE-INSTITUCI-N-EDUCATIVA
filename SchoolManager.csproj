@@ -47,7 +47,6 @@
     <Folder Include="Areas\Grades\JS\" />
     <None Include="wwwroot\templates\Notification.html" />
     <Folder Include="Areas\Procedures\Controllers\" />
-    <Folder Include="Areas\Procedures\Views\" />
     <Folder Include="Areas\Tutorship\Controllers\" />
     <Folder Include="wwwroot\enrollment\admin\" />
     <Folder Include="wwwroot\uploads\bitacoras\" />

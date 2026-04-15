@@ -20,7 +20,8 @@
     <!-- NAVBAR -->
     <nav class="navbar navbar-expand-lg navbar-dark navbar-custom">
         <div class="container-fluid px-3">
-            <a class="navbar-brand fw-bold me-3" href="#" style="font-size: 1rem;">
+            <a class="navbar-brand fw-bold me-3" style="font-size: 1rem;"
+               asp-area="MainScreen" asp-controller="MainScreen" asp-action="Index">
                 SE Sistema Educativo
             </a>
 
@@ -38,15 +39,24 @@
                             <i class="bi bi-house-fill me-1"></i> Inicio
                         </a>
                     </li>
-@*                     Solo si no esta autenticado
- *@                    @if (User?.Identity?.IsAuthenticated == false)
+                    @* Solo si no esta autenticado *@
+                    @if (User?.Identity?.IsAuthenticated == false)
                     {
-                        <li class="nav-item">
+                        <li class="nav-item" style="font-size: 0.875rem; white-space: nowrap;">
                             <a class="nav-link px-2"
                                asp-area="Enrollment"
                                asp-controller="PreEnrollment"
                                asp-action="Index">
                                 Preinscripción
+                            </a>
+                        </li>
+
+                        <li class="nav-item" style="font-size: 0.875rem; white-space: nowrap;">
+                            <a class="nav-link px-2"
+                               asp-area="Procedures"
+                               asp-controller="Request"
+                               asp-action="Index">
+                                Trámites
                             </a>
                         </li>
                     }
@@ -139,9 +149,8 @@
 
 
                     @if (User.IsInRole("Administrator"))
-
                     {
-                        <li class="nav-item">
+                        <li class="nav-item style=" style="font-size:0.875rem; white-space: nowrap;">
                             <a class="nav-link"
                                asp-area="MainScreen"
                                asp-controller="Foro"
