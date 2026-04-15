@@ -23,64 +23,77 @@
         <!-- BECA -->
         <div class="col-12">
             <label class="form-label fw-semibold d-block">¿Contaba con beca?</label>
-
             <div class="d-flex flex-wrap gap-3">
-
-                <!-- NO -->
                 <div class="form-check">
                     <input asp-for="Otros.beca"
                            class="form-check-input"
                            type="radio"
                            value="No"
+                           id="becaNo"
                            checked="@(Model?.Otros?.beca == null || Model.Otros.beca == "No")"
                            required />
-
-                    <label class="form-check-label">No</label>
+                    <label class="form-check-label" for="becaNo">No</label>
                 </div>
 
-                <!-- SÍ -->
                 <div class="form-check">
                     <input asp-for="Otros.beca"
                            class="form-check-input"
                            type="radio"
                            value="Sí"
+                           id="becaSi"
                            checked="@(Model?.Otros?.beca == "Sí")"
                            required />
-
-                    <label class="form-check-label">Sí</label>
+                    <label class="form-check-label" for="becaSi">Sí</label>
                 </div>
-
             </div>
         </div>
 
-        <!-- COMUNIDAD INDIGENA -->
+        <!-- Detalles de beca (solo visible cuando la respuesta es "Sí") -->
+        <div class="col-12 d-none" id="detallesBeca">
+            <label class="form-label">¿Qué tipo de beca?</label>
+            <input asp-for="Otros.tipoBeca" class="form-control" placeholder="Escribe el tipo de beca" />
+        </div>
+
+        <!-- COMUNIDAD INDÍGENA -->
         <div class="col-12">
             <label class="form-label fw-semibold d-block">¿Proviene de alguna comunidad indígena?</label>
             <div class="d-flex flex-wrap gap-3">
                 <div class="form-check">
-                    <input asp-for="Otros.comu_indi" class="form-check-input" type="radio" value="false" checked>
-                    <label class="form-check-label">No</label>
+                    <input asp-for="Otros.comu_indi" class="form-check-input" type="radio" value="false" id="comuNo" checked />
+                    <label class="form-check-label" for="comuNo">No</label>
                 </div>
                 <div class="form-check">
-                    <input asp-for="Otros.comu_indi" class="form-check-input" type="radio" value="true">
-                    <label class="form-check-label">Sí</label>
+                    <input asp-for="Otros.comu_indi" class="form-check-input" type="radio" value="true" id="comuSi" />
+                    <label class="form-check-label" for="comuSi">Sí</label>
                 </div>
             </div>
         </div>
 
-        <!-- LENGUA -->
+        <!-- Detalles de comunidad indígena (solo visible cuando la respuesta es "Sí") -->
+        <div class="col-12 d-none" id="detallesComuIndi">
+            <label class="form-label">¿De qué comunidad proviene?</label>
+            <input asp-for="Otros.nombreComunidad" class="form-control" placeholder="Escribe el nombre de la comunidad" />
+        </div>
+
+        <!-- LENGUA INDÍGENA -->
         <div class="col-12">
             <label class="form-label fw-semibold d-block">¿Habla lengua indígena?</label>
             <div class="d-flex flex-wrap gap-3">
                 <div class="form-check">
-                    <input asp-for="Otros.lengu_indi" class="form-check-input" type="radio" value="false" checked>
-                    <label class="form-check-label">No</label>
+                    <input asp-for="Otros.lengu_indi" class="form-check-input" type="radio" value="false" id="lenguaNo" checked />
+                    <label class="form-check-label" for="lenguaNo">No</label>
                 </div>
                 <div class="form-check">
-                    <input asp-for="Otros.lengu_indi" class="form-check-input" type="radio" value="true">
-                    <label class="form-check-label">Sí</label>
+                    <input asp-for="Otros.lengu_indi" class="form-check-input" type="radio" value="true" id="lenguaSi" />
+                    <label class="form-check-label" for="lenguaSi">Sí</label>
                 </div>
             </div>
+        </div>
+
+        <!-- Detalles de lengua indígena (solo visible cuando la respuesta es "Sí") -->
+        <div class="col-12 d-none" id="detallesLenguaIndi">
+            <label class="form-label">¿Qué lengua indígena habla?</label>
+            <input asp-for="Otros.nombreLenguaIndi" class="form-control" placeholder="Escribe la lengua indígena" />
         </div>
 
         <!-- DISCAPACIDAD -->
@@ -88,14 +101,20 @@
             <label class="form-label fw-semibold d-block">¿Padece alguna discapacidad?</label>
             <div class="d-flex flex-wrap gap-3">
                 <div class="form-check">
-                    <input asp-for="Otros.incapa" class="form-check-input" type="radio" value="false" checked>
-                    <label class="form-check-label">No</label>
+                    <input asp-for="Otros.incapa" class="form-check-input" type="radio" value="false" id="discapacidadNo" checked />
+                    <label class="form-check-label" for="discapacidadNo">No</label>
                 </div>
                 <div class="form-check">
-                    <input asp-for="Otros.incapa" class="form-check-input" type="radio" value="true">
-                    <label class="form-check-label">Sí</label>
+                    <input asp-for="Otros.incapa" class="form-check-input" type="radio" value="true" id="discapacidadSi" />
+                    <label class="form-check-label" for="discapacidadSi">Sí</label>
                 </div>
             </div>
+        </div>
+
+        <!-- Detalles de discapacidad (solo visible cuando la respuesta es "Sí") -->
+        <div class="col-12 d-none" id="detallesDiscapacidad">
+            <label class="form-label">¿Qué discapacidad tiene?</label>
+            <input asp-for="Otros.tipoDiscapacidad" class="form-control" placeholder="Escribe el tipo de discapacidad" />
         </div>
 
         <!-- ENFERMEDAD -->
@@ -103,23 +122,28 @@
             <label class="form-label fw-semibold d-block">¿Padece alguna enfermedad?</label>
             <div class="d-flex flex-wrap gap-3">
                 <div class="form-check">
-                    <input asp-for="Otros.disease" class="form-check-input" type="radio" value="false" checked>
-                    <label class="form-check-label">No</label>
+                    <input asp-for="Otros.disease" class="form-check-input" type="radio" value="false" id="enfermedadNo" checked />
+                    <label class="form-check-label" for="enfermedadNo">No</label>
                 </div>
                 <div class="form-check">
-                    <input asp-for="Otros.disease" class="form-check-input" type="radio" value="true">
-                    <label class="form-check-label">Sí</label>
+                    <input asp-for="Otros.disease" class="form-check-input" type="radio" value="true" id="enfermedadSi" />
+                    <label class="form-check-label" for="enfermedadSi">Sí</label>
                 </div>
             </div>
         </div>
 
-        <!-- COMO SE ENTERO -->
+        <!-- Detalles de enfermedad (solo visible cuando la respuesta es "Sí") -->
+        <div class="col-12 d-none" id="detallesEnfermedad">
+            <label class="form-label">¿Qué enfermedad padece?</label>
+            <input asp-for="Otros.tipoEnfermedad" class="form-control" placeholder="Escribe el tipo de enfermedad" />
+        </div>
+
+        <!-- ¿CÓMO SE ENTERÓ? -->
         <div class="col-12 mt-3">
             <label class="form-label fw-semibold">
                 ¿Cómo conoció esta institución y sus programas académicos?
             </label>
-            <select asp-for="Otros.comment" class="form-select"
-                    required data-required="true">
+            <select asp-for="Otros.comment" class="form-select" required data-required="true">
                 <option value="">Sin selección</option>
                 <option value="Amigos">Amigos</option>
                 <option value="Familia">Familia</option>
@@ -134,3 +158,75 @@
 
     </div>
 </div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        // Beca
+        const becaSi = document.getElementById("becaSi");
+        const becaNo = document.getElementById("becaNo");
+        const detallesBeca = document.getElementById("detallesBeca");
+
+        // Comunidad indígena
+        const comuSi = document.getElementById("comuSi");
+        const comuNo = document.getElementById("comuNo");
+        const detallesComuIndi = document.getElementById("detallesComuIndi");
+
+        // Lengua indígena
+        const lenguaSi = document.getElementById("lenguaSi");
+        const lenguaNo = document.getElementById("lenguaNo");
+        const detallesLenguaIndi = document.getElementById("detallesLenguaIndi");
+
+        // Discapacidad
+        const discapacidadSi = document.getElementById("discapacidadSi");
+        const discapacidadNo = document.getElementById("discapacidadNo");
+        const detallesDiscapacidad = document.getElementById("detallesDiscapacidad");
+
+        // Enfermedad
+        const enfermedadSi = document.getElementById("enfermedadSi");
+        const enfermedadNo = document.getElementById("enfermedadNo");
+        const detallesEnfermedad = document.getElementById("detallesEnfermedad");
+
+        function toggleDetails(option, detailsElement) {
+            if (option.checked) {
+                detailsElement.classList.remove("d-none");
+            } else {
+                detailsElement.classList.add("d-none");
+            }
+        }
+
+        becaSi.addEventListener("change", function () {
+            toggleDetails(becaSi, detallesBeca);
+        });
+        becaNo.addEventListener("change", function () {
+            toggleDetails(becaNo, detallesBeca);
+        });
+
+        comuSi.addEventListener("change", function () {
+            toggleDetails(comuSi, detallesComuIndi);
+        });
+        comuNo.addEventListener("change", function () {
+            toggleDetails(comuNo, detallesComuIndi);
+        });
+
+        lenguaSi.addEventListener("change", function () {
+            toggleDetails(lenguaSi, detallesLenguaIndi);
+        });
+        lenguaNo.addEventListener("change", function () {
+            toggleDetails(lenguaNo, detallesLenguaIndi);
+        });
+
+        discapacidadSi.addEventListener("change", function () {
+            toggleDetails(discapacidadSi, detallesDiscapacidad);
+        });
+        discapacidadNo.addEventListener("change", function () {
+            toggleDetails(discapacidadNo, detallesDiscapacidad);
+        });
+
+        enfermedadSi.addEventListener("change", function () {
+            toggleDetails(enfermedadSi, detallesEnfermedad);
+        });
+        enfermedadNo.addEventListener("change", function () {
+            toggleDetails(enfermedadNo, detallesEnfermedad);
+        });
+    });
+</script>
