@@ -5,7 +5,7 @@
         ViewBag.UserPermissions != null && ((List<string>)ViewBag.UserPermissions).Contains(buttonName);
 }
 
-<div class="accordion accordion-flush" id="catalogAccordion">
+<div class="accordion accordion-flush shadow-sm rounded-3 overflow-hidden" id="catalogAccordion">
     @{
         var moduleGroups = Model.GroupBy(m => m.ModuleName).ToList();
 
@@ -17,46 +17,44 @@
             string collapseId = $"catalogCollapse_{i}";
 
             <div class="accordion-item border-bottom">
-                <div class="accordion-header d-flex align-items-center bg-white pe-3">
-                    <button class="accordion-button collapsed fw-bold text-dark bg-transparent shadow-none py-3"
-                            type="button" data-bs-toggle="collapse" data-bs-target="#@collapseId">
-                        <i class="bi bi-folder2-open me-2 text-burgundy"></i> @group.Key
-                        <span class="badge bg-light text-muted border ms-2 fw-normal" style="font-size: 0.7rem;">
+                <div class="accordion-header d-flex align-items-center bg-white pe-2">
+                    <button class="accordion-button collapsed fw-bold text-dark bg-transparent shadow-none py-3 overflow-hidden"
+                            type="button" data-bs-toggle="collapse" data-bs-target="#@collapseId"
+                            style="flex: 1 1 auto; min-width: 0;">
+
+                        <div class="d-flex flex-column text-truncate" style="min-width: 0;">
+                            <span class="text-truncate">
+                                <i class="bi bi-folder2-open me-2 text-burgundy"></i> @group.Key
+                            </span>
+                            <span class="badge bg-light text-muted border fw-normal mt-1 d-md-none" style="font-size: 0.6rem; width: fit-content;">
+                                @buttons.Count @(buttons.Count == 1 ? "botón" : "botones")
+                            </span>
+                        </div>
+
+                        <span class="badge bg-light text-muted border ms-2 fw-normal d-none d-md-inline-block" style="font-size: 0.7rem;">
                             @buttons.Count @(buttons.Count == 1 ? "botón" : "botones")
                         </span>
                     </button>
 
-                    <div class="ms-auto d-flex gap-2">
-                        <button class="btn btn-sm btn-light border"
+                    <div class="d-flex flex-nowrap gap-1 align-items-center ps-2 pe-1">
+                        <button class="btn btn-sm btn-light border px-2"
                                 onclick="@(HasPermission("btn-agregar-boton") ? $"loadModuleModal(0, '{group.Key}')" : "")"
-                                @(HasPermission("btn-agregar-boton") ? "" : "disabled")
-                                title="@(HasPermission("btn-agregar-boton") ? "Añadir Botón" : "Sin permiso")">
-                            <i class="bi bi-plus-circle text-success"></i>
+                                @(HasPermission("btn-agregar-boton") ? "" : "disabled")>
+                            <i class="bi bi-plus-circle text-success" style="font-size: 0.9rem;"></i>
                         </button>
 
                         @if (mainModule != null)
                         {
-                            <button class="btn btn-sm btn-light border"
+                            <button class="btn btn-sm btn-light border px-2"
                                     onclick="@(HasPermission("btn-editar-modulo") ? $"loadModuleModal({mainModule.Id})" : "")"
-                                    @(HasPermission("btn-editar-modulo") ? "" : "disabled")
-                                    title="@(HasPermission("btn-editar-modulo") ? "Editar Módulo" : "Sin permiso")">
-                                <i class="bi bi-pencil-square text-warning"></i>
+                                    @(HasPermission("btn-editar-modulo") ? "" : "disabled")>
+                                <i class="bi bi-pencil-square text-warning" style="font-size: 0.9rem;"></i>
                             </button>
 
-                            <button class="btn btn-sm btn-light border"
+                            <button class="btn btn-sm btn-light border px-2"
                                     onclick="@(HasPermission("btn-eliminar-modulo") ? $"openDeleteModal({mainModule.Id}, 'Module')" : "")"
-                                    @(HasPermission("btn-eliminar-modulo") ? "" : "disabled")
-                                    title="@(HasPermission("btn-eliminar-modulo") ? "Eliminar Todo el Módulo" : "Sin permiso")">
-                                <i class="bi bi-trash3 text-danger"></i>
-                            </button>
-                        }
-                        else
-                        {
-                            <button class="btn btn-sm btn-light border"
-                                    onclick="@(HasPermission("btn-eliminar-modulo") ? $"openDeleteModal(0, 'Module', '{group.Key}')" : "")"
-                                    @(HasPermission("btn-eliminar-modulo") ? "" : "disabled")
-                                    title="@(HasPermission("btn-eliminar-modulo") ? "Eliminar Grupo" : "Sin permiso")">
-                                <i class="bi bi-trash3 text-danger"></i>
+                                    @(HasPermission("btn-eliminar-modulo") ? "" : "disabled")>
+                                <i class="bi bi-trash3 text-danger" style="font-size: 0.9rem;"></i>
                             </button>
                         }
                     </div>
@@ -67,31 +65,30 @@
                         <ul class="list-group list-group-flush">
                             @foreach (var btn in buttons)
                             {
-                                <li class="list-group-item d-flex align-items-center ps-5 py-2 border-0 border-bottom small">
-                                    <div class="flex-grow-1 text-dark">
+                                <li class="list-group-item d-flex flex-column flex-md-row align-items-md-center ps-4 ps-md-5 py-1 border-0 border-bottom">
+                                    <div class="flex-grow-1 text-dark mb-2 mb-md-0">
                                         <i class="bi bi-arrow-return-right text-muted me-2"></i>
-                                        <span class="font-monospace text-secondary">@btn.ButtonName</span>
+                                        <span class="font-monospace text-secondary small">@btn.ButtonName</span>
                                     </div>
-                                    <div class="btn-group">
-                                        <button class="btn btn-link btn-sm text-warning p-0 me-3 @(HasPermission("btn-editar-boton") ? "" : "disabled")"
+
+                                    <div class="d-flex gap-3 justify-content-end">
+                                        <button class="btn btn-link btn-sm text-warning p-0 text-decoration-none fw-bold"
                                                 onclick="@(HasPermission("btn-editar-boton") ? $"loadModuleModal({btn.Id})" : "")"
-                                                @(HasPermission("btn-editar-boton") ? "" : "disabled")
-                                                title="@(HasPermission("btn-editar-boton") ? "Editar" : "Sin permiso")">
-                                            <i class="bi bi-pencil"></i> Editar
+                                                @(HasPermission("btn-editar-boton") ? "" : "disabled")>
+                                            <i class="bi bi-pencil"></i> <span class="d-md-inline">Editar</span>
                                         </button>
-                                        <button class="btn btn-link btn-sm text-danger p-0 me-3 @(HasPermission("btn-eliminar-boton") ? "" : "disabled")"
+                                        <button class="btn btn-link btn-sm text-danger p-0 text-decoration-none fw-bold"
                                                 onclick="@(HasPermission("btn-eliminar-boton") ? $"openDeleteModal({btn.Id}, 'Button')" : "")"
-                                                @(HasPermission("btn-eliminar-boton") ? "" : "disabled")
-                                                title="@(HasPermission("btn-eliminar-boton") ? "Eliminar" : "Sin permiso")">
-                                            <i class="bi bi-trash3"></i> Eliminar
+                                                @(HasPermission("btn-eliminar-boton") ? "" : "disabled")>
+                                            <i class="bi bi-trash3"></i> <span class="d-md-inline">Eliminar</span>
                                         </button>
                                     </div>
                                 </li>
                             }
                             @if (!buttons.Any())
                             {
-                                <li class="list-group-item ps-5 py-2 text-muted small italic border-0">
-                                    Este módulo no tiene botones registrados.
+                                <li class="list-group-item ps-5 py-3 text-muted small border-0">
+                                    <i class="bi bi-info-circle me-2"></i> Sin botones registrados.
                                 </li>
                             }
                         </ul>
@@ -101,11 +98,3 @@
         }
     }
 </div>
-
-@if (!Model.Any())
-{
-    <div class="text-center py-5">
-        <i class="bi bi-inbox display-4 text-muted opacity-25"></i>
-        <p class="mt-2 text-muted">El catálogo está vacío.</p>
-    </div>
-}

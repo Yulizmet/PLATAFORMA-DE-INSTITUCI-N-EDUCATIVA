@@ -139,71 +139,75 @@
 
 <div class="container-fluid px-4 pt-5">
 
-    <div class="d-flex justify-content-between align-items-start mb-4">
-        <div>
-            <h2 class="fw-bold mb-1 merriweather-font">
-                <i class="bi bi-diagram-3"></i> Áreas
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-end align-items-md-center gap-3 mb-4">
+        <div class="w-100">
+            <h2 class="fw-bold mb-0 merriweather-font">
+                <i class="bi bi-diagram-3 me-2 text-dark"></i>Áreas
             </h2>
             <p class="text-muted small mb-0">Configura las áreas o departamentos responsables de los trámites.</p>
         </div>
-        <button class="btn btn-burgundy shadow-sm"
-                onclick="@(HasPermission("btn-agregar") ? "loadModal('/Procedures/ProcedureAreas/Create')" : "")"
-                @(HasPermission("btn-agregar") ? "" : "disabled")
-                title="@(HasPermission("btn-agregar") ? "Agregar área" : "Sin permiso para agregar")">
-            <i class="bi bi-plus-circle me-2"></i> Agregar área
-        </button>
+        <div class="flex-shrink-0">
+            <button class="btn btn-burgundy btn-sm px-4 shadow-sm"
+                    onclick="@(HasPermission("btn-agregar") ? "loadModal('/Procedures/ProcedureAreas/Create')" : "")"
+                    @(HasPermission("btn-agregar") ? "" : "disabled")
+                    title="@(HasPermission("btn-agregar") ? "Agregar área" : "Sin permiso para agregar")">
+                <i class="bi bi-plus-circle me-1"></i> Agregar área
+            </button>
+        </div>
     </div>
 
     <partial name="_TableTools" />
 
     <div class="border-0 overflow-hidden">
         <div class="card-body p-0">
-            <table id="mainTable" class="table table-hover align-middle mb-0 table-container-rounded">
-                <thead class="burgundy-header text-white">
-                    <tr>
-                        <th class="no-sort text-center" style="width: 5%;">
-                            <input type="checkbox" id="checkAll" class="form-check-input">
-                        </th>
-                        <th class="ps-4" style="width: 25%;">Nombre</th>
-                        <th style="width: 40%;">Descripción</th>
-                        <th style="width: 20%;">Última modificación</th>
-                        <th class="no-sort text-center pe-4" style="width: 10%;">Acciones</th>
-                    </tr>
-                </thead>
-                <tbody class="table-white">
-                    @foreach (var item in Model)
-                    {
+            <div class="table-responsive">
+                <table id="mainTable" class="table mt-2 mb-2 table-hover table-container-rounded dataTable no-footer">
+                    <thead class="burgundy-header text-white">
                         <tr>
-                            <td class="text-center">
-                                <input type="checkbox" class="form-check-input row-checkbox" value="@item.Id" />
-                            </td>
-                            <td class="ps-4 fw-bold text-dark">@item.Name</td>
-                            <td class="text-muted">@(string.IsNullOrEmpty(item.Description) ? "Sin descripción" : item.Description)</td>
-                            <td class="text-muted small">
-                                <i class="bi bi-clock-history me-1"></i> @item.DateUpdated.ToString("dd/MM/yyyy hh:mm tt")
-                            </td>
-                            <td class="actions text-center pe-4">
-                                <div class="btn-group">
-                                    <button class="btn btn-sm btn-light border shadow-sm me-2"
-                                            style="width:32px; height:32px; padding:0;"
-                                            onclick="@(HasPermission("btn-editar") ? $"loadModal('/Procedures/ProcedureAreas/Edit/{item.Id}')" : "")"
-                                            @(HasPermission("btn-editar") ? "" : "disabled")
-                                            title="@(HasPermission("btn-editar") ? "Editar" : "Sin permiso para editar")">
-                                        <i class="bi bi-pencil-square text-warning"></i>
-                                    </button>
-                                    <button class="btn btn-sm btn-light border shadow-sm"
-                                            style="width:32px; height:32px; padding:0;"
-                                            onclick="@(HasPermission("btn-eliminar") ? $"loadModal('/Procedures/ProcedureAreas/Delete/{item.Id}')" : "")"
-                                            @(HasPermission("btn-eliminar") ? "" : "disabled")
-                                            title="@(HasPermission("btn-eliminar") ? "Eliminar" : "Sin permiso para eliminar")">
-                                        <i class="bi bi-trash-fill text-danger"></i>
-                                    </button>
-                                </div>
-                            </td>
+                            <th class="no-sort text-center" style="width: 5%;">
+                                <input type="checkbox" id="checkAll" class="form-check-input">
+                            </th>
+                            <th class="ps-4" style="width: 25%;">Nombre</th>
+                            <th style="width: 40%;">Descripción</th>
+                            <th style="width: 20%;">Última modificación</th>
+                            <th class="no-sort text-center pe-4" style="width: 10%;">Acciones</th>
                         </tr>
-                    }
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody class="table-white">
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td class="text-center">
+                                    <input type="checkbox" class="form-check-input row-checkbox" value="@item.Id" />
+                                </td>
+                                <td class="ps-4 fw-bold text-dark text-nowrap">@item.Name</td>
+                                <td class="text-muted text-nowrap">@(string.IsNullOrEmpty(item.Description) ? "Sin descripción" : item.Description)</td>
+                                <td class="text-muted small">
+                                    <i class="bi bi-clock-history me-1"></i> @item.DateUpdated.ToString("dd/MM/yyyy hh:mm tt")
+                                </td>
+                                <td class="actions text-center pe-4">
+                                    <div class="btn-group">
+                                        <button class="btn btn-sm btn-light border shadow-sm me-2"
+                                                style="width:32px; height:32px; padding:0;"
+                                                onclick="@(HasPermission("btn-editar") ? $"loadModal('/Procedures/ProcedureAreas/Edit/{item.Id}')" : "")"
+                                                @(HasPermission("btn-editar") ? "" : "disabled")
+                                                title="@(HasPermission("btn-editar") ? "Editar" : "Sin permiso para editar")">
+                                            <i class="bi bi-pencil-square text-warning"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-light border shadow-sm"
+                                                style="width:32px; height:32px; padding:0;"
+                                                onclick="@(HasPermission("btn-eliminar") ? $"loadModal('/Procedures/ProcedureAreas/Delete/{item.Id}')" : "")"
+                                                @(HasPermission("btn-eliminar") ? "" : "disabled")
+                                                title="@(HasPermission("btn-eliminar") ? "Eliminar" : "Sin permiso para eliminar")">
+                                            <i class="bi bi-trash-fill text-danger"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
     

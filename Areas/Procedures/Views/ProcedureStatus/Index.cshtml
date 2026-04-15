@@ -85,98 +85,102 @@
 <div id="modalContainer"></div>
 
 <div class="container-fluid px-4 pt-5">
-    <div class="d-flex justify-content-between align-items-start mb-4">
-        <div>
-            <h2 class="fw-bold mb-1 merriweather-font">
-                <i class="bi bi-check-circle"></i> Catálogo de Estados
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-end align-items-md-center gap-3 mb-4">
+        <div class="w-100">
+            <h2 class="fw-bold mb-0 merriweather-font">
+                <i class="bi bi-check-circle me-2 text-dark"></i>Catálogo de Estados
             </h2>
             <p class="text-muted small mb-0">Configura las etiquetas y lógica de control para los trámites.</p>
         </div>
-        <button class="btn btn-burgundy shadow-sm"
-                onclick="@(HasPermission("btn-agregar") ? "loadModal('/Procedures/ProcedureStatus/Create')" : "")"
-                @(HasPermission("btn-agregar") ? "" : "disabled")
-                title="@(HasPermission("btn-agregar") ? "Agregar estado" : "Sin permiso para agregar")">
-            <i class="bi bi-plus-circle me-2"></i> Agregar estado
-        </button>        
+        <div class="flex-shrink-0">
+            <button class="btn btn-burgundy btn-sm px-4 shadow-sm"
+                    onclick="@(HasPermission("btn-agregar") ? "loadModal('/Procedures/ProcedureStatus/Create')" : "")"
+                    @(HasPermission("btn-agregar") ? "" : "disabled")
+                    title="@(HasPermission("btn-agregar") ? "Agregar estado" : "Sin permiso para agregar")">
+                <i class="bi bi-plus-circle me-1"></i> Agregar estado
+            </button>
+        </div>
     </div>
 
     <partial name="_TableTools" />
 
     <div class="border-0 overflow-hidden">
         <div class="card-body p-0">
-            <table id="mainTable" class="table table-hover align-middle mb-0 table-container-rounded">
-                <thead class="burgundy-header text-white">
-                    <tr>
-                        <th class="ps-4" style="width: 15%;">Código Interno</th>
-                        <th style="width: 30%;">Nombre y Previsualización</th>
-                        <th class="text-center" style="width: 20%;">Propiedades</th>
-                        <th style="width: 20%;">Última modificación</th>
-                        <th class="no-sort text-center pe-4" style="width: 10%;">Acciones</th>
-                    </tr>
-                </thead>
-                <tbody class="table-white">
-                    @foreach (var item in Model)
-                    {
+            <div class="table-responsive">
+                <table id="mainTable" class="table mt-2 mb-2 table-hover table-container-rounded dataTable no-footer">
+                    <thead class="burgundy-header text-white">
                         <tr>
-                            <td class="ps-4">
-                                <code class="fw-bold text-primary">@item.InternalCode</code>
-                            </td>
-                            <td>
-                                <div style="background-color: @item.BackgroundColor;
-                                                color: @item.TextColor;
-                                                padding: 6px 18px;
-                                                border-radius: 20px;
-                                                text-align: center;
-                                                font-weight: 700;
-                                                display: inline-block;
-                                                min-width: 150px;
-                                                border: 1px solid rgba(0,0,0,0.1);
-                                                box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-                                                font-size: 0.85rem;">
-                                    @item.Name
-                                </div>
-                            </td>
-                            <td class="text-center">
-                                <div class="d-flex justify-content-center gap-2">
-                                    @if (item.IsTerminalState)
-                                    {
-                                        <span class="badge bg-info" title="Estado Finalizado">
-                                            <i class="bi bi-flag-fill"></i> Final
-                                        </span>
-                                    }
-                                    @if (item.IsActionRequiredByUser)
-                                    {
-                                        <span class="badge bg-warning text-dark" title="Requiere Acción del Alumno">
-                                            <i class="bi bi-person-exclamation"></i> Alumno
-                                        </span>
-                                    }
-                                </div>
-                            </td>
-                            <td class="text-muted small">
-                                <i class="bi bi-clock-history me-1"></i> @item.DateUpdated.ToString("dd/MM/yyyy hh:mm tt")
-                            </td>
-                            <td class="actions text-center pe-4">
-                                <div class="btn-group">
-                                    <button class="btn btn-sm btn-light border shadow-sm me-2"
-                                            style="width:32px; height:32px; padding:0;"
-                                            onclick="@(HasPermission("btn-editar") ? $"loadModal('/Procedures/ProcedureStatus/Edit/{item.Id}')" : "")"
-                                            @(HasPermission("btn-editar") ? "" : "disabled")
-                                            title="@(HasPermission("btn-editar") ? "Editar" : "Sin permiso para editar")">
-                                        <i class="bi bi-pencil-square text-warning"></i>
-                                    </button>
-                                    <button class="btn btn-sm btn-light border shadow-sm"
-                                            style="width:32px; height:32px; padding:0;"
-                                            onclick="@(HasPermission("btn-eliminar") ? $"loadModal('/Procedures/ProcedureStatus/Delete/{item.Id}')" : "")"
-                                            @(HasPermission("btn-eliminar") ? "" : "disabled")
-                                            title="@(HasPermission("btn-eliminar") ? "Eliminar" : "Sin permiso para eliminar")">
-                                        <i class="bi bi-trash3-fill text-danger"></i>
-                                    </button>
-                                </div>
-                            </td>
+                            <th class="ps-4" style="width: 15%;">Código Interno</th>
+                            <th style="width: 30%;">Nombre y Previsualización</th>
+                            <th class="text-center" style="width: 20%;">Propiedades</th>
+                            <th style="width: 20%;">Última modificación</th>
+                            <th class="no-sort text-center pe-4" style="width: 10%;">Acciones</th>
                         </tr>
-                    }
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody class="table-white">
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td class="ps-4">
+                                    <code class="fw-bold text-primary">@item.InternalCode</code>
+                                </td>
+                                <td>
+                                    <div style="background-color: @item.BackgroundColor;
+                                                    color: @item.TextColor;
+                                                    padding: 6px 18px;
+                                                    border-radius: 20px;
+                                                    text-align: center;
+                                                    font-weight: 700;
+                                                    display: inline-block;
+                                                    min-width: 150px;
+                                                    border: 1px solid rgba(0,0,0,0.1);
+                                                    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+                                                    font-size: 0.85rem;">
+                                        @item.Name
+                                    </div>
+                                </td>
+                                <td class="text-center">
+                                    <div class="d-flex justify-content-center gap-2">
+                                        @if (item.IsTerminalState)
+                                        {
+                                            <span class="badge bg-info" title="Estado Finalizado">
+                                                <i class="bi bi-flag-fill"></i> Final
+                                            </span>
+                                        }
+                                        @if (item.IsActionRequiredByUser)
+                                        {
+                                            <span class="badge bg-warning text-dark" title="Requiere Acción del Alumno">
+                                                <i class="bi bi-person-exclamation"></i> Alumno
+                                            </span>
+                                        }
+                                    </div>
+                                </td>
+                                <td class="text-muted small">
+                                    <i class="bi bi-clock-history me-1"></i> @item.DateUpdated.ToString("dd/MM/yyyy hh:mm tt")
+                                </td>
+                                <td class="actions text-center pe-4">
+                                    <div class="btn-group">
+                                        <button class="btn btn-sm btn-light border shadow-sm me-2"
+                                                style="width:32px; height:32px; padding:0;"
+                                                onclick="@(HasPermission("btn-editar") ? $"loadModal('/Procedures/ProcedureStatus/Edit/{item.Id}')" : "")"
+                                                @(HasPermission("btn-editar") ? "" : "disabled")
+                                                title="@(HasPermission("btn-editar") ? "Editar" : "Sin permiso para editar")">
+                                            <i class="bi bi-pencil-square text-warning"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-light border shadow-sm"
+                                                style="width:32px; height:32px; padding:0;"
+                                                onclick="@(HasPermission("btn-eliminar") ? $"loadModal('/Procedures/ProcedureStatus/Delete/{item.Id}')" : "")"
+                                                @(HasPermission("btn-eliminar") ? "" : "disabled")
+                                                title="@(HasPermission("btn-eliminar") ? "Eliminar" : "Sin permiso para eliminar")">
+                                            <i class="bi bi-trash3-fill text-danger"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 </div>
