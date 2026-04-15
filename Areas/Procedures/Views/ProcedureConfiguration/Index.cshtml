@@ -172,25 +172,24 @@
 
         $(document).on('click', '.btn-remove-pill', function() { $(this).closest('.badge').remove(); reorderAll(); });
         $(document).on('click', '.btn-remove-flow', function() { $(this).closest('.flow-item').remove(); reorderAll(); updateStatusDropdown(); });
-
-        $(document).off("submit", "#formProcedureMaster, #formBulkProcedure")
-                   .on("submit", "#formProcedureMaster, #formBulkProcedure", async function (e) {
+        $(document).off("submit", "#formProcedureMaster, #formBulkProcedure").on("submit", "#formProcedureMaster, #formBulkProcedure", async function (e) {
             e.preventDefault();
             const form = e.target;
             reorderAll();
 
-            const flows = [];
+            const token = $('input[name="__RequestVerificationToken"]').val();
+
+            const flowsValidation = [];
             $('#flowContainer .flow-item').each(function() {
-                flows.push({
+                flowsValidation.push({
                     IdStatus: parseInt($(this).find('input[type="hidden"]').val()),
                     StepOrder: parseInt($(this).find('.step-order-input').val())
                 });
             });
 
-            if (flows.length > 0) {
-                const lastStep = flows[flows.length - 1];
+            if (flowsValidation.length > 0) {
+                const lastStep = flowsValidation[flowsValidation.length - 1];
                 const statusInfo = statusColors.find(x => (x.Id || x.id) == lastStep.IdStatus);
-
                 const isTerminal = statusInfo ? (statusInfo.IsTerminal || statusInfo.isTerminal || statusInfo.IsTerminalState || statusInfo.isTerminalState) : false;
 
                 if (isTerminal !== true && isTerminal !== 1) {
@@ -202,8 +201,10 @@
                 return;
             }
 
-            let bodyData;
-            let headers = {};
+            let finalBody;
+            let finalHeaders = {
+                "RequestVerificationToken": token
+            };
 
             if (form.id === "formBulkProcedure") {
                 const ids = $('.row-checkbox:checked').map((_, el) => parseInt(el.value)).get();
@@ -215,28 +216,41 @@
                     });
                 });
 
-                bodyData = JSON.stringify({
+                finalBody = JSON.stringify({
                     Ids: ids,
-                    Name: $(form).find('input[name="Name"]').val(),
+                    Name: $(form).find('input[name="Name"]').val() || null,
                     IdArea: parseInt($(form).find('select[name="IdArea"]').val()) || 0,
-                    RequirementsList: reqs,
-                    FlowList: flows
+                    RequirementsList: reqs.length > 0 ? reqs : null,
+                    FlowList: flowsValidation.length > 0 ? flowsValidation : null
                 });
-                headers['Content-Type'] = 'application/json';
+                finalHeaders['Content-Type'] = 'application/json';
             } else {
-                bodyData = new FormData(form);
+                finalBody = new FormData(form);
             }
 
             try {
-                const response = await fetch(form.action, { method: 'POST', headers: headers, body: bodyData });
+                const response = await fetch(form.action, {
+                    method: 'POST',
+                    headers: finalHeaders,
+                    body: finalBody
+                });
+
+                if (response.status === 400) {
+                    console.error("Error 400: Revisa el binding del modelo.");
+                    showToast('error', 'Error en el formato de datos (400).');
+                    return;
+                }
+
                 const result = await response.json();
                 if (result.success) {
                     showToast('success', '¡Cambios guardados!');
                     setTimeout(() => location.reload(), 1200);
                 } else {
-                    showToast('error', result.errors ? result.errors.join(" | ") : "Error al guardar");
+                    showToast('error', result.errors ? result.errors.join(" | ") : (result.message || "Error al guardar"));
                 }
-            } catch (e) { showToast('error', 'Error de conexión con el servidor'); }
+            } catch (e) {
+                showToast('error', 'Error de conexión con el servidor');
+            }
         });
 
         $(document).on("submit", "#formDeleteProcedure", async function (e) {
@@ -271,7 +285,8 @@
                 icon: 'warning',
                 showCancelButton: true,
                 confirmButtonColor: '#620900',
-                confirmButtonText: 'Sí, borrar'
+                confirmButtonText: 'Sí, borrar',
+                cancelButtonText: 'Cancelar'
             });
             if (result.isConfirmed) {
                 const res = await fetch('/Procedures/ProcedureConfiguration/BulkDelete', {
@@ -346,7 +361,7 @@
             <div class="btn-group">
                 @if (HasPermission("btn-multiple-editar"))
                 {
-                    <button class="btn btn-warning btn-sm rounded-pill me-2" onclick="bulkEdit()">
+                    <button class="btn btn-sm btn-warning  px-3 fw-bold rounded-pill me-2" onclick="bulkEdit()">
                         <i class="bi bi-pencil-square me-1"></i> Editar
                     </button>
                 }               
