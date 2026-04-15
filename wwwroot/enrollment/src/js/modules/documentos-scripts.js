@@ -1,4 +1,3 @@
-// documentos-scripts.js
 (() => {
     "use strict";
 
@@ -24,7 +23,7 @@
     }
 
     function getGeneral() {
-        return safeParse(localStorage.getItem(LS_GENERAL_KEY), null);
+        return safeParse(sessionStorage.getItem(LS_GENERAL_KEY), null);
     }
 
     function emptyDocs() {
@@ -42,7 +41,7 @@
     }
 
     function getDocs() {
-        const raw = localStorage.getItem(LS_DOCS_KEY);
+        const raw = sessionStorage.getItem(LS_DOCS_KEY);
         if (!raw) return emptyDocs();
 
         const parsed = safeParse(raw, emptyDocs());
@@ -54,7 +53,7 @@
     }
 
     function saveDocs(docs) {
-        localStorage.setItem(LS_DOCS_KEY, JSON.stringify(docs));
+        sessionStorage.setItem(LS_DOCS_KEY, JSON.stringify(docs));
     }
 
     function todayStr() {

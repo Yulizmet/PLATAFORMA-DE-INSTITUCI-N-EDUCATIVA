@@ -58,7 +58,11 @@
 
             <div class="col-12 col-sm-6 col-md-3">
                 <label class="form-label">Fecha de Nacimiento</label>
-                <input asp-for="Persona.BirthDate" type="date" class="form-control" required data-required="true" />
+                <input asp-for="Persona.BirthDate"
+                       type="date"
+                       class="form-control"
+                       lang="en-CA"
+                       required />
                
             </div>
 
@@ -183,7 +187,11 @@
 
             <div class="col-12 col-md-4">
                 <label class="form-label">Teléfono de Trabajo</label>
-                <input asp-for="DatosGenerales.WorkPhone" class="form-control" />
+                <input asp-for="DatosGenerales.WorkPhone"
+                       class="form-control"
+                       inputmode="numeric"
+                       maxlength="10"
+                       oninput="this.value = this.value.replace(/[^0-9]/g, '')" />
               
             </div>
         </div>

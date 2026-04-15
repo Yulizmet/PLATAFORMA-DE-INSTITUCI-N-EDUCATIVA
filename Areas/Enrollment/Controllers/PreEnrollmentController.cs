@@ -1,23 +1,25 @@
-﻿using System.Security.Cryptography;
+﻿using ClosedXML.Excel;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using SchoolManager.Areas.Enrollment.ViewModels;
 using SchoolManager.Data;
 using SchoolManager.Models;
 using SchoolManager.Models.ViewModels;
-
+using System.IO;
+using System.Security.Cryptography;
 
 namespace SchoolManager.Areas.Enrollment.Controllers
 {
     [Area("Enrollment")]
-
     public class PreEnrollmentController : Controller
     {
         private readonly AppDbContext _context;
-   
 
         public PreEnrollmentController(AppDbContext context, IWebHostEnvironment env)
         {
@@ -67,7 +69,6 @@ namespace SchoolManager.Areas.Enrollment.Controllers
             return _context.PreenrollmentGenerals.Any(e => e.IdData == id);
         }
 
-
         // =====================================================================
         // DOCUMENTOS (Checklist)
         // =====================================================================
@@ -100,26 +101,40 @@ namespace SchoolManager.Areas.Enrollment.Controllers
             return Ok(new { success = true });
         }
 
+        
 
         // =====================================================================
         // FLUJO 1: REGISTRO INICIAL + GENERACIÓN DE FOLIO
-        // El usuario (sin cuenta) llena sus datos y genera un folio de pago.
         // =====================================================================
 
+        [Authorize(Roles = "Administrator")]
+        public IActionResult AdminDashboard()
+        {
+            return View("AspirantesLista");
+        }
+
         // GET: Enrollment/PreEnrollment/Create
-       
         [AllowAnonymous]
         public IActionResult Create()
         {
             ViewData["PasoActual"] = 1;
 
             ViewData["IdCareer"] = new SelectList(
-                _context.PreenrollmentCareers, "IdCareer", "name_career");
+                _context.PreenrollmentCareers
+                    .Where(c => c.IsActive)
+                    .OrderBy(c => c.name_career),
+                "IdCareer",
+                "name_career"
+            );
+
             ViewData["IdGeneration"] = new SelectList(
-                _context.PreenrollmentGenerations, "IdGeneration", "Year");
+                _context.PreenrollmentGenerations,
+                "IdGeneration",
+                "Year"
+            );
+
             return View();
         }
-
 
         // GET: Enrollment/PreEnrollment/Aspirantes
         [AllowAnonymous]
@@ -128,7 +143,6 @@ namespace SchoolManager.Areas.Enrollment.Controllers
         {
             return View();
         }
-
 
         // GET: Enrollment/PreEnrollment/AspirantesListas
         [AllowAnonymous]
@@ -150,17 +164,159 @@ namespace SchoolManager.Areas.Enrollment.Controllers
         // GET: Enrollment/PreEnrollment/Configuracion
         [AllowAnonymous]
         [HttpGet]
-        public async Task<IActionResult> Configuracion()
+        public async Task<IActionResult> Configuracion(string? tab = null)
         {
             var careers = await _context.PreenrollmentCareers
                 .OrderBy(c => c.name_career)
                 .ToListAsync();
 
+            var generations = await _context.PreenrollmentGenerations
+                .OrderByDescending(g => g.Year)
+                .Select(g => new
+                {
+                    g.IdGeneration,
+                    g.Year,
+                    g.MaxFolios,
+                    FoliosUsados = _context.PreenrollmentGenerals.Count(p => p.IdGeneration == g.IdGeneration)
+                })
+                .ToListAsync();
+
+            ViewBag.Generations = generations;
+            ViewBag.ActiveTab = tab ?? "careers";
+
             return View(careers);
         }
 
+        // =====================================================================
+        // CRUD DE GENERACIONES
+        // =====================================================================
 
+
+        [HttpGet]
+        [AllowAnonymous]
+        public async Task<IActionResult> LogoutAndRedirect()
+        {
+            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+
+            HttpContext.Session.Clear();
+
+            foreach (var cookie in Request.Cookies.Keys)
+            {
+                Response.Cookies.Delete(cookie);
+            }
+
+            return Redirect("~/");
+        }
+
+
+        [AllowAnonymous]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CrearGeneracion(int year, int? maxFolios)
+        {
+            if (year <= 0)
+            {
+                TempData["Error"] = "El año no es válido.";
+                return RedirectToAction(nameof(Configuracion), new { tab = "generations" });
+            }
+
+            bool existe = await _context.PreenrollmentGenerations
+                .AnyAsync(g => g.Year == year);
+
+            if (existe)
+            {
+                TempData["Error"] = "Ya existe una generación con ese año.";
+                return RedirectToAction(nameof(Configuracion), new { tab = "generations" });
+            }
+
+            if (maxFolios.HasValue && maxFolios.Value <= 0)
+            {
+                TempData["Error"] = "El límite de folios debe ser mayor a cero.";
+                return RedirectToAction(nameof(Configuracion), new { tab = "generations" });
+            }
+
+            var generation = new preenrollment_generations
+            {
+                Year = year,
+                MaxFolios = maxFolios
+            };
+
+            _context.PreenrollmentGenerations.Add(generation);
+            await _context.SaveChangesAsync();
+
+            TempData["Success"] = "Generación creada correctamente.";
+            return RedirectToAction(nameof(Configuracion), new { tab = "generations" });
+        }
+
+        [AllowAnonymous]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> EditarGeneracion(int idGeneration, int? maxFolios)
+        {
+            var generation = await _context.PreenrollmentGenerations
+                .FirstOrDefaultAsync(g => g.IdGeneration == idGeneration);
+
+            if (generation == null)
+            {
+                TempData["Error"] = "Generación no encontrada.";
+                return RedirectToAction(nameof(Configuracion), new { tab = "generations" });
+            }
+
+            int foliosUsados = await _context.PreenrollmentGenerals
+                .CountAsync(p => p.IdGeneration == idGeneration);
+
+            if (maxFolios.HasValue && maxFolios.Value <= 0)
+            {
+                TempData["Error"] = "El límite de folios debe ser mayor a cero.";
+                return RedirectToAction(nameof(Configuracion), new { tab = "generations" });
+            }
+
+            if (maxFolios.HasValue && maxFolios.Value < foliosUsados)
+            {
+                TempData["Error"] = $"No puedes poner un límite menor a los folios ya usados ({foliosUsados}).";
+                return RedirectToAction(nameof(Configuracion), new { tab = "generations" });
+            }
+
+            generation.MaxFolios = maxFolios;
+            await _context.SaveChangesAsync();
+
+            TempData["Success"] = "Límite de folios actualizado correctamente.";
+            return RedirectToAction(nameof(Configuracion), new { tab = "generations" });
+        }
+
+        [AllowAnonymous]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> EliminarGeneracion(int idGeneration)
+        {
+            var generation = await _context.PreenrollmentGenerations
+                .FirstOrDefaultAsync(g => g.IdGeneration == idGeneration);
+
+            if (generation == null)
+            {
+                TempData["Error"] = "La generación no existe.";
+                return RedirectToAction(nameof(Configuracion), new { tab = "generations" });
+            }
+
+            bool tieneFolios = await _context.PreenrollmentGenerals
+                .AnyAsync(p => p.IdGeneration == idGeneration);
+
+            if (tieneFolios)
+            {
+                TempData["Error"] = "No se puede eliminar la generación porque ya tiene folios o aspirantes registrados.";
+                return RedirectToAction(nameof(Configuracion), new { tab = "generations" });
+            }
+
+            _context.PreenrollmentGenerations.Remove(generation);
+            await _context.SaveChangesAsync();
+
+            TempData["Success"] = "Generación eliminada correctamente.";
+            return RedirectToAction(nameof(Configuracion), new { tab = "generations" });
+        }
+
+        // =====================================================================
         // CRUD DE CARRERAS
+        // =====================================================================
 
         [AllowAnonymous]
         [HttpPost]
@@ -262,10 +418,29 @@ namespace SchoolManager.Areas.Enrollment.Controllers
             return RedirectToAction(nameof(Configuracion));
         }
 
+        [AllowAnonymous]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CambiarEstadoCarrera(int idCareer)
+        {
+            var career = await _context.PreenrollmentCareers
+                .FirstOrDefaultAsync(c => c.IdCareer == idCareer);
+
+            if (career == null)
+            {
+                TempData["Error"] = "Carrera no encontrada.";
+                return RedirectToAction(nameof(Configuracion));
+            }
+
+            career.IsActive = !career.IsActive;
+
+            await _context.SaveChangesAsync();
+
+            TempData["Success"] = $"La carrera ahora está {(career.IsActive ? "activa" : "inactiva")}.";
+            return RedirectToAction(nameof(Configuracion));
+        }
 
         // POST: Enrollment/PreEnrollment/Create
-        // Recibe un ViewModel con los datos del formulario de inscripción.
-        // Guarda en preenrollment_general y tablas relacionadas, genera folio y matrícula.
         [AllowAnonymous]
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -276,13 +451,24 @@ namespace SchoolManager.Areas.Enrollment.Controllers
                 ViewData["PasoActual"] = 1;
 
                 ViewData["IdCareer"] = new SelectList(
-                    _context.PreenrollmentCareers, "IdCareer", "name_career", vm.IdCareer);
+                    _context.PreenrollmentCareers
+                        .Where(c => c.IsActive)
+                        .OrderBy(c => c.name_career),
+                    "IdCareer",
+                    "name_career",
+                    vm.IdCareer
+                );
+
                 ViewData["IdGeneration"] = new SelectList(
-                    _context.PreenrollmentGenerations, "IdGeneration", "Year", vm.IdGeneration);
+                    _context.PreenrollmentGenerations,
+                    "IdGeneration",
+                    "Year",
+                    vm.IdGeneration
+                );
+
                 return View(vm);
             }
 
-            // --- Guardar en preenrollment_general ---
             var general = new preenrollment_general
             {
                 IdCareer = vm.IdCareer,
@@ -300,9 +486,8 @@ namespace SchoolManager.Areas.Enrollment.Controllers
             };
 
             _context.PreenrollmentGenerals.Add(general);
-            await _context.SaveChangesAsync(); // necesitamos el IdData generado
+            await _context.SaveChangesAsync();
 
-            // --- Guardar domicilio ---
             var address = new preenrollment_addresses
             {
                 id_data = general.IdData,
@@ -312,12 +497,10 @@ namespace SchoolManager.Areas.Enrollment.Controllers
                 postal_code = vm.PostalCode,
                 neighborhood = vm.Neighborhood,
                 state = vm.State,
-                city = vm.City,
-                //phone = vm.Phone
+                city = vm.City
             };
             _context.PreenrollmentAddresses.Add(address);
 
-            // --- Guardar escuela de procedencia ---
             var school = new preenrollment_schools
             {
                 id_data = general.IdData,
@@ -333,7 +516,6 @@ namespace SchoolManager.Areas.Enrollment.Controllers
             };
             _context.PreenrollmentSchools.Add(school);
 
-            // --- Guardar tutor ---
             var tutor = new preenrollment_tutors
             {
                 id_data = general.IdData,
@@ -346,7 +528,6 @@ namespace SchoolManager.Areas.Enrollment.Controllers
             };
             _context.PreenrollmentTutors.Add(tutor);
 
-            // --- Guardar info adicional ---
             var info = new preenrollment_infos
             {
                 id_data = general.IdData,
@@ -359,7 +540,6 @@ namespace SchoolManager.Areas.Enrollment.Controllers
             };
             _context.PreenrollmentInfos.Add(info);
 
-            // --- Guardar documentos (checklist inicial en false) ---
             var docs = new preenrollment_docs
             {
                 IdData = general.IdData,
@@ -375,13 +555,10 @@ namespace SchoolManager.Areas.Enrollment.Controllers
 
             await _context.SaveChangesAsync();
 
-            // Redirigir a confirmación mostrando el folio generado
             return RedirectToAction(nameof(SubirDocumentos), new { id = general.IdData });
         }
 
-
         // GET: Enrollment/PreEnrollment/FolioGenerado/5
-        // Muestra al usuario su folio de pago recién generado.
         [AllowAnonymous]
         public async Task<IActionResult> FolioGenerado(int id)
         {
@@ -396,8 +573,6 @@ namespace SchoolManager.Areas.Enrollment.Controllers
 
         // =====================================================================
         // FLUJO 2: VERIFICACIÓN DE PAGO Y COMPLETAR REGISTRO
-        // El admin aprueba el folio. El usuario ingresa su folio, se verifica
-        // que esté APPROVED y se le permite completar y activar su cuenta.
         // =====================================================================
 
         // GET: Enrollment/PreEnrollment/ValidateFolio
@@ -417,6 +592,7 @@ namespace SchoolManager.Areas.Enrollment.Controllers
             if (string.IsNullOrWhiteSpace(folio))
             {
                 ModelState.AddModelError("", "Debes ingresar un folio.");
+                ViewBag.Folio = folio;
                 return View();
             }
 
@@ -429,24 +605,28 @@ namespace SchoolManager.Areas.Enrollment.Controllers
             if (pre == null)
             {
                 ModelState.AddModelError("", "Folio no encontrado.");
+                ViewBag.Folio = folio;
                 return View();
             }
 
             if (pre.ProcedureRequest == null)
             {
                 ModelState.AddModelError("", "No hay un trámite asociado a este folio.");
+                ViewBag.Folio = folio;
                 return View();
             }
 
             if (pre.ProcedureRequest.ProcedureFlow?.ProcedureStatus?.InternalCode != "APPROVED")
             {
                 ModelState.AddModelError("", "Tu pago aún no ha sido aprobado. Intenta más tarde.");
+                ViewBag.Folio = folio;
                 return View();
             }
 
             if (pre.UserId != null)
             {
                 ModelState.AddModelError("", "Este folio ya tiene una cuenta asociada.");
+                ViewBag.Folio = folio;
                 return View();
             }
 
@@ -484,7 +664,6 @@ namespace SchoolManager.Areas.Enrollment.Controllers
                 PersonId = pre.PersonId,
                 Folio = pre.Folio ?? "",
                 Matricula = pre.Matricula ?? "",
-               
                 Carrera = pre.Career?.name_career ?? "",
                 NombreCompleto = $"{pre.Person.FirstName} {pre.Person.LastNamePaternal} {pre.Person.LastNameMaternal}",
                 Email = pre.Person.Email ?? ""
@@ -614,21 +793,9 @@ namespace SchoolManager.Areas.Enrollment.Controllers
         }
 
         // =====================================================================
-        // CRUD ADMIN (Index, Details, Edit, Delete)
-        // Para que el admin pueda gestionar las preinscripciones.
+        // DOCUMENTOS
         // =====================================================================
 
-
-        // =====================================================================
-        // Documentos
-        // =====================================================================
-
-        // GET: Enrollment/PreEnrollment/SubirDocumentos
-        // =====================================================================
-        // Documentos
-        // =====================================================================
-
-        // GET: Enrollment/PreEnrollment/SubirDocumentos
         [AllowAnonymous]
         [HttpGet]
         public IActionResult SubirDocumentos(int id)
@@ -650,9 +817,8 @@ namespace SchoolManager.Areas.Enrollment.Controllers
             public bool CartaBuenaConducta { get; set; }
         }
 
-
         // =====================================================================
-        // Confirmar informacion
+        // CONFIRMAR INFORMACIÓN
         // =====================================================================
 
         // GET: Enrollment/PreEnrollment/ConfirmarPreinscripcion
@@ -663,13 +829,15 @@ namespace SchoolManager.Areas.Enrollment.Controllers
             ViewData["PasoActual"] = 3;
 
             ViewData["IdCareer"] = new SelectList(
-                _context.PreenrollmentCareers, "IdCareer", "name_career"
+                _context.PreenrollmentCareers
+                    .Where(c => c.IsActive)
+                    .OrderBy(c => c.name_career),
+                "IdCareer",
+                "name_career"
             );
 
             return View();
         }
-
-
 
         // POST: Enrollment/PreEnrollment/ConfirmarPreinscripcion
         [AllowAnonymous]
@@ -699,7 +867,12 @@ namespace SchoolManager.Areas.Enrollment.Controllers
 
                 ViewData["PasoActual"] = 3;
                 ViewData["IdCareer"] = new SelectList(
-                    _context.PreenrollmentCareers, "IdCareer", "name_career", vm?.DatosGenerales?.IdCareer
+                    _context.PreenrollmentCareers
+                        .Where(c => c.IsActive)
+                        .OrderBy(c => c.name_career),
+                    "IdCareer",
+                    "name_career",
+                    vm?.DatosGenerales?.IdCareer
                 );
                 ViewData["ModoConfirmacion"] = true;
 
@@ -717,7 +890,12 @@ namespace SchoolManager.Areas.Enrollment.Controllers
                 ModelState.AddModelError("", "No hay generaciones registradas en el sistema.");
                 ViewData["PasoActual"] = 3;
                 ViewData["IdCareer"] = new SelectList(
-                    _context.PreenrollmentCareers, "IdCareer", "name_career", vm?.DatosGenerales?.IdCareer
+                    _context.PreenrollmentCareers
+                        .Where(c => c.IsActive)
+                        .OrderBy(c => c.name_career),
+                    "IdCareer",
+                    "name_career",
+                    vm?.DatosGenerales?.IdCareer
                 );
                 ViewData["ModoConfirmacion"] = true;
 
@@ -780,7 +958,7 @@ namespace SchoolManager.Areas.Enrollment.Controllers
                     postal_code = vm.Domicilio.postal_code,
                     neighborhood = vm.Domicilio.neighborhood,
                     state = vm.Domicilio.state,
-                    city = vm.Domicilio.city,
+                    city = vm.Domicilio.city
                 };
                 _context.PreenrollmentAddresses.Add(address);
 
@@ -852,13 +1030,19 @@ namespace SchoolManager.Areas.Enrollment.Controllers
 
                 ViewData["PasoActual"] = 3;
                 ViewData["IdCareer"] = new SelectList(
-                    _context.PreenrollmentCareers, "IdCareer", "name_career", vm?.DatosGenerales?.IdCareer
+                    _context.PreenrollmentCareers
+                        .Where(c => c.IsActive)
+                        .OrderBy(c => c.name_career),
+                    "IdCareer",
+                    "name_career",
+                    vm?.DatosGenerales?.IdCareer
                 );
                 ViewData["ModoConfirmacion"] = true;
 
                 throw;
             }
         }
+
         // vista de finalizar
         [AllowAnonymous]
         [HttpGet]
@@ -889,16 +1073,13 @@ namespace SchoolManager.Areas.Enrollment.Controllers
                     ? ""
                     : $"{general.Person.FirstName} {general.Person.LastNamePaternal} {general.Person.LastNameMaternal}",
                 Especialidad = general.Career?.name_career ?? "",
-
                 Genero = general.Person?.Gender ?? "",
                 FechaNacimiento = general.Person?.BirthDate,
                 Curp = general.Person?.Curp ?? "",
                 TipoSangre = general.BloodType ?? "",
-
                 SecundariaProcedencia = escuela?.school ?? "",
                 Promedio = escuela?.average,
                 FechaFinSecundaria = escuela?.end_date,
-
                 Calle = domicilio?.street ?? "",
                 NumeroExterior = domicilio?.exterior_number ?? "",
                 NumeroInterior = domicilio?.interior_number ?? "",
@@ -906,7 +1087,6 @@ namespace SchoolManager.Areas.Enrollment.Controllers
                 CodigoPostal = domicilio?.postal_code ?? "",
                 Municipio = domicilio?.city ?? "",
                 Estado = domicilio?.state ?? "",
-
                 Generacion = general.Generation != null ? general.Generation.Year.ToString() : ""
             };
 
@@ -919,15 +1099,6 @@ namespace SchoolManager.Areas.Enrollment.Controllers
         {
             return RedirectToAction(nameof(Create));
         }
-
-        // public async Task<IActionResult> Index()
-        //{
-        //   var generales = await _context.PreenrollmentGenerals
-        //     .Include(p => p.Career)
-        //    .Include(p => p.Generation)
-        //    .ToListAsync();
-        // return View(generales);
-        //} 
 
         // GET: Enrollment/PreEnrollment/Details/5
         [AllowAnonymous]
@@ -962,9 +1133,18 @@ namespace SchoolManager.Areas.Enrollment.Controllers
                 return NotFound();
 
             ViewData["IdCareer"] = new SelectList(
-                _context.PreenrollmentCareers, "IdCareer", "name_career", general.IdCareer);
+                _context.PreenrollmentCareers,
+                "IdCareer",
+                "name_career",
+                general.IdCareer
+            );
+
             ViewData["IdGeneration"] = new SelectList(
-                _context.PreenrollmentGenerations, "IdGeneration", "Year", general.IdGeneration);
+                _context.PreenrollmentGenerations,
+                "IdGeneration",
+                "Year",
+                general.IdGeneration
+            );
 
             return View(general);
         }
@@ -991,13 +1171,23 @@ namespace SchoolManager.Areas.Enrollment.Controllers
                     else
                         throw;
                 }
+
                 return RedirectToAction(nameof(Index));
             }
 
             ViewData["IdCareer"] = new SelectList(
-                _context.PreenrollmentCareers, "IdCareer", "name_career", general.IdCareer);
+                _context.PreenrollmentCareers,
+                "IdCareer",
+                "name_career",
+                general.IdCareer
+            );
+
             ViewData["IdGeneration"] = new SelectList(
-                _context.PreenrollmentGenerations, "IdGeneration", "Year", general.IdGeneration);
+                _context.PreenrollmentGenerations,
+                "IdGeneration",
+                "Year",
+                general.IdGeneration
+            );
 
             return View(general);
         }
@@ -1029,6 +1219,7 @@ namespace SchoolManager.Areas.Enrollment.Controllers
                 _context.PreenrollmentGenerals.Remove(general);
                 await _context.SaveChangesAsync();
             }
+
             return RedirectToAction(nameof(Index));
         }
 
@@ -1106,7 +1297,6 @@ namespace SchoolManager.Areas.Enrollment.Controllers
 
             var result = new
             {
-                // --- Persona ---
                 nombre = general.Person?.FirstName ?? "",
                 apellidoPaterno = general.Person?.LastNamePaternal ?? "",
                 apellidoMaterno = general.Person?.LastNameMaternal ?? "",
@@ -1115,8 +1305,6 @@ namespace SchoolManager.Areas.Enrollment.Controllers
                 genero = general.Person?.Gender ?? "",
                 fechaNacimiento = general.Person?.BirthDate,
                 curp = general.Person?.Curp ?? "",
-
-                // --- General ---
                 folio = general.Folio,
                 matricula = general.Matricula,
                 carrera = general.Career?.name_career ?? "",
@@ -1128,8 +1316,6 @@ namespace SchoolManager.Areas.Enrollment.Controllers
                 trabaja = general.Work,
                 domicilioTrabajo = general.WorkAddress ?? "",
                 telefonoTrabajo = general.WorkPhone ?? "",
-
-                // --- Domicilio ---
                 calle = address?.street ?? "",
                 numExterior = address?.exterior_number ?? "",
                 numInterior = address?.interior_number ?? "",
@@ -1137,8 +1323,6 @@ namespace SchoolManager.Areas.Enrollment.Controllers
                 codigoPostal = address?.postal_code ?? "",
                 ciudad = address?.city ?? "",
                 estado = address?.state ?? "",
-
-                // --- Escuela ---
                 escuela = school?.school ?? "",
                 grado = school?.degree ?? "",
                 escuelaEstado = school?.state ?? "",
@@ -1148,8 +1332,6 @@ namespace SchoolManager.Areas.Enrollment.Controllers
                 fechaFinEsc = school?.end_date,
                 sistemaEstudio = school?.study_system ?? "",
                 tipoBachillerato = school?.high_school_type ?? "",
-
-                // --- Info adicional ---
                 beca = info?.beca ?? "",
                 comunidadIndi = info?.comu_indi ?? false,
                 lenguaIndi = info?.lengu_indi ?? false,
@@ -1161,6 +1343,133 @@ namespace SchoolManager.Areas.Enrollment.Controllers
             return Json(result);
         }
 
+        // EXCEL MATRICULAS
+        [AllowAnonymous]
+        [HttpGet]
+        [EnableCors("AllowAdmin")]
+        public async Task<IActionResult> ExportarMatriculasExcel()
+        {
+            var matriculas = await _context.PreenrollmentGenerals
+                .Include(g => g.Person)
+                .Where(g =>
+                    !string.IsNullOrEmpty(g.Matricula) &&
+                    g.Person != null &&
+                    g.Person.IsActive == true &&
+                    g.UserId != null // 🔥 SOLO CON USUARIO
+                )
+                .Select(g => new
+                {
+                    g.Matricula,
+                    NombreCompleto = g.Person != null
+                        ? $"{g.Person.FirstName} {g.Person.LastNamePaternal} {g.Person.LastNameMaternal}"
+                        : "Sin nombre",
+                    Email = g.Person != null ? g.Person.Email : "",
+                    IsActive = g.Person != null ? g.Person.IsActive : false
+                })
+                .OrderBy(g => g.Matricula)
+                .ToListAsync();
+
+            using var workbook = new XLWorkbook();
+            var worksheet = workbook.Worksheets.Add("Matriculas");
+
+            worksheet.Cell(1, 1).Value = "Matrícula";
+            worksheet.Cell(1, 2).Value = "Nombre completo";
+            worksheet.Cell(1, 3).Value = "Correo";
+            worksheet.Cell(1, 4).Value = "Estado";
+
+            var header = worksheet.Range(1, 1, 1, 4);
+            header.Style.Font.Bold = true;
+            header.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+
+            int row = 2;
+
+            foreach (var item in matriculas)
+            {
+                worksheet.Cell(row, 1).Value = item.Matricula;
+                worksheet.Cell(row, 2).Value = item.NombreCompleto;
+                worksheet.Cell(row, 3).Value = item.Email;
+                worksheet.Cell(row, 4).Value = item.IsActive ? "Activo" : "Inactivo";
+                row++;
+            }
+
+            worksheet.Columns().AdjustToContents();
+
+            using var stream = new MemoryStream();
+            workbook.SaveAs(stream);
+            var content = stream.ToArray();
+
+            var fileName = $"Matriculas_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx";
+
+            return File(
+                content,
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                fileName
+            );
+        }
+
+        // EXCEL MATRICULAS por generacion
+        [AllowAnonymous]
+        [HttpGet]
+        [EnableCors("AllowAdmin")]
+        public async Task<IActionResult> ExportarAspirantesExcel(int idGeneration)
+        {
+            var aspirantes = await _context.PreenrollmentGenerals
+                .Include(g => g.Person)
+                .Where(g =>
+                    g.IdGeneration == idGeneration &&
+                    g.Person != null
+                )
+                .Select(g => new
+                {
+                    g.Folio,
+                    g.Matricula,
+                    NombreCompleto = g.Person != null
+                        ? $"{g.Person.FirstName} {g.Person.LastNamePaternal} {g.Person.LastNameMaternal}"
+                        : "Sin nombre",
+                    Email = g.Person != null ? g.Person.Email : ""
+                })
+                .OrderBy(g => g.Folio)
+                .ToListAsync();
+
+            using var workbook = new XLWorkbook();
+            var worksheet = workbook.Worksheets.Add("Aspirantes");
+
+            // Encabezados
+            worksheet.Cell(1, 1).Value = "Folio";
+            worksheet.Cell(1, 2).Value = "Matrícula";
+            worksheet.Cell(1, 3).Value = "Nombre completo";
+            worksheet.Cell(1, 4).Value = "Correo";
+
+            // Estilo encabezado
+            var header = worksheet.Range(1, 1, 1, 4);
+            header.Style.Font.Bold = true;
+            header.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+
+            int row = 2;
+
+            foreach (var item in aspirantes)
+            {
+                worksheet.Cell(row, 1).Value = item.Folio;
+                worksheet.Cell(row, 2).Value = item.Matricula;
+                worksheet.Cell(row, 3).Value = item.NombreCompleto;
+                worksheet.Cell(row, 4).Value = item.Email;
+                row++;
+            }
+
+            worksheet.Columns().AdjustToContents();
+
+            using var stream = new MemoryStream();
+            workbook.SaveAs(stream);
+            var content = stream.ToArray();
+
+            var fileName = $"Aspirantes_Generacion_{idGeneration}_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx";
+
+            return File(
+                content,
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                fileName
+            );
+        }
         // GET: Enrollment/PreEnrollment/GetMatriculas
         [AllowAnonymous]
         [HttpGet]
@@ -1172,7 +1481,8 @@ namespace SchoolManager.Areas.Enrollment.Controllers
                 .Where(g =>
                     !string.IsNullOrEmpty(g.Matricula) &&
                     g.Person != null &&
-                    g.Person.IsActive == true   // 🔥 FILTRO CLAVE
+                    g.Person.IsActive == true &&
+                    g.UserId != null
                 )
                 .Select(g => new
                 {
@@ -1192,6 +1502,7 @@ namespace SchoolManager.Areas.Enrollment.Controllers
         }
 
 
+        // EDITAR
         [AllowAnonymous]
         [HttpPut]
         [EnableCors("AllowAdmin")]
@@ -1211,9 +1522,6 @@ namespace SchoolManager.Areas.Enrollment.Controllers
             var school = general.Schools.FirstOrDefault();
             var info = general.Infos.FirstOrDefault();
 
-            // ========================
-            // PERSON
-            // ========================
             if (general.Person != null)
             {
                 general.Person.FirstName = dto.Nombre;
@@ -1225,16 +1533,10 @@ namespace SchoolManager.Areas.Enrollment.Controllers
                 general.Person.Curp = dto.Curp;
             }
 
-            // ========================
-            // GENERAL
-            // ========================
             general.Nationality = dto.Nacionalidad;
             general.MaritalStatus = dto.EstadoCivil;
             general.BloodType = dto.TipoSangre;
 
-            // ========================
-            // ADDRESS
-            // ========================
             if (address != null)
             {
                 address.street = dto.Calle;
@@ -1246,9 +1548,6 @@ namespace SchoolManager.Areas.Enrollment.Controllers
                 address.postal_code = dto.CP;
             }
 
-            // ========================
-            // SCHOOL
-            // ========================
             if (school != null)
             {
                 school.school = dto.Escuela;
@@ -1257,9 +1556,6 @@ namespace SchoolManager.Areas.Enrollment.Controllers
                 school.state = dto.EscuelaEstado;
             }
 
-            // ========================
-            // INFO
-            // ========================
             if (info != null)
             {
                 info.beca = dto.Beca;
@@ -1279,7 +1575,6 @@ namespace SchoolManager.Areas.Enrollment.Controllers
         {
             public int IdData { get; set; }
 
-            // PERSON
             public string Nombre { get; set; }
             public string ApellidoPaterno { get; set; }
             public string ApellidoMaterno { get; set; }
@@ -1288,12 +1583,10 @@ namespace SchoolManager.Areas.Enrollment.Controllers
             public string Genero { get; set; }
             public string Curp { get; set; }
 
-            // GENERAL
             public string Nacionalidad { get; set; }
             public string EstadoCivil { get; set; }
             public string TipoSangre { get; set; }
 
-            // ADDRESS
             public string Calle { get; set; }
             public string NumExt { get; set; }
             public string NumInt { get; set; }
@@ -1302,13 +1595,11 @@ namespace SchoolManager.Areas.Enrollment.Controllers
             public string Estado { get; set; }
             public string CP { get; set; }
 
-            // SCHOOL
             public string Escuela { get; set; }
             public decimal? Promedio { get; set; }
             public string EscuelaCiudad { get; set; }
             public string EscuelaEstado { get; set; }
 
-            // INFO
             public string Beca { get; set; }
             public bool ComunidadIndi { get; set; }
             public bool LenguaIndi { get; set; }

@@ -32,13 +32,20 @@
 
                         @Html.AntiForgeryToken()
 
-                        <div asp-validation-summary="All" class="text-red-600 mb-3"></div>
+                        @if (!ViewData.ModelState.IsValid)
+                        {
+                            <div class="mb-4 flex items-start gap-3 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 shadow-sm">
+                                <i class="fa-solid fa-circle-exclamation mt-0.5"></i>
+                                <div asp-validation-summary="All"></div>
+                            </div>
+                        }
 
                         <label class="block text-sm">
                             <span class="text-gray-700">Folio</span>
 
                             <input name="folio"
                                    type="text"
+                                   value="@ViewBag.Folio"
                                    class="block w-full mt-1 text-sm border-gray-300 bg-white focus:border-purple-400 focus:outline-none focus:shadow-outline-purple text-gray-700 form-input"
                                    placeholder="Ingresa tu folio" />
                         </label>
@@ -93,4 +100,3 @@
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
 }
-</div>
