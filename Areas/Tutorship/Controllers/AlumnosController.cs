@@ -19,7 +19,6 @@ namespace SchoolManager.Areas.Tutorship.Controllers
 
         private int LoggedUserId => int.Parse(User.FindFirst("UserId")?.Value ?? "0");
 
-        // Obtenemos el nombre real del rol para la vista y mensajes
         private string LoggedRoleName => User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value ?? "Ninguno";
 
         public AlumnosController(AppDbContext context)
@@ -40,7 +39,6 @@ namespace SchoolManager.Areas.Tutorship.Controllers
 
         public async Task<IActionResult> ListaDeAlumnos(int? grado, string? grupo)
         {
-            // Validación dinámica: Solo Maestros y Administradores
             if (!User.IsInRole("Teacher") && !User.IsInRole("Administrator") && !User.IsInRole("Master"))
                 return RedirectToAction(nameof(AccesoDenegado));
 
@@ -57,7 +55,6 @@ namespace SchoolManager.Areas.Tutorship.Controllers
                 .Include(u => u.Person)
                 .Where(u => u.UserRoles.Any(ur => ur.RoleId == dbStudentRoleId));
 
-            // Validación dinámica para filtrar solo los alumnos del Maestro
             if (User.IsInRole("Teacher"))
             {
                 gruposQuery = _context.grades_Enrollments
@@ -116,7 +113,6 @@ namespace SchoolManager.Areas.Tutorship.Controllers
 
         public async Task<IActionResult> AsignarTutores()
         {
-            // Validación dinámica: Solo Administradores
             if (!User.IsInRole("Administrator") && !User.IsInRole("Master"))
                 return RedirectToAction(nameof(AccesoDenegado));
 
@@ -139,7 +135,6 @@ namespace SchoolManager.Areas.Tutorship.Controllers
         [HttpPost]
         public async Task<IActionResult> GuardarAsignacionTutor(int teacherId, int groupId)
         {
-            // Validación dinámica: Solo Administradores
             if (!User.IsInRole("Administrator") && !User.IsInRole("Master"))
                 return RedirectToAction(nameof(AccesoDenegado));
 
@@ -230,7 +225,6 @@ namespace SchoolManager.Areas.Tutorship.Controllers
                                 Foto = t != null && t.FilePath != null && t.FilePath != "Sin archivo" ? t.FilePath : ""
                             };
 
-                // Validación dinámica para filtrar solo los alumnos del Maestro en el DataTable
                 if (User.IsInRole("Teacher"))
                 {
                     query = query.Where(x => _context.Tutorships.Any(t => t.StudentId == x.UserId && t.TeacherId == LoggedUserId));

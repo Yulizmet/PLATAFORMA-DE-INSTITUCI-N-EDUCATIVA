@@ -38,7 +38,6 @@ namespace SchoolManager.Areas.Tutorship.Controllers
 
         public async Task<IActionResult> Controlador()
         {
-            // Pasamos el nombre del rol a la vista en lugar de un número
             ViewBag.RoleName = LoggedRoleName;
 
             var entrevistaExistente = await _context.TutorshipInterviews.FirstOrDefaultAsync(e => e.StudentId == LoggedUserId);

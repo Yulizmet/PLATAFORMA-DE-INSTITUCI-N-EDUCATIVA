@@ -4,9 +4,18 @@
 }
 
 <div class="container mt-4 mb-4">
-    <div class="position-relative mb-4 text-center">
-        <h2 class="fw-bold m-0" style="color: var(--brand-dark);">Temas Sugeridos para Tutorías</h2>
-       @*  <p class="text-muted mt-2">Crea los lineamientos y materiales que los maestros verán en su pase de asistencia semanal.</p> *@
+    <div class="row align-items-center mb-4 mt-3">
+        <div class="col-12 col-md-3 text-start mb-3 mb-md-0">
+            <button type="button" onclick="history.back()" class="btn btn-sm btn-outline-secondary fw-bold shadow-sm px-3" style="border-radius: 20px;">
+                <i class="bi bi-arrow-left me-1"></i> Regresar
+            </button>
+        </div>
+        <div class="col-12 col-md-6 text-center">
+            <h2 class="fw-bold m-0" style="color:var(--brand-dark);">
+                Temas Sugeridos para Tutorías
+            </h2>
+        </div>
+        <div class="col-12 col-md-3 d-none d-md-block"></div>
     </div>
 
     @if (TempData["Exito"] != null)

@@ -23,7 +23,6 @@ namespace SchoolManager.Areas.Tutorship.Controllers
 
         private int LoggedUserId => int.Parse(User.FindFirst("UserId")?.Value ?? "0");
 
-        // Obtenemos el nombre real del rol para mensajes de error y la vista
         private string LoggedRoleName => User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value ?? "Ninguno";
 
         public EntrevistaController(AppDbContext context, IWebHostEnvironment webHostEnvironment)
@@ -238,7 +237,7 @@ namespace SchoolManager.Areas.Tutorship.Controllers
                 return RedirectToAction(nameof(AccesoDenegado));
 
             ViewBag.FiltroActual = filtroEstatus;
-            ViewBag.RolActual = LoggedRoleName; // Cambiado para enviar el nombre del rol
+            ViewBag.RolActual = LoggedRoleName; 
 
             int dbStudentRoleId = await GetDbRoleIdByNameAsync("Student");
 

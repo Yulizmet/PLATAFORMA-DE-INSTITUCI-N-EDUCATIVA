@@ -133,10 +133,10 @@
             <input type="hidden" name="fechaInicio" value="@ViewBag.FechaInicio" />
             <input type="hidden" name="fechaFin" value="@ViewBag.FechaFin" />
 
-            <div class="alert text-center fw-bold shadow-sm mb-4" style="background-color: #ffffff; border: 2px dashed #8C1B1B; color: #444;">
+            <div class="alert text-center fw-bold shadow-sm mb-4" style="background-color: #ffffff; border: 2px dashed var(--brand-dark); color: #444;">
                 <i class="bi bi-calendar-check text-success me-2" style="font-size: 1.2rem;"></i>
                 Estás visualizando/modificando la asistencia del día:
-                <span style="color: #8C1B1B; font-size: 1.2rem; text-decoration: underline;">
+                <span style="color: var(--brand-dark); font-size: 1.2rem; text-decoration: underline;">
                     @{
                         DateTime fechaFormateada;
                         if (DateTime.TryParse(ViewBag.FechaSeleccionada, out fechaFormateada))
@@ -149,7 +149,7 @@
 
             <div class="table-responsive shadow-sm rounded bg-white border mb-4">
                 <table id="tablaAsistencia" class="table table-hover mb-0 w-100 tabla-adaptable">
-                    <thead style="background-color: #8C1B1B; color: white;" class="text-center">
+                    <thead style="background-color: var(--brand-dark); color: white;" class="text-center">
                         <tr>
                             <th class="py-3 border-0">Matrícula</th>
                             <th class="text-start py-3 border-0">Nombre del Alumno</th>
@@ -225,7 +225,7 @@
                         <button type="button" id="btnEditar" class="btn btn-secondary px-4 btn-lg shadow text-white fw-bold w-100">
                             <i class="bi bi-unlock-fill me-2"></i> Editar
                         </button>
-                        <button type="submit" id="btnGuardar" class="btn text-white px-4 btn-lg shadow d-none fw-bold w-100" style="background-color: #8C1B1B;">
+                        <button type="submit" id="btnGuardar" class="btn text-white px-4 btn-lg shadow d-none fw-bold w-100" style="background-color: var(--brand-dark);">
                             <i class="bi bi-save me-2"></i> Guardar
                         </button>
                     </div>
@@ -233,7 +233,7 @@
                 else
                 {
                     <div class="d-none d-md-block"></div>
-                    <button type="submit" class="btn text-white px-5 btn-lg shadow fw-bold w-100 w-md-auto" style="background-color: #8C1B1B;">
+                    <button type="submit" class="btn text-white px-5 btn-lg shadow fw-bold w-100 w-md-auto" style="background-color: var(--brand-dark);">
                         <i class="bi bi-save me-2"></i> Guardar Asistencia
                     </button>
                 }
@@ -259,7 +259,7 @@
             border-radius: 8px; border: 1px solid #ced4da; padding: 0.35rem 0.75rem; transition: all 0.15s ease-in-out;
         }
         div.dataTables_wrapper div.dataTables_filter input:focus {
-            outline: none; border-color: #8C1B1B; box-shadow: 0 0 0 0.25rem rgba(140, 27, 27, 0.25); 
+            outline: none; border-color: var(--brand-dark); box-shadow: 0 0 0 0.25rem rgba(140, 27, 27, 0.25); 
         }
         div.dataTables_wrapper div.dataTables_length select { border-radius: 8px; border: 1px solid #ced4da; padding-left: 0.5rem; }
 
@@ -292,7 +292,7 @@
             .tabla-adaptable td::before {
                 content: attr(data-label);
                 font-weight: 800;
-                color: #8C1B1B;
+                color: var(--brand-dark);
                 text-align: left;
                 flex-shrink: 0;
                 margin-right: 1rem;

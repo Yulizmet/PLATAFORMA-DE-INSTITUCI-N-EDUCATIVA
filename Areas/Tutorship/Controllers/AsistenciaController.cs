@@ -43,7 +43,6 @@ namespace SchoolManager.Areas.Tutorship.Controllers
 
         private async Task<int> GetDbRoleIdByNameAsync(string roleName)
         {
-            // Usamos _context.Roles basado en la confirmación de tu AppDbContext
             var role = await _context.Roles.FirstOrDefaultAsync(r => r.Name == roleName);
             return role?.RoleId ?? 0;
         }

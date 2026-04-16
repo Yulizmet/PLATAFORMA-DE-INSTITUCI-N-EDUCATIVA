@@ -92,12 +92,12 @@
 
     <div class="table-responsive shadow-sm rounded bg-white mb-5">
         <table id="tablaAlumnos" class="table table-hover mb-0 w-100 tabla-adaptable">
-            <thead style="background-color: #8C1B1B; color: white;">
+            <thead style="background-color: var(--brand-dark); color: white;">
                 <tr>
                     <th class="text-center py-3 border-0" style="width: 80px;">Foto</th>
                     <th class="py-3 border-0">Información del Alumno</th>
-                    <th class="text-md-end text-start py-3 border-0" style="min-width: 250px; padding-right: 1.5rem;">Acciones</th>
-                </tr>
+<th class="text-center py-3 border-0" style="min-width: 250px;">Acciones</th>    
+</tr>
             </thead>
             <tbody>
             </tbody>
@@ -114,7 +114,7 @@
             border-radius: 8px; border: 1px solid #ced4da; padding: 0.35rem 0.75rem; transition: all 0.15s ease-in-out;
         }
         div.dataTables_wrapper div.dataTables_filter input:focus {
-            outline: none; border-color: #8C1B1B; box-shadow: 0 0 0 0.25rem rgba(140, 27, 27, 0.25); 
+            outline: none; border-color var(--brand-dark); box-shadow: 0 0 0 0.25rem rgba(140, 27, 27, 0.25); 
         }
         div.dataTables_wrapper div.dataTables_length select { border-radius: 8px; border: 1px solid #ced4da; padding-left: 0.5rem; }
 
@@ -214,19 +214,19 @@
                         }
                     },
                     { 
-                        data: null, 
-                        orderable: false, 
-                        className: "text-md-end text-start pe-md-3 align-middle py-3",
-                        render: function(data, type, row) {
-                            let urlEntrevista = '@Url.Action("VerEntrevistaAlumno", "Entrevista", new { area = "Gestion" })/' + row.userId;
-                            let urlSeguimiento = '@Url.Action("Seguimiento", "Seguimiento", new { area = "Gestion" })?matriculaBuscar=' + encodeURIComponent(row.matricula);
+    data: null, 
+    orderable: false, 
+    className: "text-center align-middle py-3", 
+    render: function(data, type, row) {
+        let urlEntrevista = '@Url.Action("VerEntrevistaAlumno", "Entrevista", new { area = "Gestion" })/' + row.userId;
+        let urlSeguimiento = '@Url.Action("Seguimiento", "Seguimiento", new { area = "Gestion" })?matriculaBuscar=' + encodeURIComponent(row.matricula);
 
-                            return '<div class="d-flex gap-2 justify-content-md-end">' +
-                                        '<a href="' + urlEntrevista + '" class="btn btn-sm text-white px-3 py-2 fw-bold" style="background-color: #8C1B1B; border-radius: 8px;"><i class="bi bi-file-text me-1"></i> Entrevista</a>' +
-                                        '<a href="' + urlSeguimiento + '" class="btn btn-sm text-white px-3 py-2 fw-bold" style="background-color: #8C1B1B; border-radius: 8px;"><i class="bi bi-graph-up me-1"></i> Seguimiento</a>' +
-                                   '</div>';
-                        }
-                    }
+        return '<div class="d-flex gap-2 justify-content-center">' +
+                    '<a href="' + urlEntrevista + '" class="btn btn-sm text-white px-3 py-2 fw-bold" style="background-color: #8C1B1B; border-radius: 8px;"><i class="bi bi-file-text me-1"></i> Entrevista</a>' +
+                    '<a href="' + urlSeguimiento + '" class="btn btn-sm text-white px-3 py-2 fw-bold" style="background-color: #8C1B1B; border-radius: 8px;"><i class="bi bi-graph-up me-1"></i> Seguimiento</a>' +
+               '</div>';
+    }
+}
                 ]
             });
 
