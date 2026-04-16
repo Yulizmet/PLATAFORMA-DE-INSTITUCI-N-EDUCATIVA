@@ -4,6 +4,7 @@
     var grupos = ViewBag.Grupos as IEnumerable<SchoolManager.Models.grades_group>;
     
     var asignaciones = ViewBag.AsignacionesActuales as IEnumerable<dynamic>;
+    var estatusMaestros = ViewBag.EstatusMaestros as IEnumerable<dynamic>; // Nueva variable
 }
 
 <div class="container-fluid px-3 px-md-4 mt-4 mt-md-5 mb-5">
@@ -91,55 +92,102 @@
                 </div>
 
                 <div class="col-12 col-md-7">
-                    <div class="card shadow-soft border-0 h-100" style="border-radius: var(--radius-md); overflow: hidden;">
-                        <div class="card-header text-white p-3" style="background-color: var(--brand-secondary);">
-                            <h5 class="mb-0 fs-6 fs-md-5 fw-bold text-dark"><i class="bi bi-list-check me-1"></i> Asignaciones Actuales</h5>
+                    <div class="card shadow-soft border-0 h-100" style="border-radius: var(--radius-md); overflow: hidden; background-color: var(--surface-card);">
+                        
+                        <div class="card-header p-0" style="background-color: var(--surface-muted); border-bottom: 2px solid var(--border-medium);">
+                            <ul class="nav nav-tabs border-0" id="panelTabs" role="tablist">
+                                <li class="nav-item w-50 text-center" role="presentation">
+                                    <button class="nav-link active w-100 fw-bold border-0 rounded-0 py-3 custom-tab" id="grupos-tab" data-bs-toggle="tab" data-bs-target="#grupos-pane" type="button" role="tab">
+                                        <i class="bi bi-people-fill me-1"></i> Por Grupo
+                                    </button>
+                                </li>
+                                <li class="nav-item w-50 text-center" role="presentation">
+                                    <button class="nav-link w-100 fw-bold border-0 rounded-0 py-3 custom-tab" id="maestros-tab" data-bs-toggle="tab" data-bs-target="#maestros-pane" type="button" role="tab">
+                                        <i class="bi bi-person-video3 me-1"></i> Por Maestro
+                                    </button>
+                                </li>
+                            </ul>
                         </div>
-                        <div class="card-body p-0" style="background-color: var(--surface-card);">
-                            
-                            <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
-                                <table class="table table-hover mb-0 align-middle">
-                                    <thead class="sticky-top" style="background-color: var(--surface-muted); border-bottom: 2px solid var(--border-medium); z-index: 1;">
-    <tr>
-        <th class="py-3 ps-4 fw-bold" style="color: var(--brand-dark); width: 120px;">Grupo</th>
-        <th class="py-3 fw-bold" style="color: var(--brand-dark);">Tutor Asignado</th>
-        <th class="py-3 text-center pe-4 fw-bold" style="color: var(--brand-dark);">Estado</th>
-    </tr>
-</thead>
-                                    <tbody>
-                                        @if (asignaciones != null)
-                                        {
-                                            foreach (var item in asignaciones)
-                                            {
-                                                bool estaAsignado = item.Tutor != "Sin Asignar";
-                                                <tr>
-                                                    <td class="ps-4 fw-bold text-muted">@item.NombreGrupo</td>
-                                                    <td class="fw-bold" style="color: @(estaAsignado ? "var(--brand-dark)" : "#999");">
-                                                        @item.Tutor
-                                                    </td>
-                                                    <td class="text-center pe-4">
-                                                        @if (estaAsignado)
-                                                        {
-                                                            <span class="badge shadow-sm" style="background-color: var(--btn-crear); color: var(--brand-black);">Asignado</span>
-                                                        }
-                                                        else
-                                                        {
-                                                            <span class="badge shadow-sm" style="background-color: var(--btn-eliminar); color: white;">Sin Asignar</span>
-                                                        }
-                                                    </td>
-                                                </tr>
-                                            }
-                                        }
-                                        else
-                                        {
-                                            <tr>
-                                                <td colspan="3" class="text-center py-4 text-muted">No hay grupos registrados.</td>
-                                            </tr>
-                                        }
-                                    </tbody>
-                                </table>
-                            </div>
 
+                        <div class="card-body p-0">
+                            <div class="tab-content" id="panelTabsContent">
+                                
+                                <div class="tab-pane fade show active" id="grupos-pane" role="tabpanel" tabindex="0">
+                                    <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
+                                        <table class="table table-hover mb-0 align-middle">
+                                            <thead class="sticky-top" style="background-color: var(--surface-muted); border-bottom: 2px solid var(--border-medium); z-index: 1;">
+                                                <tr>
+                                                    <th class="py-3 ps-4 fw-bold" style="color: var(--brand-dark); width: 120px;">Grupo</th>
+                                                    <th class="py-3 fw-bold" style="color: var(--brand-dark);">Tutor Asignado</th>
+                                                    <th class="py-3 text-center pe-4 fw-bold" style="color: var(--brand-dark);">Estado</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @if (asignaciones != null)
+                                                {
+                                                    foreach (var item in asignaciones)
+                                                    {
+                                                        bool estaAsignado = item.Tutor != "Sin Asignar";
+                                                        <tr>
+                                                            <td class="ps-4 fw-bold text-muted">@item.NombreGrupo</td>
+                                                            <td class="fw-bold" style="color: @(estaAsignado ? "var(--brand-dark)" : "#999");">@item.Tutor</td>
+                                                            <td class="text-center pe-4">
+                                                                @if (estaAsignado)
+                                                                {
+                                                                    <span class="badge shadow-sm" style="background-color: var(--btn-crear); color: var(--brand-black);">Asignado</span>
+                                                                }
+                                                                else
+                                                                {
+                                                                    <span class="badge shadow-sm" style="background-color: var(--btn-eliminar); color: white;">Sin Asignar</span>
+                                                                }
+                                                            </td>
+                                                        </tr>
+                                                    }
+                                                }
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+
+                                <div class="tab-pane fade" id="maestros-pane" role="tabpanel" tabindex="0">
+                                    <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
+                                        <table class="table table-hover mb-0 align-middle">
+                                            <thead class="sticky-top" style="background-color: var(--surface-muted); border-bottom: 2px solid var(--border-medium); z-index: 1;">
+                                                <tr>
+                                                    <th class="py-3 ps-4 fw-bold" style="color: var(--brand-dark);">Maestro</th>
+                                                    <th class="py-3 fw-bold" style="color: var(--brand-dark);">Grupos a cargo</th>
+                                                    <th class="py-3 text-center pe-4 fw-bold" style="color: var(--brand-dark);">Estatus</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @if (estatusMaestros != null)
+                                                {
+                                                    foreach (var maestro in estatusMaestros)
+                                                    {
+                                                        <tr>
+                                                            <td class="ps-4 fw-bold text-dark">@maestro.Nombre</td>
+                                                            <td class="text-muted fw-bold" style="font-size: 0.9rem;">
+                                                                @maestro.Grupos
+                                                            </td>
+                                                            <td class="text-center pe-4">
+                                                                @if (maestro.EstaAsignado)
+                                                                {
+                                                                    <span class="badge shadow-sm" style="background-color: var(--brand-secondary); color: var(--brand-white);">Ocupado</span>
+                                                                }
+                                                                else
+                                                                {
+                                                                    <span class="badge border" style="background-color: transparent; color: #999; border-color: #ddd !important;">Disponible</span>
+                                                                }
+                                                            </td>
+                                                        </tr>
+                                                    }
+                                                }
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -149,17 +197,23 @@
 </div>
 
 <style>
-    .table-responsive::-webkit-scrollbar {
-        width: 8px;
+    .custom-tab {
+        background-color: transparent !important;
+        color: #777 !important;
+        transition: all 0.2s ease-in-out;
     }
-    .table-responsive::-webkit-scrollbar-track {
-        background: #f1f1f1; 
+    .custom-tab:hover {
+        color: var(--brand-dark) !important;
+        background-color: rgba(255,255,255,0.5) !important;
     }
-    .table-responsive::-webkit-scrollbar-thumb {
-        background: var(--brand-secondary); 
-        border-radius: 4px;
+    .custom-tab.active {
+        background-color: var(--surface-card) !important;
+        color: var(--brand-dark) !important;
+        border-bottom: 3px solid var(--brand-primary) !important;
     }
-    .table-responsive::-webkit-scrollbar-thumb:hover {
-        background: var(--brand-dark); 
-    }
+
+    .table-responsive::-webkit-scrollbar { width: 8px; }
+    .table-responsive::-webkit-scrollbar-track { background: #f1f1f1; }
+    .table-responsive::-webkit-scrollbar-thumb { background: var(--brand-secondary); border-radius: 4px; }
+    .table-responsive::-webkit-scrollbar-thumb:hover { background: var(--brand-dark); }
 </style>
