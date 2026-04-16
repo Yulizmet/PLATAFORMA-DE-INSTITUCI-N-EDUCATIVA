@@ -5,22 +5,24 @@
     ViewData["Title"] = "Registrar Personal Médico";
 }
 <div class="dashboard-header">
-    <div class="header-content d-flex align-items-start justify-content-between flex-wrap">
-        <div>
-            <h2 class="text-white">REGISTRAR PERSONAL MÉDICO</h2>
+    <div class="header-content">
+        <h2 class="text-white">REGISTRAR PERSONAL MÉDICO</h2>
+
+        <div class="header-buttons">
             <div class="buttons-left">
-                <a asp-action="Create" class="btn-header ">
+                <a asp-action="Create" class="btn-header">
                     <i class="bi bi-person-plus"></i> Crear Personal
                 </a>
-                <a asp-action="Index" class="btn-header ">
+                <a asp-action="Index" class="btn-header">
                     <i class="bi bi-person-badge"></i> Ver Personal
                 </a>
             </div>
-        </div>
-        <div class="buttons-right">
-            <a asp-controller="Dashboard" asp-action="Index" class="btn-header">
-                <i class="bi bi-arrow-left-circle"></i> Regresar al inicio
-            </a>
+
+            <div class="buttons-right">
+                <a asp-controller="Dashboard" asp-action="Index" class="btn-header home-btn">
+                    <i class="bi bi-arrow-left-circle"></i> Regresar al inicio
+                </a>
+            </div>
         </div>
     </div>
 </div>

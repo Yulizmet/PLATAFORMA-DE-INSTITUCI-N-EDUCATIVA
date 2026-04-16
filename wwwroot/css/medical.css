@@ -81,7 +81,15 @@ a {
     width: 95%;
     box-shadow: var(--shadow-brand);
     box-sizing: border-box;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
 }
+
+    .dashboard-main-header > div {
+        min-width: 0;
+    }
 
     .dashboard-main-header h2 {
         font-size: 2.5rem;
@@ -125,7 +133,6 @@ a {
     justify-content: space-between;
     align-items: center;
     width: 100%;
-    flex-wrap: wrap;
     gap: 15px;
 }
 
@@ -139,56 +146,45 @@ a {
 .buttons-right {
     display: flex;
     align-items: center;
+    margin-left: auto;
 }
 
-.btn-header {
-    padding: 12px 24px;
+.btn-header,
+.home-btn {
+    padding: 12px 22px;
     border-radius: 30px;
     font-weight: 700;
     text-decoration: none;
     border: none;
     font-size: 14px;
-    background: rgba(255,255,255,0.18);
-    color: #ffffff;
-    transition: all .22s ease;
-    box-shadow: none;
-    box-sizing: border-box;
-    display: inline-block;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
     white-space: nowrap;
     width: auto;
-    min-width: fit-content;
     cursor: pointer;
+}
+
+.btn-header {
+    background: rgba(255,255,255,0.18);
+    color: #fff;
 }
 
     .btn-header:hover {
         background: rgba(255,255,255,0.26);
-        color: #ffffff;
+        color: #fff;
     }
 
-    .btn-header.active {
-        background: #ffffff;
-        color: var(--brand-primary);
-    }
-
+    .btn-header.active,
     .btn-header.create {
-        background: #ffffff;
+        background: #fff;
         color: var(--brand-primary);
     }
 
 .home-btn {
-    background-color: var(--brand-white);
+    background: #fff;
     color: var(--brand-dark);
-    border: none;
-    padding: 12px 22px;
-    border-radius: 30px;
-    font-weight: 700;
-    letter-spacing: 1px;
-    text-decoration: none;
-    display: inline-block;
-    white-space: nowrap;
-    width: auto;
-    min-width: fit-content;
-    cursor: pointer;
 }
 
 /* =========================
@@ -210,11 +206,12 @@ a {
 ========================= */
 .cards-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, 310px);
+    grid-template-columns: repeat(auto-fit, minmax(280px, 310px));
     justify-content: center;
     gap: 25px;
     margin-top: 40px;
     padding-bottom: 80px;
+    width: 100%;
 }
 
     .cards-grid .card-link {
@@ -729,7 +726,15 @@ a {
         margin: 16px auto 0 auto;
         width: calc(100% - 24px);
         max-width: 100%;
+        flex-wrap: wrap;
+        align-items: flex-start;
+        gap: 12px;
     }
+
+        .dashboard-main-header .btn-header {
+            width: 100%;
+            justify-content: center;
+        }
 
         .dashboard-main-header h2 {
             font-size: 1.55rem;
@@ -757,46 +762,54 @@ a {
     }
 
     .header-buttons {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 10px;
         margin-top: 14px;
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 10px;
+        width: 100%;
     }
 
     .buttons-left {
-        width: 100%;
-        flex-direction: row;
-        flex-wrap: wrap;
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
         gap: 8px;
+        width: 100%;
     }
 
     .buttons-right {
         width: 100%;
-        margin-top: 0;
+        margin-left: 0;
     }
 
     .btn-header,
     .home-btn {
-        width: auto !important;
-        min-width: fit-content !important;
-        text-align: center;
-        padding: 12px 24px;
+        width: 100%;
+        min-width: 0;
+        padding: 11px 14px;
         font-size: 14px;
-        display: inline-block;
-        box-sizing: border-box;
-        white-space: nowrap;
     }
 
     .cards-grid {
+        display: grid;
         grid-template-columns: 1fr;
+        justify-content: stretch; 
+        justify-items: stretch;
+        align-items: stretch;
         gap: 14px;
-        margin-top: 16px;
-        padding-bottom: 40px;
         width: 100%;
+        margin: 16px 0 40px 0;
+        padding: 0;
     }
 
         .cards-grid .card-link {
             width: 100%;
+            margin: 0;
+        }
+
+        .cards-grid .dashboard-card {
+            width: 100%;
+            max-width: 100%;
+            margin: 0;
         }
 
     .dashboard-card {
@@ -994,16 +1007,19 @@ a {
     }
 
     .buttons-left {
-        flex-direction: column;
+        grid-template-columns: 1fr;
+        width: 100%;
+    }
+
+    .buttons-right {
         width: 100%;
     }
 
     .btn-header,
     .home-btn {
-        width: 100% !important;
-        text-align: center;
-        font-size: 12px;
-        padding: 10px 20px;
+        width: 100%;
+        font-size: 13px;
+        padding: 10px 14px;
     }
 
     .card {
@@ -1053,22 +1069,5 @@ a {
     .toast-notif {
         font-size: 12px;
         padding: 9px 12px;
-    }
-}
-
-/* ===================================================
-   CORRECCIONES PARA BOTONES ADAPTABLES AL TEXTO
-=================================================== */
-.btn-header,
-.home-btn {
-    width: auto !important;
-    min-width: fit-content !important;
-    display: inline-block !important;
-}
-
-@media (max-width: 480px) {
-    .btn-header,
-    .home-btn {
-        width: 100% !important;
     }
 }

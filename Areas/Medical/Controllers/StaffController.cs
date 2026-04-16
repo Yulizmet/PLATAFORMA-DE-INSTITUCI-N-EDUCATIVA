@@ -120,14 +120,24 @@ namespace SchoolManager.Areas.Medical.Controllers
 
             await SyncUserRole(model.PersonId, model.RoleId);
 
-            _context.Add(new medical_permissions
+            var permisos = new medical_permissions
             {
                 StaffId = staff.Id,
                 Ver = model.Ver,
                 Agregar = model.Agregar,
                 Modificar = model.Modificar,
                 Borrar = model.Borrar
-            });
+            };
+
+            if (model.RoleId == 20 || model.RoleId == 21 || model.RoleId == 22 || model.RoleId == 6)
+            {
+                permisos.Ver = true;
+                permisos.Agregar = true;
+                permisos.Modificar = true;
+                permisos.Borrar = true;
+            }
+
+            _context.Add(permisos);
             await _context.SaveChangesAsync();
 
             TempData["Mensaje"] = "Personal médico registrado correctamente.";
@@ -219,7 +229,14 @@ namespace SchoolManager.Areas.Medical.Controllers
             staff.Shift = model.Shift;
 
             var permiso = await _context.MedicalPermissions.FirstOrDefaultAsync(p => p.StaffId == model.Id);
-            if (permiso != null)
+            if (model.RoleId == 20 || model.RoleId == 21 || model.RoleId == 22 || model.RoleId == 6)
+            {
+                permiso.Ver = true;
+                permiso.Agregar = true;
+                permiso.Modificar = true;
+                permiso.Borrar = true;
+            }
+            else
             {
                 permiso.Ver = model.Ver;
                 permiso.Agregar = model.Agregar;

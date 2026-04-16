@@ -6,25 +6,27 @@
 }
 
 <div class="dashboard-header">
-    <div class="header-content d-flex align-items-center justify-content-between flex-wrap">
-        <div>
-            <h2 class="text-white">NUEVA BITÁCORA CLÍNICA</h2>
+    <div class="header-content">
+        <h2 class="text-white">NUEVA BITÁCORA CLÍNICA</h2>
+
+        <div class="header-buttons">
             <div class="buttons-left">
-                <a asp-action="Create" class="btn-header ">
+                <a asp-action="Create" class="btn-header">
                     <i class="bi bi-plus-circle"></i> Crear Bitácora
                 </a>
-                <a asp-action="Index" class="btn-header ">
+                <a asp-action="Index" class="btn-header">
                     <i class="bi bi-journal-medical"></i> Ver Bitácoras
                 </a>
                 <a asp-action="Reporte" class="btn-header">
                     <i class="bi bi-file-earmark-bar-graph"></i> Reporte
                 </a>
             </div>
-        </div>
-        <div class="buttons-right">
-            <a asp-controller="Dashboard" asp-action="Index" class="btn-header">
-                <i class="bi bi-arrow-left-circle"></i> Regresar al inicio
-            </a>
+
+            <div class="buttons-right">
+                <a asp-controller="Dashboard" asp-action="Index" class="btn-header home-btn">
+                    <i class="bi bi-arrow-left-circle"></i> Regresar al inicio
+                </a>
+            </div>
         </div>
     </div>
 </div>

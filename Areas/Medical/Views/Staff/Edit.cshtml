@@ -106,15 +106,46 @@
             <h5 class="section-title">PERMISOS DEL PERSONAL</h5>
 
             <div class="row g-4" id="seccionPermisos">
-                <div class="col-md-3"><input type="checkbox" asp-for="Ver" id="permisoVer" /> Ver</div>
-                <div class="col-md-3"><input type="checkbox" asp-for="Agregar" id="permisoAgregar" /> Agregar</div>
-                <div class="col-md-3"><input type="checkbox" asp-for="Modificar" id="permisoModificar" /> Modificar</div>
-                <div class="col-md-3"><input type="checkbox" asp-for="Borrar" id="permisoBorrar" /> Borrar</div>
+                <div class="col-md-3">
+                    <div class="form-check">
+                        <input class="form-check-input" asp-for="Ver" id="permisoVer" />
+                        <label class="form-check-label fw-bold" for="permisoVer">
+                            <i class="bi bi-eye"></i> Ver bitácoras
+                        </label>
+                    </div>
+                </div>
+
+                <div class="col-md-3">
+                    <div class="form-check">
+                        <input class="form-check-input" asp-for="Agregar" id="permisoAgregar" />
+                        <label class="form-check-label fw-bold" for="permisoAgregar">
+                            <i class="bi bi-plus-circle"></i> Agregar bitácoras
+                        </label>
+                    </div>
+                </div>
+
+                <div class="col-md-3">
+                    <div class="form-check">
+                        <input class="form-check-input" asp-for="Modificar" id="permisoModificar" />
+                        <label class="form-check-label fw-bold" for="permisoModificar">
+                            <i class="bi bi-pencil"></i> Modificar bitácoras
+                        </label>
+                    </div>
+                </div>
+
+                <div class="col-md-3">
+                    <div class="form-check">
+                        <input class="form-check-input" asp-for="Borrar" id="permisoBorrar" />
+                        <label class="form-check-label fw-bold" for="permisoBorrar">
+                            <i class="bi bi-trash"></i> Borrar bitácoras
+                        </label>
+                    </div>
+                </div>
             </div>
 
             <div class="d-flex justify-content-between mt-4">
-                <a asp-action="Index" class="btn">CANCELAR</a>
-                <button type="submit" class="btn">GUARDAR</button>
+                <a asp-action="Index" class="btn" style="border: 1.5px solid #6c757d;">CANCELAR</a>
+                <button type="submit" class="btn" style="border: 1.5px solid #6c757d;">GUARDAR</button>
             </div>
 
         </form>

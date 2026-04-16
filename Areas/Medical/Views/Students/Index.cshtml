@@ -8,15 +8,14 @@
 <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
 
 <div class="dashboard-header">
-    <div class="header-content d-flex align-items-start justify-content-between flex-wrap">
-        <div>
-            <h2 class="text-white">REGISTRO DE ALUMNOS</h2>
-            <div class="buttons-left">
+    <div class="header-content">
+        <h2 class="text-white">REGISTRO DE ALUMNOS</h2>
 
-                @* Crear — todos menos Coordinator *@
+        <div class="header-buttons">
+            <div class="buttons-left">
                 @if (User.IsInRole("Nurse") || User.IsInRole("Psychologist") ||
-                                User.IsInRole("Head Nurse") || User.IsInRole("Head of Psychology") ||
-                                User.IsInRole("Master"))
+                     User.IsInRole("Head Nurse") || User.IsInRole("Head of Psychology") ||
+                     User.IsInRole("Master"))
                 {
                     <a asp-action="Create" class="btn-header">
                         <i class="bi bi-plus-circle"></i> Agregar Alumno
@@ -26,13 +25,13 @@
                 <a asp-action="Index" class="btn-header">
                     <i class="bi bi-people-fill"></i> Ver Alumnos
                 </a>
-
             </div>
-        </div>
-        <div class="buttons-right">
-            <a asp-controller="Dashboard" asp-action="Index" class="btn-header">
-                <i class="bi bi-arrow-left-circle"></i> Regresar al inicio
-            </a>
+
+            <div class="buttons-right">
+                <a asp-controller="Dashboard" asp-action="Index" class="btn-header home-btn">
+                    <i class="bi bi-arrow-left-circle"></i> Regresar al inicio
+                </a>
+            </div>
         </div>
     </div>
 </div>
@@ -41,7 +40,7 @@
     <div class="card shadow-sm">
         <div class="card-body">
             <table id="tablaAlumnos" class="table table-hover align-middle">
-                <thead class="table-light">
+                <thead>
                     <tr>
                         <th>Matrícula</th>
                         <th>Nombre Completo</th>
