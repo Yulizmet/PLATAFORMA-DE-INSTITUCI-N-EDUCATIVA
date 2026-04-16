@@ -118,9 +118,47 @@ namespace SchoolManager.Areas.Tutorship.Controllers
                 .Where(u => u.UserRoles.Any(ur => ur.RoleId == 2))
                 .ToListAsync();
 
-            ViewBag.Grupos = await _context.grades_GradeGroups
+            var grupos = await _context.grades_GradeGroups
                 .OrderBy(g => g.GradeLevelId).ThenBy(g => g.Name)
                 .ToListAsync();
+
+            ViewBag.Grupos = grupos;
+
+
+            var tutorias = await _context.Tutorships
+                .Include(t => t.Teacher)
+                .ThenInclude(u => u.Person)
+                .ToListAsync();
+
+            var inscripciones = await _context.grades_Enrollments.ToListAsync();
+
+            var listaAsignaciones = new List<dynamic>();
+
+            foreach (var grupo in grupos)
+            {
+                var primerAlumnoDelGrupo = inscripciones.FirstOrDefault(e => e.GroupId == grupo.GroupId);
+
+                string nombreTutor = "Sin Asignar";
+
+                if (primerAlumnoDelGrupo != null)
+                {
+                    var tutoriaDelGrupo = tutorias.FirstOrDefault(t => t.StudentId == primerAlumnoDelGrupo.StudentId);
+                    if (tutoriaDelGrupo != null && tutoriaDelGrupo.Teacher != null)
+                    {
+                        var persona = tutoriaDelGrupo.Teacher.Person;
+                        nombreTutor = $"{persona.FirstName} {persona.LastNamePaternal} {persona.LastNameMaternal}";
+                    }
+                }
+
+                listaAsignaciones.Add(new
+                {
+                    GrupoId = grupo.GroupId,
+                    NombreGrupo = $"{grupo.GradeLevelId}{grupo.Name}",
+                    Tutor = nombreTutor
+                });
+            }
+
+            ViewBag.AsignacionesActuales = listaAsignaciones;
 
             return View("~/Areas/Tutorship/Views/AsignarTutores.cshtml");
         }
