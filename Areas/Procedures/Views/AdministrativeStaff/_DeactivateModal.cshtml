@@ -1,10 +1,10 @@
 ﻿@model SchoolManager.Areas.Procedures.ViewModels.StaffViewModel
 
 <div class="modal fade" id="deactivateModal" tabindex="-1">
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 shadow-lg">
             <div class="modal-header bg-danger text-white">
-                <h5 class="modal-title"><i class="bi bi-person-dash me-2"></i>Revocar Permisos Administrativos</h5>
+                <h5 class="modal-title fw-bold"><i class="bi bi-person-dash me-2"></i>Revocar Permisos Administrativos</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body text-center py-4">
@@ -22,7 +22,7 @@
                     El usuario <strong>NO podrá gestionar trámites</strong> de esta área, pero su cuenta de sistema general permanecerá intacta.
                 </div>
             </div>
-            <div class="modal-footer bg-light">
+            <div class="modal-footer border-0 bg-light">
                 <form id="formDeactivateStaff">
                     @Html.AntiForgeryToken()
                     <input type="hidden" name="id" value="@Model.Id" />

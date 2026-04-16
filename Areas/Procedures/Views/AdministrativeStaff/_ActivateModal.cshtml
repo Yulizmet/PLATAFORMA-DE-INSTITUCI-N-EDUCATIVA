@@ -1,10 +1,10 @@
 ﻿@model SchoolManager.Areas.Procedures.ViewModels.StaffViewModel
 
 <div class="modal fade" id="activateModal" tabindex="-1">
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 shadow-lg">
             <div class="modal-header bg-success text-white">
-                <h5 class="modal-title"><i class="bi bi-person-check-fill me-2"></i>Restaurar Accesos Administrativos</h5>
+                <h5 class="modal-title fw-bold"><i class="bi bi-person-check-fill me-2"></i>Restaurar Accesos Administrativos</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body text-center py-4">
@@ -22,7 +22,7 @@
                     El usuario podrá <strong>gestionar trámites nuevamente</strong> y recuperará el acceso administrativo a su área asignada.
                 </div>
             </div>
-            <div class="modal-footer bg-light">
+            <div class="modal-footer border-0 bg-light">
                 <form id="formActivateStaff">
                     @Html.AntiForgeryToken()
                     <input type="hidden" name="id" value="@Model.Id" />

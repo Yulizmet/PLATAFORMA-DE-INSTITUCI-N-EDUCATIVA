@@ -174,27 +174,33 @@ namespace SchoolManager.Areas.Procedures.Controllers
         public async Task<IActionResult> GetDeleteModal(int id, string type)
         {
             await LoadPermissions("Permisos");
+
             ViewBag.ItemId = id;
             ViewBag.IsModuleGroup = false;
 
-            if (type == "Module")
+            string normalizedType = type?.Trim().ToLower() ?? "";
+
+            if (normalizedType == "module")
             {
                 var item = await _context.ProcedureModuleCatalog.FindAsync(id);
                 ViewBag.ItemName = item?.ModuleName ?? "Módulo Desconocido";
                 ViewBag.ActionUrl = Url.Action("DeleteCatalogModule", "Permissions");
                 ViewBag.IsModuleGroup = true;
+                ViewBag.ItemType = "módulo";
             }
-            else if (type == "Button")
+            else if (normalizedType == "button")
             {
                 var item = await _context.ProcedureModuleCatalog.FindAsync(id);
                 ViewBag.ItemName = item?.ButtonName ?? "Botón Desconocido";
                 ViewBag.ActionUrl = Url.Action("DeleteCatalogItem", "Permissions");
+                ViewBag.ItemType = "botón";
             }
             else
             {
                 var item = await _context.ProcedureJobPosition.FindAsync(id);
                 ViewBag.ItemName = item?.Name ?? "Puesto Desconocido";
                 ViewBag.ActionUrl = Url.Action("DeleteJobPosition", "Permissions");
+                ViewBag.ItemType = "puesto de trabajo";
             }
 
             return PartialView("_DeleteModal");

@@ -1,7 +1,7 @@
 ﻿@model SchoolManager.Models.users_person
 
 <div class="modal fade" id="activateModal" tabindex="-1">
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 shadow-lg">
             <div class="modal-header bg-success text-white">
                 <h5 class="modal-title fw-bold"><i class="bi bi-person-check me-2"></i>Reactivar Expediente</h5>
@@ -18,7 +18,7 @@
                     El alumno podrá iniciar sesión nuevamente y aparecerá de nuevo en las listas y procesos de trámites.
                 </div>
             </div>
-            <div class="modal-footer bg-light">
+            <div class="modal-footer border-0 bg-light">
                 <form id="formActivateStudent">
                     @Html.AntiForgeryToken()
                     <input type="hidden" name="id" value="@Model.PersonId" />

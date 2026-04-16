@@ -20,8 +20,22 @@
                 </h5>
 
                 <p class="text-dark small mb-1 px-3">
-                    Esta acción eliminará <strong>@(ViewBag.IsModuleGroup == true ? "el módulo y todos sus botones asociados" : "el botón seleccionado")</strong>.
-                    <span class="text-danger d-block mt-2">No se puede deshacer.</span>
+                    Esta acción eliminará
+                    <strong>
+                        @if (ViewBag.IsModuleGroup == true)
+                        {
+                            <text>el módulo y todos sus botones asociados</text>
+                        }
+                        else if (!string.IsNullOrEmpty(ViewBag.ItemType))
+                        {
+                            <text>el @ViewBag.ItemType seleccionado</text>
+                        }
+                        else
+                        {
+                            <text>el elemento seleccionado</text>
+                        }
+                    </strong>.
+                    <span class="text-danger d-block mt-2 font-weight-bold">Esta acción no se puede deshacer.</span>
                 </p>
             </div>
 
@@ -39,7 +53,7 @@
                         <input type="hidden" name="moduleName" value="@ViewBag.ItemName" />
                     }
 
-                    <button type="submit" class="btn btn-danger rounded-pill px-4 flex-end">
+                    <button type="submit" class="btn btn-danger rounded-pill px-4">
                         Eliminar permanentemente
                     </button>
                 </form>
