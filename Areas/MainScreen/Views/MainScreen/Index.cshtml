@@ -25,9 +25,7 @@
                         Acceder Ahora →
                     </a>
 
-                    <a href="#" class="btn btn-hero-outline btn-lg">
-                        Conocer más
-                    </a>
+                    
                 </div>
             </div>
 
@@ -100,8 +98,7 @@
                     
                     <a class="portal-link"
                        asp-area="UserMng" asp-controller="Account" asp-action="Login">
-                        <i class="bi bi-briefcase-fill fs-5"></i>
-                        <span>Estudiantes</span>
+                        
                     </a>
                 </div>
             </div>
@@ -122,8 +119,8 @@
 
                     <a class="portal-link"
                        asp-area="UserMng" asp-controller="Account" asp-action="Login">
-                        <i class="bi bi-briefcase-fill fs-5"></i>
-                        <span>Docentes</span>
+                        
+                       
                     </a>
                 </div>
             </div>
@@ -144,8 +141,7 @@
 
                     @* <a class="portal-link" *@
                     @*    asp-area="UserMng" asp-controller="Account" asp-action="Login"> *@
-                    @*     <i class="bi bi-briefcase-fill fs-5"></i> *@
-                    @*     <span>Administrativo</span> *@
+                    @*     *@
                     @* </a> *@
                     
                     <a class="portal-link"
@@ -179,32 +175,53 @@
     <div class="container">
         <div class="row">
 
+            <!-- SISTEMA -->
             <div class="col-md-3">
-                <h5>Sistema Escolar</h5>
-                <p>Plataforma integral para gestionar tu educación</p>
+                <h5>Sistema</h5>
+                <ul class="list-unstyled">
+                    <li><a asp-area="MainScreen" asp-controller="MainScreen" asp-action="Index">Inicio</a></li>
+                    <li><a asp-area="MainScreen" asp-controller="MainScreen" asp-action="SistemaEscolar">Sistema Escolar</a></li>
+                    <li><a asp-area="MainScreen" asp-controller="MainScreen" asp-action="Extension">Extensión</a></li>
+                    <li><a asp-area="MainScreen" asp-controller="MainScreen" asp-action="Tramites">Trámites</a></li>
+                </ul>
             </div>
 
+            <!-- CALIFICACIONES -->
             <div class="col-md-3">
-                <h5>Módulos</h5>
-                <p>Sistema Escolar<br />Extensión<br />Trámites</p>
+                <h5>Calificaciones</h5>
+                <ul class="list-unstyled">
+                    <li><a asp-area="MainScreen" asp-controller="MainScreen" asp-action="CalificacionesEstudiante">Mis Calificaciones</a></li>
+                    <li><a asp-area="MainScreen" asp-controller="MainScreen" asp-action="CalificacionesDocente">Calificaciones Docente</a></li>
+                    <li><a href="#">Estadísticas</a></li>
+                </ul>
             </div>
 
+            <!-- EXTENSIÓN -->
             <div class="col-md-3">
-                <h5>Comunidad</h5>
-                <p>Foro<br />Sobre Nosotros</p>
+                <h5>Extensión</h5>
+                <ul class="list-unstyled">
+                    <li><a href="#">Tutorías</a></li>
+                    <li><a href="#">Servicios Médicos</a></li>
+                    <li><a href="#">Servicio Social</a></li>
+                </ul>
             </div>
 
+            <!-- TRÁMITES -->
             <div class="col-md-3">
-                <h5>Soporte</h5>
-                <p>Contacto<br />Preguntas Frecuentes</p>
+                <h5>Trámites</h5>
+                <ul class="list-unstyled">
+                    <li><a asp-area="Enrollment" asp-controller="PreEnrollment" asp-action="Index">Preinscripción</a></li>
+                    <li><a href="#">Inscripción</a></li>
+                    <li><a asp-area="Procedures" asp-controller="Request" asp-action="Index">Trámites en línea</a></li>
+                </ul>
             </div>
 
         </div>
 
-        <hr class="bg-secondary" />
+        <hr style="border-color: rgba(255,255,255,0.2);" />
 
-        <div class="text-center">
-            © 2026 UTTN-TI-DYGS 10C. Todos los derechos reservados.
+        <div class="text-center mt-3">
+            <p class="mb-0">© 2026 Sistema Escolar | Todos los derechos reservados</p>
         </div>
     </div>
 </footer>

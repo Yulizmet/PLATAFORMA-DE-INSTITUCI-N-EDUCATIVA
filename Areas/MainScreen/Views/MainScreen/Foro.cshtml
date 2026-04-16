@@ -5,12 +5,11 @@
     Layout = "~/Areas/MainScreen/Views/Shared/_Layout.cshtml";
 }
 
-
 <section class="admin-section">
     <div class="container">
 
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h2 class="admin-title">Administrador del Foro</h2>
+        <div class="foro-header-actions justify-content-between mb-4">
+            <h2 class="admin-title mb-0">Administrador del Foro</h2>
 
             <a asp-area="MainScreen"
                asp-controller="Foro"
@@ -24,7 +23,7 @@
             @if (Model != null && Model.Any())
             {
                 <div class="table-responsive">
-                    <table class="table align-middle">
+                    <table class="table align-middle foro-admin-table mb-0">
                         <thead>
                             <tr>
                                 <th>Título</th>
@@ -39,33 +38,35 @@
                             {
                                 <tr>
                                     <td>@item.Titulo</td>
-                                    <td>@item.EstiloVisual</td>
+                                    <td class="text-capitalize">@item.EstiloVisual</td>
                                     <td>@item.FechaInicio.ToString("yyyy-MM-dd HH:mm")</td>
                                     <td>@(item.Activo ? "Sí" : "No")</td>
                                     <td class="text-end">
-                                        <a asp-area="MainScreen"
-                                           asp-controller="Foro"
-                                           asp-action="Details"
-                                           asp-route-id="@item.PublicacionId"
-                                           class="btn btn-sm btn-outline-secondary">
-                                            Ver
-                                        </a>
+                                        <div class="foro-actions">
+                                            <a asp-area="MainScreen"
+                                               asp-controller="Foro"
+                                               asp-action="Details"
+                                               asp-route-id="@item.PublicacionId"
+                                               class="btn btn-sm btn-outline-secondary">
+                                                Ver
+                                            </a>
 
-                                        <a asp-area="MainScreen"
-                                           asp-controller="Foro"
-                                           asp-action="Edit"
-                                           asp-route-id="@item.PublicacionId"
-                                           class="btn btn-sm btn-warning">
-                                            Editar
-                                        </a>
+                                            <a asp-area="MainScreen"
+                                               asp-controller="Foro"
+                                               asp-action="Edit"
+                                               asp-route-id="@item.PublicacionId"
+                                               class="btn btn-sm btn-warning">
+                                                Editar
+                                            </a>
 
-                                        <a asp-area="MainScreen"
-                                           asp-controller="Foro"
-                                           asp-action="Delete"
-                                           asp-route-id="@item.PublicacionId"
-                                           class="btn btn-sm btn-danger">
-                                            Eliminar
-                                        </a>
+                                            <a asp-area="MainScreen"
+                                               asp-controller="Foro"
+                                               asp-action="Delete"
+                                               asp-route-id="@item.PublicacionId"
+                                               class="btn btn-sm btn-danger">
+                                                Eliminar
+                                            </a>
+                                        </div>
                                     </td>
                                 </tr>
                             }
@@ -75,7 +76,7 @@
             }
             else
             {
-                <p class="text-muted text-center m-0">
+                <p class="foro-empty-state">
                     No hay publicaciones registradas todavía.
                 </p>
             }
