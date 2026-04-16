@@ -1,13 +1,11 @@
 ﻿@model IEnumerable<SchoolManager.Models.users_user>
 @{
     ViewData["Title"] = "Directorio de Alumnos";
-    
-    int roleId = ViewBag.RoleId ?? 0;
 
     var dictGruposCabecera = ViewBag.Grupos as Dictionary<int, string> ?? new Dictionary<int, string>();
     string nombreMiGrupo = "Cargando grupo...";
     
-    if (roleId == 2 && Model != null && Model.Any())
+    if (User.IsInRole("Teacher") && Model != null && Model.Any())
     {
         int primerId = Model.First().UserId;
         if (dictGruposCabecera.ContainsKey(primerId))
@@ -16,27 +14,29 @@
         }
     }
 }
-
 <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
 
-<div class="container-fluid p-0 mt-4">
-    <div class="position-relative mb-4 text-center">
-        <div class="position-absolute top-50 start-0 translate-middle-y">
+<div class="container-fluid p-0 mt-4 px-3 px-md-4">
+    
+    
+    <div class="row align-items-center mb-4 mt-3">
+        <div class="col-12 col-md-3 text-start mb-3 mb-md-0">
             <button type="button" onclick="history.back()" class="btn btn-sm btn-outline-secondary fw-bold shadow-sm px-3" style="border-radius: 20px;">
                 <i class="bi bi-arrow-left me-1"></i> Regresar
             </button>
         </div>
-
-        <h2 class="fw-bold m-0" style="color: var(--brand-dark);">Directorio de Alumnos</h2>
+        <div class="col-12 col-md-6 text-center">
+            <h2 class="fw-bold m-0" style="color:var(--brand-dark);">Directorio de Alumnos</h2>
+        </div>
+        <div class="col-12 col-md-3 d-none d-md-block"></div>
     </div>
-    
-    <div class="card border-0 shadow-sm mb-5" style="border-radius: 10px;">
+    <div class="card border-0 shadow-sm mb-4" style="border-radius: 10px;">
         <div class="card-body p-4">
             
-            @if (roleId == 3)
+            @if (User.IsInRole("Administrator") || User.IsInRole("Master"))
             {
                 <form id="filtroForm" class="row g-3 align-items-end">
-                    <div class="col-md-4">
+                    <div class="col-12 col-md-4">
                         <label class="form-label fw-bold text-dark">Grado</label>
                         <select id="filtroGrado" class="form-select shadow-sm" name="grado" style="border-color: #ddd;">
                             <option value="">Todos los grados...</option>
@@ -50,7 +50,7 @@
                         </select>
                     </div>
 
-                    <div class="col-md-5">
+                    <div class="col-12 col-md-5">
                         <label class="form-label fw-bold text-dark">Grupo</label>
                         <select id="filtroGrupo" class="form-select shadow-sm" name="grupo" style="border-color: #ddd;">
                             <option value="">Todos los grupos...</option>
@@ -64,17 +64,17 @@
                         </select>
                     </div>
 
-                    <div class="col-md-3">
+                    <div class="col-12 col-md-3">
                         <button type="submit" class="btn btn-secondary-brand w-100 fw-bold shadow-sm">
                             <i class="bi bi-funnel-fill"></i> Filtrar Lista
                         </button>
                     </div>
                 </form>
             }
-            else if (roleId == 2)
+            else if (User.IsInRole("Teacher"))
             {
                 <div class="row g-3 align-items-end">
-                    <div class="col-md-6">
+                    <div class="col-12 col-md-6">
                         <label class="form-label fw-bold" style="color: var(--brand-dark);"><i class="bi bi-person-video3 me-2"></i>Mi Grupo Asignado</label>
                         <input type="text" class="form-control shadow-sm bg-light fw-bold" value="@nombreMiGrupo" readonly disabled style="border-color: #ddd; color: #555;">
                     </div>
@@ -90,30 +90,80 @@
         </div>
     </div>
 
-    <table id="tablaAlumnos" class="table table-cards w-100">
-        <thead>
-            <tr>
-                <th class="text-center" style="width: 80px;">Foto</th>
-                <th>Información del Alumno</th>
-                <th class="text-end" style="width: 320px; padding-right: 1.5rem;">Acciones</th>
-            </tr>
-        </thead>
-        <tbody>
+    <div class="table-responsive shadow-sm rounded bg-white mb-5">
+        <table id="tablaAlumnos" class="table table-hover mb-0 w-100 tabla-adaptable">
+            <thead style="background-color: #8C1B1B; color: white;">
+                <tr>
+                    <th class="text-center py-3 border-0" style="width: 80px;">Foto</th>
+                    <th class="py-3 border-0">Información del Alumno</th>
+                    <th class="text-md-end text-start py-3 border-0" style="min-width: 250px; padding-right: 1.5rem;">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
             </tbody>
-    </table>
+        </table>
+    </div>
 </div>
 
 @section Scripts {
     <style>
-        .dataTables_wrapper .row:first-child { margin-bottom: 1.5rem; padding: 0 0.5rem; }
-        .dataTables_wrapper .row:last-child { margin-top: 1.5rem; padding: 0 0.5rem; }
+         .dataTables_wrapper .row:first-child { margin-bottom: 1.5rem; padding: 1rem 1rem 0 1rem; }
+        .dataTables_wrapper .row:last-child { margin-top: 1.5rem; padding: 0 1rem 1rem 1rem; }
+        
         div.dataTables_wrapper div.dataTables_filter input {
             border-radius: 8px; border: 1px solid #ced4da; padding: 0.35rem 0.75rem; transition: all 0.15s ease-in-out;
         }
         div.dataTables_wrapper div.dataTables_filter input:focus {
-            outline: none; border-color: var(--brand-dark); box-shadow: 0 0 0 0.25rem rgba(140, 27, 27, 0.25); 
+            outline: none; border-color: #8C1B1B; box-shadow: 0 0 0 0.25rem rgba(140, 27, 27, 0.25); 
         }
         div.dataTables_wrapper div.dataTables_length select { border-radius: 8px; border: 1px solid #ced4da; padding-left: 0.5rem; }
+
+        @@media (max-width: 768px) {
+            div.dataTables_wrapper div.dataTables_filter {
+                text-align: left !important;
+                margin-top: 15px;
+            }
+            div.dataTables_wrapper div.dataTables_filter input {
+                width: 100%;
+                display: block;
+                margin-left: 0;
+                margin-top: 5px;
+            }
+
+            .tabla-adaptable thead { display: none; }
+
+            .tabla-adaptable, .tabla-adaptable tbody, .tabla-adaptable tr, .tabla-adaptable td {
+                display: block;
+                width: 100%;
+            }
+
+            .tabla-adaptable tr {
+                margin-bottom: 1rem;
+                border: 1px solid #dee2e6;
+                border-radius: 12px;
+                padding: 1.2rem; 
+                background-color: #fff;
+                box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            }
+
+            .tabla-adaptable td {
+                border: none !important;
+                padding: 0.3rem 0 !important;
+                text-align: left !important;
+            }
+
+            .tabla-adaptable td:last-child { margin-top: 0.5rem; }
+            .tabla-adaptable td:last-child .d-flex {
+                width: 100%;
+                justify-content: space-between !important;
+                gap: 10px !important;
+            }
+            .tabla-adaptable td:last-child .btn {
+                flex: 1; 
+                text-align: center;
+                padding-left: 0; padding-right: 0;
+            }
+        }
     </style>
 
     <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
@@ -130,6 +180,7 @@
                 pageLength: 10,
                 processing: true,
                 serverSide: true, 
+                responsive: false, 
                 ajax: {
                     url: "@Url.Action("ObtenerDataAlumnos", "Alumnos", new { area = "Gestion" })",
                     type: "GET",
@@ -142,34 +193,37 @@
                     { 
                         data: null, 
                         orderable: false, 
-                        className: "text-center ps-3 align-middle",
+                        className: "text-center ps-md-3 align-middle",
                         render: function(data, type, row) {
                             let imgSrc = row.foto ? row.foto : "https://ui-avatars.com/api/?name=" + encodeURIComponent(row.nombre) + "&background=8C1B1B&color=fff";
-                            return '<img src="' + imgSrc + '" alt="Foto" class="rounded-circle border" style="object-fit: cover; width: 55px; height: 55px; border-color: #ddd !important;">';
+                            return '<div class="d-flex align-items-center gap-3">' + 
+                                   '<img src="' + imgSrc + '" alt="Foto" class="rounded-circle shadow-sm" style="object-fit: cover; width: 60px; height: 60px; border: 2px solid #fff;">' +
+                                   '<span class="d-md-none fw-bold text-dark fs-5">' + row.nombreCompleto + '</span>' + 
+                                   '</div>';
                         }
                     },
                     { 
                         data: "nombreCompleto",
-                        className: "align-middle",
+                        className: "align-middle py-3",
                         render: function(data, type, row) {
-                            return '<div class="fw-bold fs-6 text-dark mb-1">' + data + '</div>' +
-                                   '<div class="text-muted small">' +
-                                        '<span class="badge bg-light text-dark border me-2">Matrícula: ' + row.matricula + '</span>' +
-                                        '<span class="badge" style="background-color: var(--brand-secondary); color: var(--brand-white);">Grado y Grupo: ' + row.grupoTexto + '</span>' +
+                            return '<div class="d-none d-md-block fw-bold fs-6 text-dark mb-2">' + data + '</div>' +
+                                   '<div class="text-muted small d-flex flex-wrap gap-2">' +
+                                        '<span class="badge bg-light text-dark border px-2 py-1"><i class="bi bi-person-vcard me-1"></i> ' + row.matricula + '</span>' +
+                                        '<span class="badge px-2 py-1" style="background-color: #8A7B7B; color: white;"><i class="bi bi-people-fill me-1"></i> Grado y Grupo: ' + row.grupoTexto + '</span>' +
                                    '</div>';
                         }
                     },
                     { 
                         data: null, 
                         orderable: false, 
-                        className: "text-end pe-3 align-middle",
+                        className: "text-md-end text-start pe-md-3 align-middle py-3",
                         render: function(data, type, row) {
                             let urlEntrevista = '@Url.Action("VerEntrevistaAlumno", "Entrevista", new { area = "Gestion" })/' + row.userId;
                             let urlSeguimiento = '@Url.Action("Seguimiento", "Seguimiento", new { area = "Gestion" })?matriculaBuscar=' + encodeURIComponent(row.matricula);
 
-                            return '<div class="d-flex gap-2 justify-content-end">' +
-                                        '<a href="' + urlEntrevista + '" class="btn btn-action-seguimiento shadow-sm btn-sm px-3 py-2"><i class="bi bi-file-text"></i> Entrevista</a>' +
-                                        '<a href="' + urlSeguimiento + '" class="btn btn-action-seguimiento shadow-sm btn-sm px-3 py-2"><i class="bi bi-graph-up"></i> Seguimiento</a>' +
+                            return '<div class="d-flex gap-2 justify-content-md-end">' +
+                                        '<a href="' + urlEntrevista + '" class="btn btn-sm text-white px-3 py-2 fw-bold" style="background-color: #8C1B1B; border-radius: 8px;"><i class="bi bi-file-text me-1"></i> Entrevista</a>' +
+                                        '<a href="' + urlSeguimiento + '" class="btn btn-sm text-white px-3 py-2 fw-bold" style="background-color: #8C1B1B; border-radius: 8px;"><i class="bi bi-graph-up me-1"></i> Seguimiento</a>' +
                                    '</div>';
                         }
                     }

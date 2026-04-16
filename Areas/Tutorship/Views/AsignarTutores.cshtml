@@ -4,18 +4,22 @@
     var grupos = ViewBag.Grupos as IEnumerable<SchoolManager.Models.grades_group>;
 }
 
-<div class="container mt-5">
+<div class="container-fluid px-3 px-md-4 mt-4 mt-md-5 mb-5">
     <div class="row justify-content-center">
-        <div class="col-md-8">
+        <div class="col-12 col-lg-8 col-xl-7">
 
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h2 class="fw-bold m-0" style="color: var(--utt-dark-red);">
-                    <i class="bi bi-diagram-3-fill"></i> Asignación de Tutores a Grupos
-                </h2>
-                <a  asp-controller="Tutorship" asp-action="Controlador" class="btn btn-outline-secondary btn-sm">
-                    <i class="bi bi-arrow-left"></i> Regresar
-                </a>
+            <div class="row align-items-center mb-4 mt-3">
+                <div class="col-12 col-md-3 text-start mb-3 mb-md-0">
+                    <button type="button" onclick="history.back()" class="btn btn-sm btn-outline-secondary fw-bold shadow-sm px-3" style="border-radius: 20px;">
+                        <i class="bi bi-arrow-left me-1"></i> Regresar
+                    </button>
+                </div>
+                <div class="col-12 col-md-6 text-center">
+                    <h2 class="fw-bold m-0" style="color:var(--brand-dark);">Asignación de Tutores a Grupos</h2>
+                </div>
+                <div class="col-12 col-md-3 d-none d-md-block"></div>
             </div>
+
 
             @if (TempData["AsignacionExito"] != null)
             {
@@ -32,15 +36,15 @@
 
             <div class="card shadow-sm border-0">
                 <div class="card-header bg-dark text-white p-3">
-                    <h5 class="mb-0">Vincular Maestro con Grupo</h5>
+                    <h5 class="mb-0 fs-6 fs-md-5">Vincular Maestro con Grupo</h5>
                 </div>
-                <div class="card-body p-4" style="background-color: var(--utt-light);">
+                <div class="card-body p-3 p-md-4" style="background-color: var(--utt-light);">
 
                     <form asp-area="Gestion" asp-controller="Alumnos" asp-action="GuardarAsignacionTutor" method="post">
 
                         <div class="mb-4">
                             <label class="form-label fw-bold" style="color: var(--utt-black);">1. Selecciona al Maestro (Tutor)</label>
-                            <select name="teacherId" class="form-select form-select-lg" style="border-color: var(--utt-beige);" required>
+                            <select name="teacherId" class="form-select form-select-lg fs-6 fs-md-5" style="border-color: var(--utt-beige);" required>
                                 <option value="">-- Elige un profesor --</option>
                                 @if (maestros != null)
                                 {
@@ -56,7 +60,7 @@
 
                         <div class="mb-4">
                             <label class="form-label fw-bold" style="color: var(--utt-black);">2. Selecciona el Grupo</label>
-                            <select name="groupId" class="form-select form-select-lg" style="border-color: var(--utt-beige);" required>
+                            <select name="groupId" class="form-select form-select-lg fs-6 fs-md-5" style="border-color: var(--utt-beige);" required>
                                 <option value="">-- Elige un grupo --</option>
                                 @if (grupos != null)
                                 {
@@ -68,13 +72,13 @@
                                     }
                                 }
                             </select>
-                            <div class="form-text mt-2 text-muted">
+                            <div class="form-text mt-2 text-muted small lh-sm">
                                 * Al asignar, todos los alumnos actualmente inscritos en este grupo tendrán a este profesor como su tutor asignado en el sistema.
                             </div>
                         </div>
 
-                        <div class="d-grid mt-5">
-                            <button type="submit" class="btn btn-utt-primary btn-lg fw-bold shadow">
+                        <div class="d-grid mt-4 mt-md-5">
+                            <button type="submit" class="btn btn-utt-primary btn-lg fw-bold shadow fs-6 fs-md-5 py-2 py-md-3">
                                 <i class="bi bi-link-45deg"></i> Guardar Asignación
                             </button>
                         </div>

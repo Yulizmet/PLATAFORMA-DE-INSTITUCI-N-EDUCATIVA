@@ -1,44 +1,40 @@
 ﻿@{
     ViewData["Title"] = "Panel de Control - Tutorías";
-    int roleId = ViewBag.RoleId ?? 0;
 }
 
-<div class="dashboard-header position-relative ">
-    <div class="d-flex justify-content-between align-items-center">
+<div class="dashboard-header position-relative px-3 px-md-4 py-3">
+    <div class="d-flex flex-column flex-sm-row justify-content-between align-items-center gap-2 text-center text-sm-start">
 
-        @if (roleId == 1)
+        @if (User.IsInRole("Student"))
         {
-            <h2 class="fw-bold m-0">Bienvenido alumno, @ViewBag.NombreUsuario</h2>
+            <h2 class="fw-bold m-0 fs-5 fs-md-3">Bienvenido alumno, @ViewBag.NombreUsuario</h2>
         }
-        else if (roleId == 2)
+        else if (User.IsInRole("Teacher"))
         {
-            <h2 class="fw-bold m-0">Bienvenido profesor, @ViewBag.NombreUsuario</h2>
+            <h2 class="fw-bold m-0 fs-5 fs-md-3">Bienvenido profesor, @ViewBag.NombreUsuario</h2>
         }
-        else if (roleId == 3)
+        else if (User.IsInRole("Administrator") || User.IsInRole("Master"))
         {
-            <h2 class="fw-bold m-0">Bienvenido administrador, @ViewBag.NombreUsuario</h2>
+            <h2 class="fw-bold m-0 fs-5 fs-md-3">Bienvenido administrador, @ViewBag.NombreUsuario</h2>
         }
         else
         {
-            <h2 class="fw-bold m-0">Bienvenido, @ViewBag.NombreUsuario</h2>
+            <h2 class="fw-bold m-0 fs-5 fs-md-3">Bienvenido, @ViewBag.NombreUsuario</h2>
         }
 
-        <i class="bi bi-person-circle fs-2"></i>
+        <i class="bi bi-person-circle fs-1 fs-sm-2"></i>
     </div>
-
-   
 </div>
 
-
-<div class="container mt-4">
+<div class="container mt-4 mb-5 px-3 px-md-4">
     <div class="row g-4 justify-content-center">
 
-        @if (roleId == 1)
+        @if (User.IsInRole("Student"))
         {
             <div class="col-12 col-md-6">
                 <a asp-area="Gestion" asp-controller="Entrevista" asp-action="EntrevistaInicial" class="text-decoration-none">
-                    <div class="card dashboard-card shadow-sm p-4 text-center h-100">
-                        <div class="card-icon-box">
+                    <div class="card dashboard-card shadow-sm p-3 p-md-4 text-center h-100">
+                        <div class="card-icon-box mx-auto">
                             <i class="bi bi-chat-text-fill"></i>
                         </div>
                         <h5 class="fw-bold" style="color: var(--utt-red);">ENTREVISTA INICIAL</h5>
@@ -52,12 +48,12 @@
             </div>
         }
 
-        @if (roleId == 2)
+        @if (User.IsInRole("Teacher"))
         {
             <div class="col-12 col-md-6">
                 <a asp-area="Gestion" asp-controller="Asistencia" asp-action="Asistencia" class="text-decoration-none">
-                    <div class="card dashboard-card shadow-sm p-4 text-center h-100">
-                        <div class="card-icon-box">
+                    <div class="card dashboard-card shadow-sm p-3 p-md-4 text-center h-100">
+                        <div class="card-icon-box mx-auto">
                             <i class="bi bi-calendar-check-fill"></i>
                         </div>
                         <h5 class="fw-bold" style="color: var(--utt-red);">CONTROL ASISTENCIA</h5>
@@ -70,26 +66,10 @@
                 </a>
             </div>
 
-            @* <div class="col-12 col-md-6">
-                <a asp-area="Gestion" asp-controller="Seguimiento" asp-action="Seguimiento" class="text-decoration-none">
-                    <div class="card dashboard-card shadow-sm p-4 text-center h-100">
-                        <div class="card-icon-box">
-                            <i class="bi bi-clipboard-data-fill"></i>
-                        </div>
-                        <h5 class="fw-bold" style="color: var(--utt-red);">SEGUIMIENTO</h5>
-                        <p class="text-muted small">Feedback y reportes</p>
-                        <hr class="my-3" style="border-color: var(--utt-beige);">
-                        <span class="status-badge">
-                            IR AL MÓDULO <i class="bi bi-arrow-right-short"></i>
-                        </span>
-                    </div>
-                </a>
-            </div> *@
-
             <div class="col-12 col-md-6">
                 <a asp-area="Gestion" asp-controller="Alumnos" asp-action="ListaDeAlumnos" class="text-decoration-none">
-                    <div class="card dashboard-card shadow-sm p-4 text-center h-100">
-                        <div class="card-icon-box">
+                    <div class="card dashboard-card shadow-sm p-3 p-md-4 text-center h-100">
+                        <div class="card-icon-box mx-auto">
                             <i class="bi bi-people-fill"></i>
                         </div>
                         <h5 class="fw-bold" style="color: var(--utt-red);">LISTA DE ALUMNOS</h5>
@@ -104,8 +84,8 @@
 
             <div class="col-12 col-md-6">
                 <a asp-area="Gestion" asp-controller="Entrevista" asp-action="ReporteEntrevistas" class="text-decoration-none">
-                    <div class="card dashboard-card shadow-sm p-4 text-center h-100">
-                        <div class="card-icon-box">
+                    <div class="card dashboard-card shadow-sm p-3 p-md-4 text-center h-100">
+                        <div class="card-icon-box mx-auto">
                             <i class="bi bi-file-earmark-person-fill"></i>
                         </div>
                         <h5 class="fw-bold mt-3" style="color: var(--utt-red);">ESTATUS ENTREVISTAS</h5>
@@ -119,12 +99,12 @@
             </div>
         }
 
-        @if (roleId == 3)
+        @if (User.IsInRole("Administrator") || User.IsInRole("Master"))
         {
             <div class="col-12 col-md-6">
                 <a asp-area="Gestion" asp-controller="Alumnos" asp-action="ListaDeAlumnos" class="text-decoration-none">
-                    <div class="card dashboard-card shadow-sm p-4 text-center h-100">
-                        <div class="card-icon-box" style="background-color: var(--utt-beige); color: var(--utt-dark-red);">
+                    <div class="card dashboard-card shadow-sm p-3 p-md-4 text-center h-100">
+                        <div class="card-icon-box mx-auto" style="background-color: var(--utt-beige); color: var(--utt-dark-red);">
                             <i class="bi bi-people-fill"></i>
                         </div>
                         <h5 class="fw-bold mt-3" style="color: var(--utt-red);">LISTA DE ALUMNOS</h5>
@@ -139,8 +119,8 @@
 
             <div class="col-12 col-md-6">
                 <a asp-area="Gestion" asp-controller="Asistencia" asp-action="Asistencia" class="text-decoration-none">
-                    <div class="card dashboard-card shadow-sm p-4 text-center h-100">
-                        <div class="card-icon-box" style="background-color: var(--utt-beige); color: var(--utt-dark-red);">
+                    <div class="card dashboard-card shadow-sm p-3 p-md-4 text-center h-100">
+                        <div class="card-icon-box mx-auto" style="background-color: var(--utt-beige); color: var(--utt-dark-red);">
                             <i class="bi bi-calendar-check-fill"></i>
                         </div>
                         <h5 class="fw-bold mt-3" style="color: var(--utt-red);">CONTROL ASISTENCIA</h5>
@@ -155,8 +135,8 @@
 
             <div class="col-12 col-md-6">
                 <a asp-area="Gestion" asp-controller="Alumnos" asp-action="AsignarTutores" class="text-decoration-none">
-                    <div class="card dashboard-card shadow-sm p-4 text-center h-100">
-                        <div class="card-icon-box" style="background-color: var(--utt-beige); color: var(--utt-dark-red);">
+                    <div class="card dashboard-card shadow-sm p-3 p-md-4 text-center h-100">
+                        <div class="card-icon-box mx-auto" style="background-color: var(--utt-beige); color: var(--utt-dark-red);">
                             <i class="bi bi-diagram-3-fill"></i>
                         </div>
                         <h5 class="fw-bold mt-3" style="color: var(--utt-red);">ASIGNAR TUTORES</h5>
@@ -171,8 +151,8 @@
 
             <div class="col-12 col-md-6">
                 <a asp-area="Gestion" asp-controller="Entrevista" asp-action="ReporteEntrevistas" class="text-decoration-none">
-                    <div class="card dashboard-card shadow-sm p-4 text-center h-100">
-                        <div class="card-icon-box" style="background-color: var(--utt-beige); color: var(--utt-dark-red);">
+                    <div class="card dashboard-card shadow-sm p-3 p-md-4 text-center h-100">
+                        <div class="card-icon-box mx-auto" style="background-color: var(--utt-beige); color: var(--utt-dark-red);">
                             <i class="bi bi-file-earmark-bar-graph-fill"></i>
                         </div>
                         <h5 class="fw-bold mt-3" style="color: var(--utt-red);">REPORTE GENERAL</h5>
@@ -187,8 +167,8 @@
 
             <div class="col-12 col-md-6">
                 <a asp-area="Gestion" asp-controller="TemasTutorias" asp-action="Index" class="text-decoration-none">
-                    <div class="card dashboard-card shadow-sm p-4 text-center h-100">
-                        <div class="card-icon-box" style="background-color: var(--utt-beige); color: var(--utt-dark-red);">
+                    <div class="card dashboard-card shadow-sm p-3 p-md-4 text-center h-100">
+                        <div class="card-icon-box mx-auto" style="background-color: var(--utt-beige); color: var(--utt-dark-red);">
                             <i class="bi bi-calendar2-week-fill"></i>
                         </div>
                         <h5 class="fw-bold mt-3" style="color: var(--utt-red);">PLANEACIÓN DE TUTORÍAS</h5>
@@ -202,8 +182,8 @@
             </div>
 
             <div class="col-12 col-md-6">
-                <div class="card dashboard-card shadow-sm p-4 text-center h-100">
-                    <div class="card-icon-box" style="background-color: var(--utt-beige); color: var(--utt-dark-red);">
+                <div class="card dashboard-card shadow-sm p-3 p-md-4 text-center h-100">
+                    <div class="card-icon-box mx-auto" style="background-color: var(--utt-beige); color: var(--utt-dark-red);">
                         <i class="bi bi-arrow-clockwise"></i>
                     </div>
 
@@ -224,31 +204,31 @@
 </div>
 
 <div class="modal fade" id="modalNuevoCiclo" tabindex="-1" aria-labelledby="modalNuevoCicloLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-dialog modal-dialog-centered px-2 px-sm-0">
         <div class="modal-content border-0 shadow-lg">
 
             <div class="modal-header" style="background-color: var(--utt-dark-red); color: white;">
-                <h5 class="modal-title fw-bold" id="modalNuevoCicloLabel">
-                    <i class=""></i> Confirmar Nuevo Ciclo
+                <h5 class="modal-title fw-bold fs-6 fs-sm-5" id="modalNuevoCicloLabel">
+                    Confirmar Nuevo Ciclo
                 </h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
             </div>
 
-            <div class="modal-body p-4" style="background-color: var(--utt-white);">
-                <p class="text-dark fs-5 text-center mb-4">
+            <div class="modal-body p-3 p-md-4" style="background-color: var(--utt-white);">
+                <p class="text-dark fs-6 fs-sm-5 text-center mb-4">
                     ¿Estás seguro de iniciar un nuevo ciclo escolar?
                 </p>
-                <div class="">
+                <div class="small">
                     <strong><i class="bi bi-info-circle-fill"></i> Atención:</strong> Esto cambiará el estatus de <em>todas</em> las entrevistas a "Requiere Actualización" y obligará a todos los alumnos a revisar y guardar su información nuevamente.
                 </div>
             </div>
 
-            <div class="modal-footer" style="background-color: var(--utt-light);">
-                <button type="button" class="btn btn-secondary fw-bold" data-bs-dismiss="modal">Cancelar</button>
+            <div class="modal-footer flex-nowrap" style="background-color: var(--utt-light);">
+                <button type="button" class="btn btn-secondary fw-bold w-50" data-bs-dismiss="modal">Cancelar</button>
 
-                <form asp-area="Gestion" asp-controller="Tutorship" asp-action="ReiniciarEntrevistasCuatrimestre" method="post">
-                    <button type="submit" class="btn fw-bold text-white shadow-sm" style="background-color: var(--utt-red);">
-                        <i class="bi bi-check-circle-fill"></i> Sí, Iniciar Ciclo
+                <form asp-area="Gestion" asp-controller="Tutorship" asp-action="ReiniciarEntrevistasCuatrimestre" method="post" class="w-50 m-0">
+                    <button type="submit" class="btn fw-bold text-white shadow-sm w-100" style="background-color: var(--utt-red);">
+                        <i class="bi bi-check-circle-fill d-none d-sm-inline"></i> Iniciar
                     </button>
                 </form>
             </div>
@@ -257,6 +237,6 @@
     </div>
 </div>
 
-<div class="text-center mt-5 text-muted small">
-@*     Innovación tecnológica impulsada por la Universidad Tecnológica de Tamaulipas Norte
- *@</div>
+<div class="text-center mt-5 text-muted small px-3">
+    @* Innovación tecnológica impulsada por la Universidad Tecnológica de Tamaulipas Norte *@
+</div>

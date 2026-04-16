@@ -3,7 +3,6 @@
 @{
     ViewData["Title"] = "Resultados de Entrevista";
     
-    int roleId = ViewBag.RoleId ?? 0;
 
     string nombreAlumno = Model?.Student?.Person != null
         ? $"{Model.Student.Person.FirstName} {Model.Student.Person.LastNamePaternal} {Model.Student.Person.LastNameMaternal}"
@@ -124,7 +123,7 @@
             </div>
             
             <div class="card-footer bg-light p-3 text-end">
-                @if (roleId == 2)
+                @if (User.IsInRole("Teacher"))
                 {
                     <a asp-area="Gestion" asp-controller="Alumnos" asp-action="ListaDeAlumnos" class="btn btn-secondary-brand shadow-sm fw-bold px-4">
                         <i class="bi bi-arrow-left me-2"></i> Volver al Directorio

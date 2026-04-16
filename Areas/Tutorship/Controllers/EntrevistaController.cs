@@ -10,6 +10,7 @@ using SchoolManager.Data;
 using SchoolManager.Models;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
 
 namespace SchoolManager.Areas.Tutorship.Controllers
 {
@@ -22,16 +23,8 @@ namespace SchoolManager.Areas.Tutorship.Controllers
 
         private int LoggedUserId => int.Parse(User.FindFirst("UserId")?.Value ?? "0");
 
-        private int LoggedRoleId
-        {
-            get
-            {
-                if (User.IsInRole("Student")) return 1;
-                if (User.IsInRole("Teacher")) return 2;
-                if (User.IsInRole("Administrator")) return 3;
-                return 0;
-            }
-        }
+        // Obtenemos el nombre real del rol para mensajes de error y la vista
+        private string LoggedRoleName => User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value ?? "Ninguno";
 
         public EntrevistaController(AppDbContext context, IWebHostEnvironment webHostEnvironment)
         {
@@ -41,15 +34,21 @@ namespace SchoolManager.Areas.Tutorship.Controllers
 
         public IActionResult AccesoDenegado()
         {
-            return Content("No tienes permiso para ver esta pantalla. Tu rol actual es: " + LoggedRoleId);
+            return Content("No tienes permiso para ver esta pantalla. Tu rol actual es: " + LoggedRoleName);
         }
 
-        
+        private async Task<int> GetDbRoleIdByNameAsync(string roleName)
+        {
+            var role = await _context.Roles.FirstOrDefaultAsync(r => r.Name == roleName);
+            return role?.RoleId ?? 0;
+        }
 
         public async Task<IActionResult> EntrevistaInicial()
         {
-            if (LoggedRoleId != 1) return RedirectToAction(nameof(AccesoDenegado));
-            ViewBag.RoleId = LoggedRoleId;
+            // Validamos dinámicamente si es Alumno
+            if (!User.IsInRole("Student")) return RedirectToAction(nameof(AccesoDenegado));
+
+            ViewBag.RoleName = LoggedRoleName;
 
             var usuario = await _context.Users
                 .Include(u => u.Person)
@@ -75,7 +74,7 @@ namespace SchoolManager.Areas.Tutorship.Controllers
         [HttpPost]
         public async Task<IActionResult> GuardarEntrevista(EntrevistaViewModel modelo, IFormFile FotoPerfil)
         {
-            if (LoggedRoleId != 1) return RedirectToAction(nameof(AccesoDenegado));
+            if (!User.IsInRole("Student")) return RedirectToAction(nameof(AccesoDenegado));
 
             if (modelo.UserId != LoggedUserId) return RedirectToAction(nameof(AccesoDenegado));
 
@@ -167,8 +166,8 @@ namespace SchoolManager.Areas.Tutorship.Controllers
 
         public async Task<IActionResult> DetalleEntrevista()
         {
-            if (LoggedRoleId != 1) return RedirectToAction(nameof(AccesoDenegado));
-            ViewBag.RoleId = LoggedRoleId;
+            if (!User.IsInRole("Student")) return RedirectToAction(nameof(AccesoDenegado));
+            ViewBag.RoleName = LoggedRoleName;
 
             var entrevista = await _context.TutorshipInterviews
                 .Include(e => e.Answers)
@@ -181,16 +180,18 @@ namespace SchoolManager.Areas.Tutorship.Controllers
 
         public async Task<IActionResult> VerEntrevistaAlumno(int id)
         {
-            if (LoggedRoleId != 2 && LoggedRoleId != 3) return RedirectToAction("AccesoDenegado");
-            ViewBag.RoleId = LoggedRoleId;
+            if (!User.IsInRole("Teacher") && !User.IsInRole("Administrator") && !User.IsInRole("Master"))
+                return RedirectToAction("AccesoDenegado");
 
-            if (LoggedRoleId == 2)
+            ViewBag.RoleName = LoggedRoleName;
+
+            if (User.IsInRole("Teacher"))
             {
                 bool esTutor = await _context.Tutorships.AnyAsync(t => t.StudentId == id && t.TeacherId == LoggedUserId);
                 if (!esTutor)
                 {
                     TempData["Mensaje"] = "Acceso denegado: Este alumno no pertenece a tu grupo de tutoría.";
-                    return RedirectToAction("ListaDeAlumnos", "Alumnos"); 
+                    return RedirectToAction("ListaDeAlumnos", "Alumnos");
                 }
             }
 
@@ -233,16 +234,19 @@ namespace SchoolManager.Areas.Tutorship.Controllers
         [HttpGet]
         public async Task<IActionResult> ReporteEntrevistas(string? filtroEstatus)
         {
-            if (LoggedRoleId != 2 && LoggedRoleId != 3) return RedirectToAction(nameof(AccesoDenegado));
+            if (!User.IsInRole("Teacher") && !User.IsInRole("Administrator") && !User.IsInRole("Master"))
+                return RedirectToAction(nameof(AccesoDenegado));
 
             ViewBag.FiltroActual = filtroEstatus;
-            ViewBag.RolActual = LoggedRoleId;
+            ViewBag.RolActual = LoggedRoleName; // Cambiado para enviar el nombre del rol
+
+            int dbStudentRoleId = await GetDbRoleIdByNameAsync("Student");
 
             var queryAlumnos = _context.Users
                 .Include(u => u.Person)
-                .Where(u => u.UserRoles.Any(ur => ur.RoleId == 1));
+                .Where(u => u.UserRoles.Any(ur => ur.RoleId == dbStudentRoleId));
 
-            if (LoggedRoleId == 2)
+            if (User.IsInRole("Teacher"))
             {
                 queryAlumnos = queryAlumnos.Where(u => _context.Tutorships.Any(t => t.StudentId == u.UserId && t.TeacherId == LoggedUserId));
             }
@@ -285,7 +289,7 @@ namespace SchoolManager.Areas.Tutorship.Controllers
             return View("~/Areas/Tutorship/Views/ReporteEntrevistas.cshtml", todosLosAlumnos);
         }
 
-        [HttpGet] 
+        [HttpGet]
         [HttpPost]
         public async Task<IActionResult> ObtenerDataReportes()
         {
@@ -300,8 +304,10 @@ namespace SchoolManager.Areas.Tutorship.Controllers
             int pageSize = int.Parse(length);
             int skip = int.Parse(start);
 
+            int dbStudentRoleId = await GetDbRoleIdByNameAsync("Student");
+
             var query = from u in _context.Users
-                        where u.UserRoles.Any(ur => ur.RoleId == 1)
+                        where u.UserRoles.Any(ur => ur.RoleId == dbStudentRoleId)
                         join p in _context.PreenrollmentGenerals on u.UserId equals p.UserId into pg
                         from p in pg.DefaultIfEmpty()
                         join e in _context.grades_Enrollments.Include(ge => ge.Group) on u.UserId equals e.StudentId into eg
@@ -318,7 +324,7 @@ namespace SchoolManager.Areas.Tutorship.Controllers
                             Estatus = t != null && t.Status != null ? t.Status : "Pendiente"
                         };
 
-            if (LoggedRoleId == 2)
+            if (User.IsInRole("Teacher"))
             {
                 query = query.Where(x => _context.Tutorships.Any(t => t.StudentId == x.UserId && t.TeacherId == LoggedUserId));
             }
@@ -334,7 +340,7 @@ namespace SchoolManager.Areas.Tutorship.Controllers
                                          x.Matricula.ToLower().Contains(searchValue));
             }
 
-            int recordsTotal = await _context.Users.CountAsync(u => u.UserRoles.Any(ur => ur.RoleId == 1));
+            int recordsTotal = await _context.Users.CountAsync(u => u.UserRoles.Any(ur => ur.RoleId == dbStudentRoleId));
             int recordsFiltered = await query.CountAsync();
 
             bool asc = sortDirection == "asc";
@@ -356,6 +362,5 @@ namespace SchoolManager.Areas.Tutorship.Controllers
                 data = datosPaginados
             });
         }
-
     }
 }

@@ -19,6 +19,7 @@ namespace SchoolManager.Areas.Tutorship.Controllers
         private readonly AppDbContext _context;
 
         private int LoggedUserId => int.Parse(User.FindFirst("UserId")?.Value ?? "0");
+
         private int LoggedRoleId
         {
             get
@@ -40,6 +41,13 @@ namespace SchoolManager.Areas.Tutorship.Controllers
             return Content("No tienes permiso para ver esta pantalla. Tu rol actual es: " + LoggedRoleId);
         }
 
+        private async Task<int> GetDbRoleIdByNameAsync(string roleName)
+        {
+            // Usamos _context.Roles basado en la confirmación de tu AppDbContext
+            var role = await _context.Roles.FirstOrDefaultAsync(r => r.Name == roleName);
+            return role?.RoleId ?? 0;
+        }
+
         [HttpGet]
         public async Task<IActionResult> Asistencia(DateTime? fecha, int? groupId, DateTime? fechaInicio, DateTime? fechaFin)
         {
@@ -59,7 +67,6 @@ namespace SchoolManager.Areas.Tutorship.Controllers
                 .FirstOrDefaultAsync();
 
             ViewBag.TemaSemanal = temaSemanal;
-            
 
             List<grades_group> gruposDisponibles = new List<grades_group>();
 
@@ -91,8 +98,10 @@ namespace SchoolManager.Areas.Tutorship.Controllers
 
             if (groupId.HasValue)
             {
+                int dbStudentRoleId = await GetDbRoleIdByNameAsync("Student");
+
                 var query = _context.Users
-                    .Where(u => u.UserRoles.Any(ur => ur.RoleId == 1) &&
+                    .Where(u => u.UserRoles.Any(ur => ur.RoleId == dbStudentRoleId) &&
                                 _context.grades_Enrollments.Any(e => e.StudentId == u.UserId && e.GroupId == groupId.Value));
 
                 if (LoggedRoleId == 2)
@@ -166,7 +175,6 @@ namespace SchoolManager.Areas.Tutorship.Controllers
                 .FirstOrDefaultAsync();
 
             int? temaId = temaActivo?.Id;
-            
 
             var asistenciasExistentes = await _context.TutorshipAttendances
                 .Where(a => a.GroupId == groupId && a.Date.Date == fecha.Date)
@@ -189,7 +197,7 @@ namespace SchoolManager.Areas.Tutorship.Controllers
                     Date = fecha,
                     IsPresent = isPresent[i],
                     GroupId = groupId,
-                    SuggestedTopicId = temaId 
+                    SuggestedTopicId = temaId
                 });
             }
 
