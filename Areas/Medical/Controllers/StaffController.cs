@@ -18,7 +18,6 @@ namespace SchoolManager.Areas.Medical.Controllers
             _context = context;
         }
 
-        // ✅ Ver lista — Filtrada por rol
         public async Task<IActionResult> Index()
         {
             string filtroRol = "";
@@ -49,7 +48,6 @@ namespace SchoolManager.Areas.Medical.Controllers
             return View(lista);
         }
 
-        // ✅ Details — Todos los roles autorizados pueden ver
         public async Task<IActionResult> Details(int id)
         {
             var data = await _context.Database
@@ -78,30 +76,30 @@ namespace SchoolManager.Areas.Medical.Controllers
             return View(data);
         }
 
-        // 🔒 Crear — Heads y Master
         [Authorize(Roles = "Head Nurse,Head of Psychology,Coordinator,Master")]
         public IActionResult Create() => View(new CreateMedicalStaffVM());
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "Head Nurse,Head of Psychology,Master")]
         public async Task<IActionResult> Create(CreateMedicalStaffVM model)
         {
-            if (User.IsInRole("Head Nurse") && model.RoleId != 4)
+            if (User.IsInRole("Head Nurse") && model.RoleId != 18)
             {
                 ModelState.AddModelError("", "Solo puedes registrar Enfermeros.");
                 return View(model);
             }
-            if (User.IsInRole("Head of Psychology") && model.RoleId != 5)
+            if (User.IsInRole("Head of Psychology") && model.RoleId != 19)
             {
                 ModelState.AddModelError("", "Solo puedes registrar Psicólogos.");
                 return View(model);
             }
-            if (User.IsInRole("Coordinator") && !new[] { 4, 5, 6, 7 }.Contains(model.RoleId))
+            if (User.IsInRole("Coordinator") && !new[] { 18, 19, 20, 21 }.Contains(model.RoleId))
             {
                 ModelState.AddModelError("", "Como Coordinador solo puedes crear Enfermeros, Psicólogos y Jefes.");
                 return View(model);
             }
-            if (User.IsInRole("Master") && !new[] { 4, 5, 6, 7, 9, 10 }.Contains(model.RoleId))
+            if (User.IsInRole("Master") && !new[] { 18, 19, 20, 21, 22, 6 }.Contains(model.RoleId))
             {
                 ModelState.AddModelError("", "Rol no permitido.");
                 return View(model);
@@ -109,7 +107,6 @@ namespace SchoolManager.Areas.Medical.Controllers
 
             if (!ModelState.IsValid) return View(model);
 
-            // Lógica de guardado...
             var staff = new medical_staff
             {
                 PersonId = model.PersonId,
@@ -121,21 +118,55 @@ namespace SchoolManager.Areas.Medical.Controllers
             _context.Add(staff);
             await _context.SaveChangesAsync();
 
-            _context.Add(new medical_permissions
+            await SyncUserRole(model.PersonId, model.RoleId);
+
+            var permisos = new medical_permissions
             {
                 StaffId = staff.Id,
                 Ver = model.Ver,
                 Agregar = model.Agregar,
                 Modificar = model.Modificar,
                 Borrar = model.Borrar
-            });
+            };
+
+            if (model.RoleId == 20 || model.RoleId == 21 || model.RoleId == 22 || model.RoleId == 6)
+            {
+                permisos.Ver = true;
+                permisos.Agregar = true;
+                permisos.Modificar = true;
+                permisos.Borrar = true;
+            }
+
+            _context.Add(permisos);
             await _context.SaveChangesAsync();
 
             TempData["Mensaje"] = "Personal médico registrado correctamente.";
             return RedirectToAction(nameof(Index));
         }
 
-        //  Editar — Solo Master
+        //SYNC USER ROLE (CORREGIDO)
+        private async Task SyncUserRole(int personId, int newRoleId)
+        {
+            var user = await _context.Users
+                .FirstOrDefaultAsync(u => u.PersonId == personId);
+
+            if (user == null) return;
+
+            var rolesActuales = _context.UserRoles
+                .Where(r => r.UserId == user.UserId);
+
+            _context.UserRoles.RemoveRange(rolesActuales);
+
+            _context.UserRoles.Add(new users_userrole
+            {
+                UserId = user.UserId,
+                RoleId = newRoleId,
+                IsActive = true
+            });
+
+            await _context.SaveChangesAsync();
+        }
+
         [Authorize(Roles = "Head Nurse,Head of Psychology,Coordinator,Master")]
         public async Task<IActionResult> Edit(int id)
         {
@@ -144,7 +175,6 @@ namespace SchoolManager.Areas.Medical.Controllers
 
             var permiso = await _context.MedicalPermissions.FirstOrDefaultAsync(p => p.StaffId == id);
 
-            // CORRECCIÓN AQUÍ: Se agregan las columnas faltantes con alias para satisfacer al StaffListVM
             var persona = await _context.Database.SqlQueryRaw<StaffListVM>(@"
             SELECT 
                 s.staff_id AS Id, 
@@ -174,6 +204,7 @@ namespace SchoolManager.Areas.Medical.Controllers
             return View(vm);
         }
 
+        //EDIT POST
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "Head Nurse,Head of Psychology,Coordinator,Master")]
@@ -182,32 +213,30 @@ namespace SchoolManager.Areas.Medical.Controllers
             var staff = await _context.MedicalStaff.FindAsync(model.Id);
             if (staff == null) return NotFound();
 
-            //  VALIDACIÓN DE ROLES
-            if (User.IsInRole("Head Nurse") && model.RoleId != 4)
-            {
+            if (User.IsInRole("Head Nurse") && model.RoleId != 18)
                 return View("AccesoDenegado");
-            }
 
-            if (User.IsInRole("Head of Psychology") && model.RoleId != 5)
-            {
+            if (User.IsInRole("Head of Psychology") && model.RoleId != 19)
                 return View("AccesoDenegado");
-            }
 
-            if (User.IsInRole("Coordinator") && !new[] { 4, 5, 6, 7 }.Contains(model.RoleId))
-            {
+            if (User.IsInRole("Coordinator") && !new[] { 18, 19, 20, 21 }.Contains(model.RoleId))
                 return View("AccesoDenegado");
-            }
 
-            if (User.IsInRole("Master") && !new[] { 4, 5, 6, 7, 9, 10 }.Contains(model.RoleId))
-            {
+            if (User.IsInRole("Master") && !new[] { 18, 19, 20, 21, 22, 6 }.Contains(model.RoleId))
                 return View("AccesoDenegado");
-            }
 
             staff.RoleId = model.RoleId;
             staff.Shift = model.Shift;
 
             var permiso = await _context.MedicalPermissions.FirstOrDefaultAsync(p => p.StaffId == model.Id);
-            if (permiso != null)
+            if (model.RoleId == 20 || model.RoleId == 21 || model.RoleId == 22 || model.RoleId == 6)
+            {
+                permiso.Ver = true;
+                permiso.Agregar = true;
+                permiso.Modificar = true;
+                permiso.Borrar = true;
+            }
+            else
             {
                 permiso.Ver = model.Ver;
                 permiso.Agregar = model.Agregar;
@@ -221,7 +250,8 @@ namespace SchoolManager.Areas.Medical.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        // Eliminar 
+
+        //Delete
         public async Task<IActionResult> Delete(int id)
         {
             var data = await _context.Database
@@ -255,13 +285,13 @@ namespace SchoolManager.Areas.Medical.Controllers
             var staff = await _context.MedicalStaff.FindAsync(id);
             if (staff == null) return NotFound();
 
-            if (User.IsInRole("Head Nurse") && staff.RoleId != 4)
+            if (User.IsInRole("Head Nurse") && staff.RoleId != 18)
                 return View("AccesoDenegado");
 
-            if (User.IsInRole("Head of Psychology") && staff.RoleId != 5)
+            if (User.IsInRole("Head of Psychology") && staff.RoleId != 19)
                 return View("AccesoDenegado");
 
-            if (User.IsInRole("Coordinator") && !new[] { 4, 5, 6, 7 }.Contains(staff.RoleId))
+            if (User.IsInRole("Coordinator") && !new[] { 18, 19, 20, 21 }.Contains(staff.RoleId))
                 return View("AccesoDenegado");
 
             var permisos = await _context.MedicalPermissions

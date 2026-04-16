@@ -8,6 +8,7 @@ using iText.Layout.Properties;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using SchoolManager.Areas.Medical.Filters;
 using SchoolManager.Data;
 using SchoolManager.Models;
 using SchoolManager.ViewModels;
@@ -20,6 +21,8 @@ namespace SchoolManager.Areas.Medical.Controllers
 {
     [Area("Medical")]
     [Authorize(Roles = "Psychologist,Head of Psychology,Coordinator,Master")]
+    
+    [ServiceFilter(typeof(MedicalPermissionFilter))]
     public class PsychologyController : Controller
     {
         private readonly AppDbContext _context;
