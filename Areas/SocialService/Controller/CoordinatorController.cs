@@ -67,19 +67,25 @@ namespace SchoolManager.Areas.SocialService.Controllers
             int[] allowedPageSizes = { 10, 25, 50, 100 };
             if (!allowedPageSizes.Contains(pageSize)) pageSize = 10;
 
+            var assignments = await _context.SocialServiceAssignments
+                .Where(a => a.IsActive)
+                .ToListAsync();
+
+            var assignedTeacherIds = assignments
+                .Select(a => a.TeacherId)
+                .Distinct()
+                .ToList();
+
             var teacherUserIds = await _context.UserRoles
                 .Include(ur => ur.Role)
-                .Where(ur => ur.Role.Name == "Teacher" && ur.IsActive)
+                .Where(ur => ur.Role.Name == "Teacher" && ur.IsActive && assignedTeacherIds.Contains(ur.UserId))
                 .Select(ur => ur.UserId)
+                .Distinct()
                 .ToListAsync();
 
             var teachers = await _context.Users
                 .Include(u => u.Person)
                 .Where(u => teacherUserIds.Contains(u.UserId) && u.IsActive)
-                .ToListAsync();
-
-            var assignments = await _context.SocialServiceAssignments
-                .Where(a => a.IsActive)
                 .ToListAsync();
 
             var studentIds = assignments.Select(a => a.StudentId).Distinct().ToList();
@@ -179,7 +185,7 @@ namespace SchoolManager.Areas.SocialService.Controllers
         }
 
         // GET: Mostrar formulario para agregar alumnos a un asesor (solo Master)
-        public async Task<IActionResult> AgregarAlumnosAsesor(int teacherId, string searchName = "", string sortBy = "name", string sortOrder = "asc", string semesterFilter = "", string groupFilter = "", int page = 1, int pageSize = 10)
+        public async Task<IActionResult> AgregarAlumnosAsesor(int teacherId, string searchName = "", string sortBy = "name", string sortOrder = "asc", string semesterFilter = "", string groupFilter = "", string careerFilter = "", int page = 1, int pageSize = 10)
         {
             if (!User.IsInRole("Master"))
             {
@@ -196,6 +202,8 @@ namespace SchoolManager.Areas.SocialService.Controllers
             var availableStudentsQuery = _context.Users
                 .Include(u => u.Person)
                 .Include(u => u.UserRoles)
+                .Include(u => u.Preenrollments)
+                    .ThenInclude(p => p.Career)
                 .Where(u => u.UserRoles.Any(ur => ur.Role.Name == "Student" && ur.IsActive)
                     && !assignedStudentIds.Contains(u.UserId)
                     && u.IsActive);
@@ -217,11 +225,17 @@ namespace SchoolManager.Areas.SocialService.Controllers
             foreach (var s in availableStudents)
             {
                 var enrollment = enrollments.FirstOrDefault(e => e.StudentId == s.UserId);
+                var careerName = s.Preenrollments
+                    .OrderByDescending(p => p.CreateStat)
+                    .Select(p => p.Career != null ? p.Career.name_career : null)
+                    .FirstOrDefault();
+
                 viewModel.Add(new AvailableStudentViewModel
                 {
                     UserId = s.UserId,
                     FullName = $"{s.Person.LastNamePaternal} {s.Person.LastNameMaternal} {s.Person.FirstName}",
                     Email = s.Email,
+                    CareerName = careerName,
                     SemesterName = enrollment?.Group?.GradeLevel?.Name,
                     GroupName = enrollment?.Group?.Name
                 });
@@ -231,6 +245,7 @@ namespace SchoolManager.Areas.SocialService.Controllers
             var allList = viewModel.ToList();
             var semesters = allList.Where(s => !string.IsNullOrEmpty(s.SemesterName)).Select(s => s.SemesterName).Distinct().OrderBy(s => s).ToList();
             var groups = allList.Where(s => !string.IsNullOrEmpty(s.GroupName)).Select(s => s.GroupName).Distinct().OrderBy(g => g).ToList();
+            var careers = allList.Where(s => !string.IsNullOrEmpty(s.CareerName)).Select(s => s.CareerName).Distinct().OrderBy(c => c).ToList();
 
             // Aplicar filtros
             var filtered = viewModel.AsEnumerable();
@@ -253,10 +268,17 @@ namespace SchoolManager.Areas.SocialService.Controllers
                 ViewBag.GroupFilter = groupFilter;
             }
 
+            if (!string.IsNullOrWhiteSpace(careerFilter))
+            {
+                filtered = filtered.Where(u => u.CareerName == careerFilter);
+                ViewBag.CareerFilter = careerFilter;
+            }
+
             // Aplicar ordenamiento
             filtered = (sortBy ?? "name").ToLower() switch
             {
                 "name" => sortOrder == "asc" ? filtered.OrderBy(u => u.FullName) : filtered.OrderByDescending(u => u.FullName),
+                "career" => sortOrder == "asc" ? filtered.OrderBy(u => u.CareerName ?? "") : filtered.OrderByDescending(u => u.CareerName ?? ""),
                 "semester" => sortOrder == "asc" ? filtered.OrderBy(u => u.SemesterName ?? "") : filtered.OrderByDescending(u => u.SemesterName ?? ""),
                 "group" => sortOrder == "asc" ? filtered.OrderBy(u => u.GroupName ?? "") : filtered.OrderByDescending(u => u.GroupName ?? ""),
                 _ => sortOrder == "asc" ? filtered.OrderBy(u => u.FullName) : filtered.OrderByDescending(u => u.FullName),
@@ -275,6 +297,7 @@ namespace SchoolManager.Areas.SocialService.Controllers
             ViewBag.TeacherId = teacherId;
             ViewBag.Semesters = semesters;
             ViewBag.Groups = groups;
+            ViewBag.Careers = careers;
             ViewBag.CurrentSort = sortBy;
             ViewBag.CurrentOrder = sortOrder;
             ViewBag.NextOrder = sortOrder == "asc" ? "desc" : "asc";
@@ -535,7 +558,7 @@ namespace SchoolManager.Areas.SocialService.Controllers
             return RedirectToAction("VerBitacorasAlumno", new { id = bitacora.StudentId });
         }
 
-        public async Task<IActionResult> Alumnos(string searchName = "", string searchEmail = "", string teacherFilter = "", string semesterFilter = "", string groupFilter = "", string sortBy = "name", string sortOrder = "asc", int page = 1, int pageSize = 10)
+        public async Task<IActionResult> Alumnos(string searchName = "", string searchEmail = "", string teacherFilter = "", string careerFilter = "", string semesterFilter = "", string groupFilter = "", string sortBy = "name", string sortOrder = "asc", int page = 1, int pageSize = 10)
         {
             int[] allowedPageSizes = { 10, 25, 50, 100 };
             if (!allowedPageSizes.Contains(pageSize)) pageSize = 10;
@@ -543,6 +566,9 @@ namespace SchoolManager.Areas.SocialService.Controllers
             var assignments = await _context.SocialServiceAssignments
                 .Include(a => a.Student)
                     .ThenInclude(s => s.Person)
+                .Include(a => a.Student)
+                    .ThenInclude(s => s.Preenrollments)
+                        .ThenInclude(p => p.Career)
                 .Include(a => a.Teacher)
                     .ThenInclude(t => t.Person)
                 .Where(a => a.IsActive)
@@ -569,12 +595,17 @@ namespace SchoolManager.Areas.SocialService.Controllers
                 var enrollment = enrollments.FirstOrDefault(e => e.StudentId == assignment.StudentId);
                 var studentLogs = logsByStudent.ContainsKey(assignment.StudentId) ? logsByStudent[assignment.StudentId] : new List<social_service_log>();
                 var approvedLogs = studentLogs.Where(l => l.IsApproved).ToList();
+                var careerName = assignment.Student?.Preenrollments?
+                    .OrderByDescending(p => p.CreateStat)
+                    .Select(p => p.Career != null ? p.Career.name_career : null)
+                    .FirstOrDefault();
 
                 viewModel.Add(new CoordinatorStudentViewModel
                 {
                     StudentId = assignment.StudentId,
                     StudentName = $"{assignment.Student.Person.LastNamePaternal} {assignment.Student.Person.LastNameMaternal} {assignment.Student.Person.FirstName}",
                     Email = assignment.Student.Email,
+                    CareerName = careerName,
                     SemesterName = enrollment?.Group?.GradeLevel?.Name,
                     GroupName = enrollment?.Group?.Name,
                     TeacherName = assignment.Teacher != null
@@ -600,6 +631,13 @@ namespace SchoolManager.Areas.SocialService.Controllers
                 .Select(s => s.SemesterName!)
                 .Distinct()
                 .OrderBy(s => s)
+                .ToList();
+
+            var careers = viewModel
+                .Where(s => !string.IsNullOrEmpty(s.CareerName))
+                .Select(s => s.CareerName!)
+                .Distinct()
+                .OrderBy(c => c)
                 .ToList();
 
             var groups = viewModel
@@ -631,6 +669,11 @@ namespace SchoolManager.Areas.SocialService.Controllers
                 viewModel = viewModel.Where(s => s.TeacherName == teacherFilter).ToList();
             }
 
+            if (!string.IsNullOrWhiteSpace(careerFilter))
+            {
+                viewModel = viewModel.Where(s => s.CareerName == careerFilter).ToList();
+            }
+
             if (!string.IsNullOrWhiteSpace(semesterFilter))
             {
                 viewModel = viewModel.Where(s => s.SemesterName == semesterFilter).ToList();
@@ -647,6 +690,9 @@ namespace SchoolManager.Areas.SocialService.Controllers
                 "email" => sortOrder == "asc"
                     ? viewModel.OrderBy(s => s.Email ?? "").ToList()
                     : viewModel.OrderByDescending(s => s.Email ?? "").ToList(),
+                "career" => sortOrder == "asc"
+                    ? viewModel.OrderBy(s => s.CareerName ?? "").ToList()
+                    : viewModel.OrderByDescending(s => s.CareerName ?? "").ToList(),
                 "semester" => sortOrder == "asc"
                     ? viewModel.OrderBy(s => s.SemesterName ?? "").ToList()
                     : viewModel.OrderByDescending(s => s.SemesterName ?? "").ToList(),
@@ -686,9 +732,11 @@ namespace SchoolManager.Areas.SocialService.Controllers
             ViewBag.SearchName = searchName;
             ViewBag.SearchEmail = searchEmail;
             ViewBag.TeacherFilter = teacherFilter;
+            ViewBag.CareerFilter = careerFilter;
             ViewBag.SemesterFilter = semesterFilter;
             ViewBag.GroupFilter = groupFilter;
             ViewBag.Teachers = teachersList;
+            ViewBag.Careers = careers;
             ViewBag.Semesters = semesters;
             ViewBag.Groups = groups;
             ViewBag.CurrentSort = sortBy;
@@ -894,7 +942,7 @@ namespace SchoolManager.Areas.SocialService.Controllers
             return RedirectToAction("VerAsistenciasAlumno", new { id = studentId });
         }
 
-        public async Task<IActionResult> VerAlumnosAsesor(int id, string searchName = "", string searchEmail = "", string semesterFilter = "", string groupFilter = "", string sortBy = "name", string sortOrder = "asc", int page = 1, int pageSize = 10)
+        public async Task<IActionResult> VerAlumnosAsesor(int id, string searchName = "", string searchEmail = "", string careerFilter = "", string semesterFilter = "", string groupFilter = "", string sortBy = "name", string sortOrder = "asc", int page = 1, int pageSize = 10)
         {
             int[] allowedPageSizes = { 10, 25, 50, 100 };
             if (!allowedPageSizes.Contains(pageSize)) pageSize = 10;
@@ -915,6 +963,9 @@ namespace SchoolManager.Areas.SocialService.Controllers
             var assignments = await _context.SocialServiceAssignments
                 .Include(a => a.Student)
                     .ThenInclude(s => s.Person)
+                .Include(a => a.Student)
+                    .ThenInclude(s => s.Preenrollments)
+                        .ThenInclude(p => p.Career)
                 .Where(a => a.TeacherId == id && a.IsActive)
                 .ToListAsync();
 
@@ -939,12 +990,17 @@ namespace SchoolManager.Areas.SocialService.Controllers
                 var enrollment = enrollments.FirstOrDefault(e => e.StudentId == assignment.StudentId);
                 var studentLogs = logsByStudent.ContainsKey(assignment.StudentId) ? logsByStudent[assignment.StudentId] : new List<social_service_log>();
                 var approvedLogs = studentLogs.Where(l => l.IsApproved).ToList();
+                var careerName = assignment.Student?.Preenrollments?
+                    .OrderByDescending(p => p.CreateStat)
+                    .Select(p => p.Career != null ? p.Career.name_career : null)
+                    .FirstOrDefault();
 
                 viewModel.Add(new CoordinatorStudentViewModel
                 {
                     StudentId = assignment.StudentId,
                     StudentName = $"{assignment.Student.Person.LastNamePaternal} {assignment.Student.Person.LastNameMaternal} {assignment.Student.Person.FirstName}",
                     Email = assignment.Student.Email,
+                    CareerName = careerName,
                     SemesterName = enrollment?.Group?.GradeLevel?.Name,
                     GroupName = enrollment?.Group?.Name,
                     TotalBitacoras = studentLogs.Count,
@@ -959,6 +1015,11 @@ namespace SchoolManager.Areas.SocialService.Controllers
                 .Where(s => !string.IsNullOrEmpty(s.SemesterName))
                 .Select(s => s.SemesterName!)
                 .Distinct().OrderBy(s => s).ToList();
+
+            var careers = viewModel
+                .Where(s => !string.IsNullOrEmpty(s.CareerName))
+                .Select(s => s.CareerName!)
+                .Distinct().OrderBy(c => c).ToList();
 
             var groups = viewModel
                 .Where(s => !string.IsNullOrEmpty(s.GroupName))
@@ -982,6 +1043,11 @@ namespace SchoolManager.Areas.SocialService.Controllers
                     .ToList();
             }
 
+            if (!string.IsNullOrWhiteSpace(careerFilter))
+            {
+                viewModel = viewModel.Where(s => s.CareerName == careerFilter).ToList();
+            }
+
             if (!string.IsNullOrWhiteSpace(semesterFilter))
             {
                 viewModel = viewModel.Where(s => s.SemesterName == semesterFilter).ToList();
@@ -998,6 +1064,9 @@ namespace SchoolManager.Areas.SocialService.Controllers
                 "email" => sortOrder == "asc"
                     ? viewModel.OrderBy(s => s.Email ?? "").ToList()
                     : viewModel.OrderByDescending(s => s.Email ?? "").ToList(),
+                "career" => sortOrder == "asc"
+                    ? viewModel.OrderBy(s => s.CareerName ?? "").ToList()
+                    : viewModel.OrderByDescending(s => s.CareerName ?? "").ToList(),
                 "semester" => sortOrder == "asc"
                     ? viewModel.OrderBy(s => s.SemesterName ?? "").ToList()
                     : viewModel.OrderByDescending(s => s.SemesterName ?? "").ToList(),
@@ -1040,8 +1109,10 @@ namespace SchoolManager.Areas.SocialService.Controllers
 
             ViewBag.SearchName = searchName;
             ViewBag.SearchEmail = searchEmail;
+            ViewBag.CareerFilter = careerFilter;
             ViewBag.SemesterFilter = semesterFilter;
             ViewBag.GroupFilter = groupFilter;
+            ViewBag.Careers = careers;
             ViewBag.Semesters = semesters;
             ViewBag.Groups = groups;
             ViewBag.CurrentSort = sortBy;
@@ -1054,11 +1125,14 @@ namespace SchoolManager.Areas.SocialService.Controllers
             return View(paginated);
         }
 
-        private async Task<List<CoordinatorStudentViewModel>> GetAllStudentsData(String searchName = "", string teacherFilter = "", string semesterFilter = "", string groupFilter = "")
+        private async Task<List<CoordinatorStudentViewModel>> GetAllStudentsData(string searchName = "", string teacherFilter = "", string careerFilter = "", string semesterFilter = "", string groupFilter = "")
         {
             var assignments = await _context.SocialServiceAssignments
                 .Include(a => a.Student)
                     .ThenInclude(s => s.Person)
+                .Include(a => a.Student)
+                    .ThenInclude(s => s.Preenrollments)
+                        .ThenInclude(p => p.Career)
                 .Include(a => a.Teacher)
                     .ThenInclude(t => t.Person)
                 .Where(a => a.IsActive)
@@ -1085,12 +1159,17 @@ namespace SchoolManager.Areas.SocialService.Controllers
                 var enrollment = enrollments.FirstOrDefault(e => e.StudentId == assignment.StudentId);
                 var studentLogs = logsByStudent.ContainsKey(assignment.StudentId) ? logsByStudent[assignment.StudentId] : new List<social_service_log>();
                 var approvedLogs = studentLogs.Where(l => l.IsApproved).ToList();
+                var careerName = assignment.Student?.Preenrollments?
+                    .OrderByDescending(p => p.CreateStat)
+                    .Select(p => p.Career != null ? p.Career.name_career : null)
+                    .FirstOrDefault();
 
                 result.Add(new CoordinatorStudentViewModel
                 {
                     StudentId = assignment.StudentId,
                     StudentName = $"{assignment.Student.Person.LastNamePaternal} {assignment.Student.Person.LastNameMaternal} {assignment.Student.Person.FirstName}",
                     Email = assignment.Student.Email,
+                    CareerName = careerName,
                     SemesterName = enrollment?.Group?.GradeLevel?.Name,
                     GroupName = enrollment?.Group?.Name,
                     TeacherName = assignment.Teacher != null
@@ -1116,6 +1195,11 @@ namespace SchoolManager.Areas.SocialService.Controllers
                 result = result.Where(s => s.TeacherName == teacherFilter).ToList();
             }
 
+            if (!string.IsNullOrWhiteSpace(careerFilter))
+            {
+                result = result.Where(s => s.CareerName == careerFilter).ToList();
+            }
+
             if (!string.IsNullOrWhiteSpace(semesterFilter))
             {
                 result = result.Where(s => s.SemesterName == semesterFilter).ToList();
@@ -1129,14 +1213,14 @@ namespace SchoolManager.Areas.SocialService.Controllers
             return result.OrderBy(s => s.StudentName).ToList();
         }
 
-        public async Task<IActionResult> ExportAlumnosExcel(string searchName = "", string teacherFilter = "", string semesterFilter = "", string groupFilter = "")
+        public async Task<IActionResult> ExportAlumnosExcel(string searchName = "", string teacherFilter = "", string careerFilter = "", string semesterFilter = "", string groupFilter = "")
         {
-            var data = await GetAllStudentsData(searchName, teacherFilter, semesterFilter, groupFilter);
+            var data = await GetAllStudentsData(searchName, teacherFilter, careerFilter, semesterFilter, groupFilter);
 
             using var workbook = new XLWorkbook();
             var ws = workbook.Worksheets.Add("Alumnos");
 
-            var headers = new[] { "Alumno", "Semestre", "Grupo", "Asesor", "Total Bitácoras", "Bitácoras Pendientes", "Horas Prácticas", "Horas Servicio Social", "Validación" };
+            var headers = new[] { "Alumno", "Carrera", "Semestre", "Grupo", "Asesor", "Total Bitácoras", "Horas Prácticas", "Horas Servicio Social", "Validación" };
             for (int i = 0; i < headers.Length; i++)
             {
                 var cell = ws.Cell(1, i + 1);
@@ -1155,11 +1239,11 @@ namespace SchoolManager.Areas.SocialService.Controllers
                 string validacion = porcentaje >= 100 ? "100%" : porcentaje >= 75 ? "75%" : porcentaje >= 50 ? "50%" : porcentaje >= 25 ? "25%" : "0%";
 
                 ws.Cell(row, 1).Value = alumno.StudentName;
-                ws.Cell(row, 2).Value = alumno.SemesterName ?? "N/A";
-                ws.Cell(row, 3).Value = alumno.GroupName ?? "N/A";
-                ws.Cell(row, 4).Value = alumno.TeacherName;
-                ws.Cell(row, 5).Value = alumno.TotalBitacoras;
-                ws.Cell(row, 6).Value = alumno.BitacorasPendientes;
+                ws.Cell(row, 2).Value = alumno.CareerName ?? "N/A";
+                ws.Cell(row, 3).Value = alumno.SemesterName ?? "N/A";
+                ws.Cell(row, 4).Value = alumno.GroupName ?? "N/A";
+                ws.Cell(row, 5).Value = alumno.TeacherName;
+                ws.Cell(row, 6).Value = alumno.TotalBitacoras;
                 ws.Cell(row, 7).Value = $"{alumno.TotalHorasPracticas} / 240";
                 ws.Cell(row, 8).Value = $"{alumno.TotalHorasServicioSocial} / 480";
                 ws.Cell(row, 9).Value = validacion;
@@ -1179,9 +1263,9 @@ namespace SchoolManager.Areas.SocialService.Controllers
                 $"Alumnos_Master_{DateTime.Now:yyyyMMdd}.xlsx");
         }
 
-        public async Task<IActionResult> ExportAlumnosPdf(string searchName = "", string teacherFilter = "", string semesterFilter = "", string groupFilter = "")
+        public async Task<IActionResult> ExportAlumnosPdf(string searchName = "", string teacherFilter = "", string careerFilter = "", string semesterFilter = "", string groupFilter = "")
         {
-            var data = await GetAllStudentsData(searchName, teacherFilter, semesterFilter, groupFilter);
+            var data = await GetAllStudentsData(searchName, teacherFilter, careerFilter, semesterFilter, groupFilter);
 
             string htmlContent = await this.RenderViewAsync("_AlumnosPdf", data, true);
 

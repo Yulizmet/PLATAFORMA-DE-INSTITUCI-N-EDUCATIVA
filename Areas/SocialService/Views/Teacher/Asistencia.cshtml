@@ -143,8 +143,8 @@
                     <input type="hidden" name="allStudentsOnPage" value="@student.Assignment.StudentId" />
                 }
 
-                <div class="table-responsive">
-                    <table class="table table-hover ss-table-cards">
+                <div class="table-responsive ss-table-scroll-wrapper">
+                    <table class="table table-hover ss-table-scroll ss-table-scroll-attendance">
                         <thead>
                             <tr>
                                 @{
@@ -164,12 +164,12 @@
                                     }
                                 }
                                 <th>
-                                    <a href="@SortUrl("name")">
+                                    <a href="@SortUrl("name")" class="text-white text-decoration-none">
                                         Alumno <i class="@SortIcon("name")"></i>
                                     </a>
                                 </th>
                                 <th class="text-center">
-                                    <a href="@SortUrl("group")">
+                                    <a href="@SortUrl("group")" class="text-white text-decoration-none">
                                         Grupo <i class="@SortIcon("group")"></i>
                                     </a>
                                 </th>
@@ -186,8 +186,8 @@
                                         <th class="text-center">@date.ToString("dd/MM")</th>
                                     }
                                 }
-                                <th class="text-center" style="background-color: #f8f9fa;">
-                                    <strong>Hoy (@Model.Today.ToString("dd/MM"))</strong>
+                                <th class="text-center" style="background-color: var(--rojo-oscuro); color: white;">
+                                    <strong class="text-white">Hoy (@Model.Today.ToString("dd/MM"))</strong>
                                 </th>
                             </tr>
                         </thead>

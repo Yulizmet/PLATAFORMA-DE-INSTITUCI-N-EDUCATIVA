@@ -126,29 +126,29 @@
                 </div>
 
                 <div class="teacher-card-body">
-                    <div class="mb-2">
-                        <strong>Actividades:</strong>
-                        <p class="mb-1">@bitacora.Activities</p>
+                    <p><strong>Actividades realizadas:</strong></p>
+                    <p class="activity-text">@bitacora.Activities</p>
+
+                    <div class="teacher-hours-display">
+                        <div class="teacher-hour-item">
+                            <div class="hour-label">Horas Prácticas</div>
+                            <div class="hour-value">@bitacora.HoursPracticas</div>
+                        </div>
+                        <div class="teacher-hour-item">
+                            <div class="hour-label">Servicio Social</div>
+                            <div class="hour-value">@bitacora.HoursServicioSocial</div>
+                        </div>
                     </div>
 
-                    @if (!string.IsNullOrEmpty(bitacora.Observations))
+                    <p><strong>Observaciones:</strong></p>
+                    @if (!string.IsNullOrWhiteSpace(bitacora.Observations))
                     {
-                        <div class="mb-2">
-                            <strong>Observaciones:</strong>
-                            <p class="mb-1">@bitacora.Observations</p>
-                        </div>
+                        <p class="text-muted activity-text" style="text-align: left !important;">@bitacora.Observations</p>
                     }
-
-                    <div class="row mb-2">
-                        <div class="col-6">
-                            <small class="text-muted">Hrs. Prácticas solicitadas:</small>
-                            <div><strong>@bitacora.HoursPracticas h</strong></div>
-                        </div>
-                        <div class="col-6">
-                            <small class="text-muted">Hrs. Servicio Social solicitadas:</small>
-                            <div><strong>@bitacora.HoursServicioSocial h</strong></div>
-                        </div>
-                    </div>
+                    else
+                    {
+                        <p class="text-muted activity-text" style="text-align: left !important; margin: 0;"><span style="display: block; text-align: left !important;">N/A</span></p>
+                    }
 
                 @* Modal para desaprobar (Master) con comentario *@
                 <div class="modal fade" id="bitacoraUnapproveModal@(bitacora.LogId)" tabindex="-1" aria-labelledby="bitacoraUnapproveModalLabel@(bitacora.LogId)" aria-hidden="true">
@@ -180,28 +180,26 @@
 
                     @if (bitacora.IsApproved)
                     {
-                        <div class="row mb-2">
-                            <div class="col-6">
-                                <small class="text-muted">Hrs. Prácticas aprobadas:</small>
-                                <div class="text-success"><strong>@bitacora.ApprovedHoursPracticas h</strong></div>
+                        <div class="teacher-hours-display mb-3">
+                            <div class="teacher-hour-item">
+                                <div class="hour-label">Prácticas aprobadas</div>
+                                <div class="hour-value text-success">@bitacora.ApprovedHoursPracticas</div>
                             </div>
-                            <div class="col-6">
-                                <small class="text-muted">Hrs. Servicio Social aprobadas:</small>
-                                <div class="text-success"><strong>@bitacora.ApprovedHoursServicioSocial h</strong></div>
+                            <div class="teacher-hour-item">
+                                <div class="hour-label">Servicio aprobado</div>
+                                <div class="hour-value text-success">@bitacora.ApprovedHoursServicioSocial</div>
                             </div>
                         </div>
 
                         @if (!string.IsNullOrEmpty(bitacora.TeacherComments))
                         {
-                            <div class="mb-2">
-                                <strong>Comentarios del asesor:</strong>
-                                <p class="mb-1 text-info">@bitacora.TeacherComments</p>
-                            </div>
+                            <p><strong>Comentarios del asesor:</strong></p>
+                            <p class="text-info activity-text">@bitacora.TeacherComments</p>
                         }
 
-                        <small class="text-muted">
+                        <p class="text-muted mb-0">
                             Aprobada el @bitacora.ApprovedAt?.ToString("dd/MM/yyyy HH:mm")
-                        </small>
+                        </p>
 
                         @* El botón de desaprobar aparecerá dentro del modal de detalle cuando el Master abra la bitácora aprobada *@
                     }
@@ -221,17 +219,15 @@
                         </div>
                     }
 
-                    <div class="mt-2">
-                        <small class="text-muted">Creada el @bitacora.CreatedAt.ToString("dd/MM/yyyy HH:mm")</small>
-                    </div>
+                    <p class="text-muted mt-3 mb-0">
+                        <small><i class="bi bi-calendar3"></i> Creada el: @bitacora.CreatedAt.ToString("dd/MM/yyyy HH:mm")</small>
+                    </p>
                     @if (!string.IsNullOrEmpty(bitacora.SnapshotSemesterName) || !string.IsNullOrEmpty(bitacora.SnapshotGroupName))
                     {
-                        <div class="mt-1">
-                            <small class="text-muted"><i class="bi bi-building"></i>
+                        <p class="text-muted mb-0"><small><i class="bi bi-building"></i>
                                 Semestre: @(string.IsNullOrEmpty(bitacora.SnapshotSemesterName) ? "N/A" : bitacora.SnapshotSemesterName)
                                 &nbsp;|&nbsp; Grupo: @(string.IsNullOrEmpty(bitacora.SnapshotGroupName) ? "N/A" : bitacora.SnapshotGroupName)
-                            </small>
-                        </div>
+                            </small></p>
                     }
 
                     @if (User.IsInRole("Master"))

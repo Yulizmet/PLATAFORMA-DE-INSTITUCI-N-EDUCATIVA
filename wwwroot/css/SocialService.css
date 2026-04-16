@@ -893,6 +893,29 @@ textarea.form-control {
         margin: 0;
     }
 
+.ss-table-scroll-wrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.ss-table-scroll {
+    min-width: 980px;
+}
+
+.ss-table-scroll-attendance {
+    min-width: max-content;
+}
+
+    .ss-table-scroll th,
+    .ss-table-scroll td {
+        white-space: nowrap;
+    }
+
+    .ss-table-scroll td:first-child,
+    .ss-table-scroll th:first-child {
+        min-width: 220px;
+    }
+
 /* ====== INDEX PAGE - ROLE SELECTION ====== */
 .ss-index-container {
     padding: 3rem 0;

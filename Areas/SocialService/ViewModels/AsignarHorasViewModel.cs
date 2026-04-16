@@ -6,6 +6,7 @@ namespace SchoolManager.Areas.SocialService.ViewModels
     {
         public int StudentId { get; set; }
         public string StudentName { get; set; } = string.Empty;
+        public string? CareerName { get; set; }
         public string? SemesterName { get; set; }
         public string? GroupName { get; set; }
         public int TotalBitacoras { get; set; }

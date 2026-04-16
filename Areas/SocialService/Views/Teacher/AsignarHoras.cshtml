@@ -5,12 +5,15 @@
     string currentSort = ViewBag.CurrentSort ?? "name";
     string currentOrder = ViewBag.CurrentOrder ?? "asc";
     string searchName = ViewBag.SearchName ?? "";
+    string careerFilter = ViewBag.CareerFilter ?? "";
+    string semesterFilter = ViewBag.SemesterFilter ?? "";
+    string groupFilter = ViewBag.GroupFilter ?? "";
     int pageSizeVal = ViewBag.PageSize ?? 10;
 
     string SortUrl(string column)
     {
         string newOrder = (currentSort == column && currentOrder == "asc") ? "desc" : "asc";
-        return $"?searchName={searchName}&pageSize={pageSizeVal}&sortBy={column}&sortOrder={newOrder}&page=1";
+        return $"?searchName={searchName}&careerFilter={careerFilter}&semesterFilter={semesterFilter}&groupFilter={groupFilter}&pageSize={pageSizeVal}&sortBy={column}&sortOrder={newOrder}&page=1";
     }
 
     string SortIcon(string column)
@@ -40,10 +43,10 @@
     <a href="/SocialService/Teacher/Dashboard" class="btn btn-secondary me-auto">
         <i class="bi bi-arrow-left"></i> Regresar al Dashboard
     </a>
-    <a href="/SocialService/Teacher/ExportAvanceExcel?searchName=@Uri.EscapeDataString(searchName)" class="btn btn-success">
+    <a href="/SocialService/Teacher/ExportAvanceExcel?searchName=@Uri.EscapeDataString(searchName)&careerFilter=@Uri.EscapeDataString(careerFilter)&semesterFilter=@Uri.EscapeDataString(semesterFilter)&groupFilter=@Uri.EscapeDataString(groupFilter)" class="btn btn-success">
         <i class="bi bi-file-earmark-excel me-1"></i> Exportar a Excel
     </a>
-    <a href="/SocialService/Teacher/ExportAvancePdf?searchName=@Uri.EscapeDataString(searchName)" class="btn btn-danger">
+    <a href="/SocialService/Teacher/ExportAvancePdf?searchName=@Uri.EscapeDataString(searchName)&careerFilter=@Uri.EscapeDataString(careerFilter)&semesterFilter=@Uri.EscapeDataString(semesterFilter)&groupFilter=@Uri.EscapeDataString(groupFilter)" class="btn btn-danger">
         <i class="bi bi-file-earmark-pdf me-1"></i> Exportar en PDF
     </a>
 </div>
@@ -59,6 +62,20 @@
                     </label>
                     <input type="text" class="form-control" id="searchName" name="searchName"
                            value="@ViewBag.SearchName" placeholder="Escribe para buscar...">
+                </div>
+
+                <div class="col-md-2">
+                    <label for="careerFilter" class="form-label mb-2">Carrera</label>
+                    <select class="form-select" id="careerFilter" name="careerFilter" onchange="this.form.submit()">
+                        <option value="">Todas las carreras</option>
+                        @if (ViewBag.Careers != null)
+                        {
+                            foreach (var career in ViewBag.Careers)
+                            {
+                                <option value="@career" selected="@(ViewBag.CareerFilter == career)">@career</option>
+                            }
+                        }
+                    </select>
                 </div>
 
                 <div class="col-md-2">
@@ -140,13 +157,18 @@
                     </h5>
                 </div>
                 <div class="card-body">
-                    <div class="table-responsive">
-                        <table class="table table-hover ss-table-cards">
+                    <div class="table-responsive ss-table-scroll-wrapper">
+                        <table class="table table-hover ss-table-scroll">
                             <thead>
                                 <tr>
                                     <th>
                                         <a href="@SortUrl("name")" class="text-decoration-none">
                                             Alumno <i class="bi @SortIcon("name")"></i>
+                                        </a>
+                                    </th>
+                                    <th class="text-center">
+                                        <a href="@SortUrl("career")" class="text-decoration-none">
+                                            Carrera <i class="bi @SortIcon("career")"></i>
                                         </a>
                                     </th>
                                     <th class="text-center">
@@ -162,11 +184,6 @@
                                     <th class="text-center">
                                         <a href="@SortUrl("totalbitacoras")" class="text-decoration-none">
                                             Total Bitácoras <i class="bi @SortIcon("totalbitacoras")"></i>
-                                        </a>
-                                    </th>
-                                    <th class="text-center">
-                                        <a href="@SortUrl("pendientes")" class="text-decoration-none">
-                                            Bitácoras Pendientes <i class="bi @SortIcon("pendientes")"></i>
                                         </a>
                                     </th>
                                     <th class="text-center">
@@ -193,6 +210,9 @@
                                         <td data-label="Alumno">
                                             @alumno.StudentName
                                         </td>
+                                        <td class="text-center" data-label="Carrera">
+                                            @(alumno.CareerName ?? "N/A")
+                                        </td>
                                         <td class="text-center" data-label="Semestre">
                                             @(alumno.SemesterName ?? "N/A")
                                         </td>
@@ -202,16 +222,7 @@
                                         <td class="text-center" data-label="Total Bitácoras">
                                             @alumno.TotalBitacoras
                                         </td>
-                                        <td class="text-center" data-label="Bitácoras Pendientes">
-                                            @if (alumno.BitacorasPendientesCount > 0)
-                                            {
-                                                @alumno.BitacorasPendientesCount
-                                            }
-                                            else
-                                            {
-                                                <text>0</text>
-                                            }
-                                        </td>
+                                        <!-- Bitácoras Pendientes cell removed -->
                                         <td class="text-center" data-label="Horas Prácticas">
                                             @alumno.TotalHorasPracticas h
                                         </td>
@@ -255,7 +266,7 @@
             <ul class="pagination justify-content-center">
                 <li class="page-item @(ViewBag.CurrentPage == 1 ? "disabled" : "")">
                     <a class="page-link"
-                       href="?searchName=@ViewBag.SearchName&pageSize=@ViewBag.PageSize&sortBy=@ViewBag.CurrentSort&sortOrder=@ViewBag.CurrentOrder&page=@(ViewBag.CurrentPage - 1)"
+                       href="?searchName=@ViewBag.SearchName&careerFilter=@ViewBag.CareerFilter&semesterFilter=@ViewBag.SemesterFilter&groupFilter=@ViewBag.GroupFilter&pageSize=@ViewBag.PageSize&sortBy=@ViewBag.CurrentSort&sortOrder=@ViewBag.CurrentOrder&page=@(ViewBag.CurrentPage - 1)"
                        aria-label="Anterior">
                         <span aria-hidden="true">&laquo; Anterior</span>
                     </a>
@@ -270,7 +281,7 @@
                     if (startPage > 1)
                     {
                         <li class="page-item">
-                            <a class="page-link" href="?searchName=@ViewBag.SearchName&pageSize=@ViewBag.PageSize&sortBy=@ViewBag.CurrentSort&sortOrder=@ViewBag.CurrentOrder&page=1">1</a>
+                            <a class="page-link" href="?searchName=@ViewBag.SearchName&careerFilter=@ViewBag.CareerFilter&semesterFilter=@ViewBag.SemesterFilter&groupFilter=@ViewBag.GroupFilter&pageSize=@ViewBag.PageSize&sortBy=@ViewBag.CurrentSort&sortOrder=@ViewBag.CurrentOrder&page=1">1</a>
                         </li>
                         if (startPage > 2)
                         {
@@ -281,7 +292,7 @@
                     for (int i = startPage; i <= endPage; i++)
                     {
                         <li class="page-item @(i == currentPage ? "active" : "")">
-                            <a class="page-link" href="?searchName=@ViewBag.SearchName&pageSize=@ViewBag.PageSize&sortBy=@ViewBag.CurrentSort&sortOrder=@ViewBag.CurrentOrder&page=@i">@i</a>
+                            <a class="page-link" href="?searchName=@ViewBag.SearchName&careerFilter=@ViewBag.CareerFilter&semesterFilter=@ViewBag.SemesterFilter&groupFilter=@ViewBag.GroupFilter&pageSize=@ViewBag.PageSize&sortBy=@ViewBag.CurrentSort&sortOrder=@ViewBag.CurrentOrder&page=@i">@i</a>
                         </li>
                     }
 
@@ -292,14 +303,14 @@
                             <li class="page-item disabled"><span class="page-link">...</span></li>
                         }
                         <li class="page-item">
-                            <a class="page-link" href="?searchName=@ViewBag.SearchName&pageSize=@ViewBag.PageSize&sortBy=@ViewBag.CurrentSort&sortOrder=@ViewBag.CurrentOrder&page=@totalPages">@totalPages</a>
+                            <a class="page-link" href="?searchName=@ViewBag.SearchName&careerFilter=@ViewBag.CareerFilter&semesterFilter=@ViewBag.SemesterFilter&groupFilter=@ViewBag.GroupFilter&pageSize=@ViewBag.PageSize&sortBy=@ViewBag.CurrentSort&sortOrder=@ViewBag.CurrentOrder&page=@totalPages">@totalPages</a>
                         </li>
                     }
                 }
 
                 <li class="page-item @(ViewBag.CurrentPage >= ViewBag.TotalPages ? "disabled" : "")">
                     <a class="page-link"
-                       href="?searchName=@ViewBag.SearchName&pageSize=@ViewBag.PageSize&sortBy=@ViewBag.CurrentSort&sortOrder=@ViewBag.CurrentOrder&page=@(ViewBag.CurrentPage + 1)"
+                       href="?searchName=@ViewBag.SearchName&careerFilter=@ViewBag.CareerFilter&semesterFilter=@ViewBag.SemesterFilter&groupFilter=@ViewBag.GroupFilter&pageSize=@ViewBag.PageSize&sortBy=@ViewBag.CurrentSort&sortOrder=@ViewBag.CurrentOrder&page=@(ViewBag.CurrentPage + 1)"
                        aria-label="Siguiente">
                         <span aria-hidden="true">Siguiente &raquo;</span>
                     </a>

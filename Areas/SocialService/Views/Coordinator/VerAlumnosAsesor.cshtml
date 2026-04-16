@@ -7,6 +7,7 @@
     string currentOrder = ViewBag.CurrentOrder ?? "asc";
     string searchName = ViewBag.SearchName ?? "";
     string searchEmail = ViewBag.SearchEmail ?? "";
+    string careerFilter = ViewBag.CareerFilter ?? "";
     string semesterFilter = ViewBag.SemesterFilter ?? "";
     string groupFilter = ViewBag.GroupFilter ?? "";
     int pageSizeVal = ViewBag.PageSize ?? 10;
@@ -14,7 +15,7 @@
     string SortUrl(string column)
     {
         string newOrder = (currentSort == column && currentOrder == "asc") ? "desc" : "asc";
-        return $"?id={teacherId}&searchName={searchName}&searchEmail={searchEmail}&semesterFilter={semesterFilter}&groupFilter={groupFilter}&sortBy={column}&sortOrder={newOrder}&page=1&pageSize={pageSizeVal}";
+        return $"?id={teacherId}&searchName={searchName}&searchEmail={searchEmail}&careerFilter={careerFilter}&semesterFilter={semesterFilter}&groupFilter={groupFilter}&sortBy={column}&sortOrder={newOrder}&page=1&pageSize={pageSizeVal}";
     }
 
     string SortIcon(string column)
@@ -49,16 +50,30 @@
             <input type="hidden" name="sortBy" value="@currentSort" />
             <input type="hidden" name="sortOrder" value="@currentOrder" />
             <div class="row g-3 align-items-end">
-                <div class="col-md-3">
+                <div class="col-md-2">
                     <label for="searchName" class="form-label mb-2">Buscar por nombre</label>
                     <input type="text" class="form-control" id="searchName" name="searchName"
                            value="@searchName" placeholder="Nombre del alumno...">
                 </div>
 
-                <div class="col-md-3">
+                <div class="col-md-2">
                     <label for="searchEmail" class="form-label mb-2">Buscar por email</label>
                     <input type="text" class="form-control" id="searchEmail" name="searchEmail"
                            value="@searchEmail" placeholder="Email del alumno...">
+                </div>
+
+                <div class="col-md-2">
+                    <label for="careerFilter" class="form-label mb-2">Carrera</label>
+                    <select class="form-select" id="careerFilter" name="careerFilter" onchange="this.form.submit()">
+                        <option value="">Todas</option>
+                        @if (ViewBag.Careers != null)
+                        {
+                            foreach (var career in (List<string>)ViewBag.Careers)
+                            {
+                                <option value="@career" selected="@(careerFilter == career)">@career</option>
+                            }
+                        }
+                    </select>
                 </div>
 
                 <div class="col-md-2">
@@ -131,6 +146,11 @@
                     </a>
                 </th>
                 <th>
+                    <a href="@SortUrl("career")" class="text-decoration-none">
+                        Carrera <i class="bi @SortIcon("career")"></i>
+                    </a>
+                </th>
+                <th>
                     <a href="@SortUrl("semester")" class="text-decoration-none">
                         Semestre <i class="bi @SortIcon("semester")"></i>
                     </a>
@@ -173,6 +193,7 @@
                         <td>@(rowNum++)</td>
                         <td>@student.StudentName</td>
                         <td>@student.Email</td>
+                        <td>@(student.CareerName ?? "N/A")</td>
                         <td>@(student.SemesterName ?? "N/A")</td>
                         <td>@(student.GroupName ?? "N/A")</td>
                         <td class="text-center">@student.TotalBitacoras</td>
@@ -222,7 +243,7 @@
             else
             {
                 <tr>
-                    <td colspan="10" class="text-center text-muted py-4">
+                    <td colspan="11" class="text-center text-muted py-4">
                         <i class="bi bi-inbox fs-1 d-block mb-2"></i>
                         Este asesor no tiene alumnos asignados.
                     </td>
@@ -244,6 +265,7 @@
                    asp-route-id="@teacherId"
                    asp-route-searchName="@searchName"
                    asp-route-searchEmail="@searchEmail"
+                   asp-route-careerFilter="@careerFilter"
                    asp-route-semesterFilter="@semesterFilter"
                    asp-route-groupFilter="@groupFilter"
                    asp-route-sortBy="@currentSort"
@@ -260,6 +282,7 @@
                        asp-route-id="@teacherId"
                        asp-route-searchName="@searchName"
                        asp-route-searchEmail="@searchEmail"
+                       asp-route-careerFilter="@careerFilter"
                        asp-route-semesterFilter="@semesterFilter"
                        asp-route-groupFilter="@groupFilter"
                        asp-route-sortBy="@currentSort"
@@ -273,6 +296,7 @@
                    asp-route-id="@teacherId"
                    asp-route-searchName="@searchName"
                    asp-route-searchEmail="@searchEmail"
+                   asp-route-careerFilter="@careerFilter"
                    asp-route-semesterFilter="@semesterFilter"
                    asp-route-groupFilter="@groupFilter"
                    asp-route-sortBy="@currentSort"
