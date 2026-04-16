@@ -9,14 +9,14 @@
 
 <link rel="stylesheet" href="~/css/tramites.css" asp-append-version="true" />
 
-<div class="container py-5 area-tramites">
+<div class="container px-5 area-tramites" style="padding-top: 3rem;">
     <div class="text-center header-section">
         <h1 class="display-4 merriweather-font">Centro de Trámites</h1>
         <p class="lead text-muted">Gestiona tus requerimientos institucionales y procesos de pago en un solo lugar.</p>
         <div class="mx-auto mb-4" style="width: 100px; height: 4px; background: var(--burgundy); border-radius: 2px;"></div>
     </div>
 
-    <div class="row g-4 justify-content-center">
+    <div class="row g-4 justify-content-center px-4">
         
         @if (!User.Identity.IsAuthenticated)
         {
@@ -148,7 +148,7 @@
                     @if (isAuthenticated)
                     {
                         <a asp-action="Tracking" class="btn btn-burgundy">
-                            <i class="bi bi-eye me-2"></i>Ver Estatus
+                            <i class="bi bi-eye me-2"></i>Consultar
                         </a>
                     }
                     else

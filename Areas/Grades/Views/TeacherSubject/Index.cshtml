@@ -1,11 +1,17 @@
-﻿@model IEnumerable<SchoolManager.Areas.Grades.ViewModels.TeacherSubject.TeacherSubjectViewModel>
+﻿@using SchoolManager.Areas.Grades.ViewModels.Breadcrumbs;
+@model IEnumerable<SchoolManager.Areas.Grades.ViewModels.TeacherSubject.TeacherSubjectViewModel>
 
 @{
     ViewData["Title"] = "Asignación Profesor-Materia";
     var selectedTeacher = ViewBag.SelectedTeacher as int?;
     var selectedSubject = ViewBag.SelectedSubject as int?;
     Layout = "~/Areas/MainScreen/Views/Shared/_Layout.cshtml";
+    var breadcrumbs = new BreadcrumbViewModel();
+    breadcrumbs.AddItem("Panel Administrativo", "/PanelAdministrativo");
+    breadcrumbs.AddItem("Gestionar Asignaciones Profesor-Materia");
 }
+
+<partial name="_Breadcrumb" model="breadcrumbs"></partial>
 
 <div class="container-fluid py-4">
     <div class="d-flex justify-content-between align-items-center mb-4">

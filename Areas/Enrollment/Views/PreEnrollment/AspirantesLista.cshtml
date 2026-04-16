@@ -1,0 +1,174 @@
+﻿@{
+    ViewData["Title"] = "Lista de Aspirantes";
+    Layout = "~/Areas/Enrollment/Views/_LayoutAdmin.cshtml";
+    var idGeneration = ViewBag.IdGeneration;
+}
+
+<div class="mb-3 d-flex justify-content-between align-items-center flex-wrap gap-2">
+    <div class="d-flex align-items-center gap-3">
+        <a asp-area="Enrollment"
+           asp-controller="PreEnrollment"
+           asp-action="Aspirantes"
+           class="btn btn-outline-secondary btn-sm">
+            <i data-feather="arrow-left" style="width:16px; height:16px;"></i>
+        </a>
+
+        <h1 class="h3 d-inline align-middle mb-0">
+            Generación <span id="titulo-year">...</span>
+        </h1>
+    </div>
+
+    <a asp-area="Enrollment"
+       asp-controller="PreEnrollment"
+       asp-action="ExportarAspirantesExcel"
+       asp-route-idGeneration="@idGeneration"
+       class="btn btn-success btn-sm">
+        <i data-feather="download" class="me-1"></i>
+        Exportar a Excel
+    </a>
+</div>
+
+<div id="loading" class="text-center py-4">
+    <div class="spinner-border text-primary" role="status"></div>
+    <p class="mt-2 text-muted">Cargando aspirantes...</p>
+</div>
+
+<div id="error" class="alert alert-danger d-none">
+    No se pudieron cargar los aspirantes.
+</div>
+
+<div id="empty" class="alert alert-info d-none">
+    No hay aspirantes registrados.
+</div>
+
+<div id="tabla-container" class="d-none">
+    <div class="card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-striped table-hover align-middle">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Nombre</th>
+                            <th class="d-none d-md-table-cell">Folio</th>
+                            <th class="d-none d-md-table-cell">Matrícula</th>
+                            <th class="d-none d-md-table-cell">Correo</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabla-body"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        const idGeneration = '@idGeneration';
+        const API_URL = '@Url.Action("GetAspirantesPorGeneracion", "PreEnrollment", new { area = "Enrollment" })' + '?idGeneration=' + idGeneration;
+
+        const tituloYear = document.getElementById('titulo-year');
+        const loading = document.getElementById('loading');
+        const error = document.getElementById('error');
+        const empty = document.getElementById('empty');
+        const tablaContainer = document.getElementById('tabla-container');
+        const tablaBody = document.getElementById('tabla-body');
+
+        let aspirantesOriginales = [];
+
+        function obtenerYear(lista) {
+            if (lista.length && lista[0].matricula) {
+                return '20' + lista[0].matricula.substring(0,2);
+            }
+            return idGeneration;
+        }
+
+        function renderTabla(lista) {
+            tablaBody.innerHTML = '';
+
+            if (!lista.length) {
+                tablaContainer.classList.add('d-none');
+                empty.classList.remove('d-none');
+                return;
+            }
+
+            empty.classList.add('d-none');
+
+            lista.forEach(asp => {
+                const tr = document.createElement('tr');
+                tr.style.cursor = 'pointer';
+                tr.onclick = () => verAspirante(asp.idData);
+
+                tr.innerHTML = `
+                    <td>
+                        <img src="@Url.Content("~/enrollment/admin/src/img/avatars/avatar.jpg")"
+                             width="32" height="32"
+                             class="rounded-circle my-n1">
+                    </td>
+                    <td>${asp.nombreCompleto ?? ''}</td>
+                    <td class="d-none d-md-table-cell">${asp.folio ?? ''}</td>
+                    <td class="d-none d-md-table-cell">${asp.matricula ?? ''}</td>
+                    <td class="d-none d-md-table-cell">${asp.email ?? ''}</td>
+                `;
+
+                tablaBody.appendChild(tr);
+            });
+
+            tablaContainer.classList.remove('d-none');
+
+            if (window.feather) feather.replace();
+        }
+
+        async function cargarAspirantes() {
+            try {
+                const res = await fetch(API_URL);
+                const data = await res.json();
+
+                aspirantesOriginales = data || [];
+
+                loading.classList.add('d-none');
+
+                tituloYear.textContent = obtenerYear(aspirantesOriginales);
+
+                if (!aspirantesOriginales.length) {
+                    empty.classList.remove('d-none');
+                    return;
+                }
+
+                renderTabla(aspirantesOriginales);
+
+            } catch {
+                loading.classList.add('d-none');
+                error.classList.remove('d-none');
+            }
+        }
+
+        function verAspirante(idData) {
+            window.location.href =
+                '@Url.Action("Details", "PreEnrollment", new { area = "Enrollment" })/' +
+                idData +
+                '?idGeneration=' + idGeneration;
+        }
+
+        // 🔥 ESTA ES LA CLAVE DEL BUSCADOR
+        window.handleGlobalSearch = function (texto) {
+            const t = (texto || '').toLowerCase();
+
+            if (!t) {
+                renderTabla(aspirantesOriginales);
+                return;
+            }
+
+            const filtrados = aspirantesOriginales.filter(a =>
+                (a.nombreCompleto ?? '').toLowerCase().includes(t) ||
+                (a.folio ?? '').toLowerCase().includes(t) ||
+                (a.matricula ?? '').toLowerCase().includes(t) ||
+                (a.email ?? '').toLowerCase().includes(t)
+            );
+
+            renderTabla(filtrados);
+        };
+
+        cargarAspirantes();
+    </script>
+}

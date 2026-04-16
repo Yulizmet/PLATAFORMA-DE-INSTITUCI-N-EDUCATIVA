@@ -20,16 +20,25 @@
 <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
 
 <div class="container-fluid p-0 mt-4">
-    <h2 class="text-center fw-bold mb-4" style="color: var(--brand-dark);">Directorio de Alumnos</h2>
+    <div class="position-relative mb-4 text-center">
+        <div class="position-absolute top-50 start-0 translate-middle-y">
+            <button type="button" onclick="history.back()" class="btn btn-sm btn-outline-secondary fw-bold shadow-sm px-3" style="border-radius: 20px;">
+                <i class="bi bi-arrow-left me-1"></i> Regresar
+            </button>
+        </div>
+
+        <h2 class="fw-bold m-0" style="color: var(--brand-dark);">Directorio de Alumnos</h2>
+    </div>
+    
     <div class="card border-0 shadow-sm mb-5" style="border-radius: 10px;">
         <div class="card-body p-4">
             
             @if (roleId == 3)
             {
-                <form class="row g-3 align-items-end" method="get" asp-action="ListaDeAlumnos">
+                <form id="filtroForm" class="row g-3 align-items-end">
                     <div class="col-md-4">
                         <label class="form-label fw-bold text-dark">Grado</label>
-                        <select class="form-select shadow-sm" name="grado" style="border-color: #ddd;">
+                        <select id="filtroGrado" class="form-select shadow-sm" name="grado" style="border-color: #ddd;">
                             <option value="">Todos los grados...</option>
                             @if (ViewBag.GradosDisponibles != null)
                             {
@@ -43,7 +52,7 @@
 
                     <div class="col-md-5">
                         <label class="form-label fw-bold text-dark">Grupo</label>
-                        <select class="form-select shadow-sm" name="grupo" style="border-color: #ddd;">
+                        <select id="filtroGrupo" class="form-select shadow-sm" name="grupo" style="border-color: #ddd;">
                             <option value="">Todos los grupos...</option>
                             @if (ViewBag.GruposDisponibles != null)
                             {
@@ -90,73 +99,87 @@
             </tr>
         </thead>
         <tbody>
-            @{
-                var dictMatriculas = ViewBag.Matriculas as Dictionary<int, string> ?? new Dictionary<int, string>();
-                var dictGrupos = ViewBag.Grupos as Dictionary<int, string> ?? new Dictionary<int, string>();
-                var dictFotos = ViewBag.FotosPerfil as Dictionary<int, string> ?? new Dictionary<int, string>();
-            }
-
-            @foreach (var alumno in Model)
-            {
-                @if (alumno.Person != null)
-                {
-                    string matriculaAlumno = dictMatriculas.ContainsKey(alumno.UserId) ? dictMatriculas[alumno.UserId] : "Sin Matrícula";
-                    string grupoAlumno = dictGrupos.ContainsKey(alumno.UserId) ? dictGrupos[alumno.UserId] : "Sin Grupo";
-                    string rutaFoto = dictFotos.ContainsKey(alumno.UserId) ? dictFotos[alumno.UserId] : "";
-                    bool tieneFoto = !string.IsNullOrEmpty(rutaFoto);
-
-                    string imgSrc = tieneFoto ? rutaFoto : $"https://ui-avatars.com/api/?name={alumno.Person.FirstName}&background=8C1B1B&color=fff";
-                    string nombreCompleto = $"{alumno.Person.FirstName} {alumno.Person.LastNamePaternal} {alumno.Person.LastNameMaternal}";
-
-                    <tr>
-                        <td class="text-center ps-3">
-                            <img src="@imgSrc" alt="Foto" class="rounded-circle border" style="object-fit: cover; width: 55px; height: 55px; border-color: #ddd !important;">
-                        </td>
-
-                        <td data-sort="@nombreCompleto">
-                            <div class="fw-bold fs-6 text-dark mb-1">@nombreCompleto</div>
-                            <div class="text-muted small">
-                                <span class="badge bg-light text-dark border me-2">Matrícula: @matriculaAlumno</span>
-                                <span class="badge" style="background-color: var(--brand-secondary); color: var(--brand-white);">Grado y Grupo: @grupoAlumno</span>
-                            </div>
-                        </td>
-
-                        <td class="text-end pe-3">
-                            <div class="d-flex gap-2 justify-content-end">
-                                <a asp-area="Gestion" asp-controller="Tutorship" asp-action="VerEntrevistaAlumno" asp-route-id="@alumno.UserId" class="btn btn-action-seguimiento shadow-sm btn-sm px-3 py-2">
-                                    <i class="bi bi-file-text"></i> Entrevista
-                                </a>
-                                <a asp-area="Gestion" asp-controller="Tutorship" asp-action="Seguimiento" asp-route-matriculaBuscar="@matriculaAlumno" class="btn btn-action-seguimiento shadow-sm btn-sm px-3 py-2">
-                                    <i class="bi bi-graph-up"></i> Seguimiento
-                                </a>
-                            </div>
-                        </td>
-                    </tr>
-                }
-            }
-        </tbody>
+            </tbody>
     </table>
 </div>
 
 @section Scripts {
+    <style>
+        .dataTables_wrapper .row:first-child { margin-bottom: 1.5rem; padding: 0 0.5rem; }
+        .dataTables_wrapper .row:last-child { margin-top: 1.5rem; padding: 0 0.5rem; }
+        div.dataTables_wrapper div.dataTables_filter input {
+            border-radius: 8px; border: 1px solid #ced4da; padding: 0.35rem 0.75rem; transition: all 0.15s ease-in-out;
+        }
+        div.dataTables_wrapper div.dataTables_filter input:focus {
+            outline: none; border-color: var(--brand-dark); box-shadow: 0 0 0 0.25rem rgba(140, 27, 27, 0.25); 
+        }
+        div.dataTables_wrapper div.dataTables_length select { border-radius: 8px; border: 1px solid #ced4da; padding-left: 0.5rem; }
+    </style>
+
     <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
 
     <script>
         $(document).ready(function () {
-        $('#tablaAlumnos').DataTable({
-        language: {
-        url: 'https://cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json'
-        },
-        lengthMenu: [[10, 25, 50, -1], [10, 25, 50, "Todos"]],
-        pageLength: 10,
-        columnDefs: [
-        { orderable: false, targets: [0, 2] },
-        { searchable: false, targets: [0, 2] }
-        ],
-        order: [[1, 'asc']]
-        });
+            var tabla = $('#tablaAlumnos').DataTable({
+                language: {
+                    url: 'https://cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json'
+                },
+                lengthMenu: [[10, 25, 50, 100], [10, 25, 50, 100]],
+                pageLength: 10,
+                processing: true,
+                serverSide: true, 
+                ajax: {
+                    url: "@Url.Action("ObtenerDataAlumnos", "Alumnos", new { area = "Gestion" })",
+                    type: "GET",
+                    data: function (d) {
+                        d.grado = $('#filtroGrado').val();
+                        d.grupo = $('#filtroGrupo').val();
+                    }
+                },
+                columns: [
+                    { 
+                        data: null, 
+                        orderable: false, 
+                        className: "text-center ps-3 align-middle",
+                        render: function(data, type, row) {
+                            let imgSrc = row.foto ? row.foto : "https://ui-avatars.com/api/?name=" + encodeURIComponent(row.nombre) + "&background=8C1B1B&color=fff";
+                            return '<img src="' + imgSrc + '" alt="Foto" class="rounded-circle border" style="object-fit: cover; width: 55px; height: 55px; border-color: #ddd !important;">';
+                        }
+                    },
+                    { 
+                        data: "nombreCompleto",
+                        className: "align-middle",
+                        render: function(data, type, row) {
+                            return '<div class="fw-bold fs-6 text-dark mb-1">' + data + '</div>' +
+                                   '<div class="text-muted small">' +
+                                        '<span class="badge bg-light text-dark border me-2">Matrícula: ' + row.matricula + '</span>' +
+                                        '<span class="badge" style="background-color: var(--brand-secondary); color: var(--brand-white);">Grado y Grupo: ' + row.grupoTexto + '</span>' +
+                                   '</div>';
+                        }
+                    },
+                    { 
+                        data: null, 
+                        orderable: false, 
+                        className: "text-end pe-3 align-middle",
+                        render: function(data, type, row) {
+                            let urlEntrevista = '@Url.Action("VerEntrevistaAlumno", "Entrevista", new { area = "Gestion" })/' + row.userId;
+                            let urlSeguimiento = '@Url.Action("Seguimiento", "Seguimiento", new { area = "Gestion" })?matriculaBuscar=' + encodeURIComponent(row.matricula);
+
+                            return '<div class="d-flex gap-2 justify-content-end">' +
+                                        '<a href="' + urlEntrevista + '" class="btn btn-action-seguimiento shadow-sm btn-sm px-3 py-2"><i class="bi bi-file-text"></i> Entrevista</a>' +
+                                        '<a href="' + urlSeguimiento + '" class="btn btn-action-seguimiento shadow-sm btn-sm px-3 py-2"><i class="bi bi-graph-up"></i> Seguimiento</a>' +
+                                   '</div>';
+                        }
+                    }
+                ]
+            });
+
+            $('#filtroForm').on('submit', function (e) {
+                e.preventDefault();
+                tabla.ajax.reload();
+            });
         });
     </script>
 }

@@ -119,6 +119,41 @@
                 }
             });
         }
+
+        function bulkEdit() {
+            const selectedIds = $('.row-checkbox:checked').map(function() {
+                return parseInt($(this).val());
+            }).get();
+
+            if (selectedIds.length === 0) {
+                showToast('warning', 'Selecciona al menos un trámite.');
+                return;
+            }
+
+            Swal.fire({
+                title: 'Preparando edición...',
+                didOpen: () => { Swal.showLoading(); }
+            });
+
+            $.ajax({
+                url: '@Url.Action("GetBulkEditModal", "ProgrammingDates")',
+                type: 'POST',
+                data: { ids: selectedIds },
+                success: function(html) {
+                    Swal.close();
+                    const container = document.getElementById('modalContainer');
+                    container.innerHTML = html;
+
+                    const modalEl = container.querySelector('.modal');
+                    const myModal = new bootstrap.Modal(modalEl);
+                    myModal.show();
+                },
+                error: function() {
+                    Swal.close();
+                    showToast('error', 'Error al cargar la configuración masiva.');
+                }
+            });
+        }
     </script>
 }
 
@@ -138,83 +173,85 @@
 
     <div class="border-0 overflow-hidden">
         <div class="card-body p-0">
-            <table id="mainTable" class="table table-hover align-middle mb-0 table-container-rounded">
-                <thead class="burgundy-header text-white">
-                    <tr>
-                        <th class="no-sort text-center" style="width: 5%;">
-                            <input type="checkbox" id="checkAll" class="form-check-input">
-                        </th>
-                        <th style="width: 25%;">Nombre del trámite</th>
-                        <th style="width: 10%;">Status</th>
-                        <th style="width: 20%;">Fecha de Inicialización</th>
-                        <th style="width: 20%;">Fecha de Cierre</th>
-                        <th style="width: 15%;">Días de resolución</th>
-                        <th class="no-sort text-center pe-4" style="width: 10%;">Acciones</th>
-                    </tr>
-                </thead>
-                <tbody class="table-white">
-                    @foreach (var item in Model)
-                    {
-                        var today = DateTime.Today;
-                        string statusLabel = "Sin Programar";
-                        string statusClass = "accent-muted text-muted";
-
-                        if (item.StartDate.HasValue && item.EndDate.HasValue)
-                        {
-                            if (today >= item.StartDate && today <= item.EndDate)
-                            {
-                                statusLabel = "Activo";
-                                statusClass = "accent-done text-success";
-                            }
-                            else if (today < item.StartDate)
-                            {
-                                statusLabel = "Programado";
-                                statusClass = "accent-course text-primary";
-                            }
-                            else
-                            {
-                                statusLabel = "Inactivo";
-                                statusClass = "accent-total text-danger";
-                            }
-                        }
-
+            <div class="table-responsive">
+                <table id="mainTable" class="table mt-2 mb-2 table-hover table-container-rounded dataTable no-footer">
+                    <thead class="burgundy-header text-white">
                         <tr>
-                            <td class="text-center">
-                                <input type="checkbox" class="form-check-input row-checkbox" value="@item.Id" />
-                            </td>
-                            <td>
-                                <div class="fw-bold text-dark">@item.Name</div>
-                            </td>
-                            <td>
-                                <span class="badge @statusClass border rounded-pill fw-bold" style="font-size: 0.65rem; padding: 0.3em 0.8em;">
-                                    <i class="bi bi-circle-fill me-1" style="font-size: 0.5rem;"></i> @statusLabel
-                                </span>
-                            </td>
-                            <td class="text-muted small">
-                                <i class="bi bi-calendar-event me-1"></i>
-                                @(item.StartDate.HasValue? item.StartDate.Value.ToString("yyyy-MM-dd hh:mm tt") : "---")
-                            </td>
-                            <td class="text-muted small">
-                                <i class="bi bi-calendar-x me-1"></i>
-                                @(item.EndDate.HasValue? item.EndDate.Value.ToString("yyyy-MM-dd hh:mm tt") : "---")
-                            </td>
-                            <td class="text-center">
-                                <span class="badge rounded-pill bg-light text-dark border accent-course px-3 py-2">
-                                    @item.MaxResolutionDays días
-                                </span>
-                            </td>
-                            <td class="actions text-center pe-4">
-                                <button class="btn btn-light border shadow-sm rounded-pill px-4 py-2 d-inline-flex align-items-center transition-hover"
-                                        onclick="loadModal('/Procedures/ProgrammingDates/Edit/@item.Id')"
-                                        style="border-color: rgba(0,0,0,0.1) !important;">
-                                    <i class="bi bi-calendar-plus text-primary me-2"></i>
-                                    <span class="small fw-bold">Configurar</span>
-                                </button>
-                            </td>
+                            <th class="no-sort text-center" style="width: 5%;">
+                                <input type="checkbox" id="checkAll" class="form-check-input">
+                            </th>
+                            <th style="width: 25%;">Nombre del trámite</th>
+                            <th style="width: 10%;">Status</th>
+                            <th style="width: 20%;">Fecha de Inicialización</th>
+                            <th style="width: 20%;">Fecha de Cierre</th>
+                            <th style="width: 15%;">Días de resolución</th>
+                            <th class="no-sort text-center pe-4" style="width: 10%;">Acciones</th>
                         </tr>
-                    }
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody class="table-white">
+                        @foreach (var item in Model)
+                        {
+                            var today = DateTime.Today;
+                            string statusLabel = "Sin Programar";
+                            string statusClass = "accent-muted text-muted";
+
+                            if (item.StartDate.HasValue && item.EndDate.HasValue)
+                            {
+                                if (today >= item.StartDate && today <= item.EndDate)
+                                {
+                                    statusLabel = "Activo";
+                                    statusClass = "accent-done text-success";
+                                }
+                                else if (today < item.StartDate)
+                                {
+                                    statusLabel = "Programado";
+                                    statusClass = "accent-course text-primary";
+                                }
+                                else
+                                {
+                                    statusLabel = "Inactivo";
+                                    statusClass = "accent-total text-danger";
+                                }
+                            }
+
+                            <tr>
+                                <td class="text-center">
+                                    <input type="checkbox" class="form-check-input row-checkbox" value="@item.Id" />
+                                </td>
+                                <td>
+                                    <div class="fw-bold text-dark">@item.Name</div>
+                                </td>
+                                <td>
+                                    <span class="badge @statusClass border rounded-pill fw-bold" style="font-size: 0.65rem; padding: 0.3em 0.8em;">
+                                        <i class="bi bi-circle-fill me-1" style="font-size: 0.5rem;"></i> @statusLabel
+                                    </span>
+                                </td>
+                                <td class="text-muted small">
+                                    <i class="bi bi-calendar-event me-1"></i>
+                                    @(item.StartDate.HasValue? item.StartDate.Value.ToString("yyyy-MM-dd hh:mm tt") : "---")
+                                </td>
+                                <td class="text-muted small">
+                                    <i class="bi bi-calendar-x me-1"></i>
+                                    @(item.EndDate.HasValue? item.EndDate.Value.ToString("yyyy-MM-dd hh:mm tt") : "---")
+                                </td>
+                                <td class="text-center">
+                                    <span class="badge rounded-pill bg-light text-dark border accent-course px-3 py-2">
+                                        @item.MaxResolutionDays días
+                                    </span>
+                                </td>
+                                <td class="actions text-center pe-4">
+                                    <button class="btn btn-light border shadow-sm rounded-pill px-4 py-1 d-inline-flex align-items-center transition-hover"
+                                            onclick="loadModal('/Procedures/ProgrammingDates/Edit/@item.Id')"
+                                            style="border-color: rgba(0,0,0,0.1) !important;">
+                                        <i class="bi bi-calendar-plus text-primary me-2"></i>
+                                        <span class="small fw-bold">Configurar</span>
+                                    </button>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 

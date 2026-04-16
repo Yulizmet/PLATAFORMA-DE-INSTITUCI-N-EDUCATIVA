@@ -255,8 +255,10 @@
             const titleLineH = 18 * 0.3527777778 * 1.2;
             const afterTitleY = CONFIG.titleY + (titleLines.length - 1) * titleLineH;
 
+            const anioInicio = parseInt(generacion);
+            const anioFin = isNaN(anioInicio) ? "" : anioInicio + 3;
             doc.setFontSize(12);
-            doc.text(`GENERACIÓN ${generacion}`, titleXRight, afterTitleY + 10, {
+            doc.text(`GENERACIÓN: ${anioInicio} - ${anioFin}`, titleXRight, afterTitleY + 10, {
                 align: "right",
             });
 
@@ -282,7 +284,7 @@
             doc.setFont("helvetica", "bold");
             doc.text("CARRERA:", left, y);
             doc.setFont("helvetica", "normal");
-            doc.text(carrera, left + 22, y);
+            doc.text(carrera, left + 40, y);
 
             y += lineH * 1.2;
             doc.setLineWidth(0.6);

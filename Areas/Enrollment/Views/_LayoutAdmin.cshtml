@@ -1,0 +1,152 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <meta name="description" content="Responsive Admin & Dashboard Template based on Bootstrap 5" />
+    <meta name="author" content="AdminKit" />
+    <meta name="keywords" content="adminkit, bootstrap, bootstrap 5, admin, dashboard, template, responsive, css, sass, html, theme, front-end, ui kit, web" />
+
+    <link rel="preconnect" href="https://fonts.gstatic.com" />
+    <link rel="shortcut icon" href="~/img/icons/icon-48x48.png" />
+    <title>@ViewData["Title"] - Sistema</title>
+
+    <link rel="stylesheet" href="~/enrollment/admin/static/css/app.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet" />
+
+    @RenderSection("Styles", required: false)
+</head>
+
+<body>
+    <div class="wrapper">
+        <nav id="sidebar" class="sidebar js-sidebar">
+            <div class="sidebar-content js-simplebar">
+                <a class="sidebar-brand" asp-area="Enrollment" asp-controller="PreEnrollment" asp-action="Index">
+                    <span class="align-middle ms-3">
+                        <img src="~/enrollment/admin/src/img/photos/icon-icons.png" alt="Logo" height="80" class="d-inline-block align-text-top" />
+                    </span>
+                </a>
+
+                <ul class="sidebar-nav">
+                    <li class="sidebar-header"></li>
+
+                    <li class="sidebar-item @(ViewContext.RouteData.Values["action"]?.ToString() == "Aspirantes" ? "active" : "")">
+                        <a class="sidebar-link" asp-area="Enrollment" asp-controller="PreEnrollment" asp-action="Aspirantes">
+                            <i class="align-middle" data-feather="users"></i>
+                            <span class="align-middle">Aspirantes</span>
+                        </a>
+                    </li>
+
+                    <li class="sidebar-item @(ViewContext.RouteData.Values["action"]?.ToString() == "MatriculasAdmin" ? "active" : "")">
+                        <a class="sidebar-link" asp-area="Enrollment" asp-controller="PreEnrollment" asp-action="MatriculasAdmin">
+                            <i class="align-middle" data-feather="user"></i>
+                            <span class="align-middle">Matrículas</span>
+                        </a>
+                    </li>
+
+                    <li class="sidebar-item @(ViewContext.RouteData.Values["action"]?.ToString() == "Configuracion" ? "active" : "")">
+                        <a class="sidebar-link" asp-area="Enrollment" asp-controller="PreEnrollment" asp-action="Configuracion">
+                            <i class="align-middle" data-feather="settings"></i>
+                            <span class="align-middle">Configuración</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+
+        <div class="main">
+            <nav class="navbar navbar-expand navbar-light navbar-bg">
+                <a class="sidebar-toggle js-sidebar-toggle">
+                    <i class="hamburger align-self-center"></i>
+                </a>
+
+                <form class="d-none d-sm-inline-block" onsubmit="return false;">
+                    <div class="input-group input-group-navbar">
+                        <input id="globalSearchInput"
+                               type="text"
+                               class="form-control"
+                               placeholder="Buscar…"
+                               aria-label="Buscar" />
+                        <button id="globalSearchButton" class="btn" type="button">
+                            <i class="align-middle" data-feather="search"></i>
+                        </button>
+                    </div>
+                </form>
+
+                <div class="navbar-collapse collapse">
+                    <ul class="navbar-nav navbar-align">
+                        <li class="nav-item dropdown">
+                            <a class="nav-icon dropdown-toggle d-inline-block d-sm-none" href="#" data-bs-toggle="dropdown">
+                                <i class="align-middle" data-feather="settings"></i>
+                            </a>
+
+                            <a class="nav-link dropdown-toggle d-none d-sm-inline-block" href="#" data-bs-toggle="dropdown">
+                                <img src="~/enrollment/admin/src/img/avatars/avatar.jpg" class="avatar img-fluid rounded me-1" alt="user-name" />
+                                <span class="text-dark">@User.Identity?.Name</span>
+                            </a>
+
+                            <div class="dropdown-menu dropdown-menu-end">
+                                <div class="dropdown-divider"></div>
+
+                                <a class="dropdown-item"
+                                   asp-area="Enrollment"
+                                   asp-controller="PreEnrollment"
+                                   asp-action="LogoutAndRedirect">
+                                    <i class="align-middle me-1" data-feather="log-out"></i> Cerrar sesión
+                                </a>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+
+            <main class="content">
+                <div class="container-fluid p-0">
+                    @RenderBody()
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script src="~/enrollment/admin/static/js/app.js"></script>
+    @RenderSection("Scripts", required: false)
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const input = document.getElementById('globalSearchInput');
+            const button = document.getElementById('globalSearchButton');
+
+            if (!input || !button) return;
+
+            let timeoutBusqueda;
+
+            function ejecutarBusqueda() {
+                const texto = input.value.trim();
+
+                if (typeof window.handleGlobalSearch === 'function') {
+                    window.handleGlobalSearch(texto);
+                }
+            }
+
+            button.addEventListener('click', ejecutarBusqueda);
+
+            input.addEventListener('input', function () {
+                clearTimeout(timeoutBusqueda);
+                timeoutBusqueda = setTimeout(() => {
+                    ejecutarBusqueda();
+                }, 300);
+            });
+
+            input.addEventListener('keydown', function (e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    clearTimeout(timeoutBusqueda);
+                    ejecutarBusqueda();
+                }
+            });
+        });
+    </script>
+</body>
+</html>

@@ -17,13 +17,20 @@ public class ProceedingController : _ProceduresBaseController
     {
         await LoadPermissions("Expedientes");
 
+        // 1. Buscamos primero el ID del rol por nombre (Student o Alumno)
+        var studentRoleId = await _context.Roles
+            .Where(r => r.Name == "Student" || r.Name == "Alumno" || r.Name == "Estudiante")
+            .Select(r => r.RoleId)
+            .FirstOrDefaultAsync();
+
+        // 2. Realizamos la consulta usando la variable dinámica
         var expedientes = await _context.Persons
             .Include(p => p.User)
                 .ThenInclude(u => u.UserRoles)
             .Include(p => p.User)
                 .ThenInclude(u => u.Preenrollments)
                     .ThenInclude(pg => pg.Career)
-            .Where(p => p.User != null && p.User.UserRoles.Any(ur => ur.RoleId == 1))
+            .Where(p => p.User != null && p.User.UserRoles.Any(ur => ur.RoleId == studentRoleId))
             .Select(p => new StudentExpedienteViewModel
             {
                 PersonId = p.PersonId,
@@ -34,7 +41,7 @@ public class ProceedingController : _ProceduresBaseController
                 Username = p.User.Username,
 
                 CareerName = p.User.Preenrollments.Any()
-                      ? p.User!.Preenrollments!.FirstOrDefault()!.Career!.name_career
+                      ? p.User.Preenrollments.FirstOrDefault()!.Career!.name_career
                       : "Sin asignar",
 
                 Matricula = p.User.Preenrollments.Any()
@@ -67,6 +74,21 @@ public class ProceedingController : _ProceduresBaseController
         using var transaction = await _context.Database.BeginTransactionAsync();
         try
         {
+            // 1. Buscar el RoleId para "Student"
+            var studentRole = await _context.Roles
+                .FirstOrDefaultAsync(r => r.Name == "Student" || r.Name == "Alumno");
+
+            if (studentRole == null)
+                return Json(new { success = false, message = "Error: No se encontró el rol 'Student' en la base de datos." });
+
+            // 2. Obtener el primer ID de Carrera y Generación disponible para evitar errores de FK
+            var defaultCareer = await _context.PreenrollmentCareers.Select(c => c.IdCareer).FirstOrDefaultAsync();
+            var defaultGeneration = await _context.PreenrollmentGenerations.Select(g => g.IdGeneration).FirstOrDefaultAsync();
+
+            if (defaultCareer == 0 || defaultGeneration == 0)
+                return Json(new { success = false, message = "Error: Debe existir al menos una Carrera y una Generación registradas." });
+
+
             var person = new users_person
             {
                 FirstName = FirstName,
@@ -96,12 +118,18 @@ public class ProceedingController : _ProceduresBaseController
             _context.Users.Add(user);
             await _context.SaveChangesAsync();
 
-            _context.UserRoles.Add(new users_userrole { UserId = user.UserId, RoleId = 1, CreatedDate = DateTime.Now, IsActive = true });
+            _context.UserRoles.Add(new users_userrole
+            {
+                UserId = user.UserId,
+                RoleId = studentRole.RoleId,
+                CreatedDate = DateTime.Now,
+                IsActive = true
+            });
 
             var pre = new preenrollment_general
             {
-                IdCareer = 5,
-                IdGeneration = 4,
+                IdCareer = defaultCareer,
+                IdGeneration = defaultGeneration,
                 UserId = user.UserId,
                 BloodType = "O+",
                 CreateStat = DateTime.Now,
@@ -125,8 +153,7 @@ public class ProceedingController : _ProceduresBaseController
                 postal_code = "88700",
                 neighborhood = "Centro",
                 state = "Tamaulipas",
-                city = "Reynosa",
-                //phone = "8991234567"
+                city = "Reynosa"
             });
 
             _context.PreenrollmentInfos.Add(new preenrollment_infos
@@ -161,8 +188,19 @@ public class ProceedingController : _ProceduresBaseController
         }
         catch (Exception ex)
         {
-            await transaction.RollbackAsync();
-            return Json(new { success = false, message = "Error: " + (ex.InnerException?.Message ?? ex.Message) });
+            try
+            {
+                await transaction.RollbackAsync();
+            }
+            catch
+            {
+            }
+
+            return Json(new
+            {
+                success = false,
+                message = "Error: " + (ex.InnerException?.Message ?? ex.Message)
+            });
         }
     }
 

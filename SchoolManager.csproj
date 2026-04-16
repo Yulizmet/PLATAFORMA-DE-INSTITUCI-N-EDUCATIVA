@@ -45,14 +45,10 @@
   <ItemGroup>
     <Folder Include="Areas\Enrollment\Controllers\" />
     <Folder Include="Areas\Grades\JS\" />
-    <Folder Include="Areas\Grades\Controllers\" />
-    <Folder Include="Areas\Grades\Views\" />
-    <Folder Include="Areas\Grades\Views\" />
-    <Folder Include="Migrations\" />
     <None Include="wwwroot\templates\Notification.html" />
     <Folder Include="Areas\Procedures\Controllers\" />
-    <Folder Include="Areas\Procedures\Views\" />
     <Folder Include="Areas\Tutorship\Controllers\" />
+    <Folder Include="wwwroot\enrollment\admin\" />
     <Folder Include="wwwroot\uploads\bitacoras\" />
     <Folder Include="wwwroot\uploads\interview\" />
     <Folder Include="wwwroot\uploads\seguimiento\" />

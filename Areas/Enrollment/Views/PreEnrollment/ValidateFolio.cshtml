@@ -3,7 +3,7 @@
     Layout = "~/Areas/Enrollment/Views/_LayoutMatricula.cshtml";
 }
 
-<div class="flex items-center min-h-screen p-6 bg-gray-50">
+<div class="flex items-center min-h-screen p-6" style="background-color: #B1A596;">
     <div class="flex-1 h-full max-w-4xl mx-auto overflow-hidden bg-white rounded-lg shadow-xl">
         <div class="flex flex-col overflow-y-auto md:flex-row">
 
@@ -32,13 +32,20 @@
 
                         @Html.AntiForgeryToken()
 
-                        <div asp-validation-summary="All" class="text-red-600 mb-3"></div>
+                        @if (!ViewData.ModelState.IsValid)
+                        {
+                            <div class="mb-4 flex items-start gap-3 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 shadow-sm">
+                                <i class="fa-solid fa-circle-exclamation mt-0.5"></i>
+                                <div asp-validation-summary="All"></div>
+                            </div>
+                        }
 
                         <label class="block text-sm">
                             <span class="text-gray-700">Folio</span>
 
                             <input name="folio"
                                    type="text"
+                                   value="@ViewBag.Folio"
                                    class="block w-full mt-1 text-sm border-gray-300 bg-white focus:border-purple-400 focus:outline-none focus:shadow-outline-purple text-gray-700 form-input"
                                    placeholder="Ingresa tu folio" />
                         </label>
@@ -51,6 +58,15 @@
                             Continuar
                         </button>
 
+
+                        <div class="text-center mt-4">
+                            <a asp-area="MainScreen"
+                               asp-controller="MainScreen"
+                               asp-action="Tramites"
+                               class="btn-regresar-custom">
+                                Regresar
+                            </a>
+                        </div>
                     </form>
 
                     <hr class="my-8" />
@@ -61,7 +77,26 @@
     </div>
 </div>
 
+<style>
+    .btn-regresar-custom {
+        display: inline-block;
+        padding: 10px 18px;
+        border-radius: 8px;
+        background-color: #B1A596;
+        color: #ffffff;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.2s ease-in-out;
+    }
+
+        .btn-regresar-custom:hover {
+            background-color: #9d9385; /* más oscuro */
+            color: #ffffff;
+            text-decoration: none;
+            transform: translateY(-1px);
+        }
+</style>
+
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
 }
-</div>

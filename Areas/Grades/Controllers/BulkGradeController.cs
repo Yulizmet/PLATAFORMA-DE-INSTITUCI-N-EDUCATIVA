@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using MiniExcelLibs;
 using SchoolManager.Areas.Grades.ViewModels.BulkGrade;
 using SchoolManager.Data;
+using SchoolManager.Grades.Services;
 using SchoolManager.Helpers;
 using SchoolManager.Models;
 
@@ -15,10 +16,12 @@ namespace SchoolManager.Areas.Grades.Controllers
     public class BulkGradeController : Controller
     {
         private readonly AppDbContext _context;
+        private readonly ITeacherAccessService _access;
 
-        public BulkGradeController(AppDbContext context)
+        public BulkGradeController(AppDbContext context, ITeacherAccessService access)
         {
             _context = context;
+            _access = access;
         }
 
         // GET: /Grades/BulkGrade/SelectClass
@@ -52,6 +55,9 @@ namespace SchoolManager.Areas.Grades.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Upload(int groupId, int subjectId, IFormFile excelFile)
         {
+            var teacherId = GetCurrentTeacherId();
+            if (!await _access.OwnsGroupSubjectAsync(teacherId, groupId, subjectId))
+                return Forbid();
             if (excelFile == null || excelFile.Length == 0)
             {
                 TempData["Error"] = "Selecciona un archivo";

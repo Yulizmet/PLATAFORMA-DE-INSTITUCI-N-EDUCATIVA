@@ -273,19 +273,22 @@
     </div>
 
     <ul class="nav nav-pills nav-pills-burgundy mb-4 p-2 rounded-4" id="mainGestorTabs" role="tablist">
-        <li class="nav-item">
-            <button class="nav-link" data-bs-toggle="pill" data-bs-target="#catalog-pane" type="button">
-                <i class="bi bi-collection-play me-2"></i> Módulos y Botones
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" data-bs-toggle="pill" data-bs-target="#catalog-pane" type="button" role="tab">
+                <i class="bi bi-collection-play me-0 me-md-2"></i>
+                <span class="d-none d-md-inline">Módulos y Botones</span>
             </button>
         </li>
-        <li class="nav-item">
-            <button class="nav-link" data-bs-toggle="pill" data-bs-target="#jobs-pane" type="button">
-                <i class="bi bi-person-vcard me-2"></i> Puestos de trabajo
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" data-bs-toggle="pill" data-bs-target="#jobs-pane" type="button" role="tab">
+                <i class="bi bi-person-vcard me-0 me-md-2"></i>
+                <span class="d-none d-md-inline">Puestos de trabajo</span>
             </button>
         </li>
-        <li class="nav-item">
-            <button class="nav-link" data-bs-toggle="pill" data-bs-target="#permissions-pane" type="button">
-                <i class="bi bi-shield-lock-fill me-2"></i> Matriz de Permisos
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" data-bs-toggle="pill" data-bs-target="#permissions-pane" type="button" role="tab">
+                <i class="bi bi-shield-lock-fill me-0 me-md-2"></i>
+                <span class="d-none d-md-inline">Matriz de Permisos</span>
             </button>
         </li>
     </ul>
@@ -296,13 +299,14 @@
             <div class="card border-0 shadow-sm mb-4 rounded-4 overflow-hidden border-start border-4 border-burgundy">
                 <div class="card-body bg-light" style="padding: 1.5rem !important">
                     <div class="row align-items-center">
-                        <div class="col-md-7">
+                        <div class="col-md-7 col-12">
                             <h5 class="mb-0 fw-bold text-dark merriweather-font">
                                 <i class="bi bi-collection-play me-2 text-burgundy"></i> Catálogo Global de Apartados
                             </h5>
                             <p class="text-muted small mb-0">Gestiona los elementos base que aparecerán en las matrices.</p>
                         </div>
-                        <div class="col-md-5 text-end">
+
+                        <div class="col-md-5 col-12 text-end mt-2 mt-md-0">
                             <button class="btn btn-burgundy btn-sm px-4 shadow-sm"
                                     onclick="@(HasPermission("btn-agregar-modulo") ? "loadModuleModal(0)" : "")"
                                     @(HasPermission("btn-agregar-modulo") ? "" : "disabled")
@@ -326,13 +330,13 @@
             <div class="card border-0 shadow-sm mb-4 rounded-4 overflow-hidden border-start border-4 border-burgundy">
                 <div class="card-body bg-light" style="padding: 1.5rem !important">
                     <div class="row align-items-center">
-                        <div class="col-md-7">
+                        <div class="col-md-7 col-12">
                             <h5 class="mb-0 fw-bold text-dark merriweather-font">
                                 <i class="bi bi-person-vcard me-2 text-burgundy"></i> Puestos Registrados
                             </h5> 
                             <p class="text-muted small mb-0">Define los perfiles laborales para la asignación de accesos.</p>
                         </div>
-                        <div class="col-md-5 text-end">
+                        <div class="col-md-5 col-12 text-end mt-2 mt-md-0">
                             <button class="btn btn-burgundy btn-sm px-4 shadow-sm"
                                     onclick="@(HasPermission("btn-agregar-puesto") ? "loadJobModal()" : "")"
                                     @(HasPermission("btn-agregar-puesto") ? "" : "disabled")
@@ -359,24 +363,25 @@
                             <div class="input-group">
                                 <span class="input-group-text bg-white" style="border-radius: 10px 0px 0px 10px !important"><i class="bi bi-building"></i></span>
                                 <select class="form-select fw-bold border-0" asp-items="ViewBag.Areas" onchange="filterByArea(this.value)" style="border: 1px solid #ced4da !important">
-                                    <option value="">-- Selecciona área para gestionar --</option>
+                                    <option value="">-- Selecciona área --</option>
                                 </select>
                             </div>
                         </div>
-                        <div class="col-md-5 text-end">
+                        <div class="col-12 col-md-5 d-flex flex-column flex-md-row justify-content-md-end align-items-end align-items-md-center gap-2 mt-2 mt-md-0">
                             @if (ViewBag.SelectedAreaId != null)
                             {
-                                <button type="button" class="btn btn-burgundy btn-sm me-2"
+                                <button type="button" class="btn btn-burgundy btn-sm shadow-sm px-3"
                                         onclick="@(HasPermission("btn-asignar-puesto") ? "loadAssignJobModal()" : "")"
                                         @(HasPermission("btn-asignar-puesto") ? "" : "disabled")
                                         title="@(HasPermission("btn-asignar-puesto") ? "Asignar Puesto" : "Sin permiso para asignar puestos")">
                                     <i class="bi bi-person-add me-1"></i> Asignar Puesto
                                 </button>
+
                                 <button type="submit" form="formPermissions"
-                                        class="btn btn-burgundy btn-sm shadow-sm"
+                                        class="btn btn-burgundy btn-sm shadow-sm px-3"
                                         @(HasPermission("btn-guardar-permisos") ? "" : "disabled")
                                         title="@(HasPermission("btn-guardar-permisos") ? "Guardar Todo" : "Sin permiso para guardar cambios")">
-                                    <i class="bi bi-save2"></i> Guardar Todo
+                                    <i class="bi bi-save2 me-1"></i> Guardar Todo
                                 </button>
                             }
                         </div>
@@ -498,11 +503,16 @@
             }
             else if (ViewBag.SelectedAreaId != null)
             {
-                <div class="text-center py-5 rounded-4 bg-white shadow-sm">
+                <div class="card text-center py-5 px-3 px-md-5 rounded-4 bg-white shadow-sm">
                     <i class="bi bi-shield-slash display-1 text-muted opacity-25"></i>
-                    <h4 class="mt-3 fw-bold">Sin configuración de acceso</h4>
-                    <p class="text-muted">El área seleccionada no tiene reglas de acceso definidas.</p>
-                    <button class="btn btn-burgundy mt-2"
+
+                    <h4 class="mt-3 fw-bold fs-5 fs-md-4">Sin configuración de acceso</h4>
+
+                    <p class="text-muted small mx-auto" style="max-width: 400px;">
+                        El área seleccionada no tiene reglas de acceso definidas.
+                    </p>
+
+                    <button class="btn btn-burgundy mt-2 w-100 w-md-auto"
                             onclick="@(HasPermission("btn-crear-matriz") ? $"initModules({ViewBag.SelectedAreaId})" : "")"
                             @(HasPermission("btn-crear-matriz") ? "" : "disabled")
                             title="@(HasPermission("btn-crear-matriz") ? "Crear matriz admin" : "Sin permiso para inicializar matrices")">
@@ -512,7 +522,6 @@
             }
 
             else
-
             {
 
                 <div class="text-center py-5 opacity-50">

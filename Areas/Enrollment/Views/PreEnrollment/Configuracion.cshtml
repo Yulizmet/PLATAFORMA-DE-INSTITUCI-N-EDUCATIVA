@@ -1,0 +1,545 @@
+﻿@model List<SchoolManager.Models.preenrollment_careers>
+
+@{
+    ViewData["Title"] = "Configuración";
+    Layout = "~/Areas/Enrollment/Views/_LayoutAdmin.cshtml";
+    var generations = ViewBag.Generations as IEnumerable<dynamic>;
+    var activeTab = ViewBag.ActiveTab as string ?? "careers";
+}
+
+
+    <div class="container-fluid p-0">
+        <h1 class="h3 mb-3">Configuración</h1>
+
+        @if (TempData["Success"] != null)
+        {
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                @TempData["Success"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        }
+
+        @if (TempData["Error"] != null)
+        {
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                @TempData["Error"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        }
+
+        <div class="row">
+            <!-- MENÚ IZQUIERDO -->
+            <div class="col-md-3 col-xl-2">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">Configuración</h5>
+                    </div>
+
+                    <div class="list-group list-group-flush" role="tablist">
+                    <a class="list-group-item list-group-item-action @(activeTab == "careers" ? "active" : "")"
+                       data-bs-toggle="list"
+                       href="#careers">
+                            <i class="align-middle me-2" data-feather="book-open"></i>
+                            Configurar carreras
+                        </a>
+
+                    <a class="list-group-item list-group-item-action @(activeTab == "generations" ? "active" : "")"
+                       data-bs-toggle="list"
+                       href="#generations">
+                            <i class="align-middle me-2" data-feather="calendar"></i>
+                            Configurar generaciones
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CONTENIDO DERECHO -->
+            <div class="col-md-9 col-xl-10">
+                <div class="tab-content">
+
+                    <!-- ===================== -->
+                    <!-- TAB 1: CARRERAS -->
+                    <!-- ===================== -->
+                    <div class="tab-pane fade @(activeTab == "careers" ? "show active" : "")" id="careers" role="tabpanel">
+                        <div class="card mb-3">
+                            <div class="card-header">
+                                <h5 class="card-title mb-0">Configurar carreras</h5>
+                            </div>
+
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-hover my-0" id="careersTable">
+                                        <thead>
+                                            <tr>
+                                                <th>Carrera</th>
+                                                <th>Estado</th>
+                                                <th class="text-end">Acciones</th>
+                                            </tr>
+                                        </thead>
+
+                                        <tbody id="careersTbody">
+                                            @if (Model != null && Model.Any())
+                                            {
+                                                foreach (var career in Model)
+                                                {
+                                                    <tr data-id="@career.IdCareer" data-active="@(career.IsActive ? "true" : "false")">
+                                                        <td data-field="name">@career.name_career</td>
+                                                        <td>
+                                                            @if (career.IsActive)
+                                                            {
+                                                                <span class="badge bg-success">Activa</span>
+                                                            }
+                                                            else
+                                                            {
+                                                                <span class="badge bg-secondary">Inactiva</span>
+                                                            }
+                                                        </td>
+                                                        <td class="text-end">
+                                                            <div class="table-actions d-flex justify-content-end gap-2">
+                                                                <button type="button" class="btn btn-link p-0 action-edit" title="Editar">
+                                                                    <i class="align-middle" data-feather="edit-2"></i>
+                                                                </button>
+
+                                                                <form asp-action="CambiarEstadoCarrera"
+                                                                      asp-controller="PreEnrollment"
+                                                                      asp-area="Enrollment"
+                                                                      method="post"
+                                                                      class="d-inline">
+                                                                    @Html.AntiForgeryToken()
+                                                                    <input type="hidden" name="idCareer" value="@career.IdCareer" />
+                                                                    <button type="submit"
+                                                                            class="btn btn-sm @(career.IsActive ? "btn-outline-warning" : "btn-outline-success")">
+                                                                        @(career.IsActive ? "Desactivar" : "Activar")
+                                                                    </button>
+                                                                </form>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                }
+                                            }
+                                            else
+                                            {
+                                                <tr id="emptyRow">
+                                                    <td colspan="3" class="text-center text-muted py-4">
+                                                        No hay carreras registradas.
+                                                    </td>
+                                                </tr>
+                                            }
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                                <hr class="my-4" />
+
+                                <form asp-action="CrearCarrera"
+                                      asp-controller="PreEnrollment"
+                                      asp-area="Enrollment"
+                                      method="post">
+                                    @Html.AntiForgeryToken()
+
+                                    <h6 class="mb-3">Agregar nueva carrera</h6>
+
+                                    <div class="row g-2 align-items-end">
+                                        <div class="col-12 col-md-6">
+                                            <label class="form-label" for="careerName">Nombre</label>
+                                            <input type="text"
+                                                   class="form-control"
+                                                   id="careerName"
+                                                   name="name_career"
+                                                   placeholder="Ej: Mecatrónica"
+                                                   required />
+                                        </div>
+
+                                        <div class="col-12 col-md-auto">
+                                            <button type="submit" class="btn btn-primary">
+                                                <i class="align-middle me-1" data-feather="plus"></i>
+                                                Añadir
+                                            </button>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ===================== -->
+                    <!-- TAB 2: GENERACIONES -->
+                    <!-- ===================== -->
+                     <div class="tab-pane fade @(activeTab == "generations" ? "show active" : "")" id="generations" role="tabpanel">
+
+                        <div class="card mb-3">
+                            <div class="card-header">
+                                <h5 class="card-title mb-0">Configurar generaciones</h5>
+                            </div>
+
+                            <div class="card-body">
+
+                            <div class="table-responsive">
+                                <table class="table table-hover my-0" id="generationsTable">
+                                    <thead>
+                                        <tr>
+                                            <th>Año</th>
+                                            <th>Límite</th>
+                                            <th>Usados</th>
+                                            <th>Disponibles</th>
+                                            <th class="text-end">Acciones</th>
+                                        </tr>
+                                    </thead>
+
+                                    <tbody id="generationsTbody">
+                                        @if (generations != null && generations.Any())
+                                        {
+                                            foreach (var g in generations)
+                                            {
+                                                int usados = g.FoliosUsados;
+                                                int? max = g.MaxFolios;
+                                                int? disp = max.HasValue ? max - usados : null;
+
+                                                <tr data-id="@g.IdGeneration" data-max="@(g.MaxFolios?.ToString() ?? "")">
+                                                    <td>@g.Year</td>
+                                                    <td data-field="maxFolios">@(max?.ToString() ?? "Sin límite")</td>
+                                                    <td>@usados</td>
+                                                    <td>@(disp?.ToString() ?? "Ilimitado")</td>
+                                                    <td class="text-end">
+                                                        <div class="table-actions d-flex justify-content-end gap-2">
+                                                            <button type="button" class="btn btn-link p-0 generation-edit" title="Editar límite">
+                                                                <i class="align-middle" data-feather="edit-2"></i>
+                                                            </button>
+
+                                                            <form asp-action="EliminarGeneracion"
+                                                                  asp-controller="PreEnrollment"
+                                                                  asp-area="Enrollment"
+                                                                  method="post"
+                                                                  class="d-inline"
+                                                                  onsubmit="return confirm('¿Deseas eliminar esta generación?');">
+                                                                @Html.AntiForgeryToken()
+                                                                <input type="hidden" name="idGeneration" value="@g.IdGeneration" />
+                                                                <button type="submit" class="btn btn-link p-0 text-danger" title="Eliminar">
+                                                                    <i class="align-middle" data-feather="trash-2"></i>
+                                                                </button>
+                                                            </form>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            }
+                                        }
+                                        else
+                                        {
+                                            <tr id="emptyGenerationRow">
+                                                <td colspan="5" class="text-center text-muted py-4">
+                                                    No hay generaciones
+                                                </td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+
+                                <hr class="my-4" />
+
+                                <!-- CREAR GENERACIÓN -->
+                                <form asp-action="CrearGeneracion"
+                                      asp-controller="PreEnrollment"
+                                      asp-area="Enrollment"
+                                      method="post">
+                                    @Html.AntiForgeryToken()
+
+                                    <h6>Agregar nueva generación</h6>
+
+                                    <div class="row g-2 align-items-end">
+                                        <div class="col-md-3">
+                                            <label>Año</label>
+                                            <input type="number" name="year" class="form-control" required />
+                                        </div>
+
+                                        <div class="col-md-3">
+                                            <label>Límite folios</label>
+                                            <input type="number" name="maxFolios" class="form-control" min="1" />
+                                        </div>
+
+                                        <div class="col-md-auto">
+                                            <button class="btn btn-primary">
+                                                Añadir
+                                            </button>
+                                        </div>
+                                    </div>
+                                </form>
+
+                            </div>
+                        </div>
+
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+@section Scripts {
+    <script>
+        (function () {
+            const tbody = document.getElementById("careersTbody");
+
+            function rerenderIcons() {
+                if (window.feather) feather.replace();
+            }
+
+            function escapeHtml(str) {
+                return (str || "")
+                    .replaceAll("&", "&amp;")
+                    .replaceAll("<", "&lt;")
+                    .replaceAll(">", "&gt;")
+                    .replaceAll('"', "&quot;")
+                    .replaceAll("'", "&#039;");
+            }
+
+            function restoreActions(tr) {
+                const idCareer = tr.dataset.id;
+                const isActive = tr.dataset.active === "true";
+                tr.dataset.editing = "0";
+
+                const badgeHtml = isActive
+                    ? `<span class="badge bg-success">Activa</span>`
+                    : `<span class="badge bg-secondary">Inactiva</span>`;
+
+                tr.children[1].innerHTML = badgeHtml;
+
+                const actionCell = tr.querySelector("td.text-end");
+                actionCell.innerHTML = `
+                    <div class="table-actions d-flex justify-content-end gap-2">
+                        <button type="button" class="btn btn-link p-0 action-edit" title="Editar">
+                            <i class="align-middle" data-feather="edit-2"></i>
+                        </button>
+
+                        <form action="@Url.Action("CambiarEstadoCarrera", "PreEnrollment", new { area = "Enrollment" })"
+                              method="post"
+                              class="d-inline">
+                            <input type="hidden" name="__RequestVerificationToken" value="${document.querySelector('input[name="__RequestVerificationToken"]').value}">
+                            <input type="hidden" name="idCareer" value="${idCareer}">
+                            <button type="submit" class="btn btn-sm ${isActive ? "btn-outline-warning" : "btn-outline-success"}">
+                                ${isActive ? "Desactivar" : "Activar"}
+                            </button>
+                        </form>
+                    </div>
+                `;
+
+                rerenderIcons();
+            }
+
+            tbody.addEventListener("click", (e) => {
+                const tr = e.target.closest("tr");
+                if (!tr || tr.id === "emptyRow") return;
+
+                const editBtn = e.target.closest(".action-edit");
+                const saveBtn = e.target.closest(".action-save");
+                const cancelBtn = e.target.closest(".action-cancel");
+
+                if (editBtn) {
+                    if (tr.dataset.editing === "1") return;
+                    tr.dataset.editing = "1";
+
+                    const idCareer = tr.dataset.id;
+                    const nameTd = tr.querySelector('[data-field="name"]');
+                    tr.dataset.origName = nameTd.textContent.trim();
+
+                    nameTd.innerHTML = `<input class="form-control form-control-sm" value="${escapeHtml(tr.dataset.origName)}">`;
+
+                    const actionCell = tr.querySelector("td.text-end");
+                    actionCell.innerHTML = `
+                        <div class="d-flex justify-content-end gap-2">
+                            <button type="button" class="btn btn-success btn-sm action-save" title="Guardar">
+                                <i class="align-middle" data-feather="check"></i>
+                            </button>
+                            <button type="button" class="btn btn-outline-secondary btn-sm action-cancel" title="Cancelar">
+                                <i class="align-middle" data-feather="x"></i>
+                            </button>
+                        </div>
+                    `;
+
+                    tr.dataset.id = idCareer;
+                    rerenderIcons();
+                    return;
+                }
+
+                if (saveBtn) {
+                    const idCareer = tr.dataset.id;
+                    const nameTd = tr.querySelector('[data-field="name"]');
+                    const newName = nameTd.querySelector("input")?.value.trim();
+
+                    if (!newName) return;
+
+                    const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+
+                    const form = document.createElement("form");
+                    form.method = "post";
+                    form.action = '@Url.Action("EditarCarrera", "PreEnrollment", new { area = "Enrollment" })';
+
+                    form.innerHTML = `
+                        <input type="hidden" name="__RequestVerificationToken" value="${token}">
+                        <input type="hidden" name="idCareer" value="${idCareer}">
+                        <input type="hidden" name="name_career" value="${escapeHtml(newName)}">
+                    `;
+
+                    document.body.appendChild(form);
+                    form.submit();
+                    return;
+                }
+
+                if (cancelBtn) {
+                    tr.querySelector('[data-field="name"]').textContent = tr.dataset.origName || "";
+                    restoreActions(tr);
+                }
+            });
+
+            rerenderIcons();
+        })();
+
+        (function () {
+            const tbody = document.getElementById("generationsTbody");
+            if (!tbody) return;
+
+            function rerenderIcons() {
+                if (window.feather) feather.replace();
+            }
+
+            tbody.addEventListener("click", (e) => {
+                const tr = e.target.closest("tr");
+                if (!tr || tr.id === "emptyGenerationRow") return;
+
+                const editBtn = e.target.closest(".generation-edit");
+                const saveBtn = e.target.closest(".generation-save");
+                const cancelBtn = e.target.closest(".generation-cancel");
+
+                if (editBtn) {
+                    if (tr.dataset.editing === "1") return;
+                    tr.dataset.editing = "1";
+
+                    const maxTd = tr.querySelector('[data-field="maxFolios"]');
+                    tr.dataset.origMax = tr.dataset.max || "";
+
+                    maxTd.innerHTML = `
+                        <input type="number"
+                               class="form-control form-control-sm"
+                               min="1"
+                               placeholder="Sin límite"
+                               value="${tr.dataset.origMax}">
+                    `;
+
+                    const actionCell = tr.querySelector("td.text-end");
+                    actionCell.innerHTML = `
+                        <div class="d-flex justify-content-end gap-2">
+                            <button type="button" class="btn btn-success btn-sm generation-save" title="Guardar">
+                                <i class="align-middle" data-feather="check"></i>
+                            </button>
+                            <button type="button" class="btn btn-outline-secondary btn-sm generation-cancel" title="Cancelar">
+                                <i class="align-middle" data-feather="x"></i>
+                            </button>
+                        </div>
+                    `;
+
+                    rerenderIcons();
+                    return;
+                }
+
+                if (saveBtn) {
+                    const idGeneration = tr.dataset.id;
+                    const maxTd = tr.querySelector('[data-field="maxFolios"]');
+                    const maxFolios = maxTd.querySelector("input")?.value.trim();
+                    const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+
+                    const form = document.createElement("form");
+                    form.method = "post";
+                    form.action = '@Url.Action("EditarGeneracion", "PreEnrollment", new { area = "Enrollment" })';
+
+                    form.innerHTML = `
+                        <input type="hidden" name="__RequestVerificationToken" value="${token}">
+                        <input type="hidden" name="idGeneration" value="${idGeneration}">
+                        <input type="hidden" name="maxFolios" value="${maxFolios}">
+                    `;
+
+                    document.body.appendChild(form);
+                    form.submit();
+                    return;
+                }
+
+                if (cancelBtn) {
+                    const maxTd = tr.querySelector('[data-field="maxFolios"]');
+                    maxTd.textContent = tr.dataset.origMax ? tr.dataset.origMax : "Sin límite";
+                    restoreGenerationActions(tr);
+                }
+            });
+
+            function restoreGenerationActions(tr) {
+                const idGeneration = tr.dataset.id;
+                tr.dataset.editing = "0";
+
+                const maxTd = tr.querySelector('[data-field="maxFolios"]');
+                maxTd.textContent = tr.dataset.origMax ? tr.dataset.origMax : "Sin límite";
+
+                const actionCell = tr.querySelector("td.text-end");
+                actionCell.innerHTML = `
+                    <div class="table-actions d-flex justify-content-end gap-2">
+                        <button type="button" class="btn btn-link p-0 generation-edit" title="Editar límite">
+                            <i class="align-middle" data-feather="edit-2"></i>
+                        </button>
+
+                        <form action="@Url.Action("EliminarGeneracion", "PreEnrollment", new { area = "Enrollment" })"
+                              method="post"
+                              class="d-inline"
+                              onsubmit="return confirm('¿Deseas eliminar esta generación?');">
+                            <input type="hidden" name="__RequestVerificationToken" value="${document.querySelector('input[name="__RequestVerificationToken"]').value}">
+                            <input type="hidden" name="idGeneration" value="${idGeneration}">
+                            <button type="submit" class="btn btn-link p-0 text-danger" title="Eliminar">
+                                <i class="align-middle" data-feather="trash-2"></i>
+                            </button>
+                        </form>
+                    </div>
+                `;
+
+                rerenderIcons();
+            }
+
+            rerenderIcons();
+        })();
+
+
+            
+        window.handleGlobalSearch = function (texto) {
+            const filtro = (texto || "").toLowerCase().trim();
+
+            filtrarTabla("careersTbody", "emptyRow", filtro);
+            filtrarTabla("generationsTbody", "emptyGenerationRow", filtro);
+        };
+
+        function filtrarTabla(tbodyId, emptyRowId, filtro) {
+            const tbody = document.getElementById(tbodyId);
+            if (!tbody) return;
+
+            const filas = Array.from(tbody.querySelectorAll("tr")).filter(tr => tr.id !== emptyRowId);
+            let visibles = 0;
+
+            filas.forEach(tr => {
+                const textoFila = tr.innerText.toLowerCase();
+                const mostrar = !filtro || textoFila.includes(filtro);
+
+                tr.style.display = mostrar ? "" : "none";
+
+                if (mostrar) visibles++;
+            });
+
+            const emptyRow = document.getElementById(emptyRowId);
+            if (emptyRow) {
+                if (filtro && visibles === 0) {
+                    emptyRow.style.display = "";
+                    const td = emptyRow.querySelector("td");
+                    if (td) td.textContent = "No se encontraron resultados.";
+                } else if (!filtro && filas.length === 0) {
+                    emptyRow.style.display = "";
+                } else {
+                    emptyRow.style.display = "none";
+                }
+            }
+        }
+    </script>
+    
+    
+}

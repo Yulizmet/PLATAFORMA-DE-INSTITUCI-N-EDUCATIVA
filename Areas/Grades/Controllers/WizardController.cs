@@ -25,14 +25,14 @@ namespace SchoolManager.Areas.Grades.Controllers
         // GET: /Grades/SchoolCycleWizard
         public IActionResult Index()
         {
-            // Landing page with options: Start from zero, continue draft, etc.
             return View();
         }
 
         // GET: /Grades/SchoolCycleWizard/Step1
         public IActionResult Step1()
         {
-            var model = new SchoolCycleWizardViewModel();
+            // Si hay datos en TempData (venimos de regresar), los usamos
+            var model = GetModelFromTempData();
             return View(model);
         }
 
@@ -43,7 +43,6 @@ namespace SchoolManager.Areas.Grades.Controllers
         {
             if (ModelState.IsValid)
             {
-                // Save to session
                 TempData["WizardData"] = JsonSerializer.Serialize(model);
                 return RedirectToAction("Step2");
             }
@@ -58,120 +57,68 @@ namespace SchoolManager.Areas.Grades.Controllers
             return View(model);
         }
 
-        // POST: /Grades/SchoolCycleWizard/Step2
+        // POST: /Grades/SchoolCycleWizard/Step2 (Continuar)
         [HttpPost]
         [ValidateAntiForgeryToken]
         public IActionResult Step2(SchoolCycleWizardViewModel model)
         {
-            System.Diagnostics.Debug.WriteLine($"=== STEP2 POST ===");
-            System.Diagnostics.Debug.WriteLine($"Materias recibidas: {model.Subjects.Count}");
-
-            // Limpiar materias vacías
             model.Subjects = model.Subjects.Where(s => !string.IsNullOrWhiteSpace(s.Name)).ToList();
-
-            System.Diagnostics.Debug.WriteLine($"Materias guardadas: {model.Subjects.Count}");
-
             TempData["WizardData"] = JsonSerializer.Serialize(model);
             return RedirectToAction("Step3");
         }
 
-        // AJAX: Add a new subject
+        // POST: /Grades/SchoolCycleWizard/Step2Back (Regresar a Step1)
         [HttpPost]
-        public IActionResult AddSubject([FromBody] string subjectName)
+        [ValidateAntiForgeryToken]
+        public IActionResult Step2Back(SchoolCycleWizardViewModel model)
         {
-            var model = GetModelFromTempData();
-            var newSubject = new SubjectWizardViewModel
-            {
-                TempId = (model.Subjects.Count + 1) * -1, // Negative temporary ID
-                Name = subjectName
-            };
-            model.Subjects.Add(newSubject);
+            model.Subjects = model.Subjects.Where(s => !string.IsNullOrWhiteSpace(s.Name)).ToList();
             TempData["WizardData"] = JsonSerializer.Serialize(model);
-            return Json(new { success = true, subject = newSubject });
+            return RedirectToAction("Step1");
         }
 
-        // AJAX: Add a unit to a subject
-        [HttpPost]
-        public IActionResult AddUnit(int subjectTempId)
-        {
-            var model = GetModelFromTempData();
-            var subject = model.Subjects.FirstOrDefault(s => s.TempId == subjectTempId);
-            if (subject != null)
-            {
-                var newUnit = new UnitWizardViewModel
-                {
-                    Number = subject.Units.Count + 1
-                };
-                subject.Units.Add(newUnit);
-                TempData["WizardData"] = JsonSerializer.Serialize(model);
-                return Json(new { success = true, unit = newUnit });
-            }
-            return Json(new { success = false });
-        }
-
-        // GET: /Grades/SchoolCycleWizard/Step3
         // GET: /Grades/SchoolCycleWizard/Step3
         public IActionResult Step3()
         {
             var model = GetModelFromTempData();
-
-            System.Diagnostics.Debug.WriteLine($"=== STEP3 GET ===");
-            System.Diagnostics.Debug.WriteLine($"Materias recuperadas: {model.Subjects.Count}");
-            System.Diagnostics.Debug.WriteLine($"Grupos: {model.Groups?.Count ?? 0}");
-
             model.CurrentStep = 3;
             return View(model);
         }
 
-        // POST: /Grades/SchoolCycleWizard/Step3
+        // POST: /Grades/SchoolCycleWizard/Step3 (Continuar)
         [HttpPost]
         [ValidateAntiForgeryToken]
         public IActionResult Step3(SchoolCycleWizardViewModel model)
         {
-            System.Diagnostics.Debug.WriteLine($"=== STEP3 POST ===");
-            System.Diagnostics.Debug.WriteLine($"model.Subjects (del form): {model.Subjects.Count}");
-
-            // NO llames a GetModelFromTempData aquí, porque TempData ya expiró
-
-            // Limpiar grupos vacíos
             model.Groups = model.Groups.Where(g => !string.IsNullOrWhiteSpace(g.Name)).ToList();
-
-            System.Diagnostics.Debug.WriteLine($"Grupos guardados: {model.Groups.Count}");
-            System.Diagnostics.Debug.WriteLine($"Materias conservadas: {model.Subjects.Count}");
-
             TempData["WizardData"] = JsonSerializer.Serialize(model);
             return RedirectToAction("Step4");
+        }
+
+        // POST: /Grades/SchoolCycleWizard/Step3Back (Regresar a Step2)
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult Step3Back(SchoolCycleWizardViewModel model)
+        {
+            model.Groups = model.Groups.Where(g => !string.IsNullOrWhiteSpace(g.Name)).ToList();
+            TempData["WizardData"] = JsonSerializer.Serialize(model);
+            return RedirectToAction("Step2");
         }
 
         // GET: /Grades/SchoolCycleWizard/Step4
         public async Task<IActionResult> Step4()
         {
             var model = GetModelFromTempData();
-            System.Diagnostics.Debug.WriteLine($"=== STEP4 GET ===");
-            System.Diagnostics.Debug.WriteLine($"Materias: {model.Subjects.Count}");
-            System.Diagnostics.Debug.WriteLine($"Grupos: {model.Groups?.Count ?? 0}");
             model.CurrentStep = 4;
-            var gruposEnModelo = model.Groups?.Count ?? 0;
 
-            // IMPORTANTE: Asegurar que los grupos existen
             if (model.Groups == null || !model.Groups.Any())
             {
                 TempData["Error"] = "Debes crear al menos un grupo antes de asignar profesores.";
                 return RedirectToAction("Step3");
             }
 
-            // Load teachers for dropdowns
-            ViewBag.Teachers = await _context.Users
-                .Include(u => u.Person)
-                .Where(u => u.UserRoles.Any(ur => ur.Role.Name == "Teacher")) // Adjust role name
-                .Select(u => new SelectListItem
-                {
-                    Value = u.UserId.ToString(),
-                    Text = u.Person.FirstName + " " + u.Person.LastNamePaternal
-                })
-                .ToListAsync();
+            ViewBag.Teachers = await GetTeachersSelectList();
 
-            // Map subjects to assignments
             model.Assignments = model.Subjects.Select(s => new AssignmentWizardViewModel
             {
                 SubjectTempId = s.TempId,
@@ -185,6 +132,16 @@ namespace SchoolManager.Areas.Grades.Controllers
             return View(model);
         }
 
+        // POST: /Grades/SchoolCycleWizard/Step4Back (Regresar a Step3)
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult Step4Back(SchoolCycleWizardViewModel model)
+        {
+            TempData["WizardData"] = JsonSerializer.Serialize(model);
+            return RedirectToAction("Step3");
+        }
+
+        // POST: /Grades/SchoolCycleWizard/Step4 (Finalizar y guardar)
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Step4(SchoolCycleWizardViewModel model)
@@ -263,7 +220,6 @@ namespace SchoolManager.Areas.Grades.Controllers
                     if (!ta.TeacherId.HasValue || ta.TeacherId <= 0 || !ta.SelectedGroupIds.Any())
                         continue;
 
-                    // Buscar o crear TeacherSubject
                     var teacherSubject = await _context.grades_TeacherSubjects
                         .FirstOrDefaultAsync(ts => ts.TeacherId == ta.TeacherId && ts.SubjectId == realSubjectId);
 
@@ -278,7 +234,6 @@ namespace SchoolManager.Areas.Grades.Controllers
                         await _context.SaveChangesAsync();
                     }
 
-                    // Asignar grupos a ese profe
                     foreach (var groupTempId in ta.SelectedGroupIds)
                     {
                         if (!groupIdMap.ContainsKey(groupTempId)) continue;
@@ -297,6 +252,7 @@ namespace SchoolManager.Areas.Grades.Controllers
             TempData["Success"] = "Ciclo escolar configurado exitosamente.";
             return RedirectToAction("Summary", new { levelId = newLevel.GradeLevelId });
         }
+
         // GET: /Grades/SchoolCycleWizard/Summary/5
         public async Task<IActionResult> Summary(int levelId)
         {
@@ -311,32 +267,34 @@ namespace SchoolManager.Areas.Grades.Controllers
             return View(level);
         }
 
-        // Helper to get model from session
+        // ── Helpers ────────────────────────────────────────────────────────────
+
+        private async Task<List<SelectListItem>> GetTeachersSelectList()
+        {
+            return await _context.Users
+                .Include(u => u.Person)
+                .Where(u => u.UserRoles.Any(ur => ur.Role.Name == "Teacher"))
+                .Select(u => new SelectListItem
+                {
+                    Value = u.UserId.ToString(),
+                    Text = u.Person.FirstName + " " + u.Person.LastNamePaternal
+                })
+                .ToListAsync();
+        }
+
         private SchoolCycleWizardViewModel GetModelFromTempData()
         {
-            if (TempData["WizardData"] == null)
-            {
-                System.Diagnostics.Debug.WriteLine("*** TempData WIZARDDATA es NULL, creando nuevo modelo");
-                return new SchoolCycleWizardViewModel();
-            }
-
             var data = TempData["WizardData"]?.ToString();
-
             if (string.IsNullOrEmpty(data))
-            {
-                System.Diagnostics.Debug.WriteLine("*** TempData WIZARDDATA está vacío");
                 return new SchoolCycleWizardViewModel();
-            }
 
             try
             {
-                var model = JsonSerializer.Deserialize<SchoolCycleWizardViewModel>(data);
-                System.Diagnostics.Debug.WriteLine($"*** Modelo recuperado: Subjects={model?.Subjects?.Count ?? 0}, Groups={model?.Groups?.Count ?? 0}");
-                return model ?? new SchoolCycleWizardViewModel();
+                return JsonSerializer.Deserialize<SchoolCycleWizardViewModel>(data)
+                       ?? new SchoolCycleWizardViewModel();
             }
-            catch (Exception ex)
+            catch
             {
-                System.Diagnostics.Debug.WriteLine($"*** Error deserializando: {ex.Message}");
                 return new SchoolCycleWizardViewModel();
             }
         }

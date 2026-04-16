@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using SchoolManager.Areas.Procedures.Filters;
 using SchoolManager.Data;
+using SchoolManager.Grades.Services;
 using SchoolManager.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -15,6 +16,7 @@ builder.Services.AddScoped<IStorageService, AzureStorageService>();
 builder.Services.AddTransient<IEmailSender, OutlookEmailSender>();
 builder.Services.AddScoped<ProcedureRouteAuthorizeAttribute>();
 builder.Services.AddScoped<EmailService>();
+builder.Services.AddScoped<ITeacherAccessService, TeacherAccessService>();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddSession(options =>
 {
@@ -43,7 +45,7 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
         options.ExpireTimeSpan = TimeSpan.FromHours(8);
         options.SlidingExpiration = true;
         options.Cookie.Name = "SchoolManager.Auth";
-        options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+        options.Cookie.SecurePolicy = CookieSecurePolicy.None;
         options.Cookie.HttpOnly = true;
         options.Cookie.SameSite = SameSiteMode.Strict;
     });
@@ -61,7 +63,7 @@ if (!app.Environment.IsDevelopment())
     app.UseExceptionHandler("/Error");
     app.UseHsts();
 }
-
+app.UseDeveloperExceptionPage();
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseRouting();

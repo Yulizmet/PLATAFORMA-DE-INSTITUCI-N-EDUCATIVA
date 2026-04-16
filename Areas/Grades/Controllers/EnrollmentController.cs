@@ -152,6 +152,8 @@ namespace SchoolManager.Areas.Grades.Controllers
             var studentRoleUsers = await _context.UserRoles
                 .Include(ur => ur.User)
                     .ThenInclude(u => u.Person)
+                .Include(ur => ur.User)
+                    .ThenInclude(u => u.Preenrollments)
                 .Where(ur => ur.Role.Name == "Student" && ur.IsActive)
                 .Select(ur => new
                 {
@@ -160,7 +162,11 @@ namespace SchoolManager.Areas.Grades.Controllers
                     ur.User.Person.FirstName,
                     ur.User.Person.LastNamePaternal,
                     ur.User.Person.LastNameMaternal,
-                    ur.User.Person.Curp
+                    Matricula = ur.User.Preenrollments
+                        .Where(p => p.Matricula != null)
+                        .OrderByDescending(p => p.CreateStat)
+                        .Select(p => p.Matricula)
+                        .FirstOrDefault() ?? "S/N"
                 })
                 .ToListAsync();
 
@@ -173,7 +179,7 @@ namespace SchoolManager.Areas.Grades.Controllers
                 {
                     StudentId = u.UserId,
                     FullName = $"{u.FirstName} {u.LastNamePaternal} {u.LastNameMaternal}",
-                    Matricula = u.Curp,
+                    Matricula = u.Matricula,
                     Email = u.Email,
                     IsSelected = enrolledStudentIds.Contains(u.UserId),
                     CurrentGroupName = otherEnrollment?.Group.Name,
@@ -212,7 +218,7 @@ namespace SchoolManager.Areas.Grades.Controllers
                 .Where(e => e.GroupId == groupId && e.IsActive)
                 .ToListAsync();
 
-            // Desactivar los que ya no están seleccionados (en lugar de borrar)
+            // Desactivar los que ya no están seleccionados
             foreach (var enrollment in currentEnrollments)
             {
                 if (!selectedStudentIds.Contains(enrollment.StudentId))
@@ -229,9 +235,21 @@ namespace SchoolManager.Areas.Grades.Controllers
 
             foreach (var studentId in selectedStudentIds.Where(id => !currentActiveIds.Contains(id)))
             {
-                // Buscar si existe un enrollment inactivo previo para reactivar
+                // ✅ 1. SIEMPRE desactivar en otros grupos
+                var otherEnrollments = await _context.grades_Enrollments
+                    .Where(e => e.StudentId == studentId
+                             && e.GroupId != groupId
+                             && e.IsActive)
+                    .ToListAsync();
+
+                foreach (var other in otherEnrollments)
+                    other.IsActive = false;
+
+                // 2. Reactivar o crear enrollment en este grupo
                 var existing = await _context.grades_Enrollments
-                    .FirstOrDefaultAsync(e => e.StudentId == studentId && e.GroupId == groupId && !e.IsActive);
+                    .FirstOrDefaultAsync(e => e.StudentId == studentId
+                                           && e.GroupId == groupId
+                                           && !e.IsActive);
 
                 if (existing != null)
                 {
@@ -240,14 +258,6 @@ namespace SchoolManager.Areas.Grades.Controllers
                 }
                 else
                 {
-                    // Desactivar cualquier enrollment activo en OTRO grupo
-                    var otherEnrollments = await _context.grades_Enrollments
-                        .Where(e => e.StudentId == studentId && e.GroupId != groupId && e.IsActive)
-                        .ToListAsync();
-
-                    foreach (var other in otherEnrollments)
-                        other.IsActive = false;
-
                     _context.grades_Enrollments.Add(new grades_enrollment
                     {
                         StudentId = studentId,
@@ -261,9 +271,8 @@ namespace SchoolManager.Areas.Grades.Controllers
             await _context.SaveChangesAsync();
 
             TempData["Success"] = "Estudiantes asignados exitosamente";
-            return RedirectToAction(nameof(ByGroup), new { groupId });
+            return RedirectToAction(nameof(AssignToGroup), new { groupId });
         }
-
         // POST: Enrollment/Remove/5
         [HttpPost]
         [ValidateAntiForgeryToken]

@@ -238,26 +238,27 @@
 <div id="modalContainer"></div>
 
 <div class="container-fluid px-4 py-4 pt-5">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-end align-items-md-center gap-3 mb-4">
+        <div class="w-100">
             <h2 class="fw-bold text-dark mb-0 merriweather-font">
-                <i class="bi bi-people"></i> Gestión de Personal
+                <i class="bi bi-people me-2"></i>Gestión de Personal
             </h2>
-            <p class="text-muted mb-0">Administra a los responsables de cada área y sus permisos.</p>
+            <p class="text-muted mb-0 small">Administra a los responsables de cada área y sus permisos.</p>
         </div>
-        <div class="d-flex gap-2">
-            <button class="btn btn-burgundy shadow-sm"
+
+        <div class="d-flex flex-column flex-md-row gap-2 flex-shrink-0 align-items-end">
+            <button class="btn btn-burgundy btn-sm px-4 shadow-sm text-nowrap"
                     onclick="@(HasPermission("btn-agregar") ? "loadQuickUserModal()" : "")"
                     @(HasPermission("btn-agregar") ? "" : "disabled")
                     title="@(HasPermission("btn-agregar") ? "Añadir Personal" : "Sin permiso para añadir")">
                 <i class="bi bi-plus-circle me-1"></i> Añadir Personal
             </button>
 
-            <button class="btn btn-burgundy shadow-sm"
+            <button class="btn btn-burgundy btn-sm px-4 shadow-sm text-nowrap"
                     onclick="@(HasPermission("btn-asignar") ? "loadCreateStaffModal()" : "")"
                     @(HasPermission("btn-asignar") ? "" : "disabled")
                     title="@(HasPermission("btn-asignar") ? "Asignar Personal" : "Sin permiso para asignar")">
-                <i class="bi bi-person-plus-fill me-2"></i> Asignar Personal
+                <i class="bi bi-person-plus-fill me-1"></i> Asignar Personal
             </button>
         </div>
     </div>
@@ -267,7 +268,7 @@
     <div class="border-0 overflow-hidden">
         <div class="card-body p-0">
             <div class="table-responsive">
-                <table id="mainTable" class="table table-hover align-middle mb-0 table-container-rounded">
+                <table id="mainTable" class="table mt-2 mb-2 table-hover table-container-rounded dataTable no-footer">
                     <thead class="bg-burgundy text-white">
                         <tr>
                             <th class="no-sort text-center"> <input type="checkbox" id="checkAll" class="form-check-input"> </th>

@@ -1,0 +1,255 @@
+﻿@using SchoolManager.Areas.Grades.ViewModels.Breadcrumbs
+@using SchoolManager.Areas.Grades.ViewModels.Kardex
+@model KardexViewModel
+
+@{
+    ViewData["Title"] = $"Kardex - {Model.StudentName}";
+    Layout = "~/Areas/MainScreen/Views/Shared/_Layout.cshtml";
+
+    var breadcrumbs = new BreadcrumbViewModel();
+    breadcrumbs.AddItem("Panel Administrativo", "/PanelAdministrativo");
+    breadcrumbs.AddItem("Kardex", "/Grades/Kardex");
+    breadcrumbs.AddItem(Model.StudentName);
+}
+<partial name="_Breadcrumb" model="breadcrumbs" />
+
+<div class="container-fluid py-4">
+
+    <!-- Encabezado del alumno -->
+    <div class="sistema-card mb-4">
+        <div class="row align-items-center">
+            <div class="col-md-6">
+                <h1 class="users-title mb-1">
+                    <i class="bi bi-file-earmark-person me-2"></i>@Model.StudentName
+                </h1>
+                <p class="text-muted mb-0">
+                    <i class="bi bi-person-badge me-1" style="color: #8C1B1B;"></i>
+                    <strong>@Model.Matricula</strong>
+                    <span class="mx-2">·</span>
+                    <i class="bi bi-envelope me-1" style="color: #8C1B1B;"></i>
+                    @Model.Email
+                </p>
+            </div>
+            <div class="col-md-6">
+                <div class="row g-2 text-center">
+                    <div class="col-3">
+                        <div class="p-2" style="background-color: #f8f9fa; border-radius: 12px;">
+                            <h4 class="fw-bold mb-0" style="color: #8C1B1B;">
+                                @Model.PromedioGeneral.ToString("F1")
+                            </h4>
+                            <small class="text-muted">Promedio</small>
+                        </div>
+                    </div>
+                    <div class="col-3">
+                        <div class="p-2" style="background-color: #f8f9fa; border-radius: 12px;">
+                            <h4 class="fw-bold mb-0" style="color: #28a745;">@Model.MateriasAprobadas</h4>
+                            <small class="text-muted">Aprobadas</small>
+                        </div>
+                    </div>
+                    <div class="col-3">
+                        <div class="p-2" style="background-color: #f8f9fa; border-radius: 12px;">
+                            <h4 class="fw-bold mb-0" style="color: #dc3545;">@Model.MateriasReprobadas</h4>
+                            <small class="text-muted">Reprobadas</small>
+                        </div>
+                    </div>
+                    <div class="col-3">
+                        <div class="p-2" style="background-color: #f8f9fa; border-radius: 12px;">
+                            <h4 class="fw-bold mb-0" style="color: #fd7e14;">@Model.MateriasConExtraordinario</h4>
+                            <small class="text-muted">Extras</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Semestres -->
+    @if (Model.Semesters.Any())
+    {
+        @foreach (var semester in Model.Semesters)
+        {
+            <div class="sistema-card mb-4">
+                <!-- Header del semestre -->
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div>
+                        <h5 class="fw-bold mb-0" style="color: #1f2937;">
+                            <i class="bi bi-layers me-2" style="color: #8C1B1B;"></i>
+                            @semester.GradeLevelName
+                        </h5>
+                        <small class="text-muted">
+                            Grupo: <strong>@semester.GroupName</strong>
+                            <span class="mx-2">·</span>
+                            @semester.StartDate.ToString("MMM yyyy") — @semester.EndDate.ToString("MMM yyyy")
+                        </small>
+                    </div>
+                    <div class="d-flex align-items-center gap-3">
+                        @if (semester.IsOpen)
+                        {
+                            <span class="badge" style="background-color: #28a745; padding: 6px 12px; border-radius: 20px;">
+                                <i class="bi bi-unlock me-1"></i>En curso
+                            </span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-secondary" style="padding: 6px 12px; border-radius: 20px;">
+                                <i class="bi bi-lock me-1"></i>Cerrado
+                            </span>
+                        }
+                        <div class="text-center px-3 py-1" style="background-color: #f8f9fa; border-radius: 12px;">
+                            <span class="fw-bold" style="color: #8C1B1B;">
+                                @semester.PromedioSemestre.ToString("F1")
+                            </span>
+                            <br />
+                            <small class="text-muted">Promedio</small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tabla de materias -->
+                @if (semester.Subjects.Any())
+                {
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Materia</th>
+                                    @{
+                                        var maxUnits = semester.Subjects.Max(s => s.Units.Count);
+                                    }
+                                    @for (int i = 1; i <= maxUnits; i++)
+                                    {
+                                        <th class="text-center" style="min-width: 60px;">U@(i)</th>
+                                    }
+                                    <th class="text-center">Final</th>
+                                    <th class="text-center">Extra</th>
+                                    <th class="text-center">Estado</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var subject in semester.Subjects)
+                                {
+                                    <tr>
+                                        <td class="fw-semibold">
+                                            <i class="bi bi-book me-1" style="color: #8C1B1B;"></i>
+                                            @subject.SubjectName
+                                        </td>
+
+                                        @for (int i = 0; i < maxUnits; i++)
+                                        {
+                                            if (i < subject.Units.Count)
+                                            {
+                                                var unit = subject.Units[i];
+                                                <td class="text-center">
+                                                    @if (unit.Grade.HasValue)
+                                                    {
+                                                        <span title="Original: @unit.Grade.Value.ToString("F1")">
+                                                            @unit.EffectiveGrade?.ToString("F1")
+                                                        </span>
+                                                        @if (unit.Recovery.HasValue)
+                                                        {
+                                                            <br />
+                                                            <small class="text-info" title="Recuperación: @unit.Recovery.Value.ToString("F1")">
+                                                                <i class="bi bi-arrow-up-circle"></i>
+                                                            </small>
+                                                        }
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="text-muted">—</span>
+                                                    }
+                                                </td>
+                                            }
+                                            else
+                                            {
+                                                <td class="text-center text-muted">—</td>
+                                            }
+                                        }
+
+                                        <td class="text-center fw-bold">
+                                            @if (subject.FinalGrade.HasValue)
+                                            {
+                                                <span style="color: @(subject.Passed ? "#28a745" : "#dc3545");">
+                                                    @subject.FinalGrade.Value.ToString("F1")
+                                                </span>
+                                            }
+                                            else
+                                            {
+                                                <span class="text-muted">—</span>
+                                            }
+                                        </td>
+
+                                        <td class="text-center">
+                                            @if (subject.HasExtraordinary)
+                                            {
+                                                <span class="fw-bold" style="color: #fd7e14;">
+                                                    @subject.ExtraordinaryGrade?.ToString("F1")
+                                                </span>
+                                            }
+                                            else
+                                            {
+                                                <span class="text-muted">—</span>
+                                            }
+                                        </td>
+
+                                        <td class="text-center">
+                                            @if (subject.HasExtraordinary)
+                                            {
+                                                <span class="badge" style="background-color: #fd7e14; padding: 5px 10px; border-radius: 15px;">
+                                                    <i class="bi bi-star me-1"></i>Extra
+                                                </span>
+                                            }
+                                            else if (subject.Passed)
+                                            {
+                                                <span class="badge" style="background-color: #28a745; padding: 5px 10px; border-radius: 15px;">
+                                                    <i class="bi bi-check-circle me-1"></i>Aprobada
+                                                </span>
+                                            }
+                                            else if (subject.FinalGrade.HasValue)
+                                            {
+                                                <span class="badge" style="background-color: #dc3545; padding: 5px 10px; border-radius: 15px;">
+                                                    <i class="bi bi-x-circle me-1"></i>Reprobada
+                                                </span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-secondary" style="padding: 5px 10px; border-radius: 15px;">
+                                                    <i class="bi bi-clock me-1"></i>Pendiente
+                                                </span>
+                                            }
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+                else
+                {
+                    <div class="text-center py-3">
+                        <span class="text-muted">
+                            <i class="bi bi-info-circle me-1"></i>Sin materias registradas para este nivel
+                        </span>
+                    </div>
+                }
+            </div>
+        }
+    }
+    else
+    {
+        <div class="sistema-card text-center py-5">
+            <i class="bi bi-journal-x" style="font-size: 3rem; color: #B1A596;"></i>
+            <p class="text-muted mt-3">Este alumno no tiene historial académico registrado</p>
+        </div>
+    }
+
+    <div class="d-flex justify-content-end gap-2">
+        <a asp-action="Print" asp-route-studentId="@Model.StudentId"
+           target="_blank"
+           class="btn btn-calificaciones" style="padding: 10px 25px;">
+            <i class="bi bi-file-earmark-pdf me-2"></i>Exportar PDF
+        </a>
+        <a asp-action="Index" class="btn btn-secondary" style="border-radius: 10px; padding: 10px 25px;">
+            <i class="bi bi-arrow-left me-2"></i>Volver a búsqueda
+        </a>
+    </div>
+</div>
