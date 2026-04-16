@@ -2,92 +2,164 @@
     ViewData["Title"] = "Asignación de Tutores";
     var maestros = ViewBag.Maestros as IEnumerable<SchoolManager.Models.users_user>;
     var grupos = ViewBag.Grupos as IEnumerable<SchoolManager.Models.grades_group>;
+    
+    var asignaciones = ViewBag.AsignacionesActuales as IEnumerable<dynamic>;
 }
 
 <div class="container-fluid px-3 px-md-4 mt-4 mt-md-5 mb-5">
     <div class="row justify-content-center">
-        <div class="col-12 col-lg-8 col-xl-7">
+        <div class="col-12 col-lg-10 col-xl-9">
 
             <div class="row align-items-center mb-4 mt-3">
                 <div class="col-12 col-md-3 text-start mb-3 mb-md-0">
-                    <button type="button" onclick="history.back()" class="btn btn-sm btn-outline-secondary fw-bold shadow-sm px-3" style="border-radius: 20px;">
+                    <button type="button" onclick="history.back()" class="btn btn-sm btn-outline-secondary fw-bold shadow-sm px-3" style="border-radius: var(--radius-pill);">
                         <i class="bi bi-arrow-left me-1"></i> Regresar
                     </button>
                 </div>
                 <div class="col-12 col-md-6 text-center">
-                    <h2 class="fw-bold m-0" style="color:var(--brand-dark);">Asignación de Tutores a Grupos</h2>
+                    <h2 class="fw-bold m-0" style="color:var(--brand-dark); font-family: var(--font-titulos);">Asignación de Tutores a Grupos</h2>
                 </div>
                 <div class="col-12 col-md-3 d-none d-md-block"></div>
             </div>
 
-
             @if (TempData["AsignacionExito"] != null)
             {
-                <div class="alert alert-success shadow-sm">
+                <div class="alert alert-success shadow-sm" style="border-radius: var(--radius-xs);">
                     <i class="bi bi-check-circle-fill"></i> @TempData["AsignacionExito"]
                 </div>
             }
             @if (TempData["AsignacionError"] != null)
             {
-                <div class="alert alert-danger shadow-sm">
+                <div class="alert alert-danger shadow-sm" style="border-radius: var(--radius-xs);">
                     <i class="bi bi-exclamation-triangle-fill"></i> @TempData["AsignacionError"]
                 </div>
             }
 
-            <div class="card shadow-sm border-0">
-                <div class="card-header bg-dark text-white p-3">
-                    <h5 class="mb-0 fs-6 fs-md-5">Vincular Maestro con Grupo</h5>
-                </div>
-                <div class="card-body p-3 p-md-4" style="background-color: var(--utt-light);">
-
-                    <form asp-area="Gestion" asp-controller="Alumnos" asp-action="GuardarAsignacionTutor" method="post">
-
-                        <div class="mb-4">
-                            <label class="form-label fw-bold" style="color: var(--utt-black);">1. Selecciona al Maestro (Tutor)</label>
-                            <select name="teacherId" class="form-select form-select-lg fs-6 fs-md-5" style="border-color: var(--utt-beige);" required>
-                                <option value="">-- Elige un profesor --</option>
-                                @if (maestros != null)
-                                {
-                                    foreach (var maestro in maestros)
-                                    {
-                                        <option value="@maestro.UserId">
-                                            @maestro.Person.FirstName @maestro.Person.LastNamePaternal @maestro.Person.LastNameMaternal
-                                        </option>
-                                    }
-                                }
-                            </select>
+            <div class="row g-4">
+                <div class="col-12 col-md-5">
+                    <div class="card shadow-soft border-0 h-100" style="border-radius: var(--radius-md); overflow: hidden;">
+                        <div class="card-header text-white p-3" style="background-color: var(--brand-dark);">
+                            <h5 class="mb-0 fs-6 fs-md-5 fw-bold"><i class="bi bi-link-45deg me-1"></i> Vincular Maestro</h5>
                         </div>
+                        <div class="card-body p-3 p-md-4" style="background-color: var(--surface-card);">
 
-                        <div class="mb-4">
-                            <label class="form-label fw-bold" style="color: var(--utt-black);">2. Selecciona el Grupo</label>
-                            <select name="groupId" class="form-select form-select-lg fs-6 fs-md-5" style="border-color: var(--utt-beige);" required>
-                                <option value="">-- Elige un grupo --</option>
-                                @if (grupos != null)
-                                {
-                                    foreach (var grupo in grupos)
-                                    {
-                                        <option value="@grupo.GroupId">
-                                            Grado @grupo.GradeLevelId | Grupo @grupo.Name
-                                        </option>
-                                    }
-                                }
-                            </select>
-                            <div class="form-text mt-2 text-muted small lh-sm">
-                                * Al asignar, todos los alumnos actualmente inscritos en este grupo tendrán a este profesor como su tutor asignado en el sistema.
+                            <form asp-area="Gestion" asp-controller="Alumnos" asp-action="GuardarAsignacionTutor" method="post">
+
+                                <div class="mb-4">
+                                    <label class="form-label fw-bold" style="color: var(--brand-black);">1. Selecciona al Maestro (Tutor)</label>
+                                    <select name="teacherId" class="form-select shadow-sm" style="border-color: var(--border-medium); border-radius: var(--radius-xs);" required>
+                                        <option value="">-- Elige un profesor --</option>
+                                        @if (maestros != null)
+                                        {
+                                            foreach (var maestro in maestros)
+                                            {
+                                                <option value="@maestro.UserId">
+                                                    @maestro.Person.FirstName @maestro.Person.LastNamePaternal
+                                                </option>
+                                            }
+                                        }
+                                    </select>
+                                </div>
+
+                                <div class="mb-4">
+                                    <label class="form-label fw-bold" style="color: var(--brand-black);">2. Selecciona el Grupo</label>
+                                    <select name="groupId" class="form-select shadow-sm" style="border-color: var(--border-medium); border-radius: var(--radius-xs);" required>
+                                        <option value="">-- Elige un grupo --</option>
+                                        @if (grupos != null)
+                                        {
+                                            foreach (var grupo in grupos)
+                                            {
+                                                <option value="@grupo.GroupId">
+                                                    Grupo @grupo.GradeLevelId@grupo.Name
+                                                </option>
+                                            }
+                                        }
+                                    </select>
+                                    <div class="form-text mt-2 text-muted small lh-sm">
+                                        * Todos los alumnos inscritos en este grupo tendrán a este profesor como tutor.
+                                    </div>
+                                </div>
+
+                                <div class="d-grid mt-4">
+                                    <button type="submit" class="btn fw-bold text-white shadow-brand py-2" style="background-color: var(--brand-dark); border-radius: var(--radius-sm);">
+                                        Guardar Asignación
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-12 col-md-7">
+                    <div class="card shadow-soft border-0 h-100" style="border-radius: var(--radius-md); overflow: hidden;">
+                        <div class="card-header text-white p-3" style="background-color: var(--brand-secondary);">
+                            <h5 class="mb-0 fs-6 fs-md-5 fw-bold text-dark"><i class="bi bi-list-check me-1"></i> Asignaciones Actuales</h5>
+                        </div>
+                        <div class="card-body p-0" style="background-color: var(--surface-card);">
+                            
+                            <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
+                                <table class="table table-hover mb-0 align-middle">
+                                    <thead class="sticky-top" style="background-color: var(--surface-muted); border-bottom: 2px solid var(--border-medium); z-index: 1;">
+    <tr>
+        <th class="py-3 ps-4 fw-bold" style="color: var(--brand-dark); width: 120px;">Grupo</th>
+        <th class="py-3 fw-bold" style="color: var(--brand-dark);">Tutor Asignado</th>
+        <th class="py-3 text-center pe-4 fw-bold" style="color: var(--brand-dark);">Estado</th>
+    </tr>
+</thead>
+                                    <tbody>
+                                        @if (asignaciones != null)
+                                        {
+                                            foreach (var item in asignaciones)
+                                            {
+                                                bool estaAsignado = item.Tutor != "Sin Asignar";
+                                                <tr>
+                                                    <td class="ps-4 fw-bold text-muted">@item.NombreGrupo</td>
+                                                    <td class="fw-bold" style="color: @(estaAsignado ? "var(--brand-dark)" : "#999");">
+                                                        @item.Tutor
+                                                    </td>
+                                                    <td class="text-center pe-4">
+                                                        @if (estaAsignado)
+                                                        {
+                                                            <span class="badge shadow-sm" style="background-color: var(--btn-crear); color: var(--brand-black);">Asignado</span>
+                                                        }
+                                                        else
+                                                        {
+                                                            <span class="badge shadow-sm" style="background-color: var(--btn-eliminar); color: white;">Sin Asignar</span>
+                                                        }
+                                                    </td>
+                                                </tr>
+                                            }
+                                        }
+                                        else
+                                        {
+                                            <tr>
+                                                <td colspan="3" class="text-center py-4 text-muted">No hay grupos registrados.</td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
                             </div>
+
                         </div>
-
-                        <div class="d-grid mt-4 mt-md-5">
-                            <button type="submit" class="btn btn-utt-primary btn-lg fw-bold shadow fs-6 fs-md-5 py-2 py-md-3">
-                                <i class="bi bi-link-45deg"></i> Guardar Asignación
-                            </button>
-                        </div>
-
-                    </form>
-
+                    </div>
                 </div>
-            </div>
-            
-        </div>
+
+            </div> </div>
     </div>
 </div>
+
+<style>
+    .table-responsive::-webkit-scrollbar {
+        width: 8px;
+    }
+    .table-responsive::-webkit-scrollbar-track {
+        background: #f1f1f1; 
+    }
+    .table-responsive::-webkit-scrollbar-thumb {
+        background: var(--brand-secondary); 
+        border-radius: 4px;
+    }
+    .table-responsive::-webkit-scrollbar-thumb:hover {
+        background: var(--brand-dark); 
+    }
+</style>
