@@ -1,7 +1,7 @@
 ﻿@model SchoolManager.Models.users_person
 
 <div class="modal fade" id="deactivateModal" tabindex="-1">
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 shadow-lg">
             <div class="modal-header bg-danger text-white">
                 <h5 class="modal-title fw-bold"><i class="bi bi-person-x me-2"></i>Confirmar Baja de Expediente</h5>
@@ -18,7 +18,7 @@
                     El usuario ya no podrá iniciar sesión y no aparecerá en las listas de trámites activos.
                 </div>
             </div>
-            <div class="modal-footer bg-light">
+            <div class="modal-footer border-0 bg-light">
                 <form id="formDeleteStudent">
                     @Html.AntiForgeryToken()
                     <input type="hidden" name="id" value="@Model.PersonId" />
