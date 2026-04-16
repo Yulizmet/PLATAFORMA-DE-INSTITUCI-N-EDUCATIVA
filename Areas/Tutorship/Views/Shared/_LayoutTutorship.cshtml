@@ -1,6 +1,3 @@
-@{
-    int roleId = ViewBag.RoleId ?? 0;
-}
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -27,13 +24,11 @@
 
                 <a asp-area="Gestion" asp-controller="Tutorship" asp-action="Controlador" class="navbar-brand text-white position-absolute top-50 start-50 translate-middle text-center navbar-brand-portal" style="z-index:10;">
                     <div class="portal-title">TUTORÍAS</div>
-                    @* <div class="portal-subtitle">TUTO</div> *@
                 </a>
 
                 <div class="ms-auto" style="z-index:20;">
                     <a asp-area="MainScreen" asp-controller="MainScreen" asp-action="Index" class="btn btn-outline-light border-0 d-flex align-items-center gap-2">
-                        <span class="d-none d-md-block fw-bold">Salir</span>
-                        <i class="bi bi-box-arrow-right fs-5"></i>
+                        <i class="bi bi-house-door-fill fs-5"></i>
                     </a>
                 </div>
             </div>
@@ -57,7 +52,7 @@
 
                 <hr class="my-2" style="border-color:#ddd;">
 
-                @if (roleId == 1)
+                @if (User.IsInRole("Student"))
                 {
                     <li class="nav-item">
                         <a asp-area="Gestion" asp-controller="Entrevista" asp-action="EntrevistaInicial" class="nav-link">
@@ -66,7 +61,7 @@
                     </li>
                 }
 
-                @if (roleId == 2)
+                @if (User.IsInRole("Teacher"))
                 {
                     <li class="nav-item">
                         <a asp-area="Gestion" asp-controller="Asistencia" asp-action="Asistencia" class="nav-link">
@@ -90,7 +85,7 @@
                     </li>
                 }
 
-                @if (roleId == 3)
+                @if (User.IsInRole("Administrator") || User.IsInRole("Master"))
                 {
                     <li class="nav-item">
                         <a asp-area="Gestion" asp-controller="Alumnos" asp-action="ListaDeAlumnos" class="nav-link">

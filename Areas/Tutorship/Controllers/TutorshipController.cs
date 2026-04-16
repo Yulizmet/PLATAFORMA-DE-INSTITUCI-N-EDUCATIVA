@@ -23,16 +23,7 @@ namespace SchoolManager.Areas.Tutorship.Controllers
 
         private int LoggedUserId => int.Parse(User.FindFirst("UserId")?.Value ?? "0");
 
-        private int LoggedRoleId
-        {
-            get
-            {
-                if (User.IsInRole("Student")) return 1;
-                if (User.IsInRole("Teacher")) return 2;
-                if (User.IsInRole("Administrator")) return 3;
-                return 0; 
-            }
-        }
+        private string LoggedRoleName => User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value ?? "Ninguno";
 
         public TutorshipController(AppDbContext context, IWebHostEnvironment webHostEnvironment)
         {
@@ -40,23 +31,22 @@ namespace SchoolManager.Areas.Tutorship.Controllers
             _webHostEnvironment = webHostEnvironment;
         }
 
-
         public IActionResult AccesoDenegado()
         {
-            return Content("No tienes permiso para ver esta pantalla. Tu rol actual es: " + LoggedRoleId);
+            return Content("No tienes permiso para ver esta pantalla. Tu rol actual es: " + LoggedRoleName);
         }
 
         public async Task<IActionResult> Controlador()
         {
-            ViewBag.RoleId = LoggedRoleId;
+            ViewBag.RoleName = LoggedRoleName;
 
             var entrevistaExistente = await _context.TutorshipInterviews.FirstOrDefaultAsync(e => e.StudentId == LoggedUserId);
 
-            if (entrevistaExistente == null && LoggedRoleId == 1) 
+            if (entrevistaExistente == null && User.IsInRole("Student"))
             {
                 var nuevaEntrevista = new tutorship_interview
                 {
-                    StudentId = LoggedUserId, 
+                    StudentId = LoggedUserId,
                     Status = "Pendiente",
                     FilePath = "Sin archivo",
                     DateCompleted = DateTime.Now
@@ -66,21 +56,20 @@ namespace SchoolManager.Areas.Tutorship.Controllers
             }
 
             var usuario = await _context.Users.Include(u => u.Person)
-                .FirstOrDefaultAsync(u => u.UserId == LoggedUserId); 
+                .FirstOrDefaultAsync(u => u.UserId == LoggedUserId);
 
             ViewBag.NombreUsuario = (usuario != null && usuario.Person != null) ? usuario.Person.FirstName : "Usuario";
 
             return View("~/Areas/Tutorship/Views/Controlador.cshtml");
         }
 
-        
-
-        
-
         [HttpPost]
         public async Task<IActionResult> ReiniciarEntrevistasCuatrimestre()
         {
-            if (LoggedRoleId != 3) return RedirectToAction(nameof(AccesoDenegado));
+            if (!User.IsInRole("Administrator") && !User.IsInRole("Master"))
+            {
+                return RedirectToAction(nameof(AccesoDenegado));
+            }
 
             var entrevistas = await _context.TutorshipInterviews
                 .Where(e => e.Status == "Completada")
@@ -101,8 +90,5 @@ namespace SchoolManager.Areas.Tutorship.Controllers
 
             return RedirectToAction("Controlador");
         }
-
-
-        
     }
 }

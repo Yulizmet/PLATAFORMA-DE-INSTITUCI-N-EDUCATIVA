@@ -2,7 +2,6 @@
 
 @{
     ViewData["Title"] = "Registro de Asistencia";
-    int roleId = ViewBag.RoleId ?? 0;
 
     var gruposDisp = ViewBag.GruposDisponibles as List<SchoolManager.Models.grades_group>;
     var miGrupo = gruposDisp?.FirstOrDefault(g => g.GroupId == ViewBag.GrupoSeleccionado);
@@ -11,18 +10,18 @@
 
 <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
 
+<div class="container-fluid mt-4 mb-5 px-3 px-md-4">
 
-
-<div class="container-fluid mt-4 mb-5">
-
-    <div class="position-relative mb-4 text-center">
-        <div class="position-absolute top-50 start-0 translate-middle-y">
+    <div class="row align-items-center mb-4 mt-3">
+        <div class="col-12 col-md-3 text-start mb-3 mb-md-0">
             <button type="button" onclick="history.back()" class="btn btn-sm btn-outline-secondary fw-bold shadow-sm px-3" style="border-radius: 20px;">
                 <i class="bi bi-arrow-left me-1"></i> Regresar
             </button>
         </div>
-
-        <h2 class="fw-bold m-0" style="color: var(--brand-dark);">Registro de Asistencia</h2>
+        <div class="col-12 col-md-6 text-center">
+            <h2 class="fw-bold m-0" style="color: var(--brand-dark);">Registro de Asistencia</h2>
+        </div>
+        <div class="col-12 col-md-3 d-none d-md-block"></div>
     </div>
 
     @if (TempData["AsistenciaExito"] != null)
@@ -42,7 +41,7 @@
     {
         var tema = ViewBag.TemaSemanal as SchoolManager.Models.tutorship_suggested_topic;
     
-        <div class="card mb-4 border-0 shadow-sm animate__animated animate__fadeIn">
+        <div class="card mb-4 border-0 shadow-sm animate__animated animate__fadeIn" style="border-radius: 12px;">
             <div class="card-body p-4">
                 <div class="d-flex justify-content-between align-items-start">
                     <div class="d-flex gap-3">
@@ -57,13 +56,13 @@
                         
                             @if (tema.FilePath != "Sin archivo")
                             {
-                                <a href="@tema.FilePath" target="_blank" class="btn btn-sm btn-dark rounded-pill px-3 shadow-sm">
-                                    <i class="bi bi-file-earmark-pdf-fill text-danger me-1"></i> Descargar material de apoyo
+                                <a href="@tema.FilePath" target="_blank" class="btn btn-sm btn-dark rounded-pill px-3 shadow-sm d-inline-flex align-items-center">
+                                    <i class="bi bi-file-earmark-pdf-fill text-danger me-2"></i> Descargar material de apoyo
                                 </a>
                             }
                         </div>
                     </div>
-                    <div class="text-end">
+                    <div class="text-end d-none d-md-block">
                         <span class="badge rounded-pill bg-light text-dark border px-3 py-2">
                             <i class="bi bi-calendar-event me-1"></i> Semana activa
                         </span>
@@ -73,24 +72,24 @@
         </div>
     }
 
-    <div class="p-4 rounded shadow-sm mb-4" style="background-color: #f4f4f4; border-left: 5px;">
+    <div class="p-4 rounded shadow-sm mb-4" style="background-color: #f4f4f4; border-left: 5px solid var(--brand-dark);">
         <form asp-controller="Asistencia" asp-action="Asistencia" method="get" class="row g-3 align-items-end">
-            <div class="col-md-3">
+            <div class="col-12 col-md-3">
                 <label class="form-label fw-bold text-muted small mb-1">Contar faltas desde:</label>
                 <input type="date" name="fechaInicio" value="@ViewBag.FechaInicio" class="form-control shadow-sm" style="border-color: #ddd;">
             </div>
-            <div class="col-md-3">
+            <div class="col-12 col-md-3">
                 <label class="form-label fw-bold text-muted small mb-1">Hasta:</label>
                 <input type="date" name="fechaFin" value="@ViewBag.FechaFin" class="form-control shadow-sm" style="border-color: #ddd;">
             </div>
 
-            <div class="col-md-3">
+            <div class="col-12 col-md-3">
                 <label class="form-label fw-bold mb-1" style="color: var(--brand-dark);">Día a pasar lista:</label>
                 <input type="date" id="inputFechaVisual" name="fecha" value="@ViewBag.FechaSeleccionada" class="form-control shadow-sm border-2" style="border-color: var(--brand-dark);" required>
             </div>
 
-            <div class="col-md-3">
-                @if (roleId == 3)
+            <div class="col-12 col-md-3">
+                @if (User.IsInRole("Administrator") || User.IsInRole("Master"))
                 {
                     <label class="form-label fw-bold mb-1">Grupo:</label>
                     <div class="d-flex gap-2">
@@ -106,18 +105,18 @@
                                 }
                             }
                         </select>
-                        <button type="submit" class="btn btn-primary-brand fw-bold shadow-sm" title="Cargar Grupo">
+                        <button type="submit" class="btn fw-bold shadow-sm text-white" style="background-color: var(--brand-dark);" title="Cargar Grupo">
                             <i class="bi bi-search"></i>
                         </button>
                     </div>
                 }
-                else if (roleId == 2)
+                else if (User.IsInRole("Teacher"))
                 {
                     <label class="form-label fw-bold mb-1">Mi Grupo:</label>
                     <div class="d-flex gap-2">
                         <input type="hidden" name="groupId" value="@ViewBag.GrupoSeleccionado" />
                         <input type="text" class="form-control shadow-sm bg-white text-muted fw-bold" value="@nombreMiGrupo" readonly disabled style="border-color: #ddd;">
-                        <button type="submit" class="btn btn-primary-brand fw-bold shadow-sm" title="Actualizar Fechas">
+                        <button type="submit" class="btn fw-bold shadow-sm text-white" style="background-color: var(--brand-dark);" title="Actualizar Fechas">
                             <i class="bi bi-arrow-clockwise"></i>
                         </button>
                     </div>
@@ -134,7 +133,7 @@
             <input type="hidden" name="fechaInicio" value="@ViewBag.FechaInicio" />
             <input type="hidden" name="fechaFin" value="@ViewBag.FechaFin" />
 
-            <div class="alert text-center fw-bold shadow-sm mb-4" style="background-color: var(--brand-white); border: 2px dashed var(--brand-dark); color: #444;">
+            <div class="alert text-center fw-bold shadow-sm mb-4" style="background-color: #ffffff; border: 2px dashed var(--brand-dark); color: #444;">
                 <i class="bi bi-calendar-check text-success me-2" style="font-size: 1.2rem;"></i>
                 Estás visualizando/modificando la asistencia del día:
                 <span style="color: var(--brand-dark); font-size: 1.2rem; text-decoration: underline;">
@@ -148,22 +147,21 @@
                 </span>
             </div>
 
-            <div class="table-responsive shadow-sm rounded bg-white p-3 border">
-                <table id="tablaAsistencia" class="table table-hover mb-0 w-100">
-                    <thead class="table-brand-head text-center">
+            <div class="table-responsive shadow-sm rounded bg-white border mb-4">
+                <table id="tablaAsistencia" class="table table-hover mb-0 w-100 tabla-adaptable">
+                    <thead style="background-color: var(--brand-dark); color: white;" class="text-center">
                         <tr>
-                            <th class="py-3">Matrícula</th>
-                            <th class="text-start py-3">Nombre del Alumno</th>
-                            <th class="py-3" title="Asistencias en el rango seleccionado">Asistencias</th>
-                            <th class="py-3" title="Faltas en el rango seleccionado">Faltas</th>
-                            <th class="py-3">Asistencia del Día</th>
+                            <th class="py-3 border-0">Matrícula</th>
+                            <th class="text-start py-3 border-0">Nombre del Alumno</th>
+                            <th class="py-3 border-0" title="Asistencias en el rango">Asistencias</th>
+                            <th class="py-3 border-0" title="Faltas en el rango">Faltas</th>
+                            <th class="py-3 border-0">Asistencia del Día</th>
                         </tr>
                     </thead>
                     <tbody>
                         @{
                             var dictMatriculas = ViewBag.Matriculas as Dictionary<int, string> ?? new Dictionary<int, string>();
                             var dictAsistenciaHoy = ViewBag.AsistenciaHoy as Dictionary<int, bool> ?? new Dictionary<int, bool>();
-                            
                             var dictDetalleFaltas = ViewBag.DetalleFaltas as Dictionary<int, List<string>> ?? new Dictionary<int, List<string>>();
                             var dictDetalleAsistencias = ViewBag.DetalleAsistencias as Dictionary<int, List<string>> ?? new Dictionary<int, List<string>>();
                             
@@ -178,33 +176,34 @@
 
                             var listaFaltas = dictDetalleFaltas.ContainsKey(alumno.UserId) ? dictDetalleFaltas[alumno.UserId] : new List<string>();
                             int totalFaltas = listaFaltas.Count;
-                            string textoFaltas = totalFaltas > 0 ? "Faltó los días: " + string.Join(", ", listaFaltas) : "Sin faltas en el periodo";
+                            string textoFaltas = totalFaltas > 0 ? "Faltó los días: " + string.Join(", ", listaFaltas) : "Sin faltas";
 
                             var listaAsistencias = dictDetalleAsistencias.ContainsKey(alumno.UserId) ? dictDetalleAsistencias[alumno.UserId] : new List<string>();
                             int totalAsistencias = listaAsistencias.Count;
-                            string textoAsistencias = totalAsistencias > 0 ? "Asistió los días: " + string.Join(", ", listaAsistencias) : "Sin asistencias en el periodo";
+                            string textoAsistencias = totalAsistencias > 0 ? "Asistió los días: " + string.Join(", ", listaAsistencias) : "Sin asistencias";
 
                             <tr>
-                                <td class="text-center align-middle fw-bold text-muted">@matricula</td>
-                                <td class="align-middle fw-bold text-dark">
+                                <td class="text-center align-middle fw-bold text-muted" data-label="Matrícula">@matricula</td>
+                                
+                                <td class="align-middle fw-bold text-dark" data-label="Alumno">
                                     @alumno.Person.FirstName @alumno.Person.LastNamePaternal @alumno.Person.LastNameMaternal
                                 </td>
                                 
-                                <td class="text-center align-middle">
+                                <td class="text-center align-middle" data-label="Asistencias (Rango)">
                                     <span class="badge shadow-sm" title="@textoAsistencias" style="background-color: #e8f5e9; color: #2e7d32; font-size: 0.95rem; border: 1px solid #2e7d32; cursor: help;">
                                         @totalAsistencias
                                     </span>
                                 </td>
 
-                                <td class="text-center align-middle">
+                                <td class="text-center align-middle" data-label="Faltas (Rango)">
                                     <span class="badge shadow-sm" title="@textoFaltas" style="background-color: var(--brand-secondary); color: var(--brand-white); font-size: 0.95rem; cursor: help;">
                                         @totalFaltas
                                     </span>
                                 </td>
                                 
-                                <td class="text-center align-middle">
+                                <td class="text-center align-middle" data-label="¿Asistió Hoy?">
                                     <input type="hidden" name="studentIds[@index]" value="@alumno.UserId" />
-                                    <div class="form-check d-flex justify-content-center m-0">
+                                    <div class="form-check d-flex justify-content-center m-0 chk-container">
                                         <input class="form-check-input border-secondary chk-asistencia" type="checkbox" name="isPresent[@index]" value="true" @(asistio ? "checked" : "") style="transform: scale(1.4); cursor: pointer;" @(yaSePasoLista ? "disabled" : "") />
                                         <input type="hidden" name="isPresent[@index]" value="false" />
                                     </div>
@@ -216,25 +215,25 @@
                 </table>
             </div>
 
-            <div class="d-flex justify-content-between align-items-center mt-4 mb-5">
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-center mt-4 mb-5 gap-3">
                 @if (yaSePasoLista)
                 {
-                    <div class="text-muted fw-bold" id="mensajeBloqueado">
+                    <div class="text-muted fw-bold text-center text-md-start" id="mensajeBloqueado">
                         <i class="bi bi-lock-fill text-warning me-1"></i> Asistencia bloqueada. Haz clic en editar para hacer cambios.
                     </div>
-                    <div>
-                        <button type="button" id="btnEditar" class="btn btn-secondary px-5 btn-lg shadow text-white fw-bold">
-                            <i class="bi bi-unlock-fill me-2"></i> Editar Asistencia
+                    <div class="d-flex flex-column flex-sm-row gap-2 w-100 w-md-auto">
+                        <button type="button" id="btnEditar" class="btn btn-secondary px-4 btn-lg shadow text-white fw-bold w-100">
+                            <i class="bi bi-unlock-fill me-2"></i> Editar
                         </button>
-                        <button type="submit" id="btnGuardar" class="btn btn-primary-brand px-5 btn-lg shadow d-none fw-bold">
-                            <i class="bi bi-save me-2"></i> Guardar Cambios
+                        <button type="submit" id="btnGuardar" class="btn text-white px-4 btn-lg shadow d-none fw-bold w-100" style="background-color: var(--brand-dark);">
+                            <i class="bi bi-save me-2"></i> Guardar
                         </button>
                     </div>
                 }
                 else
                 {
-                    <div></div>
-                    <button type="submit" class="btn btn-primary-brand px-5 btn-lg shadow fw-bold">
+                    <div class="d-none d-md-block"></div>
+                    <button type="submit" class="btn text-white px-5 btn-lg shadow fw-bold w-100 w-md-auto" style="background-color: var(--brand-dark);">
                         <i class="bi bi-save me-2"></i> Guardar Asistencia
                     </button>
                 }
@@ -243,7 +242,7 @@
     }
     else if (ViewBag.GrupoSeleccionado != null)
     {
-        <div class="text-center p-5 text-muted mt-4 bg-white rounded shadow-sm border">
+        <div class="text-center p-4 p-md-5 text-muted mt-4 bg-white rounded shadow-sm border">
             <i class="bi bi-people-fill" style="font-size: 3rem; color: var(--brand-secondary);"></i>
             <h4 class="mt-3 text-dark fw-bold">No hay alumnos asignados a este grupo.</h4>
             <p class="mb-0">Verifica la asignación de tutores en el panel de administración.</p>
@@ -252,41 +251,95 @@
 </div>
 
 @section Scripts {
+    <style>
+        .dataTables_wrapper .row:first-child { margin-bottom: 1.5rem; padding: 1rem 1rem 0 1rem; }
+        .dataTables_wrapper .row:last-child { margin-top: 1.5rem; padding: 0 1rem 1rem 1rem; }
+        
+        div.dataTables_wrapper div.dataTables_filter input {
+            border-radius: 8px; border: 1px solid #ced4da; padding: 0.35rem 0.75rem; transition: all 0.15s ease-in-out;
+        }
+        div.dataTables_wrapper div.dataTables_filter input:focus {
+            outline: none; border-color: var(--brand-dark); box-shadow: 0 0 0 0.25rem rgba(140, 27, 27, 0.25); 
+        }
+        div.dataTables_wrapper div.dataTables_length select { border-radius: 8px; border: 1px solid #ced4da; padding-left: 0.5rem; }
+
+        @@media (max-width: 768px) {
+            div.dataTables_wrapper div.dataTables_filter { text-align: left !important; margin-top: 15px; }
+            div.dataTables_wrapper div.dataTables_filter input { width: 100%; display: block; margin-left: 0; margin-top: 5px; }
+
+            .tabla-adaptable thead { display: none; }
+
+            .tabla-adaptable, .tabla-adaptable tbody, .tabla-adaptable tr, .tabla-adaptable td {
+                display: block; width: 100%;
+            }
+
+            .tabla-adaptable tr {
+                margin-bottom: 1rem; border: 1px solid #dee2e6; border-radius: 12px;
+                padding: 1rem; background-color: #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            }
+
+            .tabla-adaptable td {
+                border: none !important;
+                padding: 0.6rem 0 !important;
+                border-bottom: 1px solid #f0f0f0 !important; 
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                text-align: right !important;
+            }
+            .tabla-adaptable td:last-child { border-bottom: none !important; }
+
+            .tabla-adaptable td::before {
+                content: attr(data-label);
+                font-weight: 800;
+                color: var(--brand-dark);
+                text-align: left;
+                flex-shrink: 0;
+                margin-right: 1rem;
+            }
+
+            .tabla-adaptable td .chk-container {
+                justify-content: flex-end !important;
+            }
+        }
+    </style>
+
     <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
 
     <script>
         $(document).ready(function () {
-        // INICIALIZAR LA TABLA
-        var table;
-        if ($('#tablaAsistencia').length) {
-        table = $('#tablaAsistencia').DataTable({
-        "language": {
-        "url": "//cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json"
-        },
-        "lengthMenu": [[10, 25, 50, 100, -1], [10, 25, 50, 100]],
-        "pageLength": 25,
-        "columnDefs": [
-        { "orderable": false, "targets": 4 },
-        { "searchable": false, "targets": 4 }
-        ],
-        "order": [[1, 'asc']]
-        });
-        }
+            var table;
+            if ($('#tablaAsistencia').length) {
+                table = $('#tablaAsistencia').DataTable({
+                    language: {
+                        url: "//cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json"
+                    },
+                    lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100]],
+                    pageLength: 25,
+                    responsive: false, 
+                    columnDefs: [
+                        { "orderable": false, "targets": 4 },
+                        { "searchable": false, "targets": 4 }
+                    ],
+                    order: [[1, 'asc']]
+                });
+            }
 
-        $('#btnEditar').click(function () {
-        table.$('.chk-asistencia').prop('disabled', false);
-        $(this).addClass('d-none');
-        $('#btnGuardar').removeClass('d-none');
-        $('#mensajeBloqueado').html('<i class="bi bi-unlock-fill text-success me-1"></i> Modo edición activado. Realiza los cambios y guarda.');
-        });
+            $('#btnEditar').click(function () {
+                table.$('.chk-asistencia').prop('disabled', false);
+                $(this).addClass('d-none');
+                $('#btnGuardar').removeClass('d-none');
+                $('#mensajeBloqueado').html('<i class="bi bi-unlock-fill text-success me-1"></i> Modo edición activado. Realiza los cambios y guarda.');
+            });
 
-        $('#formAsistencia').on('submit', function () {
-        var fechaReal = $('#inputFechaVisual').val();
-        $('#hiddenFecha').val(fechaReal);
-        table.destroy();
-        });
+            $('#formAsistencia').on('submit', function () {
+                var fechaReal = $('#inputFechaVisual').val();
+                $('#hiddenFecha').val(fechaReal);
+                
+                table.destroy();
+            });
         });
     </script>
 }

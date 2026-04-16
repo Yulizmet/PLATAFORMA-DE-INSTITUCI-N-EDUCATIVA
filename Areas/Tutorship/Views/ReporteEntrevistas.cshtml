@@ -4,30 +4,34 @@
 
 <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
 
-<div class="container mt-4 mb-5">
-    <div class="position-relative mb-4 text-center">
-        <div class="position-absolute top-50 start-0 translate-middle-y">
+<div class="container-fluid mt-4 mb-5 px-3 px-md-4">
+    
+    <div class="row align-items-center mb-4 mt-3">
+        <div class="col-12 col-md-3 text-start mb-3 mb-md-0">
             <button type="button" onclick="history.back()" class="btn btn-sm btn-outline-secondary fw-bold shadow-sm px-3" style="border-radius: 20px;">
                 <i class="bi bi-arrow-left me-1"></i> Regresar
             </button>
         </div>
-        <h2 class="fw-bold m-0" style="color: var(--brand-dark);">Reporte de Entrevistas</h2>
+        <div class="col-12 col-md-6 text-center">
+            <h2 class="fw-bold m-0" style="color: var(--brand-dark);">Reporte de Entrevistas</h2>
+        </div>
+        <div class="col-12 col-md-3 d-none d-md-block"></div>
     </div>
 
     <div class="card shadow-sm border-0 mb-4" style="border-radius: 12px;">
-        <div class="card-body p-4">
+        <div class="card-body p-3 p-md-4">
             <form id="filtroForm" class="row align-items-end g-3">
-                <div class="col-md-8">
+                <div class="col-12 col-md-8">
                     <label class="form-label fw-bold text-dark">Filtrar por Estatus:</label>
-                    <select id="selectEstatus" class="form-select shadow-sm">
+                    <select id="selectEstatus" class="form-select shadow-sm" style="border-color: #ddd;">
                         <option value="">-- Todos --</option>
                         <option value="Completada">Completadas</option>
                         <option value="Pendiente">Pendientes</option>
                         <option value="Requiere Actualizacion">Requieren Actualización</option>
                     </select>
                 </div>
-                <div class="col-md-4">
-                    <button type="submit" class="btn btn-secondary-brand w-100 fw-bold shadow-sm">
+                <div class="col-12 col-md-4">
+                    <button type="submit" class="btn text-white w-100 fw-bold shadow-sm" style="background-color: var(--brand-dark);">
                         <i class="bi bi-funnel-fill me-2"></i> Aplicar Filtro
                     </button>
                 </div>
@@ -35,104 +39,155 @@
         </div>
     </div>
 
-    <div class="card shadow-sm border-0" style="border-radius: 12px; overflow: hidden;">
-        <div class="card-header p-3" style="background-color: var(--brand-dark);">
-            <h5 class="mb-0 fw-bold text-white"><i class="bi bi-people-fill me-2"></i> Lista de Alumnos</h5>
-        </div>
-        <div class="card-body p-4">
-            <table id="tablaAjax" class="table table-hover align-middle w-100">
-                <thead class="table-light text-muted small fw-bold">
-                    <tr>
-                        <th>ALUMNO</th>
-                        <th>MATRÍCULA</th>
-                        <th>GRUPO</th>
-                        <th>CORREO</th>
-                        <th class="text-center">ESTATUS</th>
-                    </tr>
-                </thead>
-                <tbody></tbody>
-            </table>
-        </div>
+    <div class="table-responsive shadow-sm rounded bg-white border mb-5">
+        <table id="tablaAjax" class="table table-hover align-middle w-100 tabla-adaptable mb-0">
+            <thead style="background-color: var(--brand-dark); color: white;" class="fw-bold">
+                <tr>
+                    <th class="py-3 border-0">ALUMNO</th>
+                    <th class="py-3 border-0">MATRÍCULA</th>
+                    <th class="py-3 border-0">GRUPO</th>
+                    <th class="py-3 border-0">CORREO</th>
+                    <th class="text-center py-3 border-0">ESTATUS</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
     </div>
 </div>
 
 @section Scripts {
+    <style>
+        .dataTables_wrapper .row:first-child { margin-bottom: 1.5rem; padding: 1rem 1rem 0 1rem; }
+        .dataTables_wrapper .row:last-child { margin-top: 1.5rem; padding: 0 1rem 1rem 1rem; }
+        
+        div.dataTables_wrapper div.dataTables_filter input {
+            border-radius: 8px; border: 1px solid #ced4da; padding: 0.35rem 0.75rem; transition: all 0.15s ease-in-out;
+        }
+        div.dataTables_wrapper div.dataTables_filter input:focus {
+            outline: none; border-color: var(--brand-dark); box-shadow: 0 0 0 0.25rem rgba(140, 27, 27, 0.25); 
+        }
+        div.dataTables_wrapper div.dataTables_length select { border-radius: 8px; border: 1px solid #ced4da; padding-left: 0.5rem; }
+
+        @@media (max-width: 768px) {
+            div.dataTables_wrapper div.dataTables_filter { text-align: left !important; margin-top: 15px; }
+            div.dataTables_wrapper div.dataTables_filter input { width: 100%; display: block; margin-left: 0; margin-top: 5px; }
+
+            .tabla-adaptable thead { display: none; }
+
+            .tabla-adaptable, .tabla-adaptable tbody, .tabla-adaptable tr, .tabla-adaptable td {
+                display: block; width: 100%;
+            }
+
+            .tabla-adaptable tr {
+                margin-bottom: 1rem; border: 1px solid #dee2e6; border-radius: 12px;
+                padding: 1rem; background-color: #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            }
+
+            .tabla-adaptable td {
+                border: none !important;
+                padding: 0.6rem 0 !important;
+                border-bottom: 1px solid #f0f0f0 !important;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                text-align: right !important;
+            }
+            .tabla-adaptable td:last-child { border-bottom: none !important; padding-bottom: 0 !important; }
+
+            .tabla-adaptable td::before {
+                content: attr(data-label);
+                font-weight: 800;
+                color: var(--brand-dark);
+                text-align: left;
+                flex-shrink: 0;
+                margin-right: 1rem;
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+
     <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
 
     <script>
         $(document).ready(function () {
-        var table = $('#tablaAjax').DataTable({
-        language: { url: 'https://cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json' },
-        processing: true,
-        serverSide: true,
-        ajax: {
-        url: "@Url.Action("ObtenerDataReportes", "Entrevista", new { area = "Gestion" })",
-        type: "POST",
-        data: function (d) {
-        d.filtroEstatus = $('#selectEstatus').val();
-        }
-        },
-        lengthMenu: [[10, 25, 50, 100], [10, 25, 50, 100]],
-        pageLength: 25,
-        columns: [
-        {
-        data: "nombre",
-        render: function(data) {
-        return '<div class="fw-bold text-dark ps-2">' + data + '</div>';
-        }
-        },
-        {
-        data: "matricula",
-        render: function(data) {
-        return '<span class="text-secondary">' + data + '</span>';
-        }
-        },
-        {
-        data: "grupo",
-        orderable: false,
-        render: function(data) {
-        return '<span class="badge border shadow-sm" style="background-color: var(--brand-white); color: var(--brand-black);">' + data + '</span>';
-        }
-        },
-        {
-        data: "email",
-        orderable: false,
-        render: function(data) {
-        let correo = data ? data : 'Sin correo';
-        if(correo !== 'Sin correo') {
-        return '<a href="mailto:' + correo + '" class="text-decoration-none text-secondary small"><i class="bi bi-envelope me-1"></i> ' + correo + '</a>';
-        }
-        return '<span class="text-muted small">' + correo + '</span>';
-        }
-        },
-        {
-        data: "estatus",
-        className: "text-center pe-4",
-        render: function(data) {
-        let bgColor = "var(--btn-eliminar)";
-        let textColor = "var(--brand-white)";
-                            
-        if (data === "Completada") {
-        bgColor = "var(--btn-crear)";
-        textColor = "var(--brand-black)";
-        }
-        else if (data === "Requiere Actualizacion") {
-        bgColor = "var(--btn-editar)";
-        textColor = "var(--brand-black)";
-        }
+            var table = $('#tablaAjax').DataTable({
+                language: { url: 'https://cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json' },
+                processing: true,
+                serverSide: true,
+                responsive: false, 
+                ajax: {
+                    url: "@Url.Action("ObtenerDataReportes", "Entrevista", new { area = "Gestion" })",
+                    type: "POST",
+                    data: function (d) {
+                        d.filtroEstatus = $('#selectEstatus').val();
+                    }
+                },
+                lengthMenu: [[10, 25, 50, 100], [10, 25, 50, 100]],
+                pageLength: 25,
+                columns: [
+                    {
+                        data: "nombre",
+                        createdCell: function (td) { $(td).attr('data-label', 'ALUMNO'); },
+                        render: function(data) {
+                            return '<div class="fw-bold text-dark ps-md-2">' + data + '</div>';
+                        }
+                    },
+                    {
+                        data: "matricula",
+                        createdCell: function (td) { $(td).attr('data-label', 'MATRÍCULA'); },
+                        render: function(data) {
+                            return '<span class="text-secondary fw-bold">' + data + '</span>';
+                        }
+                    },
+                    {
+                        data: "grupo",
+                        orderable: false,
+                        createdCell: function (td) { $(td).attr('data-label', 'GRUPO'); },
+                        render: function(data) {
+                            return '<span class="badge border shadow-sm" style="background-color: var(--brand-white); color: var(--brand-black);">' + data + '</span>';
+                        }
+                    },
+                    {
+                        data: "email",
+                        orderable: false,
+                        createdCell: function (td) { $(td).attr('data-label', 'CORREO'); },
+                        render: function(data) {
+                            let correo = data ? data : 'Sin correo';
+                            if(correo !== 'Sin correo') {
+                                return '<a href="mailto:' + correo + '" class="text-decoration-none text-secondary small fw-bold"><i class="bi bi-envelope me-1"></i> ' + correo + '</a>';
+                            }
+                            return '<span class="text-muted small">' + correo + '</span>';
+                        }
+                    },
+                    {
+                        data: "estatus",
+                        className: "text-md-center text-end pe-md-4",
+                        createdCell: function (td) { $(td).attr('data-label', 'ESTATUS'); },
+                        render: function(data) {
+                            let bgColor = "var(--btn-eliminar)";
+                            let textColor = "var(--brand-white)";
+                                                
+                            if (data === "Completada") {
+                                bgColor = "var(--btn-crear)";
+                                textColor = "var(--brand-black)";
+                            }
+                            else if (data === "Requiere Actualizacion") {
+                                bgColor = "var(--btn-editar)";
+                                textColor = "var(--brand-black)";
+                            }
 
-        return '<span class="badge shadow-sm p-2 px-3" style="background-color: ' + bgColor + '; color: ' + textColor + '; font-size: 0.8rem; min-width: 120px;">' + data.toUpperCase() + '</span>';
-        }
-        }
-        ]
-        });
+                            return '<span class="badge shadow-sm p-2 px-3" style="background-color: ' + bgColor + '; color: ' + textColor + '; font-size: 0.8rem; min-width: 120px;">' + data.toUpperCase() + '</span>';
+                        }
+                    }
+                ]
+            });
 
-        $('#filtroForm').on('submit', function(e){
-        e.preventDefault();
-        table.draw();
-        });
+            $('#filtroForm').on('submit', function(e){
+                e.preventDefault();
+                table.draw();
+            });
         });
     </script>
 }

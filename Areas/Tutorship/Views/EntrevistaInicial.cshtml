@@ -2,127 +2,96 @@
 
 @{
     ViewData["Title"] = "Entrevista Inicial";
-
     var entrevistaGuardada = ViewBag.Entrevista as SchoolManager.Models.tutorship_interview;
-
     bool estaCompletada = entrevistaGuardada != null && entrevistaGuardada.Status == "Completada";
     bool requiereActualizacion = entrevistaGuardada != null && entrevistaGuardada.Status == "Requiere Actualizacion";
-
-
     string atributoBloqueo = estaCompletada ? "disabled" : "";
 
-    bool tieneFotoGuardada = entrevistaGuardada != null &&
-                             !string.IsNullOrEmpty(entrevistaGuardada.FilePath) &&
-                             entrevistaGuardada.FilePath != "Sin archivo";
-
-    var rutaImagen = tieneFotoGuardada
+    var rutaImagen = (entrevistaGuardada != null && !string.IsNullOrEmpty(entrevistaGuardada.FilePath) && entrevistaGuardada.FilePath != "Sin archivo")
         ? entrevistaGuardada.FilePath
         : "https://via.placeholder.com/150?text=Sin+Foto";
-
-    string atributoRequeridoFoto = tieneFotoGuardada ? "" : "required";
 }
 
-<div class="container mt-5">
-    <div class="card shadow border-0">
-
-        <div class="card-header-utt p-4 rounded-top" style="background-color: var(--utt-red, #dc3545); color: white;">
-            <h3 class="mb-0 fw-bold"><i class="bi bi-person-lines-fill"></i> Entrevista Inicial de Tutoría</h3>
+<div class="container-fluid px-3 px-md-4 mt-4 mb-5">
+    <div class="row align-items-center mb-4 mt-3">
+        <div class="col-12 col-md-3 text-start mb-3 mb-md-0">
+            <button type="button" onclick="history.back()" class="btn btn-sm btn-outline-secondary fw-bold shadow-sm px-3" style="border-radius: var(--radius-pill);">
+                <i class="bi bi-arrow-left me-1"></i> Regresar
+            </button>
         </div>
+        <div class="col-12 col-md-6 text-center">
+            <h2 class="fw-bold m-0" style="color: var(--brand-dark); font-family: var(--font-titulos);">Entrevista Inicial de Tutoría</h2>
+        </div>
+        <div class="col-12 col-md-3 d-none d-md-block"></div>
+    </div>
 
-        <div class="card-body p-4" style="background-color: var(--utt-white);">
+    <div class="card border-0 shadow-soft" style="background-color: var(--surface-card); border-radius: var(--radius-md); overflow: hidden;">
+        <div class="card-body p-4">
 
             @if (requiereActualizacion)
             {
-                <div class="alert alert-warning shadow-sm border-warning mb-4">
-                    <h5 class="fw-bold text-dark"><i class="bi bi-bell-fill text-warning"></i> ¡Nuevo Ciclo Escolar!</h5>
-                    <p class="mb-0 text-dark">
-                        Por favor, revisa que tu información siga siendo correcta. Si cambiaste de transporte, internet, o situación laboral, actualízalo y haz clic en <strong>Enviar Información</strong> al final de la página.
-                    </p>
+                <div class="alert alert-warning shadow-sm border-0 mb-4" style="border-radius: var(--radius-sm);">
+                    <h5 class="fw-bold"><i class="bi bi-bell-fill"></i> ¡Nuevo Ciclo Escolar!</h5>
+                    <p class="mb-0">Por favor, revisa que tu información sea correcta y actualiza si es necesario.</p>
                 </div>
             }
 
             <form asp-area="Gestion" asp-controller="Entrevista" asp-action="GuardarEntrevista" method="post" enctype="multipart/form-data">
-
                 <input type="hidden" name="UserId" value="@Model.UserId" />
 
-                <div class="p-3 rounded mb-4" style="background-color: var(--utt-light);">
-                    <h5 class="fw-bold" style="color: var(--utt-dark-red);">Datos del Alumno</h5>
-
-                    <div class="row mb-4 align-items-center justify-content-center">
-                        <div class="col-md-12 text-center">
+                <div class="p-4 rounded mb-4 shadow-sm" style="background-color: var(--surface-muted); border: 1px solid var(--border-soft);">
+                    <h5 class="fw-bold mb-4" style="color: var(--brand-dark); font-family: var(--font-titulos);">Datos del Alumno</h5>
+                    <div class="row align-items-center">
+                        <div class="col-12 col-md-3 text-center mb-4 mb-md-0">
                             <div class="position-relative d-inline-block">
-                                <img id="previewFoto" src="@rutaImagen"
-                                     alt="Foto del Alumno" class="rounded-circle shadow-sm"
-                                     style="width: 150px; height: 150px; object-fit: cover; border: 4px solid var(--utt-white);">
-
-                                <label id="btnCamara" for="inputFoto" class="position-absolute bottom-0 end-0 btn btn-sm btn-utt-primary rounded-circle"
-                                       style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; cursor: pointer; @(estaCompletada ? "pointer-events: none; opacity: 0.5;" : "")"
-                                       title="Subir Foto">
+                                <img id="previewFoto" src="@rutaImagen" class="rounded-circle shadow-soft border border-4 border-white" style="width: 140px; height: 140px; object-fit: cover;">
+                                <label id="btnCamara" for="inputFoto" class="position-absolute bottom-0 end-0 btn btn-sm text-white rounded-circle shadow" style="width: 38px; height: 38px; background-color: var(--brand-primary); display: flex; align-items: center; justify-content: center; cursor: pointer; @(estaCompletada ? "pointer-events: none; opacity: 0.5;" : "")">
                                     <i class="bi bi-camera-fill"></i>
                                 </label>
-
-                                <input type="file" id="inputFoto" name="FotoPerfil" accept="image/*" class="d-none" onchange="mostrarPrevisualizacion(this)" @atributoRequeridoFoto @atributoBloqueo>
+                                <input type="file" id="inputFoto" name="FotoPerfil" accept="image/*" class="d-none" onchange="mostrarPrevisualizacion(this)" @atributoBloqueo>
                             </div>
-                            <p class="text-muted small mt-2">
-                                Click en la cámara para subir tu foto <span class="text-danger fw-bold">*(Obligatorio)</span>
-                            </p>
                         </div>
-                    </div>
-
-                    <div class="row">
-                        <div class="col-md-6">
-                            <label class="form-label fw-bold">Nombre Completo</label>
-                            <input type="text" class="form-control"
-                                   value="@Model.Person.FirstName @Model.Person.LastNamePaternal @Model.Person.LastNameMaternal"
-                                   readonly
-                                   style="border-color: var(--utt-beige); background-color: #e9ecef;">
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label fw-bold">Matrícula</label>
-                            <input type="text" class="form-control"
-                                   value="@ViewBag.Matricula"
-                                   readonly
-                                   style="border-color: var(--utt-beige); background-color: #e9ecef;">
-                        </div>
-                    </div>
-                    <div class="row mt-3">
-                        <div class="col-md-6">
-                            <label class="form-label fw-bold">Correo</label>
-                            <input type="text" class="form-control"
-                                   value="@Model.Person.Email"
-                                   readonly
-                                   style="border-color: var(--utt-beige); background-color: #e9ecef;">
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label fw-bold">Carrera</label>
-                            <select class="form-select" name="Carrera" style="border-color: var(--utt-beige);" @atributoBloqueo required>
-                                <option value="">Seleccione una carrera...</option>
-                                <option value="valor1">Carrera1</option>
-                                <option value="valor2">Carrera2</option>
-                            </select>
+                        <div class="col-12 col-md-9">
+                            <div class="row g-3">
+                                <div class="col-12 col-sm-6">
+                                    <label class="form-label fw-bold small text-muted">Nombre Completo</label>
+                                    <input type="text" class="form-control bg-white border-0 shadow-sm" value="@Model.Person.FirstName @Model.Person.LastNamePaternal @Model.Person.LastNameMaternal" readonly>
+                                </div>
+                                <div class="col-12 col-sm-6">
+                                    <label class="form-label fw-bold small text-muted">Matrícula</label>
+                                    <input type="text" class="form-control bg-white border-0 shadow-sm" value="@ViewBag.Matricula" readonly>
+                                </div>
+                                <div class="col-12 col-sm-6">
+                                    <label class="form-label fw-bold small text-muted">Correo</label>
+                                    <input type="text" class="form-control bg-white border-0 shadow-sm" value="@Model.Person.Email" readonly>
+                                </div>
+                                <div class="col-12 col-sm-6">
+                                    <label class="form-label fw-bold small text-muted">Carrera</label>
+                                    <select class="form-select border-0 shadow-sm" name="Carrera" @atributoBloqueo required>
+                                        <option value="">Seleccione una carrera...</option>
+                                        <option value="Software">Desarrollo de Software</option>
+                                        <option value="Mantenimiento">Mantenimiento Industrial</option>
+                                    </select>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <h5 class="mb-4 mt-2" style="color: var(--utt-red); border-bottom: 2px solid var(--utt-beige); padding-bottom: 5px;">
-                    I. Aspectos Personales y Familiares
-                </h5>
-
-                <div class="row">
-                    <div class="col-md-6 mb-4">
+                <h5 class="mb-4 mt-5 fw-bold" style="color: var(--brand-dark); border-bottom: 2px solid var(--brand-secondary); padding-bottom: 8px; font-family: var(--font-titulos);">I. Aspectos Personales y Familiares</h5>
+                <div class="row g-4">
+                    <div class="col-12 col-md-6">
                         <label class="form-label fw-bold">1. Estado Civil</label>
-                        <select class="form-select" name="EstadoCivil" style="border-color: var(--utt-beige);" @atributoBloqueo required>
+                        <select class="form-select border-0 shadow-sm" name="EstadoCivil" @atributoBloqueo required>
                             <option value="">Selecciona una opción...</option>
                             <option value="Soltero">Soltero/a</option>
                             <option value="Casado">Casado/a</option>
                             <option value="UnionLibre">Unión Libre</option>
-                            <option value="Divorciado">Divorciado/a</option>
                         </select>
                     </div>
-
-                    <div class="col-md-6 mb-4">
+                    <div class="col-12 col-md-6">
                         <label class="form-label fw-bold">2. ¿Tienes hijos?</label>
-                        <select class="form-select" name="TieneHijos" style="border-color: var(--utt-beige);" @atributoBloqueo required>
+                        <select class="form-select border-0 shadow-sm" name="TieneHijos" @atributoBloqueo required>
                             <option value="">Selecciona una opción...</option>
                             <option value="No">No</option>
                             <option value="1">1</option>
@@ -130,79 +99,58 @@
                             <option value="3+">3 o más</option>
                         </select>
                     </div>
-                </div>
-
-                <div class="row">
-                    <div class="col-md-6 mb-4">
+                    <div class="col-12 col-md-6">
                         <label class="form-label fw-bold">3. ¿Trabajas actualmente?</label>
-                        <select class="form-select" name="Trabaja" id="selectTrabaja" style="border-color: var(--utt-beige);" @atributoBloqueo required>
+                        <select class="form-select border-0 shadow-sm" name="Trabaja" @atributoBloqueo required>
                             <option value="">Selecciona una opción...</option>
                             <option value="No">No</option>
                             <option value="Si">Sí</option>
                             <option value="Esporadico">Ocasionalmente</option>
                         </select>
                     </div>
-
-                    <div class="col-md-6 mb-4">
+                    <div class="col-12 col-md-6">
                         <label class="form-label fw-bold">4. Medio de transporte principal</label>
-                        <select class="form-select" name="Transporte" style="border-color: var(--utt-beige);" @atributoBloqueo required>
+                        <select class="form-select border-0 shadow-sm" name="Transporte" @atributoBloqueo required>
                             <option value="">Selecciona una opción...</option>
                             <option value="Publico">Transporte Público</option>
                             <option value="Propio">Vehículo Propio</option>
-                            <option value="Familiar">Me traen mis padres/familiares</option>
                             <option value="Caminando">Caminando</option>
                         </select>
                     </div>
-                </div>
-
-                <div class="row">
-                    <div class="col-md-6 mb-4">
+                    <div class="col-12 col-md-6">
                         <label class="form-label fw-bold">5. ¿Cuántos hermanos tienes?</label>
-                        <select class="form-select" name="Hermanos" style="border-color: var(--utt-beige);" @atributoBloqueo required>
+                        <select class="form-select border-0 shadow-sm" name="Hermanos" @atributoBloqueo required>
                             <option value="">Selecciona una opción...</option>
-                            <option value="0">Soy hijo único</option>
+                            <option value="0">Hijo único</option>
                             <option value="1">1</option>
                             <option value="2">2</option>
-                            <option value="3">3</option>
-                            <option value="4+">4 o más</option>
+                            <option value="3+">3 o más</option>
                         </select>
                     </div>
-
-                    <div class="col-md-6 mb-4">
+                    <div class="col-12 col-md-6">
                         <label class="form-label fw-bold">6. ¿Con quién vives actualmente?</label>
-                        <select class="form-select" name="ViveCon" style="border-color: var(--utt-beige);" @atributoBloqueo required>
+                        <select class="form-select border-0 shadow-sm" name="ViveCon" @atributoBloqueo required>
                             <option value="">Selecciona una opción...</option>
                             <option value="Padres">Ambos Padres</option>
                             <option value="Madre">Solo Madre</option>
-                            <option value="Padre">Solo Padre</option>
-                            <option value="Familiares">Otros Familiares</option>
                             <option value="Solo">Solo/a</option>
-                            <option value="Pareja">Pareja</option>
                         </select>
                     </div>
-                </div>
-
-                <div class="mb-4">
-                    <label class="form-label fw-bold">7. Describe brevemente tu situación familiar actual</label>
-                    <textarea class="form-control" name="SituacionFamiliar" rows="2"
-                              placeholder="Ej. Buena relación, apoyo económico estable, etc."
-                              style="border-color: var(--utt-beige);" @atributoBloqueo required></textarea>
-                </div>
-
-                <h5 class="mb-4 mt-5" style="color: var(--utt-red); border-bottom: 2px solid var(--utt-beige); padding-bottom: 5px;">
-                    II. Antecedentes y Hábitos Académicos
-                </h5>
-
-                <div class="row">
-                    <div class="col-md-6 mb-4">
-                        <label class="form-label fw-bold">8. Promedio de Bachillerato</label>
-                        <input type="number" step="0.1" min="0" max="10" class="form-control" name="PromedioPrepa"
-                               placeholder="Ej. 8.5" style="border-color: var(--utt-beige);" @atributoBloqueo required>
+                    <div class="col-12">
+                        <label class="form-label fw-bold">7. Describe tu situación familiar actual (Solo letras)</label>
+                        <textarea class="form-control border-0 shadow-sm" name="SituacionFamiliar" rows="2" onkeypress="return soloLetras(event)" placeholder="Ej. Apoyo constante de mi familia..." @atributoBloqueo required></textarea>
                     </div>
+                </div>
 
-                    <div class="col-md-6 mb-4">
-                        <label class="form-label fw-bold">9. ¿Reprobaste materias en el nivel anterior?</label>
-                        <div class="d-flex gap-3 mt-2">
+                <h5 class="mb-4 mt-5 fw-bold" style="color: var(--brand-dark); border-bottom: 2px solid var(--brand-secondary); padding-bottom: 8px; font-family: var(--font-titulos);">II. Antecedentes y Hábitos Académicos</h5>
+                <div class="row g-4">
+                    <div class="col-12 col-md-6">
+                        <label class="form-label fw-bold">8. Promedio de Bachillerato (Solo números)</label>
+                        <input type="text" class="form-control border-0 shadow-sm" name="PromedioPrepa" onkeypress="return soloNumerosYDecimal(event)" placeholder="Ej. 8.5" maxlength="4" @atributoBloqueo required>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <label class="form-label fw-bold d-block">9. ¿Reprobaste materias en el nivel anterior?</label>
+                        <div class="d-flex gap-4 mt-2">
                             <div class="form-check">
                                 <input class="form-check-input" type="radio" name="ReproboAnterior" id="repNo" value="No" @atributoBloqueo required>
                                 <label class="form-check-label" for="repNo">No</label>
@@ -213,55 +161,44 @@
                             </div>
                         </div>
                     </div>
-                </div>
-
-                <div class="row">
-                    <div class="col-md-6 mb-4">
+                    <div class="col-12 col-md-6">
                         <label class="form-label fw-bold">10. ¿Cuentas con equipo de cómputo propio?</label>
-                        <select class="form-select" name="EquipoComputo" style="border-color: var(--utt-beige);" @atributoBloqueo required>
+                        <select class="form-select border-0 shadow-sm" name="EquipoComputo" @atributoBloqueo required>
                             <option value="">Selecciona una opción...</option>
                             <option value="Laptop">Sí, Laptop</option>
                             <option value="Escritorio">Sí, Escritorio</option>
-                            <option value="Prestado">Uso uno prestado/familiar</option>
                             <option value="No">No tengo</option>
                         </select>
                     </div>
-
-                    <div class="col-md-6 mb-4">
+                    <div class="col-12 col-md-6">
                         <label class="form-label fw-bold">11. Calidad de tu Internet en casa</label>
-                        <select class="form-select" name="Internet" style="border-color: var(--utt-beige);" @atributoBloqueo required>
+                        <select class="form-select border-0 shadow-sm" name="Internet" @atributoBloqueo required>
                             <option value="">Selecciona una opción...</option>
                             <option value="Buena">Buena / Estable</option>
-                            <option value="Regular">Regular / Lenta a veces</option>
+                            <option value="Regular">Regular</option>
                             <option value="Mala">Mala / Falla mucho</option>
-                            <option value="Datos">Solo uso datos móviles</option>
-                            <option value="No">No tengo internet</option>
                         </select>
                     </div>
-                </div>
-
-                <div class="mb-4">
-                    <label class="form-label fw-bold">12. ¿Por qué elegiste esta carrera?</label>
-                    <textarea class="form-control" name="MotivoCarrera" rows="3"
-                              placeholder="Explica tus motivos principales..."
-                              style="border-color: var(--utt-beige);" @atributoBloqueo required></textarea>
+                    <div class="col-12">
+                        <label class="form-label fw-bold">12. ¿Por qué elegiste esta carrera?</label>
+                        <textarea class="form-control border-0 shadow-sm" name="MotivoCarrera" rows="3" placeholder="Explica tus motivos..." @atributoBloqueo required></textarea>
+                    </div>
                 </div>
 
                 <div class="d-grid gap-2 mt-5">
                     @if (estaCompletada)
                     {
-                        <button type="button" id="btnModificar" class="btn btn-warning btn-lg fw-bold" onclick="habilitarEdicion()">
+                        <button type="button" id="btnModificar" class="btn btn-lg fw-bold" style="background-color: var(--btn-editar); border-radius: var(--radius-sm);" onclick="habilitarEdicion()">
                             <i class="bi bi-pencil-square"></i> Modificar Respuestas
                         </button>
-
-                        <button type="submit" id="btnGuardarCambios" class="btn btn-success btn-lg fw-bold d-none">
+                        <button type="submit" id="btnGuardarCambios" class="btn btn-lg fw-bold text-white d-none shadow-brand" style="background-color: var(--brand-dark); border-radius: var(--radius-sm);">
                             <i class="bi bi-check-circle"></i> Guardar Cambios
                         </button>
                     }
                     else
                     {
-                        <button type="submit" class="btn btn-utt-primary btn-lg fw-bold">
-                            Enviar Información
+                        <button type="submit" class="btn btn-lg fw-bold text-white shadow-brand" style="background-color: var(--brand-dark); border-radius: var(--radius-sm);">
+                            <i class="bi bi-send-fill me-2"></i> Enviar Información
                         </button>
                     }
                 </div>
@@ -272,6 +209,20 @@
 
 @section Scripts {
     <script>
+        function soloLetras(e) {
+            var key = e.keyCode || e.which;
+            var tecla = String.fromCharCode(key).toLowerCase();
+            var letras = " áéíóúabcdefghijklmnñopqrstuvwxyz";
+            if (letras.indexOf(tecla) == -1) return false;
+        }
+
+        function soloNumerosYDecimal(e) {
+            var key = e.keyCode || e.which;
+            var tecla = String.fromCharCode(key);
+            var expresion = /[0-9.]/;
+            if (!expresion.test(tecla)) return false;
+        }
+
         function mostrarPrevisualizacion(input) {
             if (input.files && input.files[0]) {
                 var reader = new FileReader();
@@ -283,24 +234,12 @@
         }
 
         function habilitarEdicion() {
-            const campos = document.querySelectorAll("select, input[type='radio'], textarea, input[type='number']");
-            campos.forEach(campo => {
-                campo.removeAttribute("disabled");
-            });
-
+            const campos = document.querySelectorAll("select, input, textarea");
+            campos.forEach(campo => campo.removeAttribute("disabled"));
             document.getElementById("btnModificar").classList.add("d-none");
             document.getElementById("btnGuardarCambios").classList.remove("d-none");
-
-            const btnCamara = document.getElementById("btnCamara");
-            const inputFoto = document.getElementById("inputFoto");
-
-            if (btnCamara) {
-                btnCamara.style.pointerEvents = "auto";
-                btnCamara.style.opacity = "1";
-            }
-            if (inputFoto) {
-                inputFoto.removeAttribute("disabled");
-            }
+            document.getElementById("btnCamara").style.pointerEvents = "auto";
+            document.getElementById("btnCamara").style.opacity = "1";
         }
     </script>
 }
