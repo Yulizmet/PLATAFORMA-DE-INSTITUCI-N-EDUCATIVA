@@ -5,7 +5,6 @@
     Layout = "~/Areas/MainScreen/Views/Shared/_Layout.cshtml";
 }
 
-
 <section class="admin-section">
     <div class="container">
 
@@ -84,7 +83,7 @@
                 </div>
 
                 <div class="row mb-4">
-                    <div class="col-md-6">
+                    <div class="col-12 col-md-6 mb-3 mb-md-0">
                         <label class="form-label fw-semibold">Fecha Inicio</label>
                         <input type="datetime-local"
                                class="form-control"
@@ -93,7 +92,7 @@
                                required>
                     </div>
 
-                    <div class="col-md-6">
+                    <div class="col-12 col-md-6">
                         <label class="form-label fw-semibold">Fecha Fin</label>
                         <input type="datetime-local"
                                class="form-control"
@@ -110,7 +109,7 @@
                     <label class="form-check-label">Activo</label>
                 </div>
 
-                <div class="d-flex gap-3">
+                <div class="foro-form-actions">
                     <button type="submit" class="btn btn-calificaciones">Publicar</button>
                     <a asp-area="MainScreen"
                        asp-controller="Foro"
@@ -140,54 +139,56 @@
             </div>
         </div>
 
-        <script>
-            const buttons = document.querySelectorAll('.design-btn');
-            const preview = document.getElementById('previewContainer');
-            const estiloHidden = document.getElementById('EstiloVisual');
-
-            const tituloInput = document.getElementById('tituloInput');
-            const descInput = document.getElementById('descInput');
-            const imagenInput = document.getElementById('imagenInput');
-
-            const previewTitle = document.getElementById('previewTitle');
-            const previewDesc = document.getElementById('previewDesc');
-            const previewImage = document.getElementById('previewImage');
-
-            buttons.forEach(btn => {
-                btn.addEventListener('click', function () {
-                    buttons.forEach(b => b.classList.remove('active'));
-                    this.classList.add('active');
-
-                    const style = this.dataset.style;
-                    estiloHidden.value = style;
-                    preview.className = "preview-card " + style + "-style";
-                });
-            });
-
-            tituloInput.addEventListener('input', () => {
-                previewTitle.textContent = tituloInput.value || "Título de ejemplo";
-            });
-
-            descInput.addEventListener('input', () => {
-                previewDesc.textContent = descInput.value || "Aquí se mostrará una simulación de cómo los alumnos verán esta publicación.";
-            });
-
-            imagenInput.addEventListener('change', function () {
-                const file = this.files[0];
-
-                if (file) {
-                    const reader = new FileReader();
-                    reader.onload = function (e) {
-                        previewImage.src = e.target.result;
-                        previewImage.classList.remove('d-none');
-                    };
-                    reader.readAsDataURL(file);
-                } else {
-                    previewImage.src = "";
-                    previewImage.classList.add('d-none');
-                }
-            });
-        </script>
-
     </div>
 </section>
+
+@section Scripts {
+    <script>
+        const buttons = document.querySelectorAll('.design-btn');
+        const preview = document.getElementById('previewContainer');
+        const estiloHidden = document.getElementById('EstiloVisual');
+
+        const tituloInput = document.getElementById('tituloInput');
+        const descInput = document.getElementById('descInput');
+        const imagenInput = document.getElementById('imagenInput');
+
+        const previewTitle = document.getElementById('previewTitle');
+        const previewDesc = document.getElementById('previewDesc');
+        const previewImage = document.getElementById('previewImage');
+
+        buttons.forEach(btn => {
+            btn.addEventListener('click', function () {
+                buttons.forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+
+                const style = this.dataset.style;
+                estiloHidden.value = style;
+                preview.className = "preview-card " + style + "-style";
+            });
+        });
+
+        tituloInput.addEventListener('input', () => {
+            previewTitle.textContent = tituloInput.value || "Título de ejemplo";
+        });
+
+        descInput.addEventListener('input', () => {
+            previewDesc.textContent = descInput.value || "Aquí se mostrará una simulación de cómo los alumnos verán esta publicación.";
+        });
+
+        imagenInput.addEventListener('change', function () {
+            const file = this.files[0];
+
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    previewImage.src = e.target.result;
+                    previewImage.classList.remove('d-none');
+                };
+                reader.readAsDataURL(file);
+            } else {
+                previewImage.src = "";
+                previewImage.classList.add('d-none');
+            }
+        });
+    </script>
+}

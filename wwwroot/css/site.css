@@ -1,5 +1,7 @@
 html {
     font-size: 14px;
+    position: relative;
+    min-height: 100%;
 }
 
 @media (min-width: 768px) {
@@ -8,21 +10,41 @@ html {
     }
 }
 
-.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
-    box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
+:root {
+    --rojo-principal: #8C1B1B;
+    --rojo-claro: #D42D2D;
+    --rojo-oscuro: #620900;
+    --beige: #B1A596;
+    --gris-fondo: #f3f3f3;
+    --gris-texto: #6b7280;
+    --gris-oscuro: #1f2937;
+    --blanco: #ffffff;
+    --sombra-card: 0 12px 30px rgba(0, 0, 0, 0.06);
+    --sombra-card-hover: 0 18px 36px rgba(0, 0, 0, 0.08);
+    --radio-xl: 24px;
+    --radio-lg: 20px;
+    --radio-md: 14px;
 }
 
-html {
-    position: relative;
-    min-height: 100%;
+.btn:focus,
+.btn:active:focus,
+.btn-link.nav-link:focus,
+.form-control:focus,
+.form-check-input:focus {
+    box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem rgba(140, 27, 27, 0.25);
 }
 
 body {
     padding: 0 !important;
-    background-color: #f3f3f3;
     margin-bottom: 60px;
+    background-color: var(--gris-fondo);
     font-family: 'Merriweather', serif;
-    /*font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;*/
+    overflow-x: hidden;
+}
+
+img {
+    max-width: 100%;
+    height: auto;
 }
 
 .colored-toast.swal2-icon-success,
@@ -40,15 +62,24 @@ body {
     background: rgba(255,255,255,0.5);
 }
 
-/* ===== FUENTE INTER PARA SUBTÍTULOS Y TEXTO SECUNDARIO ===== */
-
+/* ===== Tipografía secundaria ===== */
 .sistema-subtitle,
 .users-subtitle,
 .text-muted,
 .user-card p,
 .sistema-card p,
 .footer-custom p,
-.small-text {
+.small-text,
+.nav-link,
+.table,
+.form-control,
+.form-label,
+.form-check-label,
+.btn,
+.portal-link,
+.preview-card p,
+.foro-meta-item,
+.foro-empty-state {
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
 
@@ -64,42 +95,57 @@ p {
     font-weight: 300;
 }
 
-/*PALETA DE COLORES*/
-:root {
-    --rojo-principal: #8C1B1B;
-    --rojo-claro: #D42D2D;
-    --rojo-oscuro: #620900;
-    --beige: #B1A596;
-}
-
-
+/* ===== Navbar ===== */
 .navbar-custom {
     background-color: var(--rojo-principal);
 }
 
+    .navbar-custom .navbar-brand,
+    .navbar-custom .nav-link,
+    .navbar-custom .btn-link {
+        color: #fff !important;
+    }
 
+        .navbar-custom .nav-link:hover,
+        .navbar-custom .btn-link:hover {
+            color: #f8d7d7 !important;
+        }
+
+    .navbar-custom .navbar-toggler {
+        border-color: rgba(255,255,255,0.25);
+    }
+
+    .navbar-custom .navbar-collapse {
+        width: 100%;
+    }
+
+/* ===== Hero / secciones generales ===== */
 .hero-section {
     background: linear-gradient(135deg, var(--rojo-principal), var(--rojo-claro));
     color: white;
     padding: 100px 50px;
     border-radius: 28px;
-    border-radius: 28px;
 }
 
-/* BTNS*/
 .btn-hero-primary {
     background-color: white;
     color: var(--rojo-principal);
     font-weight: 600;
+    border-radius: 12px;
+    border: none;
+    padding: 10px 20px;
 }
 
     .btn-hero-primary:hover {
         background-color: #f2f2f2;
+        color: var(--rojo-principal);
     }
 
 .btn-hero-outline {
     border: 2px solid white;
     color: white;
+    border-radius: 12px;
+    padding: 10px 20px;
 }
 
     .btn-hero-outline:hover {
@@ -107,7 +153,6 @@ p {
         color: var(--rojo-principal);
     }
 
-/* CARD*/
 .hero-card {
     background: rgba(255,255,255,0.1);
     border-radius: 20px;
@@ -115,52 +160,138 @@ p {
     backdrop-filter: blur(10px);
 }
 
-/* USUARIOS */
+/* ===== Secciones generales ===== */
+.users-section,
+.sistema-section,
+.admin-section {
+    background-color: var(--gris-fondo);
+    padding: 100px 0;
+}
 
-.users-section {
-    background-color: #f3f3f3;
-    padding: 120px 0;
+.users-title,
+.sistema-title {
+    font-family: 'Merriweather', serif;
+    font-weight: 700;
+    color: var(--gris-oscuro);
 }
 
 .users-title {
-    font-family: 'Merriweather', serif;
-    font-weight: 700;
     font-size: 42px;
-    color: #1f2937;
 }
 
-.users-subtitle {
+.sistema-title {
+    font-size: 40px;
+}
+
+.users-subtitle,
+.sistema-subtitle {
     font-size: 18px;
-    color: #6b7280;
+    color: var(--gris-texto);
     max-width: 700px;
     margin: 0 auto;
 }
 
-/*CARDS 2*/
+.sistema-section .row {
+    max-width: 1100px;
+    margin: 0 auto;
+}
 
-.user-card {
-    background: white;
-    border-radius: 16px;
+/* ===== TODAS LAS CARDS CON EL MISMO ESTILO ===== */
+.user-card,
+.sistema-card,
+.preview-card,
+.admin-card {
+    background: #ffffff;
+    border-radius: 24px;
     padding: 30px;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.05);
-    transition: 0.3s ease;
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.06);
+    border: none;
+    transition: all 0.3s ease;
     height: 100%;
 }
 
-    .user-card:hover {
-        transform: translateY(-5px);
+    .user-card:hover,
+    .sistema-card:hover,
+    .preview-card:hover,
+    .admin-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 18px 36px rgba(0, 0, 0, 0.08);
     }
 
-/* TIT CARDS */
-.user-card h4 {
-    font-family: 'Merriweather', serif;
-    font-weight: 700;
-    margin-top: 15px;
+.admin-card {
+    max-width: 100%;
+    margin: auto;
+    overflow: hidden;
 }
 
-/* BTN LINK*/
+.preview-card {
+    height: auto;
+    overflow: hidden;
+    word-wrap: break-word;
+}
+
+    .user-card h4,
+    .sistema-card h4,
+    .preview-card h2,
+    .preview-card h3,
+    .preview-card h4 {
+        font-family: 'Merriweather', serif;
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: #111827;
+        margin-bottom: 14px;
+        line-height: 1.3;
+    }
+
+    .user-card p,
+    .sistema-card p,
+    .preview-card p {
+        font-family: 'Inter', sans-serif;
+        font-size: 0.98rem;
+        font-weight: 400;
+        color: #6b7280;
+        line-height: 1.8;
+        margin-bottom: 24px;
+    }
+
+/* ===== ELIMINAR LÍNEAS VIEJAS ===== */
+.border-calificaciones,
+.border-servicio {
+    border-top: none !important;
+}
+
+/* ===== ICONOS UNIFICADOS ===== */
+.icon-box,
+.sistema-icon {
+    width: 56px;
+    height: 56px;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 22px;
+    background: rgba(212, 45, 45, 0.10);
+    color: #D42D2D;
+    flex-shrink: 0;
+}
+
+    .icon-box i,
+    .sistema-icon i {
+        font-size: 22px;
+    }
+
+.icon-estudiantes,
+.icon-docentes,
+.icon-admin,
+.icon-calificaciones,
+.icon-servicio {
+    background: rgba(212, 45, 45, 0.10) !important;
+    color: #D42D2D !important;
+}
+
+/* ===== Links ===== */
 .portal-link {
-    color: #8C1B1B;
+    color: var(--rojo-principal);
     font-weight: 600;
     text-decoration: none;
 }
@@ -169,38 +300,30 @@ p {
         text-decoration: underline;
     }
 
-.icon-box {
-    width: 60px;
-    height: 60px;
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-bottom: 15px;
+/* ===== BOTONES DE CARDS ===== */
+.btn-calificaciones,
+.btn-servicio {
+    display: inline-block;
+    background: linear-gradient(135deg, #8C1B1B, #D42D2D);
+    color: white;
+    font-weight: 700;
+    font-size: 0.95rem;
+    padding: 12px 18px;
+    border-radius: 14px;
+    border: none;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    box-shadow: none;
 }
 
-/* COLORES GLASS */
-.icon-estudiantes {
-    background-color: rgba(140, 27, 27, 0.1);
-    color: #8C1B1B;
-}
+    .btn-calificaciones:hover,
+    .btn-servicio:hover {
+        background: linear-gradient(135deg, #620900, #8C1B1B);
+        color: white;
+        transform: translateY(-2px);
+    }
 
-.icon-docentes {
-    background-color: rgba(212, 45, 45, 0.1);
-    color: #D42D2D;
-}
-
-.icon-admin {
-    background-color: rgba(177, 165, 150, 0.2);
-    color: #8C1B1B;
-}
-
-.icon-box i {
-    font-size: 24px;
-}
-
-
-/*CTA SECTION  */
+/* ===== CTA / footer ===== */
 .cta-section {
     background: linear-gradient(135deg, var(--rojo-principal), var(--rojo-oscuro));
     color: white;
@@ -210,7 +333,6 @@ p {
     border-top-left-radius: 28px;
     border-top-right-radius: 28px;
 }
-
 
 .footer-custom {
     background-color: #0c1b2a;
@@ -224,129 +346,7 @@ p {
         color: white;
     }
 
-.sistema-card:focus,
-.sistema-card:active {
-    outline: none;
-    box-shadow: 0 20px 50px rgba(0,0,0,0.08);
-}
-
-/*SISTEMA ESCOLAR*/
-
-.sistema-section {
-    padding: 120px 0;
-    background-color: #f3f3f3;
-}
-
-.sistema-title {
-    font-family: 'Merriweather', serif;
-    font-size: 40px;
-    font-weight: 700;
-    color: #1f2937;
-}
-
-.sistema-subtitle {
-    color: #6b7280;
-    font-size: 18px;
-    max-width: 600px;
-    margin: 0 auto;
-}
-
-
-.sistema-section .row {
-    max-width: 1100px;
-    margin: 0 auto;
-}
-
-/*CARD BASE  */
-
-.sistema-card {
-    background-color: #ffffff;
-    border-radius: 20px;
-    padding: 50px;
-    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.08);
-    transition: all 0.3s ease;
-    height: 100%;
-}
-
-
-    .sistema-card:hover {
-        transform: translateY(-8px);
-    }
-
-    .sistema-card:focus,
-    .sistema-card:active {
-        outline: none;
-    }
-
-/* BTN SUP*/
-
-.border-calificaciones {
-    border-top: 8px solid #D42D2D;
-}
-
-.border-servicio {
-    border-top: 8px solid #B1A596;
-}
-
-/* ICONS */
-
-.sistema-icon {
-    width: 70px;
-    height: 70px;
-    border-radius: 16px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-bottom: 20px;
-}
-
-.icon-calificaciones {
-    background-color: rgba(212, 45, 45, 0.1);
-    color: #D42D2D;
-}
-
-.icon-servicio {
-    background-color: rgba(177, 165, 150, 0.25);
-    color: #8C1B1B;
-}
-
-.sistema-icon i {
-    font-size: 28px;
-}
-
-
-
-/* Calificaciones */
-.btn-calificaciones {
-    background-color: #D42D2D;
-    color: white;
-    font-weight: 600;
-    border-radius: 8px;
-    padding: 10px 20px;
-    border: none;
-}
-
-    .btn-calificaciones:hover {
-        background-color: #8C1B1B;
-        color: white;
-    }
-
-/* Servicio Social */
-.btn-servicio {
-    background-color: #B1A596;
-    color: white;
-    font-weight: 600;
-    border-radius: 8px;
-    padding: 10px 20px;
-    border: none;
-}
-
-    .btn-servicio:hover {
-        background-color: #8C1B1B;
-        color: white;
-    }
-
-/* PROCEDURES */
+/* ===== Procedimientos ===== */
 #bulkActionsBar {
     background-color: #4a0700 !important;
     border: 1px solid rgba(255, 255, 255, 0.2);
@@ -395,375 +395,250 @@ p {
     background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3e%3cpath fill='none' stroke='%23fff' stroke-linecap='round' stroke-linejoin='round' stroke-width='3' d='m6 10 3 3 6-6'/%3e%3c/svg%3e");
 }
 
-/* ===== ADMIN FORO ===== */
-
-.admin-section {
-    padding: 100px 0;
-    background-color: #f3f3f3;
-}
-
-.admin-card {
-    background: white;
-    border-radius: 20px;
-    padding: 50px;
-    box-shadow: 0 20px 50px rgba(0,0,0,0.08);
-    max-width: 900px;
-    margin: auto;
-}
-
+/* ===== Admin foro ===== */
 .admin-title {
     font-family: 'Merriweather', serif;
     font-size: 32px;
     font-weight: 700;
+    color: var(--gris-oscuro);
+    line-height: 1.2;
 }
 
 .preview-section {
-    max-width: 900px;
+    max-width: 100%;
     margin: auto;
 }
 
-.preview-card {
-    background: white;
-    border-radius: 20px;
-    padding: 40px;
-    box-shadow: 0 15px 40px rgba(0,0,0,0.07);
-}
-
-/* BTN DIS*/
-
 .design-buttons {
     display: flex;
-    gap: 15px;
+    gap: 12px;
     flex-wrap: wrap;
 }
 
 .design-btn {
-    border: 2px solid #D42D2D;
+    border: 2px solid var(--rojo-claro);
     background: white;
-    color: #D42D2D;
-    padding: 8px 18px;
+    color: var(--rojo-claro);
+    padding: 10px 18px;
     border-radius: 30px;
     font-weight: 600;
     transition: 0.3s ease;
 }
 
     .design-btn:hover {
-        background: #D42D2D;
+        background: var(--rojo-claro);
         color: white;
     }
 
     .design-btn.active {
-        background: #8C1B1B;
+        background: var(--rojo-principal);
         color: white;
-        border-color: #8C1B1B;
+        border-color: var(--rojo-principal);
     }
 
-/* VISTA PREVIA*/
+/* ===== Estilos de publicación del foro ===== */
+.clasico-style {
+    background: #ffffff;
+    color: #111827;
+}
 
-.preview-card {
-    border-radius: 20px;
-    padding: 40px;
+.destacado-style {
+    background: linear-gradient(135deg, var(--rojo-principal), var(--rojo-claro));
+    color: white;
+    border: none;
+}
+
+    .destacado-style h2,
+    .destacado-style h3,
+    .destacado-style h4,
+    .destacado-style p {
+        color: white;
+    }
+
+.minimalista-style {
+    background: #fafafa;
+    border-radius: 24px;
+    padding: 30px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.04);
+    border: 1px solid #eeeeee;
     transition: all 0.3s ease;
 }
 
-/* Clásico */
-.clasico-style {
-    background: white;
-}
+    .minimalista-style:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 14px 30px rgba(0,0,0,0.06);
+    }
 
-/* Destacado */
-.destacado-style {
-    background: linear-gradient(135deg, #8C1B1B, #D42D2D);
-    color: white;
-}
-
-/* Minimalista */
-.minimalista-style {
-    background: #f9f9f9;
-    border: 1px solid #ddd;
-}
-
-/* Banner */
 .banner-style {
-    background: #8C1B1B;
+    background: linear-gradient(135deg, var(--rojo-principal), #a12424);
     color: white;
     text-align: center;
-    padding: 60px;
+    padding: 48px 32px;
+    border: none;
 }
 
-/* Horizontal */
+    .banner-style h2,
+    .banner-style h3,
+    .banner-style h4,
+    .banner-style p {
+        color: white;
+    }
+
 .horizontal-style {
-    background: white;
-    display: flex;
-    flex-direction: column;
-    border-left: 6px solid #D42D2D;
-}
-
-/* FORO PUBLICO */
-
-.preview-card {
-    height: auto;
-    overflow: hidden;
-}
-
-    .preview-card img {
-        width: 100%;
-        height: auto;
-        border-radius: 12px;
-        margin-bottom: 15px;
-        display: block;
-    }
-
-    .preview-card h3,
-    .preview-card h2,
-    .preview-card h4 {
-        margin-bottom: 10px;
-    }
-
-.foro-post {
-    margin-bottom: 40px;
-}
-
-html {
-    font-size: 14px;
-}
-
-@media (min-width: 768px) {
-    html {
-        font-size: 16px;
-    }
-}
-
-.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
-    box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
-}
-
-html {
-    position: relative;
-    min-height: 100%;
-}
-
-body {
-    background-color: #f3f3f3;
-    margin-bottom: 60px;
-    font-family: 'Merriweather', serif;
-}
-
-/* PALETA MEJORADA GLASS */
-:root {
-    --guindo-principal: #5A0A0A;
-    --guindo-profundo: #3B0505;
-    --rojo-principal: #D42D2D;
-    --rojo-claro: #F04A4A;
-    --beige: #B1A596;
-}
-
-/* TIPOGRAFÍA*/
-
-.sistema-subtitle,
-.users-subtitle,
-.text-muted,
-.user-card p,
-.sistema-card p,
-.footer-custom p,
-.small-text {
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-}
-
-h1 {
-    font-weight: 900;
-}
-
-h2 {
-    font-weight: 700;
-}
-
-p {
-    font-weight: 300;
-}
-
-
-.navbar-custom {
-    background-color: var(--guindo-principal);
-}
-
-
-.hero-section {
-    background: linear-gradient(135deg, var(--guindo-principal), var(--rojo-principal));
-    color: white;
-    padding: 100px 0;
-    border-radius: 28px;
-}
-
-/* BOTONES*/
-
-.btn-hero-primary {
-    background-color: white;
-    color: var(--guindo-principal);
-    font-weight: 600;
-}
-
-    .btn-hero-primary:hover {
-        background-color: #f2f2f2;
-    }
-
-.btn-hero-outline {
-    border: 2px solid white;
-    color: white;
-}
-
-    .btn-hero-outline:hover {
-        background-color: white;
-        color: var(--guindo-principal);
-    }
-
-/* USUARIOS */
-
-.users-section {
-    background-color: #f3f3f3;
-    padding: 120px 0;
-}
-
-.users-title {
-    font-size: 42px;
-    font-weight: 700;
-}
-
-.users-subtitle {
-    font-size: 18px;
-    color: #6b7280;
-}
-
-/* USUARIOS CARD */
-
-.user-card,
-.sistema-card {
-    border-radius: 22px;
-    padding: 35px;
-    box-shadow: 0 15px 40px rgba(0,0,0,0.06);
-    transition: 0.3s ease;
-    height: 100%;
-    border: 1px solid transparent;
-}
-
-    .user-card:hover,
-    .sistema-card:hover {
-        transform: translateY(-6px);
-    }
-
-/*GLASS COLOR PALET CARDS*/
-
-/* GUINDO */
-.border-estudiantes {
-    background-color: rgba(90, 10, 10, 0.15);
-    border: 1px solid rgba(90, 10, 10, 0.4);
-}
-
-/* ROJO */
-.border-docentes,
-.border-calificaciones {
-    background-color: rgba(212, 45, 45, 0.15);
-    border: 1px solid rgba(212, 45, 45, 0.4);
-}
-
-/* BEIGE */
-.border-admin,
-.border-servicio {
-    background-color: rgba(177, 165, 150, 0.25);
-    border: 1px solid rgba(177, 165, 150, 0.45);
-}
-
-.icon-box {
-    width: 60px;
-    height: 60px;
-    border-radius: 14px;
     display: flex;
     align-items: center;
-    justify-content: center;
+    gap: 20px;
+    background: #f5f5f5;
+    border-radius: 24px;
+    padding: 25px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+    border: none;
+}
+
+    /* contenido dentro */
+    .horizontal-style .content {
+        flex: 1;
+    }
+
+    /* icono alineado */
+    .horizontal-style .icon-box {
+        margin-bottom: 0;
+    }
+
+/* ===== Imágenes del foro ===== */
+.preview-card img,
+.foro-post img {
+    width: 100%;
+    height: auto;
+    border-radius: 12px;
     margin-bottom: 15px;
+    display: block;
+    object-fit: cover;
 }
-
-/* GUINDO */
-.icon-estudiantes {
-    background-color: rgba(255,255,255,0.8);
-    color: var(--guindo-principal);
-}
-
-/* ROJO */
-.icon-docentes,
-.icon-calificaciones {
-    background-color: rgba(255,255,255,0.8);
-    color: var(--rojo-principal);
-}
-
-/* BEIGE */
-.icon-admin,
-.icon-servicio {
-    background-color: rgba(255,255,255,0.8);
-    color: var(--guindo-principal);
-}
-
-
-
-.btn-calificaciones {
-    background-color: var(--rojo-principal);
-    color: white;
-    border-radius: 8px;
-}
-
-    .btn-calificaciones:hover {
-        background-color: var(--guindo-principal);
-    }
-
-.btn-servicio {
-    background-color: var(--beige);
-    color: white;
-}
-
-    .btn-servicio:hover {
-        background-color: var(--guindo-principal);
-    }
-
-/* SISTEMA  */
-
-.sistema-section {
-    padding: 120px 0;
-    background-color: #f3f3f3;
-}
-
-.sistema-title {
-    font-size: 40px;
-    font-weight: 700;
-}
-
-/*ADMIN*/
-
-.admin-section {
-    padding: 100px 0;
-}
-
-.admin-card {
-    background: white;
-    border-radius: 20px;
-    padding: 50px;
-    box-shadow: 0 20px 50px rgba(0,0,0,0.08);
-}
-
-/*FORO*/
-
-.preview-card {
-    background: white;
-    border-radius: 20px;
-    padding: 40px;
-    box-shadow: 0 15px 40px rgba(0,0,0,0.07);
-}
-
-    .preview-card img {
-        width: 100%;
-        border-radius: 12px;
-        margin-bottom: 15px;
-    }
 
 .foro-post {
-    margin-bottom: 40px;
+    margin-bottom: 32px;
 }
+
+    .foro-post:last-child {
+        margin-bottom: 0;
+    }
+
+/* ===== Tabla foro admin ===== */
+.foro-admin-table th,
+.foro-admin-table td {
+    vertical-align: middle;
+}
+
+.foro-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+    .foro-actions .btn {
+        white-space: nowrap;
+    }
+
+/* ===== Formularios del foro ===== */
+.foro-form-actions,
+.foro-detail-actions,
+.foro-delete-actions,
+.foro-header-actions {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+    .foro-form-actions .btn,
+    .foro-detail-actions .btn,
+    .foro-delete-actions .btn,
+    .foro-header-actions .btn {
+        min-width: 140px;
+    }
+
+.foro-empty-state {
+    text-align: center;
+    color: var(--gris-texto);
+    margin: 0;
+}
+
+.foro-meta {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem 1.5rem;
+}
+
+.foro-meta-item {
+    background: #fafafa;
+    border: 1px solid #eee;
+    border-radius: 14px;
+    padding: 1rem;
+}
+
+    .foro-meta-item strong {
+        display: block;
+        margin-bottom: 0.35rem;
+    }
+
+.foro-public-header {
+    max-width: 900px;
+    margin: 0 auto 2rem auto;
+    text-align: center;
+}
+
+.foro-public-grid {
+    display: grid;
+    gap: 1.5rem;
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 991.98px) {
+    .navbar-custom .navbar-collapse {
+        margin-top: 0.75rem;
+        background: rgba(0, 0, 0, 0.08);
+        border-radius: 14px;
+        padding: 0.75rem;
+    }
+
+    .navbar-custom .navbar-nav {
+        align-items: stretch !important;
+        gap: 0.25rem !important;
+    }
+
+    .navbar-custom .nav-item {
+        width: 100%;
+    }
+
+    .navbar-custom .nav-link,
+    .navbar-custom .btn-link.nav-link {
+        display: block;
+        width: 100%;
+        padding: 0.7rem 0.9rem !important;
+        border-radius: 10px;
+        white-space: normal !important;
+        text-align: left;
+    }
+
+        .navbar-custom .nav-link:hover,
+        .navbar-custom .btn-link.nav-link:hover {
+            background: rgba(255,255,255,0.08);
+        }
+
+    .hero-section,
+    .admin-card,
+    .preview-card,
+    .sistema-card,
+    .user-card {
+        padding: 28px;
+    }
+
+    .admin-title {
+        font-size: 28px;
+    }
+
+    .sistema-title,
+    .users-title {
+        font-size: 34px;
