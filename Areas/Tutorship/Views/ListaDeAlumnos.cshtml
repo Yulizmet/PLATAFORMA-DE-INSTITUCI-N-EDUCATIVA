@@ -105,15 +105,77 @@
 
 @section Scripts {
     <style>
-        .dataTables_wrapper .row:first-child { margin-bottom: 1.5rem; padding: 0 0.5rem; }
-        .dataTables_wrapper .row:last-child { margin-top: 1.5rem; padding: 0 0.5rem; }
+        .dataTables_wrapper .row:first-child { margin-bottom: 1.5rem; padding: 1rem 1rem 0 1rem; }
+        .dataTables_wrapper .row:last-child { margin-top: 1.5rem; padding: 0 1rem 1rem 1rem; }
+        
         div.dataTables_wrapper div.dataTables_filter input {
-            border-radius: 8px; border: 1px solid #ced4da; padding: 0.35rem 0.75rem; transition: all 0.15s ease-in-out;
+            border-radius: var(--radius-xs, 8px); 
+            border: 1px solid var(--border-medium, #ced4da); 
+            padding: 0.35rem 0.75rem; 
+            transition: all 0.15s ease-in-out;
+            width: auto; 
+            display: inline-block;
+            margin-left: 0.5rem;
         }
+        
         div.dataTables_wrapper div.dataTables_filter input:focus {
-            outline: none; border-color: var(--brand-dark); box-shadow: 0 0 0 0.25rem rgba(140, 27, 27, 0.25); 
+            outline: none; 
+            border-color: var(--brand-dark); 
+            box-shadow: 0 0 0 0.25rem rgba(98, 9, 0, 0.25); 
         }
-        div.dataTables_wrapper div.dataTables_length select { border-radius: 8px; border: 1px solid #ced4da; padding-left: 0.5rem; }
+        
+        div.dataTables_wrapper div.dataTables_length select { 
+            border-radius: var(--radius-xs, 8px); 
+            border: 1px solid var(--border-medium, #ced4da); 
+            padding-left: 0.5rem; 
+        }
+
+        @@media (max-width: 768px) {
+            div.dataTables_wrapper div.dataTables_filter {
+                text-align: left !important;
+                margin-top: 15px;
+            }
+            div.dataTables_wrapper div.dataTables_filter input {
+                width: 100%; 
+                display: block;
+                margin-left: 0;
+                margin-top: 5px;
+            }
+
+            .tabla-adaptable thead { display: none; }
+
+            .tabla-adaptable, .tabla-adaptable tbody, .tabla-adaptable tr, .tabla-adaptable td {
+                display: block;
+                width: 100%;
+            }
+
+            .tabla-adaptable tr {
+                margin-bottom: 1rem;
+                border: 1px solid var(--border-soft, #dee2e6);
+                border-radius: var(--radius-sm, 12px);
+                padding: 1.2rem; 
+                background-color: var(--surface-card, #fff);
+                box-shadow: var(--shadow-soft);
+            }
+
+            .tabla-adaptable td {
+                border: none !important;
+                padding: 0.3rem 0 !important;
+                text-align: left !important;
+            }
+
+            .tabla-adaptable td:last-child { margin-top: 0.5rem; }
+            .tabla-adaptable td:last-child .d-flex {
+                width: 100%;
+                justify-content: space-between !important;
+                gap: 10px !important;
+            }
+            .tabla-adaptable td:last-child .btn {
+                flex: 1; 
+                text-align: center;
+                padding-left: 0; padding-right: 0;
+            }
+        }
     </style>
 
     <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
@@ -144,32 +206,35 @@
                         orderable: false, 
                         className: "text-center ps-3 align-middle",
                         render: function(data, type, row) {
-                            let imgSrc = row.foto ? row.foto : "https://ui-avatars.com/api/?name=" + encodeURIComponent(row.nombre) + "&background=8C1B1B&color=fff";
-                            return '<img src="' + imgSrc + '" alt="Foto" class="rounded-circle border" style="object-fit: cover; width: 55px; height: 55px; border-color: #ddd !important;">';
+                            let imgSrc = row.foto ? row.foto : "https://ui-avatars.com/api/?name=" + encodeURIComponent(row.nombre) + "&background=620900&color=fff";
+                            return '<div class="d-flex align-items-center gap-3">' + 
+                                   '<img src="' + imgSrc + '" alt="Foto" class="rounded-circle shadow-sm" style="object-fit: cover; width: 60px; height: 60px; border: 2px solid var(--surface-card);">' +
+                                   '<span class="d-md-none fw-bold text-dark fs-5" style="font-family: var(--font-titulos);">' + row.nombreCompleto + '</span>' + 
+                                   '</div>';
                         }
                     },
                     { 
                         data: "nombreCompleto",
                         className: "align-middle",
                         render: function(data, type, row) {
-                            return '<div class="fw-bold fs-6 text-dark mb-1">' + data + '</div>' +
-                                   '<div class="text-muted small">' +
-                                        '<span class="badge bg-light text-dark border me-2">Matrícula: ' + row.matricula + '</span>' +
-                                        '<span class="badge" style="background-color: var(--brand-secondary); color: var(--brand-white);">Grado y Grupo: ' + row.grupoTexto + '</span>' +
+                            return '<div class="d-none d-md-block fw-bold fs-6 mb-2" style="color: var(--brand-dark); font-family: var(--font-titulos);">' + data + '</div>' +
+                                   '<div class="text-muted small d-flex flex-wrap gap-2">' +
+                                        '<span class="badge shadow-sm px-2 py-1" style="background-color: var(--surface-muted); color: var(--brand-black); border: 1px solid var(--border-soft);"><i class="bi bi-person-vcard me-1"></i> ' + row.matricula + '</span>' +
+                                        '<span class="badge shadow-sm px-2 py-1" style="background-color: var(--brand-secondary); color: var(--brand-white);"><i class="bi bi-people-fill me-1"></i> Grado y Grupo: ' + row.grupoTexto + '</span>' +
                                    '</div>';
                         }
                     },
                     { 
                         data: null, 
                         orderable: false, 
-                        className: "text-end pe-3 align-middle",
+                        className: "text-center align-middle py-3", 
                         render: function(data, type, row) {
                             let urlEntrevista = '@Url.Action("VerEntrevistaAlumno", "Entrevista", new { area = "Gestion" })/' + row.userId;
                             let urlSeguimiento = '@Url.Action("Seguimiento", "Seguimiento", new { area = "Gestion" })?matriculaBuscar=' + encodeURIComponent(row.matricula);
 
-                            return '<div class="d-flex gap-2 justify-content-end">' +
-                                        '<a href="' + urlEntrevista + '" class="btn btn-action-seguimiento shadow-sm btn-sm px-3 py-2"><i class="bi bi-file-text"></i> Entrevista</a>' +
-                                        '<a href="' + urlSeguimiento + '" class="btn btn-action-seguimiento shadow-sm btn-sm px-3 py-2"><i class="bi bi-graph-up"></i> Seguimiento</a>' +
+                            return '<div class="d-flex gap-2 justify-content-center">' +
+                                        '<a href="' + urlEntrevista + '" class="btn btn-sm text-white px-3 py-2 fw-bold shadow-sm" style="background-color: var(--brand-dark); border-radius: var(--radius-xs, 8px);"><i class="bi bi-file-text me-1"></i> Entrevista</a>' +
+                                        '<a href="' + urlSeguimiento + '" class="btn btn-sm text-white px-3 py-2 fw-bold shadow-sm" style="background-color: var(--brand-dark); border-radius: var(--radius-xs, 8px);"><i class="bi bi-graph-up me-1"></i> Seguimiento</a>' +
                                    '</div>';
                         }
                     }
