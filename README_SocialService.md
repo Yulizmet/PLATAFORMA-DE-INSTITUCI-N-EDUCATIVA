@@ -91,33 +91,23 @@ Requisitos previos:
 - Tener instalado .NET 8 SDK y un IDE compatible (por ejemplo Visual Studio con soporte para .NET 8).
 - Tener acceso a una instancia de SQL Server para desarrollo o pruebas (local o en Azure).
 
-Paquetes NuGet principales (ejemplos de instalación):
+Paquetes NuGet principales:
 - `DinkToPdf` (librería gestionada) — `dotnet add package DinkToPdf`.
 - `ClosedXML` — `dotnet add package ClosedXML` (para exportes Excel).
 - `Azure.Storage.Blobs` — `dotnet add package Azure.Storage.Blobs` (para `AzureStorageService`).
 - `Microsoft.EntityFrameworkCore.SqlServer` y `Microsoft.EntityFrameworkCore.Tools` — para EF Core y migraciones.
 - `Microsoft.AspNetCore.Authentication.Cookies` — para autenticación por cookies.
 
-Dependencias nativas para generación de PDF:
-- `DinkToPdf` depende de la utilidad nativa `wkhtmltopdf`. En desarrollo/producción debe instalarse la versión nativa adecuada para la plataforma (Windows, Linux x64/ARM). En Windows se recomienda descargar el instalador oficial y añadir la ruta de `wkhtmltopdf.exe` al `PATH`. En Linux se puede instalar desde paquetes o incluir el binario en la imagen del contenedor.
-- Alternativa: desplegar en un contenedor Docker que incluya `wkhtmltopdf` en la imagen.
-
 Configuración de entorno:
 - Definir la cadena de conexión usada por EF Core: `ConnectionStrings:DefaultConnection`.
 - Definir la cadena de storage usada por `AzureStorageService` (nombre por defecto en el código: `AzureStorageProcedures`) como `ConnectionStrings:AzureStorageProcedures` o en `Azure` como `Application setting` con la misma clave.
-- Variables recomendadas (ejemplos):
+- Variables recomendadas:
   - `ConnectionStrings__DefaultConnection` — cadena de conexión SQL Server.
   - `ConnectionStrings__AzureStorageProcedures` — cadena de conexión a Azure Blob Storage.
   - `Email__Username`, `Email__Password` — credenciales para `OutlookEmailSender` si aplica.
 
-Comandos útiles de configuración local:
-- Inicializar secretos del proyecto: `dotnet user-secrets init` y luego `dotnet user-secrets set "ConnectionStrings:DefaultConnection" "<cadena>"`.
-- Instalar herramientas EF si no están: `dotnet tool install --global dotnet-ef`.
-- Ejecutar migraciones: `dotnet ef database update`.
-
-Despliegue en Azure (puntos clave):
+Despliegue en Azure:
 - En App Service, configurar las `Application settings` con las mismas claves usadas en `appsettings` (usar `__` para anidar en variables de entorno).
-- Para `wkhtmltopdf` en Azure App Service se recomienda usar App Service en Linux con una imagen personalizada que incluya `wkhtmltopdf`, o usar una VM/Container donde sea posible instalar binarios nativos.
 - Para mayor seguridad usar `Azure Key Vault` y Managed Identity para recuperar secretos en tiempo de ejecución.
 
 Notas adicionales:
