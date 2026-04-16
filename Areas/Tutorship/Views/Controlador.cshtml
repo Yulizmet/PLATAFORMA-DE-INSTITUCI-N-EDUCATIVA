@@ -31,7 +31,7 @@
 
         @if (User.IsInRole("Student"))
         {
-            <div class="col-12 col-md-6">
+            <div class="col-12 col-md-6 col-lg-4">
                 <a asp-area="Gestion" asp-controller="Entrevista" asp-action="EntrevistaInicial" class="text-decoration-none">
                     <div class="card dashboard-card shadow-sm p-3 p-md-4 text-center h-100">
                         <div class="card-icon-box mx-auto">
@@ -50,7 +50,7 @@
 
         @if (User.IsInRole("Teacher"))
         {
-            <div class="col-12 col-md-6">
+            <div class="col-12 col-md-6 col-lg-4">
                 <a asp-area="Gestion" asp-controller="Asistencia" asp-action="Asistencia" class="text-decoration-none">
                     <div class="card dashboard-card shadow-sm p-3 p-md-4 text-center h-100">
                         <div class="card-icon-box mx-auto">
@@ -82,7 +82,7 @@
                 </a>
             </div>
 
-            <div class="col-12 col-md-6">
+            <div class="col-12 col-md-6 col-lg-4">
                 <a asp-area="Gestion" asp-controller="Entrevista" asp-action="ReporteEntrevistas" class="text-decoration-none">
                     <div class="card dashboard-card shadow-sm p-3 p-md-4 text-center h-100">
                         <div class="card-icon-box mx-auto">
@@ -101,7 +101,7 @@
 
         @if (User.IsInRole("Administrator") || User.IsInRole("Master"))
         {
-            <div class="col-12 col-md-6">
+            <div class="col-12 col-md-6 col-lg-4">
                 <a asp-area="Gestion" asp-controller="Alumnos" asp-action="ListaDeAlumnos" class="text-decoration-none">
                     <div class="card dashboard-card shadow-sm p-3 p-md-4 text-center h-100">
                         <div class="card-icon-box mx-auto" style="background-color: var(--utt-beige); color: var(--utt-dark-red);">
@@ -117,7 +117,7 @@
                 </a>
             </div>
 
-            <div class="col-12 col-md-6">
+            <div class="col-12 col-md-6 col-lg-4">
                 <a asp-area="Gestion" asp-controller="Asistencia" asp-action="Asistencia" class="text-decoration-none">
                     <div class="card dashboard-card shadow-sm p-3 p-md-4 text-center h-100">
                         <div class="card-icon-box mx-auto" style="background-color: var(--utt-beige); color: var(--utt-dark-red);">
@@ -133,7 +133,7 @@
                 </a>
             </div>
 
-            <div class="col-12 col-md-6">
+            <div class="col-12 col-md-6 col-lg-4">
                 <a asp-area="Gestion" asp-controller="Alumnos" asp-action="AsignarTutores" class="text-decoration-none">
                     <div class="card dashboard-card shadow-sm p-3 p-md-4 text-center h-100">
                         <div class="card-icon-box mx-auto" style="background-color: var(--utt-beige); color: var(--utt-dark-red);">
@@ -149,7 +149,7 @@
                 </a>
             </div>
 
-            <div class="col-12 col-md-6">
+            <div class="col-12 col-md-6 col-lg-4">
                 <a asp-area="Gestion" asp-controller="Entrevista" asp-action="ReporteEntrevistas" class="text-decoration-none">
                     <div class="card dashboard-card shadow-sm p-3 p-md-4 text-center h-100">
                         <div class="card-icon-box mx-auto" style="background-color: var(--utt-beige); color: var(--utt-dark-red);">
@@ -165,7 +165,7 @@
                 </a>
             </div>
 
-            <div class="col-12 col-md-6">
+            <div class="col-12 col-md-6 col-lg-4">
                 <a asp-area="Gestion" asp-controller="TemasTutorias" asp-action="Index" class="text-decoration-none">
                     <div class="card dashboard-card shadow-sm p-3 p-md-4 text-center h-100">
                         <div class="card-icon-box mx-auto" style="background-color: var(--utt-beige); color: var(--utt-dark-red);">
