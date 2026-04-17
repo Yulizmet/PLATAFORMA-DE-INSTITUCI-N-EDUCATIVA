@@ -228,6 +228,10 @@ p {
     height: auto;
     overflow: hidden;
     word-wrap: break-word;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
 }
 
     .user-card h4,
@@ -407,6 +411,7 @@ p {
 .preview-section {
     max-width: 100%;
     margin: auto;
+    width: 100%;
 }
 
 .design-buttons {
@@ -440,12 +445,16 @@ p {
 .clasico-style {
     background: #ffffff;
     color: #111827;
+    overflow: hidden;
+    word-break: break-word;
 }
 
 .destacado-style {
     background: linear-gradient(135deg, var(--rojo-principal), var(--rojo-claro));
     color: white;
     border: none;
+    overflow: hidden;
+    word-break: break-word;
 }
 
     .destacado-style h2,
@@ -462,6 +471,12 @@ p {
     box-shadow: 0 8px 20px rgba(0,0,0,0.04);
     border: 1px solid #eeeeee;
     transition: all 0.3s ease;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+    overflow: hidden;
+    word-break: break-word;
 }
 
     .minimalista-style:hover {
@@ -475,6 +490,8 @@ p {
     text-align: center;
     padding: 48px 32px;
     border: none;
+    overflow: hidden;
+    word-break: break-word;
 }
 
     .banner-style h2,
@@ -484,31 +501,16 @@ p {
         color: white;
     }
 
+/* ===== ELIMINADO HORIZONTAL ===== */
 .horizontal-style {
-    display: flex;
-    align-items: center;
-    gap: 20px;
-    background: #f5f5f5;
-    border-radius: 24px;
-    padding: 25px;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.05);
-    border: none;
+    display: none !important;
 }
-
-    /* contenido dentro */
-    .horizontal-style .content {
-        flex: 1;
-    }
-
-    /* icono alineado */
-    .horizontal-style .icon-box {
-        margin-bottom: 0;
-    }
 
 /* ===== Imágenes del foro ===== */
 .preview-card img,
 .foro-post img {
     width: 100%;
+    max-width: 100%;
     height: auto;
     border-radius: 12px;
     margin-bottom: 15px;
@@ -518,6 +520,10 @@ p {
 
 .foro-post {
     margin-bottom: 32px;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
 }
 
     .foro-post:last-child {
@@ -631,7 +637,8 @@ p {
     .admin-card,
     .preview-card,
     .sistema-card,
-    .user-card {
+    .user-card,
+    .minimalista-style {
         padding: 28px;
     }
 
@@ -642,3 +649,239 @@ p {
     .sistema-title,
     .users-title {
         font-size: 34px;
+    }
+}
+
+@media (max-width: 767.98px) {
+    body {
+        margin-bottom: 40px;
+    }
+
+    .admin-section,
+    .sistema-section,
+    .users-section {
+        padding: 48px 0;
+    }
+
+    .container,
+    .container-fluid {
+        padding-left: 16px;
+        padding-right: 16px;
+    }
+
+    .hero-section,
+    .admin-card,
+    .preview-card,
+    .sistema-card,
+    .user-card,
+    .minimalista-style {
+        padding: 20px;
+        border-radius: 16px;
+    }
+
+    .hero-section {
+        padding: 32px 20px;
+    }
+
+    .admin-title {
+        font-size: 24px;
+    }
+
+    .sistema-title,
+    .users-title {
+        font-size: 28px;
+    }
+
+    .users-subtitle,
+    .sistema-subtitle {
+        font-size: 16px;
+    }
+
+    .design-buttons {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 0.65rem;
+    }
+
+    .design-btn {
+        width: 100%;
+        text-align: center;
+    }
+
+    .foro-form-actions,
+    .foro-detail-actions,
+    .foro-delete-actions,
+    .foro-header-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+        .foro-form-actions .btn,
+        .foro-detail-actions .btn,
+        .foro-delete-actions .btn,
+        .foro-header-actions .btn,
+        .minimalista-style .btn,
+        .preview-card .btn {
+            width: 100%;
+            min-width: 100%;
+            text-align: center;
+        }
+
+    .foro-actions {
+        justify-content: stretch;
+        flex-direction: column;
+    }
+
+        .foro-actions .btn {
+            width: 100%;
+        }
+
+    .foro-meta {
+        grid-template-columns: 1fr;
+    }
+
+    .banner-style {
+        padding: 32px 20px;
+    }
+
+    .preview-section {
+        margin-top: 1.5rem;
+    }
+
+    .preview-card img,
+    .foro-post img {
+        margin-bottom: 14px;
+        border-radius: 10px;
+    }
+
+    .preview-card h2,
+    .preview-card h3,
+    .preview-card h4,
+    .minimalista-style h2,
+    .minimalista-style h3,
+    .minimalista-style h4 {
+        font-size: 1.1rem;
+        line-height: 1.35;
+        margin-bottom: 10px;
+    }
+
+    .preview-card p,
+    .minimalista-style p {
+        font-size: 0.95rem;
+        line-height: 1.65;
+        margin-bottom: 16px;
+    }
+
+    .table-responsive {
+        border-radius: 14px;
+    }
+}
+
+@media (max-width: 480px) {
+    .preview-card,
+    .minimalista-style {
+        padding: 16px;
+        border-radius: 16px;
+    }
+
+        .preview-card h2,
+        .preview-card h3,
+        .preview-card h4,
+        .minimalista-style h2,
+        .minimalista-style h3,
+        .minimalista-style h4 {
+            font-size: 1rem;
+        }
+
+        .preview-card p,
+        .minimalista-style p {
+            font-size: 0.92rem;
+        }
+}
+
+@media (min-width: 768px) and (max-width: 1024px) {
+    .admin-card,
+    .preview-card,
+    .sistema-card,
+    .user-card,
+    .minimalista-style {
+        padding: 28px;
+    }
+}
+
+/* ===== GRID RESPONSIVO ===== */
+.cards-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 25px;
+}
+
+/* ===== CARD BASE ===== */
+.card-custom {
+    background: #fff;
+    border-radius: 24px;
+    padding: 25px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    transition: 0.3s ease;
+}
+
+    .card-custom:hover {
+        transform: translateY(-5px);
+    }
+
+/* ===== ICONO ===== */
+.card-icon {
+    width: 55px;
+    height: 55px;
+    border-radius: 15px;
+    background: rgba(212,45,45,0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 15px;
+}
+
+    .card-icon i {
+        color: #D42D2D;
+        font-size: 20px;
+    }
+
+/* ===== TEXTO ===== */
+.card-title {
+    font-family: 'Merriweather', serif;
+    font-weight: 700;
+    font-size: 1.2rem;
+    margin-bottom: 10px;
+}
+
+.card-text {
+    font-family: 'Inter', sans-serif;
+    color: #6b7280;
+    font-size: 0.95rem;
+    flex-grow: 1; 
+}
+
+/* ===== BOTONES ===== */
+.card-actions {
+    margin-top: 15px;
+}
+
+    .card-actions .btn {
+        border-radius: 12px;
+        font-size: 0.85rem;
+        padding: 6px 14px;
+    }
+
+/* ===== BOTÓN PRINCIPAL ===== */
+.btn-main {
+    background: linear-gradient(135deg, #8C1B1B, #D42D2D);
+    color: white;
+    border: none;
+}
+
+    .btn-main:hover {
+        opacity: 0.9;
+    }

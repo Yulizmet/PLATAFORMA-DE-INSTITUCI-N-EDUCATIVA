@@ -7,75 +7,83 @@
     <div class="container text-center">
 
         <h2 class="sistema-title mb-3">Trámites y Servicios</h2>
+
         <p class="sistema-subtitle mb-5">
             Gestiona procesos administrativos de manera digital
         </p>
 
-        <div class="row justify-content-center g-5">
+        <div class="cards-container">
 
             <!-- Procesos de Inscripción -->
-            <div class="col-lg-5 col-md-6">
-                <div class="sistema-card border-calificaciones text-start">
-                    <div class="sistema-icon icon-calificaciones">
-                        <i class="bi bi-pencil-square"></i>
-                    </div>
+            <div class="card-custom text-start">
+                <div class="card-icon">
+                    <i class="bi bi-pencil-square"></i>
+                </div>
 
-                    <h4>Procesos de Inscripción</h4>
-                    <p class="text-muted mt-3">
-                        Inicia y consulta tus procesos académicos de inscripción.
-                    </p>
+                <div class="card-title">
+                    Procesos de Inscripción
+                </div>
 
-                    @{
-                        string accionDestino;
+                <div class="card-text">
+                    Inicia y consulta tus procesos académicos de inscripción.
+                </div>
 
-                        if (User.Identity.IsAuthenticated && User.IsInRole("Administrator"))
-                        {
-                            accionDestino = "Aspirantes";
-                        }
-                        else
-                        {
-                            accionDestino = "Create";
-                        }
+                @{
+                    string accionDestino;
+
+                    if (User.Identity != null && User.Identity.IsAuthenticated && User.IsInRole("Administrator"))
+                    {
+                        accionDestino = "Aspirantes";
                     }
+                    else
+                    {
+                        accionDestino = "Create";
+                    }
+                }
 
+                <div class="card-actions">
                     <a asp-area="Enrollment"
                        asp-controller="PreEnrollment"
                        asp-action="@accionDestino"
-                       class="btn btn-calificaciones mt-4">
+                       class="btn btn-main">
                         Ir a Procesos de Inscripción →
                     </a>
                 </div>
             </div>
 
             <!-- Servicios en Línea -->
-            <div class="col-lg-5 col-md-6">
-                <div class="sistema-card border-servicio text-start">
+            <div class="card-custom text-start">
+                <div class="card-icon">
+                    <i class="bi bi-globe"></i>
+                </div>
 
-                    <div class="sistema-icon icon-servicio">
-                        <i class="bi bi-globe"></i>
-                    </div>
+                <div class="card-title">
+                    Servicios en Línea
+                </div>
 
-                    <h4>Servicios en Línea</h4>
+                <div class="card-text">
+                    Accede a trámites digitales y solicitudes institucionales.
+                </div>
 
-                    <p class="text-muted mt-3">
-                        Accede a trámites digitales y solicitudes institucionales.
-                    </p>
+                @{
+                    string destinoController = "Request";
 
-                    @{
-                        string destinoController = "Request";
-                        if (User.IsInRole("Administrator") || User.IsInRole("Teacher"))
-                        {
-                            destinoController = "Dashboard";
-                        }
+                    if (User.IsInRole("Administrator") || User.IsInRole("Teacher"))
+                    {
+                        destinoController = "Dashboard";
                     }
+                }
 
-                    <a asp-area="Procedures" asp-controller="@destinoController" asp-action="Index" class="btn btn-servicio mt-4">
+                <div class="card-actions">
+                    <a asp-area="Procedures"
+                       asp-controller="@destinoController"
+                       asp-action="Index"
+                       class="btn btn-main">
                         Ver Servicios →
                     </a>
-
                 </div>
             </div>
+
         </div>
     </div>
 </section>
-

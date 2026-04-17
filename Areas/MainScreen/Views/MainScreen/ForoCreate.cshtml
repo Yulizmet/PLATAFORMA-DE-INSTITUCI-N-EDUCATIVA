@@ -39,14 +39,13 @@
                         <button type="button" class="design-btn" data-style="destacado">Destacado</button>
                         <button type="button" class="design-btn" data-style="minimalista">Minimalista</button>
                         <button type="button" class="design-btn" data-style="banner">Banner</button>
-                        <button type="button" class="design-btn" data-style="horizontal">Horizontal</button>
                     </div>
 
                     <input type="hidden" id="EstiloVisual" name="EstiloVisual" value="clasico" />
                 </div>
 
                 <div class="mb-4">
-                    <label class="form-label fw-semibold">Título *</label>
+                    <label class="form-label fw-semibold" for="tituloInput">Título *</label>
                     <input type="text"
                            class="form-control"
                            id="tituloInput"
@@ -56,7 +55,7 @@
                 </div>
 
                 <div class="mb-4">
-                    <label class="form-label fw-semibold">Descripción *</label>
+                    <label class="form-label fw-semibold" for="descInput">Descripción *</label>
                     <textarea class="form-control"
                               id="descInput"
                               name="Descripcion"
@@ -66,15 +65,16 @@
                 </div>
 
                 <div class="mb-4">
-                    <label class="form-label fw-semibold">Link Externo</label>
+                    <label class="form-label fw-semibold" for="linkInput">Link Externo</label>
                     <input type="url"
                            class="form-control"
+                           id="linkInput"
                            name="LinkExterno"
                            placeholder="https://...">
                 </div>
 
                 <div class="mb-4">
-                    <label class="form-label fw-semibold">Imagen</label>
+                    <label class="form-label fw-semibold" for="imagenInput">Imagen</label>
                     <input type="file"
                            class="form-control"
                            id="imagenInput"
@@ -84,18 +84,20 @@
 
                 <div class="row mb-4">
                     <div class="col-12 col-md-6 mb-3 mb-md-0">
-                        <label class="form-label fw-semibold">Fecha Inicio</label>
+                        <label class="form-label fw-semibold" for="fechaInicioInput">Fecha Inicio</label>
                         <input type="datetime-local"
                                class="form-control"
+                               id="fechaInicioInput"
                                name="FechaInicio"
                                value="@DateTime.Now.ToString("yyyy-MM-ddTHH:mm")"
                                required>
                     </div>
 
                     <div class="col-12 col-md-6">
-                        <label class="form-label fw-semibold">Fecha Fin</label>
+                        <label class="form-label fw-semibold" for="fechaFinInput">Fecha Fin</label>
                         <input type="datetime-local"
                                class="form-control"
+                               id="fechaFinInput"
                                name="FechaFin">
                     </div>
                 </div>
@@ -103,10 +105,11 @@
                 <div class="form-check mb-4">
                     <input class="form-check-input"
                            type="checkbox"
+                           id="activoInput"
                            name="Activo"
                            value="true"
                            checked>
-                    <label class="form-check-label">Activo</label>
+                    <label class="form-check-label" for="activoInput">Activo</label>
                 </div>
 
                 <div class="foro-form-actions">
@@ -129,13 +132,20 @@
                      src=""
                      alt="Vista previa"
                      class="img-fluid rounded mb-3 d-none"
-                     style="max-height:250px; object-fit:cover; width:100%;">
+                     style="max-height: 250px; object-fit: cover; width: 100%;">
 
                 <h3 id="previewTitle">Título de ejemplo</h3>
+
                 <p id="previewDesc">
                     Aquí se mostrará una simulación de cómo los alumnos verán esta publicación.
                 </p>
-                <a href="#" class="btn btn-calificaciones btn-sm">Leer más</a>
+
+                <a href="#"
+                   id="previewLink"
+                   class="btn btn-calificaciones btn-sm"
+                   onclick="return false;">
+                    Leer más
+                </a>
             </div>
         </div>
 
@@ -144,51 +154,68 @@
 
 @section Scripts {
     <script>
-        const buttons = document.querySelectorAll('.design-btn');
-        const preview = document.getElementById('previewContainer');
-        const estiloHidden = document.getElementById('EstiloVisual');
+        document.addEventListener('DOMContentLoaded', function () {
+            const buttons = document.querySelectorAll('.design-btn');
+            const preview = document.getElementById('previewContainer');
+            const estiloHidden = document.getElementById('EstiloVisual');
 
-        const tituloInput = document.getElementById('tituloInput');
-        const descInput = document.getElementById('descInput');
-        const imagenInput = document.getElementById('imagenInput');
+            const tituloInput = document.getElementById('tituloInput');
+            const descInput = document.getElementById('descInput');
+            const imagenInput = document.getElementById('imagenInput');
 
-        const previewTitle = document.getElementById('previewTitle');
-        const previewDesc = document.getElementById('previewDesc');
-        const previewImage = document.getElementById('previewImage');
+            const previewTitle = document.getElementById('previewTitle');
+            const previewDesc = document.getElementById('previewDesc');
+            const previewImage = document.getElementById('previewImage');
 
-        buttons.forEach(btn => {
-            btn.addEventListener('click', function () {
-                buttons.forEach(b => b.classList.remove('active'));
-                this.classList.add('active');
+            const estilosPermitidos = ['clasico', 'destacado', 'minimalista', 'banner'];
 
-                const style = this.dataset.style;
-                estiloHidden.value = style;
-                preview.className = "preview-card " + style + "-style";
+            buttons.forEach(btn => {
+                btn.addEventListener('click', function () {
+                    buttons.forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+
+                    const style = this.dataset.style;
+
+                    if (estilosPermitidos.includes(style)) {
+                        estiloHidden.value = style;
+                        preview.className = `preview-card ${style}-style`;
+                    }
+                });
             });
-        });
 
-        tituloInput.addEventListener('input', () => {
-            previewTitle.textContent = tituloInput.value || "Título de ejemplo";
-        });
+            tituloInput.addEventListener('input', () => {
+                previewTitle.textContent = tituloInput.value.trim() || "Título de ejemplo";
+            });
 
-        descInput.addEventListener('input', () => {
-            previewDesc.textContent = descInput.value || "Aquí se mostrará una simulación de cómo los alumnos verán esta publicación.";
-        });
+            descInput.addEventListener('input', () => {
+                previewDesc.textContent =
+                    descInput.value.trim() || "Aquí se mostrará una simulación de cómo los alumnos verán esta publicación.";
+            });
 
-        imagenInput.addEventListener('change', function () {
-            const file = this.files[0];
+            imagenInput.addEventListener('change', function () {
+                const file = this.files && this.files[0];
 
-            if (file) {
+                if (!file) {
+                    previewImage.src = "";
+                    previewImage.classList.add('d-none');
+                    return;
+                }
+
+                if (!file.type.startsWith('image/')) {
+                    previewImage.src = "";
+                    previewImage.classList.add('d-none');
+                    return;
+                }
+
                 const reader = new FileReader();
+
                 reader.onload = function (e) {
                     previewImage.src = e.target.result;
                     previewImage.classList.remove('d-none');
                 };
+
                 reader.readAsDataURL(file);
-            } else {
-                previewImage.src = "";
-                previewImage.classList.add('d-none');
-            }
+            });
         });
     </script>
 }

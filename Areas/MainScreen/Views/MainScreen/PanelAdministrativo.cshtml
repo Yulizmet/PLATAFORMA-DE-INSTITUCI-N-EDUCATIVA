@@ -15,132 +15,172 @@
             Gestiona la configuración académica, asignaciones e inscripciones
         </p>
 
-        <div class="row justify-content-center g-5">
+        <div class="cards-container">
 
-            <!-- NUEVO CICLO ESCOLAR (WIZARD) -->
-            <div class="col-lg-5 col-md-6">
-                <div class="sistema-card border-calificaciones text-start">
-                    <div class="sistema-icon icon-calificaciones">
-                        <i class="bi bi-magic"></i>
-                    </div>
-                    <h4>Nuevo Ciclo Escolar</h4>
-                    <p class="text-muted mt-3">
-                        Configura un ciclo completo paso a paso: nivel, materias, grupos y asignación de profesores.
-                    </p>
-                    <div class="mt-4">
-                        <a asp-area="Grades"
-                           asp-controller="SchoolCycleWizard"
-                           asp-action="Step1"
-                           class="btn btn-calificaciones w-100">
-                            <i class="bi bi-play-circle"></i> Iniciar Asistente
-                        </a>
-                    </div>
-                    <p class="text-muted small mt-3 mb-0">
-                        <i class="bi bi-info-circle"></i> El asistente te guiará en 4 pasos para configurar todo el ciclo.
-                    </p>
+            <!-- NUEVO CICLO ESCOLAR -->
+            <div class="card-custom text-start">
+                <div class="card-icon">
+                    <i class="bi bi-magic"></i>
                 </div>
+
+                <div class="card-title">
+                    Nuevo Ciclo Escolar
+                </div>
+
+                <div class="card-text">
+                    Configura un ciclo completo paso a paso: nivel, materias, grupos y asignación de profesores.
+                </div>
+
+                <div class="card-actions">
+                    <a asp-area="Grades"
+                       asp-controller="SchoolCycleWizard"
+                       asp-action="Step1"
+                       class="btn btn-main w-100">
+                        <i class="bi bi-play-circle"></i> Iniciar Asistente
+                    </a>
+                </div>
+
+                <p class="text-muted small mt-3 mb-0">
+                    <i class="bi bi-info-circle"></i> El asistente te guiará en 4 pasos para configurar todo el ciclo.
+                </p>
             </div>
 
             <!-- CONFIGURACIÓN ACADÉMICA -->
-            <div class="col-lg-5 col-md-6">
-                <div class="sistema-card border-calificaciones text-start">
-                    <div class="sistema-icon icon-calificaciones">
-                        <i class="bi bi-gear"></i>
-                    </div>
-                    <h4>Configuración Académica</h4>
-                    <p class="text-muted mt-3">
-                        Crea y administra niveles escolares, materias y grupos para el ciclo actual.
-                    </p>
-                    <div class="d-flex gap-2 mt-4">
-                        <a asp-area="Grades" asp-controller="GradeLevels" asp-action="Index"
-                           class="btn btn-calificaciones flex-fill">
-                            Niveles
-                        </a>
-                        <a asp-area="Grades" asp-controller="Subjects" asp-action="Index"
-                           class="btn btn-calificaciones flex-fill">
-                            Materias
-                        </a>
-                        <a asp-area="Grades" asp-controller="Groups" asp-action="Index"
-                           class="btn btn-calificaciones flex-fill">
-                            Grupos
-                        </a>
-                    </div>
+            <div class="card-custom text-start">
+                <div class="card-icon">
+                    <i class="bi bi-gear"></i>
+                </div>
+
+                <div class="card-title">
+                    Configuración Académica
+                </div>
+
+                <div class="card-text">
+                    Crea y administra niveles escolares, materias y grupos para el ciclo actual.
+                </div>
+
+                <div class="card-actions d-flex flex-wrap gap-2">
+                    <a asp-area="Grades"
+                       asp-controller="GradeLevels"
+                       asp-action="Index"
+                       class="btn btn-main flex-fill">
+                        Niveles
+                    </a>
+
+                    <a asp-area="Grades"
+                       asp-controller="Subjects"
+                       asp-action="Index"
+                       class="btn btn-main flex-fill">
+                        Materias
+                    </a>
+
+                    <a asp-area="Grades"
+                       asp-controller="Groups"
+                       asp-action="Index"
+                       class="btn btn-main flex-fill">
+                        Grupos
+                    </a>
                 </div>
             </div>
 
             <!-- KARDEX -->
-            <div class="col-lg-5 col-md-6">
-                <div class="sistema-card border-calificaciones text-start">
-                    <div class="sistema-icon icon-calificaciones">
-                        <i class="bi bi-file-earmark-text"></i>
-                    </div>
-                    <h4>Kardex Estudiantil</h4>
-                    <p class="text-muted mt-3">
-                        Consulta el historial académico y calificaciones de los estudiantes.
-                    </p>
-                    <div class="mt-4">
-                        <a asp-area="Grades"
-                           asp-controller="Kardex"
-                           asp-action="Index"
-                           class="btn btn-calificaciones w-100">
-                            <i class="bi bi-search"></i> Consultar Kardex
-                        </a>
-                    </div>
+            <div class="card-custom text-start">
+                <div class="card-icon">
+                    <i class="bi bi-file-earmark-text"></i>
+                </div>
+
+                <div class="card-title">
+                    Kardex Estudiantil
+                </div>
+
+                <div class="card-text">
+                    Consulta el historial académico y calificaciones de los estudiantes.
+                </div>
+
+                <div class="card-actions">
+                    <a asp-area="Grades"
+                       asp-controller="Kardex"
+                       asp-action="Index"
+                       class="btn btn-main w-100">
+                        <i class="bi bi-search"></i> Consultar Kardex
+                    </a>
                 </div>
             </div>
 
-@*             <!-- ASIGNACIONES -->
-            <div class="col-lg-5 col-md-6">
-                <div class="sistema-card border-calificaciones text-start">
-                    <div class="sistema-icon icon-calificaciones">
-                        <i class="bi bi-person-badge"></i>
-                    </div>
-                    <h4>Asignaciones</h4>
-                    <p class="text-muted mt-3">
-                        Asigna profesores a materias y gestiona los grupos de cada asignación.
-                    </p>
-                    <div class="mt-4">
-                        <a asp-area="Grades" asp-controller="TeacherSubject" asp-action="Create"
-                           class="btn btn-calificaciones w-100 mb-2">
-                            <i class="bi bi-plus-circle"></i> Nueva Asignación
-                        </a>
-                        <a asp-area="Grades" asp-controller="TeacherSubject" asp-action="Index"
-                           class="btn btn-outline-secondary w-100">
-                            <i class="bi bi-list"></i> Gestionar Asignaciones
-                        </a>
-                    </div>
+            @* 
+            <!-- ASIGNACIONES -->
+            <div class="card-custom text-start">
+                <div class="card-icon">
+                    <i class="bi bi-person-badge"></i>
+                </div>
+
+                <div class="card-title">
+                    Asignaciones
+                </div>
+
+                <div class="card-text">
+                    Asigna profesores a materias y gestiona los grupos de cada asignación.
+                </div>
+
+                <div class="card-actions d-flex flex-column gap-2">
+                    <a asp-area="Grades"
+                       asp-controller="TeacherSubject"
+                       asp-action="Create"
+                       class="btn btn-main w-100">
+                        <i class="bi bi-plus-circle"></i> Nueva Asignación
+                    </a>
+
+                    <a asp-area="Grades"
+                       asp-controller="TeacherSubject"
+                       asp-action="Index"
+                       class="btn btn-outline-secondary w-100">
+                        <i class="bi bi-list"></i> Gestionar Asignaciones
+                    </a>
                 </div>
             </div>
 
             <!-- INSCRIPCIONES -->
-            <div class="col-lg-5 col-md-6">
-                <div class="sistema-card border-calificaciones text-start">
-                    <div class="sistema-icon icon-calificaciones">
-                        <i class="bi bi-person-plus"></i>
-                    </div>
-                    <h4>Asignar Estudiantes a Grupos</h4>
-                    <p class="text-muted mt-3">
-                        Administra los estudiantes en los grupos escolares.
-                    </p>
-                    <div class="mt-4">
-                       <a asp-area="Grades" asp-controller="Enrollment" asp-action="SelectGroupForAssignment"
-                           class="btn btn-calificaciones w-100 mb-2">
-                            <i class="bi bi-person-plus"></i> Asignar Estudiante a Grupo
-                        </a>
-                        <a asp-area="Grades" asp-controller="Enrollment" asp-action="SelectGroupForViewing"
-                           class="btn btn-outline-secondary w-100 mb-2">
-                            <i class="bi bi-people"></i> Ver Estudiantes por Grupo
-                        </a> 
-                        <a asp-area="Grades" asp-controller="Groups" asp-action="Index"
-                           class="btn btn-calificaciones w-100">
-                            <i class="bi bi-gear"></i> Gestionar Grupos
-                        </a>
-                    </div>
-                    <p class="text-muted small mt-3 mb-0">
-                        <i class="bi bi-info-circle"></i> Selecciona el grupo en la siguiente pantalla.
-                    </p>
+            <div class="card-custom text-start">
+                <div class="card-icon">
+                    <i class="bi bi-person-plus"></i>
                 </div>
-            </div> *@
+
+                <div class="card-title">
+                    Asignar Estudiantes a Grupos
+                </div>
+
+                <div class="card-text">
+                    Administra los estudiantes en los grupos escolares.
+                </div>
+
+                <div class="card-actions d-flex flex-column gap-2">
+                    <a asp-area="Grades"
+                       asp-controller="Enrollment"
+                       asp-action="SelectGroupForAssignment"
+                       class="btn btn-main w-100">
+                        <i class="bi bi-person-plus"></i> Asignar Estudiante a Grupo
+                    </a>
+
+                    <a asp-area="Grades"
+                       asp-controller="Enrollment"
+                       asp-action="SelectGroupForViewing"
+                       class="btn btn-outline-secondary w-100">
+                        <i class="bi bi-people"></i> Ver Estudiantes por Grupo
+                    </a>
+
+                    <a asp-area="Grades"
+                       asp-controller="Groups"
+                       asp-action="Index"
+                       class="btn btn-main w-100">
+                        <i class="bi bi-gear"></i> Gestionar Grupos
+                    </a>
+                </div>
+
+                <p class="text-muted small mt-3 mb-0">
+                    <i class="bi bi-info-circle"></i> Selecciona el grupo en la siguiente pantalla.
+                </p>
+            </div>
+            *@
 
         </div>
     </div>

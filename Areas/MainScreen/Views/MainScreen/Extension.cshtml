@@ -7,97 +7,108 @@
     <div class="container text-center">
 
         <h2 class="sistema-title mb-3">Extensión</h2>
+
         <p class="sistema-subtitle mb-5">
             Programas académicos complementarios
         </p>
 
-        <div class="row justify-content-center g-5">
+        <div class="cards-container">
 
             <!-- Tutorías -->
-            <div class="col-lg-5 col-md-6">
-                <div class="sistema-card border-calificaciones text-start">
+            <div class="card-custom text-start">
+                <div class="card-icon">
+                    <i class="bi bi-person-video3"></i>
+                </div>
 
-                    <div class="sistema-icon icon-calificaciones">
-                        <i class="bi bi-person-video3"></i>
-                    </div>
+                <div class="card-title">
+                    Tutorías
+                </div>
 
-                    <h4>Tutorías</h4>
+                <div class="card-text">
+                    Accede a sesiones de acompañamiento académico personalizadas.
+                </div>
 
-                    <p class="text-muted mt-3">
-                        Accede a sesiones de acompañamiento académico personalizadas.
-                    </p>
-
+                <div class="card-actions">
                     @if (User.Identity?.IsAuthenticated == true)
                     {
-                        <a asp-area="Gestion" asp-controller="Tutorship" asp-action="Controlador" class="btn btn-calificaciones mt-3">
+                        <a asp-area="Gestion"
+                           asp-controller="Tutorship"
+                           asp-action="Controlador"
+                           class="btn btn-main">
                             Ver Tutorías →
                         </a>
                     }
                     else
                     {
-                        <a asp-area="UserMng" asp-controller="Account" asp-action="Login" asp-route-returnUrl="/Gestion/Tutorship/Controlador" class="btn btn-secondary mt-3">
-                            <i class="bi bi-lock-fill"></i> Iniciar Sesión para acceder
+                        <a asp-area="UserMng"
+                           asp-controller="Account"
+                           asp-action="Login"
+                           asp-route-returnUrl="/Gestion/Tutorship/Controlador"
+                           class="btn btn-secondary">
+                            <i class="bi bi-lock-fill"></i> Iniciar Sesión
                         </a>
                     }
-
                 </div>
             </div>
 
             <!-- Enfermería y Psicología -->
-            <div class="col-lg-5 col-md-6">
-                <div class="sistema-card border-servicio text-start">
+            <div class="card-custom text-start">
+                <div class="card-icon">
+                    <i class="bi bi-heart-pulse-fill"></i>
+                </div>
 
-                    <div class="sistema-icon icon-servicio">
-                        <i class="bi bi-heart-pulse-fill"></i>
-                    </div>
+                <div class="card-title">
+                    Enfermería y Psicología
+                </div>
 
-                    <h4>Enfermería y Psicología</h4>
+                <div class="card-text">
+                    Consulta servicios de enfermería y apoyo psicológico, agenda citas y recibe orientación especializada.
+                </div>
 
-                    <p class="text-muted mt-3">
-                        Consulta servicios de enfermería y apoyo psicológico,
-                        agenda citas y recibe orientación especializada.
-                    </p>
-
-                    <a asp-area="Medical" asp-controller="Dashboard" asp-action="Index" class="btn btn-servicio mt-3">
-                        Ir a Servicios de Apoyo →
+                <div class="card-actions">
+                    <a asp-area="Medical"
+                       asp-controller="Dashboard"
+                       asp-action="Index"
+                       class="btn btn-main">
+                        Ir a Servicios →
                     </a>
-
                 </div>
             </div>
 
-            <!-- SERVICIO SOCIAL -->
-            <div class="col-lg-5 col-md-6">
-                <div class="sistema-card border-servicio text-start">
+            <!-- Servicio Social -->
+            <div class="card-custom text-start">
+                <div class="card-icon">
+                    <i class="bi bi-briefcase-fill"></i>
+                </div>
 
-                    <div class="sistema-icon icon-servicio">
-                        <i class="bi bi-briefcase-fill"></i>
-                    </div>
+                <div class="card-title">
+                    Servicio Social
+                </div>
 
-                    <h4>Servicio Social</h4>
+                <div class="card-text">
+                    Gestiona tu proceso de servicio social, horas acumuladas y seguimiento institucional.
+                </div>
 
-                    <p class="text-muted mt-3">
-                        Gestiona tu proceso de servicio social, horas acumuladas y seguimiento institucional.
-                    </p>
-
-                    <a href="#" id="btnServicioSocial" class="btn btn-servicio mt-4">
+                <div class="card-actions">
+                    <a href="#" id="btnServicioSocial" class="btn btn-main">
                         Ir a Servicio Social →
                     </a>
                 </div>
             </div>
 
-                </div>
-            </div>
-
-
+        </div>
+    </div>
 </section>
 
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
         var btnServicioSocial = document.getElementById('btnServicioSocial');
+
         if (btnServicioSocial) {
-            btnServicioSocial.addEventListener('click', function(e) {
+            btnServicioSocial.addEventListener('click', function (e) {
                 e.preventDefault();
-                var isAssigned = true; // Cambia esto si necesitas lógica de asignación
+
+                var isAssigned = true; // aquí luego puedes meter tu lógica real
 
                 if (!isAssigned) {
                     Swal.fire({
@@ -105,7 +116,7 @@
                         title: 'Acceso Restringido',
                         text: 'No has sido asignado a ningún maestro para entrar a este apartado.',
                         confirmButtonText: 'Entendido',
-                        confirmButtonColor: '#b23b3b'
+                        confirmButtonColor: '#8C1B1B'
                     });
                 } else {
                     window.location.href = '/SocialService/Account/Index';
@@ -114,4 +125,3 @@
         }
     });
 </script>
-
