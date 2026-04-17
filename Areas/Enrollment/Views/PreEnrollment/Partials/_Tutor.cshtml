@@ -39,35 +39,38 @@
         <div class="col-12 col-md-4">
             <label asp-for="Tutor.paternal_last_name" class="form-label">Apellido paterno</label>
             <input asp-for="Tutor.paternal_last_name"
-                   class="form-control"
+                   class="form-control solo-letras"
                    required
-                   data-required="true" />
-       
+                   data-required="true"
+                   pattern="[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+"
+                   oninput="this.value = this.value.replace(/[^A-Za-zÁÉÍÓÚáéíóúÑñ\s]/g, '')" />
         </div>
 
         <div class="col-12 col-md-4">
             <label asp-for="Tutor.maternal_last_name" class="form-label">Apellido materno</label>
             <input asp-for="Tutor.maternal_last_name"
-                   class="form-control"
+                   class="form-control solo-letras"
                    required
-                   data-required="true" />
-            
+                   data-required="true"
+                   pattern="[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+"
+                   oninput="this.value = this.value.replace(/[^A-Za-zÁÉÍÓÚáéíóúÑñ\s]/g, '')" />
         </div>
 
         <div class="col-12 col-md-6">
             <label asp-for="Tutor.name" class="form-label">Nombre(s)</label>
             <input asp-for="Tutor.name"
-                   class="form-control"
+                   class="form-control solo-letras"
                    required
-                   data-required="true" />
-          
+                   data-required="true"
+                   pattern="[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+"
+                   oninput="this.value = this.value.replace(/[^A-Za-zÁÉÍÓÚáéíóúÑñ\s]/g, '')" />
         </div>
 
         <div class="col-12 col-sm-6 col-md-3">
             <label asp-for="Tutor.home_phone" class="form-label">Teléfono de casa</label>
             <input asp-for="Tutor.home_phone"
                    type="tel"
-                   class="form-control"
+                   class="form-control solo-numeros"
                    inputmode="numeric"
                    pattern="[0-9]{10}"
                    maxlength="10"
@@ -75,20 +78,18 @@
                    oninput="this.value = this.value.replace(/[^0-9]/g, '')"
                    required
                    data-required="true" />
-          
         </div>
 
         <div class="col-12 col-sm-6 col-md-3">
-            <label asp-for="Tutor.work_phone" class="form-label">Teléfono de trabajo </label>
+            <label asp-for="Tutor.work_phone" class="form-label">Teléfono de trabajo</label>
             <input asp-for="Tutor.work_phone"
                    type="tel"
-                   class="form-control"
+                   class="form-control solo-numeros"
                    inputmode="numeric"
                    pattern="[0-9]{10}"
                    maxlength="10"
                    placeholder="10 dígitos"
                    oninput="this.value = this.value.replace(/[^0-9]/g, '')" />
-           
         </div>
 
     </div>

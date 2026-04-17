@@ -25,20 +25,32 @@
 
             <div class="col-12 col-md-4">
                 <label class="form-label">Apellido Paterno</label>
-                <input asp-for="Persona.LastNamePaternal" class="form-control" required data-required="true" />
-               
+                <input asp-for="Persona.LastNamePaternal"
+                       class="form-control"
+                       required
+                       data-required="true"
+                       pattern="[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+"
+                       oninput="this.value = this.value.replace(/[^A-Za-zÁÉÍÓÚáéíóúÑñ\s]/g, '')" />
             </div>
 
             <div class="col-12 col-md-4">
                 <label class="form-label">Apellido Materno</label>
-                <input asp-for="Persona.LastNameMaternal" class="form-control" required data-required="true" />
-              
+                <input asp-for="Persona.LastNameMaternal"
+                       class="form-control"
+                       required
+                       data-required="true"
+                       pattern="[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+"
+                       oninput="this.value = this.value.replace(/[^A-Za-zÁÉÍÓÚáéíóúÑñ\s]/g, '')" />
             </div>
 
             <div class="col-12 col-md-4">
                 <label class="form-label">Nombre(s)</label>
-                <input asp-for="Persona.FirstName" class="form-control" required data-required="true" />
-               
+                <input asp-for="Persona.FirstName"
+                       class="form-control"
+                       required
+                       data-required="true"
+                       pattern="[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+"
+                       oninput="this.value = this.value.replace(/[^A-Za-zÁÉÍÓÚáéíóúÑñ\s]/g, '')" />
             </div>
 
         </div>
@@ -53,7 +65,6 @@
                     <option>Femenino</option>
                     <option>Masculino</option>
                 </select>
-               
             </div>
 
             <div class="col-12 col-sm-6 col-md-3">
@@ -63,7 +74,6 @@
                        class="form-control"
                        lang="en-CA"
                        required />
-               
             </div>
 
             <div class="col-12 col-sm-6 col-md-3">
@@ -75,7 +85,6 @@
                     <option>Viudo(a)</option>
                     <option>Divorciado(a)</option>
                 </select>
-               
             </div>
 
             <div class="col-12 col-sm-6 col-md-3">
@@ -86,7 +95,6 @@
                     <option>Estadounidense</option>
                     <option>Canadiense</option>
                 </select>
-            
             </div>
 
         </div>
@@ -102,23 +110,23 @@
                            maxlength="18"
                            placeholder="Ingresa tu CURP"
                            style="text-transform: uppercase;"
-                           oninput="this.value = this.value.toUpperCase()"
+                           pattern="[A-Z0-9]{18}"
+                           oninput="this.value = this.value.toUpperCase().replace(/[^A-Z0-9]/g, '')"
                            required
                            data-required="true" />
                     <a href="https://www.gob.mx/curp/" target="_blank" class="btn btn-primary px-4 py-2 rounded-pill ms-2 d-flex align-items-center justify-content-center">Consultar</a>
                 </div>
                 <small class="text-muted">La CURP debe contener exactamente 18 caracteres.</small>
-               
             </div>
 
             <div class="col-12 col-md-6">
                 <label class="form-label">Correo Electrónico</label>
                 <input asp-for="Persona.Email"
+                       type="email"
                        class="form-control"
                        placeholder="ejemplo@correo.com"
                        required
                        data-required="true" />
-              
             </div>
 
         </div>
@@ -139,7 +147,6 @@
                     <option>O+</option>
                     <option>O-</option>
                 </select>
-              
             </div>
 
             <div class="col-12 col-md-6">
@@ -166,7 +173,6 @@
                         <label class="form-check-label" for="trabajaSi">Sí</label>
                     </div>
                 </div>
-               
             </div>
 
         </div>
@@ -175,24 +181,30 @@
         <div class="row g-3 mt-3 d-none" id="camposTrabajo">
             <div class="col-12 col-md-4">
                 <label class="form-label">Ocupación</label>
-                <input asp-for="DatosGenerales.Occupation" class="form-control" />
-             
+                <input asp-for="DatosGenerales.Occupation"
+                       class="form-control"
+                       pattern="[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+"
+                       oninput="this.value = this.value.replace(/[^A-Za-zÁÉÍÓÚáéíóúÑñ\s]/g, '')" />
             </div>
 
             <div class="col-12 col-md-4">
                 <label class="form-label">Dirección de Trabajo</label>
-                <input asp-for="DatosGenerales.WorkAddress" class="form-control" />
-              
+                <input asp-for="DatosGenerales.WorkAddress"
+                       class="form-control"
+                       pattern="[A-Za-zÁÉÍÓÚáéíóúÑñ0-9\s#.,-]+"
+                       oninput="this.value = this.value.replace(/[^A-Za-zÁÉÍÓÚáéíóúÑñ0-9\s#.,-]/g, '')" />
             </div>
 
             <div class="col-12 col-md-4">
                 <label class="form-label">Teléfono de Trabajo</label>
                 <input asp-for="DatosGenerales.WorkPhone"
                        class="form-control"
+                       type="tel"
                        inputmode="numeric"
+                       pattern="[0-9]{10}"
                        maxlength="10"
+                       placeholder="10 dígitos"
                        oninput="this.value = this.value.replace(/[^0-9]/g, '')" />
-              
             </div>
         </div>
 
