@@ -44,7 +44,6 @@ namespace SchoolManager.Areas.Tutorship.Controllers
 
         public async Task<IActionResult> EntrevistaInicial()
         {
-            // Validamos dinámicamente si es Alumno
             if (!User.IsInRole("Student")) return RedirectToAction(nameof(AccesoDenegado));
 
             ViewBag.RoleName = LoggedRoleName;
