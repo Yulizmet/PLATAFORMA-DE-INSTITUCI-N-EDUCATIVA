@@ -120,14 +120,82 @@ namespace SchoolManager.Areas.Tutorship.Controllers
 
             int dbTeacherRoleId = await GetDbRoleIdByNameAsync("Teacher");
 
-            ViewBag.Maestros = await _context.Users
+            var maestros = await _context.Users
                 .Include(u => u.Person)
                 .Where(u => u.UserRoles.Any(ur => ur.RoleId == dbTeacherRoleId))
                 .ToListAsync();
 
-            ViewBag.Grupos = await _context.grades_GradeGroups
+            ViewBag.Maestros = maestros;
+
+            var grupos = await _context.grades_GradeGroups
                 .OrderBy(g => g.GradeLevelId).ThenBy(g => g.Name)
                 .ToListAsync();
+
+            ViewBag.Grupos = grupos;
+
+            // 1. Obtenemos todas las tutorías y las inscripciones
+            var tutorias = await _context.Tutorships
+                .Include(t => t.Teacher)
+                .ThenInclude(u => u.Person)
+                .ToListAsync();
+
+            var inscripciones = await _context.grades_Enrollments.ToListAsync();
+
+            // --- LÓGICA 1: ASIGNACIONES POR GRUPO ---
+            var listaAsignaciones = new List<dynamic>();
+            foreach (var grupo in grupos)
+            {
+                var primerAlumnoDelGrupo = inscripciones.FirstOrDefault(e => e.GroupId == grupo.GroupId);
+                string nombreTutor = "Sin Asignar";
+
+                if (primerAlumnoDelGrupo != null)
+                {
+                    var tutoriaDelGrupo = tutorias.FirstOrDefault(t => t.StudentId == primerAlumnoDelGrupo.StudentId);
+                    if (tutoriaDelGrupo != null && tutoriaDelGrupo.Teacher != null)
+                    {
+                        var persona = tutoriaDelGrupo.Teacher.Person;
+                        nombreTutor = $"{persona.FirstName} {persona.LastNamePaternal}";
+                    }
+                }
+
+                listaAsignaciones.Add(new
+                {
+                    NombreGrupo = $"{grupo.GradeLevelId}{grupo.Name}",
+                    Tutor = nombreTutor
+                });
+            }
+            ViewBag.AsignacionesActuales = listaAsignaciones;
+
+            // --- LÓGICA 2: ESTATUS POR MAESTRO (NUEVO) ---
+            var listaEstatusMaestros = new List<dynamic>();
+            foreach (var maestro in maestros)
+            {
+                // Buscamos a todos los alumnos que tiene asignados este maestro
+                var alumnosDelMaestro = tutorias.Where(t => t.TeacherId == maestro.UserId).Select(t => t.StudentId).ToList();
+
+                string gruposTexto = "Sin Asignar";
+                bool estaAsignado = false;
+
+                if (alumnosDelMaestro.Any())
+                {
+                    var gruposIds = inscripciones.Where(e => alumnosDelMaestro.Contains(e.StudentId)).Select(e => e.GroupId).Distinct().ToList();
+                    var gruposAsignados = grupos.Where(g => gruposIds.Contains(g.GroupId)).Select(g => $"{g.GradeLevelId}{g.Name}").ToList();
+
+                    if (gruposAsignados.Any())
+                    {
+                        gruposTexto = string.Join(", ", gruposAsignados);
+                        estaAsignado = true;
+                    }
+                }
+
+                listaEstatusMaestros.Add(new
+                {
+                    Nombre = $"{maestro.Person.FirstName} {maestro.Person.LastNamePaternal}",
+                    Grupos = gruposTexto,
+                    EstaAsignado = estaAsignado
+                });
+            }
+            ViewBag.EstatusMaestros = listaEstatusMaestros.OrderByDescending(m => m.EstaAsignado).ThenBy(m => m.Nombre).ToList();
 
             return View("~/Areas/Tutorship/Views/AsignarTutores.cshtml");
         }
