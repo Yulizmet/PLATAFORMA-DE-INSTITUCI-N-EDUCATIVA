@@ -48,8 +48,8 @@ namespace SchoolManager.Areas.Tutorship.Controllers
 
         public async Task<IActionResult> EntrevistaInicial()
         {
-            if (LoggedRoleId != 1) return RedirectToAction(nameof(AccesoDenegado));
-            ViewBag.RoleId = LoggedRoleId;
+            // Validamos dinámicamente si es Alumno
+            if (!User.IsInRole("Student")) return RedirectToAction(nameof(AccesoDenegado));
 
             var usuario = await _context.Users
                 .Include(u => u.Person)

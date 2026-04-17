@@ -126,7 +126,6 @@ namespace SchoolManager.Areas.Tutorship.Controllers
 
             ViewBag.Grupos = grupos;
 
-            // 1. Obtenemos todas las tutorías y las inscripciones
             var tutorias = await _context.Tutorships
                 .Include(t => t.Teacher)
                 .ThenInclude(u => u.Person)
@@ -134,7 +133,6 @@ namespace SchoolManager.Areas.Tutorship.Controllers
 
             var inscripciones = await _context.grades_Enrollments.ToListAsync();
 
-            // --- LÓGICA 1: ASIGNACIONES POR GRUPO ---
             var listaAsignaciones = new List<dynamic>();
             foreach (var grupo in grupos)
             {
@@ -159,11 +157,9 @@ namespace SchoolManager.Areas.Tutorship.Controllers
             }
             ViewBag.AsignacionesActuales = listaAsignaciones;
 
-            // --- LÓGICA 2: ESTATUS POR MAESTRO (NUEVO) ---
             var listaEstatusMaestros = new List<dynamic>();
             foreach (var maestro in maestros)
             {
-                // Buscamos a todos los alumnos que tiene asignados este maestro
                 var alumnosDelMaestro = tutorias.Where(t => t.TeacherId == maestro.UserId).Select(t => t.StudentId).ToList();
 
                 string gruposTexto = "Sin Asignar";
