@@ -1,53 +1,53 @@
-# Project Setup
+# Configuración del proyecto
 
-This project is built with **.NET 8** and uses **Entity Framework Core** for database management.
+Este proyecto está desarrollado con **.NET 8** y utiliza **Entity Framework Core** para la gestión de la base de datos.
 
-## Getting Started
+## Primeros pasos
 
-Follow these steps to configure and run the project locally.
+Sigue los siguientes pasos para configurar y ejecutar el proyecto localmente.
 
-### 1. Clone the repository
+### 1. Clonar el repositorio
 
 ```bash
-git clone <REPOSITORY_URL>
-cd <PROJECT_FOLDER>
+git clone <URL_DEL_REPOSITORIO>
+cd <NOMBRE_DEL_PROYECTO>
 ```
 
-### 2. Configure the connection string
+### 2. Configurar la cadena de conexión
 
-Open the `appsettings.json` file and update the connection string to point to the SQL Server instance where you want the database to be created.
+Abre el archivo `appsettings.json` y actualiza la cadena de conexión para que apunte al servidor SQL donde deseas crear la base de datos.
 
-Example:
+Ejemplo:
 
 ```json
 {
   "ConnectionStrings": {
-    "DefaultConnection": "Server=YOUR_SERVER;Database=YOUR_DATABASE;User Id=YOUR_USER;Password=YOUR_PASSWORD;TrustServerCertificate=True;"
+    "DefaultConnection": "Server=TU_SERVIDOR;Database=TU_BASE_DE_DATOS;User Id=TU_USUARIO;Password=TU_PASSWORD;TrustServerCertificate=True;"
   }
 }
 ```
 
-### 3. Create the migration
+### 3. Crear la migración
 
-Open the **Package Manager Console** in Visual Studio and run:
+Abre la **Package Manager Console** en Visual Studio y ejecuta:
 
 ```powershell
 Add-Migration InitialCreate
 ```
 
-> If the initial migration already exists in the project, you can skip this step.
+> Si la migración inicial ya existe en el proyecto, este paso puede omitirse.
 
-### 4. Update the database
+### 4. Actualizar la base de datos
 
-Run the following command to apply the migrations and create the database:
+Ejecuta el siguiente comando para aplicar las migraciones y crear la base de datos:
 
 ```powershell
 Update-Database
 ```
 
-### 5. Seed initial roles
+### 5. Insertar roles iniciales
 
-After the database has been created, execute the following SQL script:
+Una vez creada la base de datos, ejecuta el siguiente script SQL:
 
 ```sql
 INSERT INTO users_role (Name, Description, CreatedDate, IsActive)
@@ -62,10 +62,10 @@ VALUES
     ('Teacher', 'Teacher role', GETDATE(), 1);
 ```
 
-## Quick Summary
+## Resumen rápido
 
-- Clone the repository
-- Update the connection string in `appsettings.json`
-- Run `Add-Migration InitialCreate`
-- Run `Update-Database`
-- Execute the SQL script to insert initial roles
+- Clonar el repositorio
+- Actualizar la cadena de conexión en `appsettings.json`
+- Ejecutar `Add-Migration InitialCreate`
+- Ejecutar `Update-Database`
+- Ejecutar el script SQL para insertar los roles iniciales
