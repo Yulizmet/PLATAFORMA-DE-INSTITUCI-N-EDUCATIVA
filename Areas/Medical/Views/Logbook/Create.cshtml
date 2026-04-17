@@ -45,7 +45,7 @@
                 <div class="col-md-4">
                     <div class="info-block">
                         <label class="fw-bold text-uppercase">Matrícula</label>
-                        <input id="matricula" class="form-control" placeholder="Escribe matrícula" required />
+                        <input id="matricula" class="form-control" type="text" inputmode="numeric" pattern="[0-9]*" oninput="this.value = this.value.replace(/[^0-9]/g, '')" placeholder="Escribe matrícula" required />
                     </div>
                 </div>
                 <div class="col-md-2 d-flex align-items-end">
