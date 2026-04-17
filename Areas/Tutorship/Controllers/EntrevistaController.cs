@@ -237,7 +237,7 @@ namespace SchoolManager.Areas.Tutorship.Controllers
                 return RedirectToAction(nameof(AccesoDenegado));
 
             ViewBag.FiltroActual = filtroEstatus;
-            ViewBag.RolActual = LoggedRoleName; 
+            ViewBag.RolActual = LoggedRoleName;
 
             int dbStudentRoleId = await GetDbRoleIdByNameAsync("Student");
 
@@ -338,7 +338,7 @@ namespace SchoolManager.Areas.Tutorship.Controllers
                 query = query.Where(x => x.Nombre.ToLower().Contains(searchValue) ||
                                          x.Matricula.ToLower().Contains(searchValue));
             }
-
+            //hola esto es un test
             int recordsTotal = await _context.Users.CountAsync(u => u.UserRoles.Any(ur => ur.RoleId == dbStudentRoleId));
             int recordsFiltered = await query.CountAsync();
 
