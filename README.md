@@ -9,8 +9,7 @@ Sigue los siguientes pasos para configurar y ejecutar el proyecto localmente.
 ### 1. Clonar el repositorio
 
 ```bash
-git clone <URL_DEL_REPOSITORIO>
-cd <NOMBRE_DEL_PROYECTO>
+git clone https://github.com/Yulizmet/PLATAFORMA-DE-INSTITUCI-N-EDUCATIVA.git
 ```
 
 ### 2. Configurar la cadena de conexión
@@ -35,7 +34,6 @@ Abre la **Package Manager Console** en Visual Studio y ejecuta:
 Add-Migration InitialCreate
 ```
 
-> Si la migración inicial ya existe en el proyecto, este paso puede omitirse.
 
 ### 4. Actualizar la base de datos
 
@@ -62,23 +60,7 @@ VALUES
     ('Teacher', 'Teacher role', GETDATE(), 1);
 ```
 
-### 6. Actualizar el proyecto desde Git
-
-Cuando existan cambios nuevos en el repositorio, descarga la última versión con el siguiente comando:
-
-```bash
-git pull
-```
-
-Después de actualizar el proyecto, revisa si existen cambios en la estructura de la base de datos. Si se agregaron nuevas migraciones, ejecuta:
-
-```powershell
-Update-Database
-```
-
-Si también hay cambios en la configuración, valida nuevamente el archivo `appsettings.json` para confirmar que la cadena de conexión siga apuntando al servidor correcto.
-
-### 7. Publicar el proyecto
+### 6. Publicar el proyecto
 
 Una vez configurado y probado el sistema, publica el proyecto desde Visual Studio.
 
@@ -93,7 +75,7 @@ Por ejemplo:
 - **Folder**, para generar los archivos compilados en una carpeta
 - **IIS**, **Azure** o el método de despliegue que se utilice en tu entorno
 
-### 8. Desplegar en IIS o en otro servicio de hosting
+### 7. Desplegar en IIS o en otro servicio de hosting
 
 Publica los archivos generados en un servidor **IIS** o en cualquier otro servicio de hosting que tenga acceso a la base de datos configurada.
 
