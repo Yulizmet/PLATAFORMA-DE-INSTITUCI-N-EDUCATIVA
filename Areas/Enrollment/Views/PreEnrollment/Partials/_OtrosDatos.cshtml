@@ -48,10 +48,14 @@
             </div>
         </div>
 
-        <!-- Detalles de beca (solo visible cuando la respuesta es "Sí") -->
+        <!-- Detalles de beca -->
         <div class="col-12 d-none" id="detallesBeca">
             <label class="form-label">¿Qué tipo de beca?</label>
-            <input asp-for="Otros.tipoBeca" class="form-control" placeholder="Escribe el tipo de beca" />
+            <input asp-for="Otros.tipoBeca"
+                   class="form-control"
+                   placeholder="Escribe el tipo de beca"
+                   pattern="[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+"
+                   oninput="this.value = this.value.replace(/[^A-Za-zÁÉÍÓÚáéíóúÑñ\s]/g, '')" />
         </div>
 
         <!-- COMUNIDAD INDÍGENA -->
@@ -59,20 +63,33 @@
             <label class="form-label fw-semibold d-block">¿Proviene de alguna comunidad indígena?</label>
             <div class="d-flex flex-wrap gap-3">
                 <div class="form-check">
-                    <input asp-for="Otros.comu_indi" class="form-check-input" type="radio" value="false" id="comuNo" checked />
+                    <input asp-for="Otros.comu_indi"
+                           class="form-check-input"
+                           type="radio"
+                           value="false"
+                           id="comuNo"
+                           checked />
                     <label class="form-check-label" for="comuNo">No</label>
                 </div>
                 <div class="form-check">
-                    <input asp-for="Otros.comu_indi" class="form-check-input" type="radio" value="true" id="comuSi" />
+                    <input asp-for="Otros.comu_indi"
+                           class="form-check-input"
+                           type="radio"
+                           value="true"
+                           id="comuSi" />
                     <label class="form-check-label" for="comuSi">Sí</label>
                 </div>
             </div>
         </div>
 
-        <!-- Detalles de comunidad indígena (solo visible cuando la respuesta es "Sí") -->
+        <!-- Detalles de comunidad indígena -->
         <div class="col-12 d-none" id="detallesComuIndi">
             <label class="form-label">¿De qué comunidad proviene?</label>
-            <input asp-for="Otros.nombreComunidad" class="form-control" placeholder="Escribe el nombre de la comunidad" />
+            <input asp-for="Otros.nombreComunidad"
+                   class="form-control"
+                   placeholder="Escribe el nombre de la comunidad"
+                   pattern="[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+"
+                   oninput="this.value = this.value.replace(/[^A-Za-zÁÉÍÓÚáéíóúÑñ\s]/g, '')" />
         </div>
 
         <!-- LENGUA INDÍGENA -->
@@ -80,20 +97,33 @@
             <label class="form-label fw-semibold d-block">¿Habla lengua indígena?</label>
             <div class="d-flex flex-wrap gap-3">
                 <div class="form-check">
-                    <input asp-for="Otros.lengu_indi" class="form-check-input" type="radio" value="false" id="lenguaNo" checked />
+                    <input asp-for="Otros.lengu_indi"
+                           class="form-check-input"
+                           type="radio"
+                           value="false"
+                           id="lenguaNo"
+                           checked />
                     <label class="form-check-label" for="lenguaNo">No</label>
                 </div>
                 <div class="form-check">
-                    <input asp-for="Otros.lengu_indi" class="form-check-input" type="radio" value="true" id="lenguaSi" />
+                    <input asp-for="Otros.lengu_indi"
+                           class="form-check-input"
+                           type="radio"
+                           value="true"
+                           id="lenguaSi" />
                     <label class="form-check-label" for="lenguaSi">Sí</label>
                 </div>
             </div>
         </div>
 
-        <!-- Detalles de lengua indígena (solo visible cuando la respuesta es "Sí") -->
+        <!-- Detalles de lengua indígena -->
         <div class="col-12 d-none" id="detallesLenguaIndi">
             <label class="form-label">¿Qué lengua indígena habla?</label>
-            <input asp-for="Otros.nombreLenguaIndi" class="form-control" placeholder="Escribe la lengua indígena" />
+            <input asp-for="Otros.nombreLenguaIndi"
+                   class="form-control"
+                   placeholder="Escribe la lengua indígena"
+                   pattern="[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+"
+                   oninput="this.value = this.value.replace(/[^A-Za-zÁÉÍÓÚáéíóúÑñ\s]/g, '')" />
         </div>
 
         <!-- DISCAPACIDAD -->
@@ -101,20 +131,33 @@
             <label class="form-label fw-semibold d-block">¿Padece alguna discapacidad?</label>
             <div class="d-flex flex-wrap gap-3">
                 <div class="form-check">
-                    <input asp-for="Otros.incapa" class="form-check-input" type="radio" value="false" id="discapacidadNo" checked />
+                    <input asp-for="Otros.incapa"
+                           class="form-check-input"
+                           type="radio"
+                           value="false"
+                           id="discapacidadNo"
+                           checked />
                     <label class="form-check-label" for="discapacidadNo">No</label>
                 </div>
                 <div class="form-check">
-                    <input asp-for="Otros.incapa" class="form-check-input" type="radio" value="true" id="discapacidadSi" />
+                    <input asp-for="Otros.incapa"
+                           class="form-check-input"
+                           type="radio"
+                           value="true"
+                           id="discapacidadSi" />
                     <label class="form-check-label" for="discapacidadSi">Sí</label>
                 </div>
             </div>
         </div>
 
-        <!-- Detalles de discapacidad (solo visible cuando la respuesta es "Sí") -->
+        <!-- Detalles de discapacidad -->
         <div class="col-12 d-none" id="detallesDiscapacidad">
             <label class="form-label">¿Qué discapacidad tiene?</label>
-            <input asp-for="Otros.tipoDiscapacidad" class="form-control" placeholder="Escribe el tipo de discapacidad" />
+            <input asp-for="Otros.tipoDiscapacidad"
+                   class="form-control"
+                   placeholder="Escribe el tipo de discapacidad"
+                   pattern="[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+"
+                   oninput="this.value = this.value.replace(/[^A-Za-zÁÉÍÓÚáéíóúÑñ\s]/g, '')" />
         </div>
 
         <!-- ENFERMEDAD -->
@@ -122,20 +165,33 @@
             <label class="form-label fw-semibold d-block">¿Padece alguna enfermedad?</label>
             <div class="d-flex flex-wrap gap-3">
                 <div class="form-check">
-                    <input asp-for="Otros.disease" class="form-check-input" type="radio" value="false" id="enfermedadNo" checked />
+                    <input asp-for="Otros.disease"
+                           class="form-check-input"
+                           type="radio"
+                           value="false"
+                           id="enfermedadNo"
+                           checked />
                     <label class="form-check-label" for="enfermedadNo">No</label>
                 </div>
                 <div class="form-check">
-                    <input asp-for="Otros.disease" class="form-check-input" type="radio" value="true" id="enfermedadSi" />
+                    <input asp-for="Otros.disease"
+                           class="form-check-input"
+                           type="radio"
+                           value="true"
+                           id="enfermedadSi" />
                     <label class="form-check-label" for="enfermedadSi">Sí</label>
                 </div>
             </div>
         </div>
 
-        <!-- Detalles de enfermedad (solo visible cuando la respuesta es "Sí") -->
+        <!-- Detalles de enfermedad -->
         <div class="col-12 d-none" id="detallesEnfermedad">
             <label class="form-label">¿Qué enfermedad padece?</label>
-            <input asp-for="Otros.tipoEnfermedad" class="form-control" placeholder="Escribe el tipo de enfermedad" />
+            <input asp-for="Otros.tipoEnfermedad"
+                   class="form-control"
+                   placeholder="Escribe el tipo de enfermedad"
+                   pattern="[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+"
+                   oninput="this.value = this.value.replace(/[^A-Za-zÁÉÍÓÚáéíóúÑñ\s]/g, '')" />
         </div>
 
         <!-- ¿CÓMO SE ENTERÓ? -->
@@ -161,27 +217,22 @@
 
 <script>
     document.addEventListener("DOMContentLoaded", function () {
-        // Beca
         const becaSi = document.getElementById("becaSi");
         const becaNo = document.getElementById("becaNo");
         const detallesBeca = document.getElementById("detallesBeca");
 
-        // Comunidad indígena
         const comuSi = document.getElementById("comuSi");
         const comuNo = document.getElementById("comuNo");
         const detallesComuIndi = document.getElementById("detallesComuIndi");
 
-        // Lengua indígena
         const lenguaSi = document.getElementById("lenguaSi");
         const lenguaNo = document.getElementById("lenguaNo");
         const detallesLenguaIndi = document.getElementById("detallesLenguaIndi");
 
-        // Discapacidad
         const discapacidadSi = document.getElementById("discapacidadSi");
         const discapacidadNo = document.getElementById("discapacidadNo");
         const detallesDiscapacidad = document.getElementById("detallesDiscapacidad");
 
-        // Enfermedad
         const enfermedadSi = document.getElementById("enfermedadSi");
         const enfermedadNo = document.getElementById("enfermedadNo");
         const detallesEnfermedad = document.getElementById("detallesEnfermedad");
@@ -198,35 +249,42 @@
             toggleDetails(becaSi, detallesBeca);
         });
         becaNo.addEventListener("change", function () {
-            toggleDetails(becaNo, detallesBeca);
+            toggleDetails(becaSi, detallesBeca);
         });
 
         comuSi.addEventListener("change", function () {
             toggleDetails(comuSi, detallesComuIndi);
         });
         comuNo.addEventListener("change", function () {
-            toggleDetails(comuNo, detallesComuIndi);
+            toggleDetails(comuSi, detallesComuIndi);
         });
 
         lenguaSi.addEventListener("change", function () {
             toggleDetails(lenguaSi, detallesLenguaIndi);
         });
         lenguaNo.addEventListener("change", function () {
-            toggleDetails(lenguaNo, detallesLenguaIndi);
+            toggleDetails(lenguaSi, detallesLenguaIndi);
         });
 
         discapacidadSi.addEventListener("change", function () {
             toggleDetails(discapacidadSi, detallesDiscapacidad);
         });
         discapacidadNo.addEventListener("change", function () {
-            toggleDetails(discapacidadNo, detallesDiscapacidad);
+            toggleDetails(discapacidadSi, detallesDiscapacidad);
         });
 
         enfermedadSi.addEventListener("change", function () {
             toggleDetails(enfermedadSi, detallesEnfermedad);
         });
         enfermedadNo.addEventListener("change", function () {
-            toggleDetails(enfermedadNo, detallesEnfermedad);
+            toggleDetails(enfermedadSi, detallesEnfermedad);
         });
+
+        // Mostrar al cargar si ya viene marcado "Sí"
+        toggleDetails(becaSi, detallesBeca);
+        toggleDetails(comuSi, detallesComuIndi);
+        toggleDetails(lenguaSi, detallesLenguaIndi);
+        toggleDetails(discapacidadSi, detallesDiscapacidad);
+        toggleDetails(enfermedadSi, detallesEnfermedad);
     });
 </script>
