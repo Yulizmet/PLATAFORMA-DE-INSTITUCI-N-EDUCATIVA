@@ -44,8 +44,7 @@ namespace SchoolManager.Areas.Tutorship.Controllers
 
         public async Task<IActionResult> EntrevistaInicial()
         {
-            if (LoggedRoleId != 1) return RedirectToAction(nameof(AccesoDenegado));
-            ViewBag.RoleId = LoggedRoleId;
+            if (!User.IsInRole("Student")) return RedirectToAction(nameof(AccesoDenegado));
 
             ViewBag.RoleName = LoggedRoleName;
 
