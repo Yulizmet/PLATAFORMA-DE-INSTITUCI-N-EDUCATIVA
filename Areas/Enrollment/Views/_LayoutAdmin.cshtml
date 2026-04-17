@@ -23,11 +23,53 @@
     <div class="wrapper">
         <nav id="sidebar" class="sidebar js-sidebar">
             <div class="sidebar-content js-simplebar">
-                <a class="sidebar-brand" asp-area="Enrollment" asp-controller="PreEnrollment" asp-action="Index">
-                    <span class="align-middle ms-3">
-                        <img src="~/enrollment/admin/src/img/photos/icon-icons.png" alt="Logo" height="80" class="d-inline-block align-text-top" />
-                    </span>
+                <a class="sidebar-brand">
+                    <img src="~/enrollment/admin/src/img/photos/icon-icons.png" alt="Logo" />
                 </a>
+
+                <style>
+                    .sidebar-brand {
+                        display: flex;
+                        justify-content: center;
+                        align-items: center;
+                        height: 180px; /* 🔥 espacio grande arriba */
+                    }
+
+                        .sidebar-brand img {
+                            width: 120px; /* 🔥 tamaño del logo */
+                            height: auto;
+                            display: block;
+                        }
+
+                    /* LINKS */
+                    .sidebar-link {
+                        display: flex;
+                        align-items: center;
+                        gap: 15px;
+                        padding: 16px 22px; /* más alto y ancho */
+                        font-size: 16px; /* texto más grande */
+                    }
+
+                        /* ICONOS */
+                        .sidebar-link svg {
+                            width: 22px; /* más grande */
+                            height: 22px;
+                            min-width: 22px;
+                            min-height: 22px;
+                            stroke-width: 2.2;
+                        }
+
+                        /* TEXTO */
+                        .sidebar-link span {
+                            line-height: 1;
+                        }
+
+                    /* ITEM ACTIVO */
+                    .sidebar-item.active .sidebar-link {
+                        background-color: rgba(255,255,255,0.1);
+                        border-radius: 8px;
+                    }
+                </style>
 
                 <ul class="sidebar-nav">
                     <li class="sidebar-header"></li>
