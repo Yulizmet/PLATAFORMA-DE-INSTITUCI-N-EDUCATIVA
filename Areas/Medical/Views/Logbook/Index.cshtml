@@ -15,16 +15,13 @@
         <div class="header-buttons">
             <div class="buttons-left">
                 @if (
-                    !User.IsInRole("Coordinator") &&
-                    (
-                        User.IsInRole("Master") ||
-                        User.IsInRole("Head Nurse") ||
-                        User.IsInRole("Nurse")
-                    )
+                    User.IsInRole("Master") ||
+                    User.IsInRole("Head Nurse") ||
+                    (permisos != null && permisos.Agregar)
                 )
                 {
                     <a asp-action="Create" class="btn-header">
-                        <i class="bi bi-plus-circle"></i> Crear Bitácora
+                        <i class="bi bi-plus-circle"></i> Crear Registro
                     </a>
                 }
 
@@ -68,7 +65,11 @@
                             <td>@item.Matricula</td>
                             <td>@item.NombreCompleto</td>
                             <td>@item.Motivo</td>
-                            <td>@item.Estado</td>
+                            <td>
+                                <span class="estado-badge estado-@item.Estado.ToLower().Replace("í", "i").Replace("ó", "o")">
+                                    @item.Estado
+                                </span>
+                            </td>
                             <td><strong>@item.Folio</strong></td>
                             <td>@item.Fecha.ToString("dd/MM/yyyy hh:mm tt")</td>
                             <td>
@@ -93,24 +94,26 @@
                                         User.IsInRole("Head Nurse") ||
                                         (permisos != null && permisos.Modificar)
                                     )
-                                    {
-                                        <a asp-action="Edit" asp-route-id="@item.Id"
-                                           class="btn btn-sm"
-                                           style="background:#ffde59;color:white;border:none;">
-                                            <i class="bi bi-pencil-square"></i>
-                                        </a>
-                                    }
+                                        @if (permisos != null && permisos.Modificar)
+                                        {
+                                            <a asp-action="Edit" asp-route-id="@item.Id"
+                                                   class="btn btn-sm"
+                                                   style="background:#ffde59;color:white;border:none;"
+                                                   title="Editar">
+                                                <i class="bi bi-pencil-fill"></i>
+                                            </a>
+                                        }
 
                                     @if (
                                         User.IsInRole("Master") ||
                                         User.IsInRole("Head Nurse") ||
-                                        (User.IsInRole("Nurse") && ViewBag.Permisos?.Borrar == true)
+                                        (permisos != null && permisos.Borrar)
                                     )
                                     {
                                         <a asp-action="Delete" asp-route-id="@item.Id"
-                                           class="btn btn-sm"
-                                           style="background:#ff3131;color:white;border:none;"
-                                           title="Eliminar">
+                                               class="btn btn-sm"
+                                               style="background:#ff3131;color:white;border:none;"
+                                               title="Eliminar">
                                             <i class="bi bi-trash-fill"></i>
                                         </a>
                                     }

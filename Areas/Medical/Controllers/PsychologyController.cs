@@ -58,14 +58,15 @@ namespace SchoolManager.Areas.Medical.Controllers
 
             if (User.IsInRole("Psychologist"))
             {
-                if (permisos != null && !permisos.Ver)
+                if (permisos == null || !permisos.Ver)
                     return View("AccesoDenegado");
             }
 
             var lista = await (
                 from p in _context.MedicalPsychology
                 join pre in _context.PreenrollmentGenerals on p.PreenrollmentId equals pre.IdData
-                join per in _context.Persons on pre.UserId equals per.PersonId
+                join u in _context.Users on pre.UserId equals u.UserId
+                join per in _context.Persons on u.PersonId equals per.PersonId
                 orderby p.AppointmentDatetime descending
                 select new PsychologyListVM
                 {
@@ -90,7 +91,7 @@ namespace SchoolManager.Areas.Medical.Controllers
 
             if (User.IsInRole("Psychologist"))
             {
-                if (permisos != null && !permisos.Agregar)
+                if (permisos == null || !permisos.Agregar)
                     return View("AccesoDenegado");
             }
 
@@ -106,7 +107,7 @@ namespace SchoolManager.Areas.Medical.Controllers
 
             if (User.IsInRole("Psychologist"))
             {
-                if (permisos != null && !permisos.Agregar)
+                if (permisos == null || !permisos.Agregar)
                     return View("AccesoDenegado");
             }
 
@@ -146,7 +147,8 @@ namespace SchoolManager.Areas.Medical.Controllers
             var data = await (
                 from p in _context.MedicalPsychology
                 join pre in _context.PreenrollmentGenerals on p.PreenrollmentId equals pre.IdData
-                join per in _context.Persons on pre.UserId equals per.PersonId
+                join u in _context.Users on pre.UserId equals u.UserId
+                join per in _context.Persons on u.PersonId equals per.PersonId
                 where p.Id == id
                 select new medical_pychology
                 {
@@ -175,7 +177,7 @@ namespace SchoolManager.Areas.Medical.Controllers
 
             if (User.IsInRole("Psychologist"))
             {
-                if (permisos != null && !permisos.Modificar)
+                if (permisos == null || !permisos.Modificar)
                     return View("AccesoDenegado");
             }
 
@@ -196,7 +198,7 @@ namespace SchoolManager.Areas.Medical.Controllers
 
             if (User.IsInRole("Psychologist"))
             {
-                if (permisos != null && !permisos.Modificar)
+                if (permisos == null || !permisos.Modificar)
                     return View("AccesoDenegado");
             }
 
@@ -234,14 +236,15 @@ namespace SchoolManager.Areas.Medical.Controllers
 
             if (User.IsInRole("Psychologist"))
             {
-                if (permisos != null && !permisos.Borrar)
+                if (permisos == null || !permisos.Borrar)
                     return View("AccesoDenegado");
             }
 
             var data = await (
                 from p in _context.MedicalPsychology
                 join pre in _context.PreenrollmentGenerals on p.PreenrollmentId equals pre.IdData
-                join per in _context.Persons on pre.UserId equals per.PersonId
+                join u in _context.Users on pre.UserId equals u.UserId
+                join per in _context.Persons on u.PersonId equals per.PersonId
                 where p.Id == id
                 select new medical_pychology
                 {
@@ -271,7 +274,7 @@ namespace SchoolManager.Areas.Medical.Controllers
 
             if (User.IsInRole("Psychologist"))
             {
-                if (permisos != null && !permisos.Borrar)
+                if (permisos == null || !permisos.Borrar)
                     return View("AccesoDenegado");
             }
 
@@ -295,9 +298,16 @@ namespace SchoolManager.Areas.Medical.Controllers
         {
             var data = await (
                 from pre in _context.PreenrollmentGenerals
-                join per in _context.Persons on pre.UserId equals per.PersonId
+                join u in _context.Users on pre.UserId equals u.UserId
+                join per in _context.Persons on u.PersonId equals per.PersonId
                 where pre.Matricula == matricula
-                select new { preId = pre.IdData, nombre = per.FirstName, paterno = per.LastNamePaternal, materno = per.LastNameMaternal }
+                select new
+                {
+                    preId = pre.IdData,
+                    nombre = per.FirstName,
+                    paterno = per.LastNamePaternal,
+                    materno = per.LastNameMaternal
+                }
             ).FirstOrDefaultAsync();
 
             return Json(data);
@@ -308,7 +318,8 @@ namespace SchoolManager.Areas.Medical.Controllers
         {
             var query = from p in _context.MedicalPsychology
                         join pre in _context.PreenrollmentGenerals on p.PreenrollmentId equals pre.IdData
-                        join per in _context.Persons on pre.UserId equals per.PersonId
+                        join u in _context.Users on pre.UserId equals u.UserId
+                        join per in _context.Persons on u.PersonId equals per.PersonId
                         select new
                         {
                             p.Fol,
@@ -340,11 +351,7 @@ namespace SchoolManager.Areas.Medical.Controllers
 
             var porAsistencia = lista
                 .GroupBy(x => x.AttendanceStatus)
-                .Select(g => new
-                {
-                    asistencia = g.Key,
-                    cantidad = g.Count()
-                })
+                .Select(g => new { asistencia = g.Key, cantidad = g.Count() })
                 .ToList();
 
             return Json(new

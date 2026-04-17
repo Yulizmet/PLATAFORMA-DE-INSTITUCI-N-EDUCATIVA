@@ -48,22 +48,24 @@
                 <div class="info-block">
                     <label class="fw-bold text-uppercase">Asistencia</label>
                     <div class="mt-2">
-                        @if (Model.AttendanceStatus == "Asistió")
-                        {
-                            <span class="badge asistencia-asistio d-inline-block px-3 py-2 fs-6">Asistió</span>
+                        @{
+                            var estado = Model.AttendanceStatus?.Trim().ToLower();
+
+                            estado = estado switch
+                            {
+                                "asistió" => "asistio",
+                                "asistio" => "asistio",
+                                "tarde" => "tarde",
+                                "justificado" => "justificado",
+                                "no asistió" => "noasistio",
+                                "no asistio" => "noasistio",
+                                _ => "default"
+                            };
                         }
-                        else if (Model.AttendanceStatus == "No asistió")
-                        {
-                            <span class="badge asistencia-no d-inline-block px-3 py-2 fs-6">No asistió</span>
-                        }
-                        else if (Model.AttendanceStatus == "Justificado")
-                        {
-                            <span class="badge asistencia-justificado d-inline-block px-3 py-2 fs-6">Justificado</span>
-                        }
-                        else
-                        {
-                            <span class="badge bg-secondary d-inline-block px-3 py-2 fs-6">@Model.AttendanceStatus</span>
-                        }
+
+                        <span class="estado-badge estado-@estado">
+                            @Model.AttendanceStatus
+                        </span>
                     </div>
                 </div>
             </div>

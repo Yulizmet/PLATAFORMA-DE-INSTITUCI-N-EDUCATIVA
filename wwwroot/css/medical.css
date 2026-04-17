@@ -405,22 +405,22 @@ a {
     background-color: #6c757d;
 }
 
-/* =========================
-   ASISTENCIA
-========================= */
-.asistencia-asistio {
-    background-color: #7ed957 !important;
+.estado-asistio {
+    background-color: #7ed957;
     color: #000;
 }
 
-.asistencia-no {
-    background-color: #ff3131 !important;
-    color: #fff;
+.estado-noasistio {
+    background-color: #ff3131;
 }
 
-.asistencia-justificado {
-    background-color: #ffde59 !important;
+.estado-justificado {
+    background-color: #ffde59;
     color: #000;
+}
+
+.estado-tarde {
+    background-color: #38b6ff;
 }
 
 /* =========================

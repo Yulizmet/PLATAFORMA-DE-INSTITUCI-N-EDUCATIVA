@@ -64,22 +64,24 @@
                             <td>@item.Matricula</td>
                             <td>@item.NombreCompleto</td>
                             <td>
-                                @if (item.Asistencia == "Asistió")
-                                {
-                                    <span class="badge asistencia-asistio">Asistió</span>
+                                @{
+                                    var estado = item.Asistencia?.Trim().ToLower();
+
+                                    estado = estado switch
+                                    {
+                                        "asistió" => "asistio",
+                                        "asistio" => "asistio",
+                                        "tarde" => "tarde",
+                                        "justificado" => "justificado",
+                                        "no asistió" => "noasistio",
+                                        "no asistio" => "noasistio",
+                                        _ => "default"
+                                    };
                                 }
-                                else if (item.Asistencia == "No asistió")
-                                {
-                                    <span class="badge asistencia-no">No asistió</span>
-                                }
-                                else if (item.Asistencia == "Justificado")
-                                {
-                                    <span class="badge asistencia-justificado">Justificado</span>
-                                }
-                                else
-                                {
-                                    <span class="badge bg-secondary">@item.Asistencia</span>
-                                }
+
+                                <span class="estado-badge estado-@estado">
+                                    @item.Asistencia
+                                </span>
                             </td>
                             <td data-sort="@item.Fecha.ToString("yyyyMMddHHmmss")">
                                 @item.Fecha.ToString("dd/MM/yyyy hh:mm tt")
@@ -100,7 +102,7 @@
                                         @if (
                                             User.IsInRole("Master") ||
                                             User.IsInRole("Head of Psychology") ||
-                                            User.IsInRole("Psychologist")
+                                            (permisos != null && permisos.Modificar)
                                         )
                                         {
                                             <a asp-action="Edit" asp-route-id="@item.Id"
@@ -115,8 +117,8 @@
                                         @if (
                                             User.IsInRole("Master") ||
                                             User.IsInRole("Head of Psychology") ||
-                                            User.IsInRole("Psychologist")
-                                        )
+                                            (permisos != null && permisos.Borrar)
+                                        )   
                                         {
                                             <a asp-action="Delete" asp-route-id="@item.Id"
                                                class="btn btn-sm"

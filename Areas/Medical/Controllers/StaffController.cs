@@ -228,21 +228,22 @@ namespace SchoolManager.Areas.Medical.Controllers
             staff.RoleId = model.RoleId;
             staff.Shift = model.Shift;
 
-            var permiso = await _context.MedicalPermissions.FirstOrDefaultAsync(p => p.StaffId == model.Id);
-            if (model.RoleId == 20 || model.RoleId == 21 || model.RoleId == 22 || model.RoleId == 6)
+            var permiso = await _context.MedicalPermissions
+                .FirstOrDefaultAsync(p => p.StaffId == model.Id);
+
+            if (permiso == null)
             {
-                permiso.Ver = true;
-                permiso.Agregar = true;
-                permiso.Modificar = true;
-                permiso.Borrar = true;
+                permiso = new medical_permissions
+                {
+                    StaffId = model.Id
+                };
+                _context.MedicalPermissions.Add(permiso);
             }
-            else
-            {
-                permiso.Ver = model.Ver;
-                permiso.Agregar = model.Agregar;
-                permiso.Modificar = model.Modificar;
-                permiso.Borrar = model.Borrar;
-            }
+
+            permiso.Ver = model.Ver;
+            permiso.Agregar = model.Agregar;
+            permiso.Modificar = model.Modificar;
+            permiso.Borrar = model.Borrar;
 
             await _context.SaveChangesAsync();
 

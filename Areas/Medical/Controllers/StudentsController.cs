@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SchoolManager.Data;
 using SchoolManager.Models;
-using SchoolManager.ViewModels; // Asegúrate de tener este namespace para las VM
+using SchoolManager.ViewModels; 
 
 #nullable disable
 
@@ -26,7 +26,8 @@ namespace SchoolManager.Areas.Medical.Controllers
             var alumnos = await (
                 from m in _context.MedicalStudents
                 join pre in _context.PreenrollmentGenerals on m.PreenrollmentId equals pre.IdData
-                join per in _context.Persons on pre.UserId equals per.PersonId
+                join u in _context.Users on pre.UserId equals u.UserId
+                join per in _context.Persons on u.PersonId equals per.PersonId
                 select new StudentListVM
                 {
                     Id = m.Id,
@@ -45,7 +46,8 @@ namespace SchoolManager.Areas.Medical.Controllers
             var alumno = await (
                 from m in _context.MedicalStudents
                 join pre in _context.PreenrollmentGenerals on m.PreenrollmentId equals pre.IdData
-                join per in _context.Persons on pre.UserId equals per.PersonId
+                join u in _context.Users on pre.UserId equals u.UserId
+                join per in _context.Persons on u.PersonId equals per.PersonId
                 where m.Id == id
                 select new StudentDetailVM
                 {
@@ -133,7 +135,8 @@ namespace SchoolManager.Areas.Medical.Controllers
             var data = await (
                 from s in _context.MedicalStudents
                 join pre in _context.PreenrollmentGenerals on s.PreenrollmentId equals pre.IdData
-                join per in _context.Persons on pre.UserId equals per.PersonId
+                join u in _context.Users on pre.UserId equals u.UserId
+                join per in _context.Persons on u.PersonId equals per.PersonId
                 where s.Id == id
                 select new StudentDetailVM
                 {
@@ -173,7 +176,8 @@ namespace SchoolManager.Areas.Medical.Controllers
         {
             var data = await (
                 from pre in _context.PreenrollmentGenerals
-                join per in _context.Persons on pre.UserId equals per.PersonId
+                join u in _context.Users on pre.UserId equals u.UserId
+                join per in _context.Persons on u.PersonId equals per.PersonId
                 where pre.Matricula == matricula
                 select new
                 {

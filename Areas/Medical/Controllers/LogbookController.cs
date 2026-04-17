@@ -47,9 +47,9 @@ namespace SchoolManager.Areas.Medical.Controllers
             var permisos = await ObtenerPermisos();
             ViewBag.Permisos = permisos;
 
-            if (User.IsInRole("Nurse") || User.IsInRole("Psychologist"))
+            if (User.IsInRole("Nurse"))
             {
-                if (permisos == null || !permisos.Ver)
+                if (permisos == null || !permisos.Agregar)
                     return View("AccesoDenegado");
             }
 
@@ -59,7 +59,8 @@ namespace SchoolManager.Areas.Medical.Controllers
             var query = from b in _context.MedicalLogbooks
                         join a in _context.MedicalStudents on b.IdAlumno equals a.Id
                         join pre in _context.PreenrollmentGenerals on a.PreenrollmentId equals pre.IdData
-                        join per in _context.Persons on pre.UserId equals per.PersonId
+                        join u in _context.Users on pre.UserId equals u.UserId
+                        join per in _context.Persons on u.PersonId equals per.PersonId
                         select new LogBookListVM
                         {
                             Id = b.Id,
@@ -88,9 +89,9 @@ namespace SchoolManager.Areas.Medical.Controllers
         {
             var permisos = await ObtenerPermisos();
 
-            if (User.IsInRole("Nurse") || User.IsInRole("Psychologist"))
+            if (User.IsInRole("Nurse"))
             {
-                if (permisos != null && !permisos.Agregar)
+                if (permisos == null || !permisos.Agregar)
                     return View("AccesoDenegado");
             }
 
@@ -104,9 +105,9 @@ namespace SchoolManager.Areas.Medical.Controllers
         {
             var permisos = await ObtenerPermisos();
 
-            if (User.IsInRole("Nurse") || User.IsInRole("Psychologist"))
+            if (User.IsInRole("Nurse"))
             {
-                if (permisos != null && !permisos.Agregar)
+                if (permisos == null || !permisos.Agregar)
                     return View("AccesoDenegado");
             }
 
@@ -143,9 +144,9 @@ namespace SchoolManager.Areas.Medical.Controllers
             var permisos = await ObtenerPermisos();
             ViewBag.Permisos = permisos;
 
-            if (User.IsInRole("Nurse") || User.IsInRole("Psychologist"))
+            if (User.IsInRole("Nurse"))
             {
-                if (permisos == null || !permisos.Ver)
+                if (permisos == null || !permisos.Agregar)
                     return View("AccesoDenegado");
             }
 
@@ -153,7 +154,8 @@ namespace SchoolManager.Areas.Medical.Controllers
                 from b in _context.MedicalLogbooks
                 join a in _context.MedicalStudents on b.IdAlumno equals a.Id
                 join pre in _context.PreenrollmentGenerals on a.PreenrollmentId equals pre.IdData
-                join per in _context.Persons on pre.UserId equals per.PersonId
+                join u in _context.Users on pre.UserId equals u.UserId
+                join per in _context.Persons on u.PersonId equals per.PersonId
                 where b.Id == id
                 select new medical_logbook
                 {
@@ -171,7 +173,6 @@ namespace SchoolManager.Areas.Medical.Controllers
             ).FirstOrDefaultAsync();
 
             if (bitacora == null) return NotFound();
-
             return View(bitacora);
         }
 
@@ -183,9 +184,9 @@ namespace SchoolManager.Areas.Medical.Controllers
             if (User.IsInRole("Coordinator"))
                 return View("AccesoDenegado");
 
-            if (User.IsInRole("Nurse") || User.IsInRole("Psychologist"))
+            if (User.IsInRole("Nurse"))
             {
-                if (permisos == null || !permisos.Modificar)
+                if (permisos == null || !permisos.Agregar)
                     return View("AccesoDenegado");
             }
 
@@ -205,9 +206,9 @@ namespace SchoolManager.Areas.Medical.Controllers
             if (User.IsInRole("Coordinator"))
                 return View("AccesoDenegado");
 
-            if (User.IsInRole("Nurse") || User.IsInRole("Psychologist"))
+            if (User.IsInRole("Nurse"))
             {
-                if (permisos == null || !permisos.Modificar)
+                if (permisos == null || !permisos.Agregar)
                     return View("AccesoDenegado");
             }
 
@@ -229,7 +230,6 @@ namespace SchoolManager.Areas.Medical.Controllers
         {
             var permisos = await ObtenerPermisos();
 
-            // Nurse necesita permiso
             if (User.IsInRole("Nurse"))
             {
                 if (permisos == null || !permisos.Borrar)
@@ -240,7 +240,8 @@ namespace SchoolManager.Areas.Medical.Controllers
                 from b in _context.MedicalLogbooks
                 join a in _context.MedicalStudents on b.IdAlumno equals a.Id
                 join pre in _context.PreenrollmentGenerals on a.PreenrollmentId equals pre.IdData
-                join per in _context.Persons on pre.UserId equals per.PersonId
+                join u in _context.Users on pre.UserId equals u.UserId
+                join per in _context.Persons on u.PersonId equals per.PersonId
                 where b.Id == id
                 select new medical_logbook
                 {
@@ -252,14 +253,12 @@ namespace SchoolManager.Areas.Medical.Controllers
                     Observaciones = b.Observaciones,
                     Tratamiento = b.Tratamiento,
                     SignosVitales = b.SignosVitales,
-
                     MatriculaTemp = pre.Matricula,
                     NombreCompletoTemp = per.FirstName + " " + per.LastNamePaternal + " " + per.LastNameMaternal
                 }
             ).FirstOrDefaultAsync();
 
             if (bitacora == null) return NotFound();
-
             return View(bitacora);
         }
 
@@ -295,7 +294,8 @@ namespace SchoolManager.Areas.Medical.Controllers
             var data = await (
                 from alumno in _context.MedicalStudents
                 join pre in _context.PreenrollmentGenerals on alumno.PreenrollmentId equals pre.IdData
-                join per in _context.Persons on pre.UserId equals per.PersonId
+                join u in _context.Users on pre.UserId equals u.UserId
+                join per in _context.Persons on u.PersonId equals per.PersonId
                 where pre.Matricula == matricula
                 select new
                 {
@@ -314,60 +314,61 @@ namespace SchoolManager.Areas.Medical.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> ObtenerDatosReporte(string filtro, DateTime? fechaInicio, DateTime? fechaFin)
-        {
-            var query = from b in _context.MedicalLogbooks
-                        join a in _context.MedicalStudents on b.IdAlumno equals a.Id
-                        join pre in _context.PreenrollmentGenerals on a.PreenrollmentId equals pre.IdData
-                        join per in _context.Persons on pre.UserId equals per.PersonId
-                        select new
-                        {
-                            b.Folio,
-                            pre.Matricula,
-                            NombreCompleto = per.FirstName + " " + per.LastNamePaternal + " " + per.LastNameMaternal,
-                            b.MotivoConsulta,
-                            b.Estado,
-                            b.FechaHora
-                        };
-
-            DateTime hoy = DateTime.Today;
-
-            if (filtro == "dia")
-                query = query.Where(x => x.FechaHora.Date == hoy);
-
-            else if (filtro == "semana")
-                query = query.Where(x => x.FechaHora >= hoy.AddDays(-7));
-
-            else if (filtro == "mes")
-                query = query.Where(x => x.FechaHora >= hoy.AddMonths(-1));
-
-            else if (filtro == "personalizado" && fechaInicio.HasValue && fechaFin.HasValue)
-                query = query.Where(x => x.FechaHora.Date >= fechaInicio.Value.Date && x.FechaHora.Date <= fechaFin.Value.Date);
-
-            var lista = await query.OrderByDescending(x => x.FechaHora).ToListAsync();
-
-            var total = lista.Count;
-
-            var porEstado = lista
-                .GroupBy(x => x.Estado)
-                .Select(g => new { estado = g.Key, cantidad = g.Count() })
-                .ToList();
-
-            return Json(new
-            {
-                total,
-                porEstado,
-                lista = lista.Select(x => new
+public async Task<IActionResult> ObtenerDatosReporte(string filtro, DateTime? fechaInicio, DateTime? fechaFin)
+{
+    var query = from b in _context.MedicalLogbooks
+                join a in _context.MedicalStudents on b.IdAlumno equals a.Id
+                join pre in _context.PreenrollmentGenerals on a.PreenrollmentId equals pre.IdData
+                join u in _context.Users on pre.UserId equals u.UserId
+                join per in _context.Persons on u.PersonId equals per.PersonId
+                select new
                 {
-                    folio = x.Folio,
-                    matricula = x.Matricula,
-                    nombreCompleto = x.NombreCompleto,
-                    motivo = x.MotivoConsulta,
-                    estado = x.Estado,
-                    fecha = x.FechaHora
-                })
-            });
-        }
+                    b.Folio,
+                    pre.Matricula,
+                    NombreCompleto = per.FirstName + " " + per.LastNamePaternal + " " + per.LastNameMaternal,
+                    b.MotivoConsulta,
+                    b.Estado,
+                    b.FechaHora
+                };
+
+    DateTime hoy = DateTime.Today;
+
+    if (filtro == "dia")
+        query = query.Where(x => x.FechaHora.Date == hoy);
+
+    else if (filtro == "semana")
+        query = query.Where(x => x.FechaHora >= hoy.AddDays(-7));
+
+    else if (filtro == "mes")
+        query = query.Where(x => x.FechaHora >= hoy.AddMonths(-1));
+
+    else if (filtro == "personalizado" && fechaInicio.HasValue && fechaFin.HasValue)
+        query = query.Where(x => x.FechaHora.Date >= fechaInicio.Value.Date && x.FechaHora.Date <= fechaFin.Value.Date);
+
+    var lista = await query.OrderByDescending(x => x.FechaHora).ToListAsync();
+
+    var total = lista.Count;
+
+    var porEstado = lista
+        .GroupBy(x => x.Estado)
+        .Select(g => new { estado = g.Key, cantidad = g.Count() })
+        .ToList();
+
+    return Json(new
+    {
+        total,
+        porEstado,
+        lista = lista.Select(x => new
+        {
+            folio = x.Folio,
+            matricula = x.Matricula,
+            nombreCompleto = x.NombreCompleto,
+            motivo = x.MotivoConsulta,
+            estado = x.Estado,
+            fecha = x.FechaHora
+        })
+    });
+}
 
         [HttpGet]
         public async Task<IActionResult> DescargarCSV(string filtro, DateTime? fechaInicio, DateTime? fechaFin)
