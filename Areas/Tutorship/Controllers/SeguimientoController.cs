@@ -13,7 +13,7 @@ using System.Security.Claims;
 
 namespace SchoolManager.Areas.Tutorship.Controllers
 {
-    [Area("Gestion")] 
+    [Area("Gestion")]
     [Authorize]
     public class SeguimientoController : Controller
     {
@@ -21,16 +21,8 @@ namespace SchoolManager.Areas.Tutorship.Controllers
         private readonly IWebHostEnvironment _webHostEnvironment;
 
         private int LoggedUserId => int.Parse(User.FindFirst("UserId")?.Value ?? "0");
-        private int LoggedRoleId
-        {
-            get
-            {
-                if (User.IsInRole("Student")) return 1;
-                if (User.IsInRole("Teacher")) return 2;
-                if (User.IsInRole("Administrator")) return 3;
-                return 0;
-            }
-        }
+
+        private string LoggedRoleName => User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value ?? "Ninguno";
 
         public SeguimientoController(AppDbContext context, IWebHostEnvironment webHostEnvironment)
         {
@@ -40,14 +32,12 @@ namespace SchoolManager.Areas.Tutorship.Controllers
 
         public IActionResult AccesoDenegado()
         {
-            return Content("No tienes permiso para ver esta pantalla. Tu rol actual es: " + LoggedRoleId);
+            return Content("No tienes permiso para ver esta pantalla. Tu rol actual es: " + LoggedRoleName);
         }
-
-
 
         public async Task<IActionResult> Seguimiento(string matriculaBuscar)
         {
-            if (LoggedRoleId != 2 && LoggedRoleId != 3)
+            if (!User.IsInRole("Teacher") && !User.IsInRole("Administrator") && !User.IsInRole("Master"))
             {
                 return RedirectToAction("AccesoDenegado", "Tutorship");
             }
@@ -78,7 +68,7 @@ namespace SchoolManager.Areas.Tutorship.Controllers
                 return View("~/Areas/Tutorship/Views/Seguimiento.cshtml");
             }
 
-            if (LoggedRoleId == 2)
+            if (User.IsInRole("Teacher"))
             {
                 bool esTutor = await _context.Tutorships.AnyAsync(t => t.StudentId == alumno.UserId && t.TeacherId == LoggedUserId);
                 if (!esTutor)
@@ -135,6 +125,11 @@ namespace SchoolManager.Areas.Tutorship.Controllers
         [HttpPost]
         public async Task<IActionResult> GuardarSeguimiento(int studentId, string matricula, string tipo, string observaciones, IFormFile ArchivoAdjunto)
         {
+            if (!User.IsInRole("Teacher") && !User.IsInRole("Administrator") && !User.IsInRole("Master"))
+            {
+                return RedirectToAction("AccesoDenegado", "Tutorship");
+            }
+
             string rutaArchivoBaseDeDatos = "Sin archivo";
 
             if (ArchivoAdjunto != null && ArchivoAdjunto.Length > 0)
@@ -176,4 +171,4 @@ namespace SchoolManager.Areas.Tutorship.Controllers
             return RedirectToAction("Seguimiento", new { matriculaBuscar = matricula });
         }
     }
-}
+} 

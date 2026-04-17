@@ -6,6 +6,8 @@ using SchoolManager.Data;
 using SchoolManager.Models;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Authorization;
+using System;
+using System.Security.Claims;
 
 namespace SchoolManager.Areas.Tutorship.Controllers
 {
@@ -16,16 +18,8 @@ namespace SchoolManager.Areas.Tutorship.Controllers
         private readonly AppDbContext _context;
 
         private int LoggedUserId => int.Parse(User.FindFirst("UserId")?.Value ?? "0");
-        private int LoggedRoleId
-        {
-            get
-            {
-                if (User.IsInRole("Student")) return 1;
-                if (User.IsInRole("Teacher")) return 2;
-                if (User.IsInRole("Administrator")) return 3;
-                return 0;
-            }
-        }
+
+        private string LoggedRoleName => User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value ?? "Ninguno";
 
         public AlumnosController(AppDbContext context)
         {
@@ -34,25 +28,34 @@ namespace SchoolManager.Areas.Tutorship.Controllers
 
         public IActionResult AccesoDenegado()
         {
-            return Content("No tienes permiso para ver esta pantalla. Tu rol actual es: " + LoggedRoleId);
+            return Content("No tienes permiso para ver esta pantalla. Tu rol actual es: " + LoggedRoleName);
         }
 
-     
+        private async Task<int> GetDbRoleIdByNameAsync(string roleName)
+        {
+            var role = await _context.Roles.FirstOrDefaultAsync(r => r.Name == roleName);
+            return role?.RoleId ?? 0;
+        }
 
         public async Task<IActionResult> ListaDeAlumnos(int? grado, string? grupo)
         {
-            if (LoggedRoleId != 2 && LoggedRoleId != 3) return RedirectToAction(nameof(AccesoDenegado));
-            ViewBag.RoleId = LoggedRoleId;
+            if (!User.IsInRole("Teacher") && !User.IsInRole("Administrator") && !User.IsInRole("Master"))
+                return RedirectToAction(nameof(AccesoDenegado));
+
+            ViewBag.RoleName = LoggedRoleName;
+
+            int dbStudentRoleId = await GetDbRoleIdByNameAsync("Student");
 
             ViewBag.GradoSeleccionado = grado;
             ViewBag.GrupoSeleccionado = grupo;
 
             IQueryable<grades_group> gruposQuery = _context.grades_GradeGroups;
+
             IQueryable<users_user> alumnosQuery = _context.Users
                 .Include(u => u.Person)
-                .Where(u => u.UserRoles.Any(ur => ur.RoleId == 1));
+                .Where(u => u.UserRoles.Any(ur => ur.RoleId == dbStudentRoleId));
 
-            if (LoggedRoleId == 2)
+            if (User.IsInRole("Teacher"))
             {
                 gruposQuery = _context.grades_Enrollments
                     .Include(e => e.Group)
@@ -110,12 +113,16 @@ namespace SchoolManager.Areas.Tutorship.Controllers
 
         public async Task<IActionResult> AsignarTutores()
         {
-            if (LoggedRoleId != 3) return RedirectToAction(nameof(AccesoDenegado));
-            ViewBag.RoleId = LoggedRoleId;
+            if (!User.IsInRole("Administrator") && !User.IsInRole("Master"))
+                return RedirectToAction(nameof(AccesoDenegado));
+
+            ViewBag.RoleName = LoggedRoleName;
+
+            int dbTeacherRoleId = await GetDbRoleIdByNameAsync("Teacher");
 
             var maestros = await _context.Users
                 .Include(u => u.Person)
-                .Where(u => u.UserRoles.Any(ur => ur.RoleId == 2))
+                .Where(u => u.UserRoles.Any(ur => ur.RoleId == dbTeacherRoleId))
                 .ToListAsync();
 
             ViewBag.Maestros = maestros;
@@ -131,68 +138,14 @@ namespace SchoolManager.Areas.Tutorship.Controllers
                 .ThenInclude(u => u.Person)
                 .ToListAsync();
 
-            var inscripciones = await _context.grades_Enrollments.ToListAsync();
-
-            var listaAsignaciones = new List<dynamic>();
-            foreach (var grupo in grupos)
-            {
-                var primerAlumnoDelGrupo = inscripciones.FirstOrDefault(e => e.GroupId == grupo.GroupId);
-                string nombreTutor = "Sin Asignar";
-
-                if (primerAlumnoDelGrupo != null)
-                {
-                    var tutoriaDelGrupo = tutorias.FirstOrDefault(t => t.StudentId == primerAlumnoDelGrupo.StudentId);
-                    if (tutoriaDelGrupo != null && tutoriaDelGrupo.Teacher != null)
-                    {
-                        var persona = tutoriaDelGrupo.Teacher.Person;
-                        nombreTutor = $"{persona.FirstName} {persona.LastNamePaternal}";
-                    }
-                }
-
-                listaAsignaciones.Add(new
-                {
-                    NombreGrupo = $"{grupo.GradeLevelId}{grupo.Name}",
-                    Tutor = nombreTutor
-                });
-            }
-            ViewBag.AsignacionesActuales = listaAsignaciones;
-
-            var listaEstatusMaestros = new List<dynamic>();
-            foreach (var maestro in maestros)
-            {
-                var alumnosDelMaestro = tutorias.Where(t => t.TeacherId == maestro.UserId).Select(t => t.StudentId).ToList();
-
-                string gruposTexto = "Sin Asignar";
-                bool estaAsignado = false;
-
-                if (alumnosDelMaestro.Any())
-                {
-                    var gruposIds = inscripciones.Where(e => alumnosDelMaestro.Contains(e.StudentId)).Select(e => e.GroupId).Distinct().ToList();
-                    var gruposAsignados = grupos.Where(g => gruposIds.Contains(g.GroupId)).Select(g => $"{g.GradeLevelId}{g.Name}").ToList();
-
-                    if (gruposAsignados.Any())
-                    {
-                        gruposTexto = string.Join(", ", gruposAsignados);
-                        estaAsignado = true;
-                    }
-                }
-
-                listaEstatusMaestros.Add(new
-                {
-                    Nombre = $"{maestro.Person.FirstName} {maestro.Person.LastNamePaternal}",
-                    Grupos = gruposTexto,
-                    EstaAsignado = estaAsignado
-                });
-            }
-            ViewBag.EstatusMaestros = listaEstatusMaestros.OrderByDescending(m => m.EstaAsignado).ThenBy(m => m.Nombre).ToList();
-
             return View("~/Areas/Tutorship/Views/AsignarTutores.cshtml");
         }
 
         [HttpPost]
         public async Task<IActionResult> GuardarAsignacionTutor(int teacherId, int groupId)
         {
-            if (LoggedRoleId != 3) return RedirectToAction(nameof(AccesoDenegado));
+            if (!User.IsInRole("Administrator") && !User.IsInRole("Master"))
+                return RedirectToAction(nameof(AccesoDenegado));
 
             var alumnosGrupo = await _context.grades_Enrollments
                 .Where(e => e.GroupId == groupId)
@@ -259,8 +212,10 @@ namespace SchoolManager.Areas.Tutorship.Controllers
                 int pageSize = int.Parse(length);
                 int skip = int.Parse(start);
 
+                int dbStudentRoleId = await GetDbRoleIdByNameAsync("Student");
+
                 var query = from u in _context.Users
-                            where u.UserRoles.Any(ur => ur.RoleId == 1)
+                            where u.UserRoles.Any(ur => ur.RoleId == dbStudentRoleId)
                             join p in _context.PreenrollmentGenerals on u.UserId equals p.UserId into pg
                             from p in pg.DefaultIfEmpty()
                             join e in _context.grades_Enrollments.Include(ge => ge.Group) on u.UserId equals e.StudentId into eg
@@ -270,7 +225,7 @@ namespace SchoolManager.Areas.Tutorship.Controllers
                             select new
                             {
                                 UserId = u.UserId,
-                                Nombre = u.Person.FirstName, 
+                                Nombre = u.Person.FirstName,
                                 NombreCompleto = u.Person.FirstName + " " + u.Person.LastNamePaternal + " " + u.Person.LastNameMaternal,
                                 Matricula = p != null ? p.Matricula : "Sin Matrícula",
                                 Grado = e != null ? (int?)e.Group.GradeLevelId : null,
@@ -279,7 +234,7 @@ namespace SchoolManager.Areas.Tutorship.Controllers
                                 Foto = t != null && t.FilePath != null && t.FilePath != "Sin archivo" ? t.FilePath : ""
                             };
 
-                if (LoggedRoleId == 2)
+                if (User.IsInRole("Teacher"))
                 {
                     query = query.Where(x => _context.Tutorships.Any(t => t.StudentId == x.UserId && t.TeacherId == LoggedUserId));
                 }
@@ -306,7 +261,8 @@ namespace SchoolManager.Areas.Tutorship.Controllers
                 query = asc ? query.OrderBy(x => x.NombreCompleto) : query.OrderByDescending(x => x.NombreCompleto);
 
                 var datosPaginados = await query.Skip(skip).Take(pageSize).ToListAsync();
-                int recordsTotal = await _context.Users.CountAsync(u => u.UserRoles.Any(ur => ur.RoleId == 1));
+
+                int recordsTotal = await _context.Users.CountAsync(u => u.UserRoles.Any(ur => ur.RoleId == dbStudentRoleId));
 
                 return Json(new
                 {
@@ -321,6 +277,5 @@ namespace SchoolManager.Areas.Tutorship.Controllers
                 return Json(new { error = ex.Message });
             }
         }
-
     }
 }

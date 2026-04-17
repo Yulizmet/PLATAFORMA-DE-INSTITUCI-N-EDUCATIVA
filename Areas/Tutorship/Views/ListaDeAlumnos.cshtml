@@ -1,13 +1,11 @@
 ﻿@model IEnumerable<SchoolManager.Models.users_user>
 @{
     ViewData["Title"] = "Directorio de Alumnos";
-    
-    int roleId = ViewBag.RoleId ?? 0;
 
     var dictGruposCabecera = ViewBag.Grupos as Dictionary<int, string> ?? new Dictionary<int, string>();
     string nombreMiGrupo = "Cargando grupo...";
     
-    if (roleId == 2 && Model != null && Model.Any())
+    if (User.IsInRole("Teacher") && Model != null && Model.Any())
     {
         int primerId = Model.First().UserId;
         if (dictGruposCabecera.ContainsKey(primerId))
@@ -16,27 +14,29 @@
         }
     }
 }
-
 <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
 
-<div class="container-fluid p-0 mt-4">
-    <div class="position-relative mb-4 text-center">
-        <div class="position-absolute top-50 start-0 translate-middle-y">
+<div class="container-fluid p-0 mt-4 px-3 px-md-4">
+    
+    
+    <div class="row align-items-center mb-4 mt-3">
+        <div class="col-12 col-md-3 text-start mb-3 mb-md-0">
             <button type="button" onclick="history.back()" class="btn btn-sm btn-outline-secondary fw-bold shadow-sm px-3" style="border-radius: 20px;">
                 <i class="bi bi-arrow-left me-1"></i> Regresar
             </button>
         </div>
-
-        <h2 class="fw-bold m-0" style="color: var(--brand-dark);">Directorio de Alumnos</h2>
+        <div class="col-12 col-md-6 text-center">
+            <h2 class="fw-bold m-0" style="color:var(--brand-dark);">Directorio de Alumnos</h2>
+        </div>
+        <div class="col-12 col-md-3 d-none d-md-block"></div>
     </div>
-    
-    <div class="card border-0 shadow-sm mb-5" style="border-radius: 10px;">
+    <div class="card border-0 shadow-sm mb-4" style="border-radius: 10px;">
         <div class="card-body p-4">
             
-            @if (roleId == 3)
+            @if (User.IsInRole("Administrator") || User.IsInRole("Master"))
             {
                 <form id="filtroForm" class="row g-3 align-items-end">
-                    <div class="col-md-4">
+                    <div class="col-12 col-md-4">
                         <label class="form-label fw-bold text-dark">Grado</label>
                         <select id="filtroGrado" class="form-select shadow-sm" name="grado" style="border-color: #ddd;">
                             <option value="">Todos los grados...</option>
@@ -50,7 +50,7 @@
                         </select>
                     </div>
 
-                    <div class="col-md-5">
+                    <div class="col-12 col-md-5">
                         <label class="form-label fw-bold text-dark">Grupo</label>
                         <select id="filtroGrupo" class="form-select shadow-sm" name="grupo" style="border-color: #ddd;">
                             <option value="">Todos los grupos...</option>
@@ -64,17 +64,17 @@
                         </select>
                     </div>
 
-                    <div class="col-md-3">
+                    <div class="col-12 col-md-3">
                         <button type="submit" class="btn btn-secondary-brand w-100 fw-bold shadow-sm">
                             <i class="bi bi-funnel-fill"></i> Filtrar Lista
                         </button>
                     </div>
                 </form>
             }
-            else if (roleId == 2)
+            else if (User.IsInRole("Teacher"))
             {
                 <div class="row g-3 align-items-end">
-                    <div class="col-md-6">
+                    <div class="col-12 col-md-6">
                         <label class="form-label fw-bold" style="color: var(--brand-dark);"><i class="bi bi-person-video3 me-2"></i>Mi Grupo Asignado</label>
                         <input type="text" class="form-control shadow-sm bg-light fw-bold" value="@nombreMiGrupo" readonly disabled style="border-color: #ddd; color: #555;">
                     </div>
@@ -90,17 +90,19 @@
         </div>
     </div>
 
-    <table id="tablaAlumnos" class="table table-cards w-100">
-        <thead>
-            <tr>
-                <th class="text-center" style="width: 80px;">Foto</th>
-                <th>Información del Alumno</th>
-                <th class="text-end" style="width: 320px; padding-right: 1.5rem;">Acciones</th>
-            </tr>
-        </thead>
-        <tbody>
+    <div class="table-responsive shadow-sm rounded bg-white mb-5">
+        <table id="tablaAlumnos" class="table table-hover mb-0 w-100 tabla-adaptable">
+            <thead style="background-color: var(--brand-dark); color: white;">
+                <tr>
+                    <th class="text-center py-3 border-0" style="width: 80px;">Foto</th>
+                    <th class="py-3 border-0">Información del Alumno</th>
+<th class="text-center py-3 border-0" style="min-width: 250px;">Acciones</th>    
+</tr>
+            </thead>
+            <tbody>
             </tbody>
-    </table>
+        </table>
+    </div>
 </div>
 
 @section Scripts {
@@ -192,6 +194,7 @@
                 pageLength: 10,
                 processing: true,
                 serverSide: true, 
+                responsive: false, 
                 ajax: {
                     url: "@Url.Action("ObtenerDataAlumnos", "Alumnos", new { area = "Gestion" })",
                     type: "GET",
@@ -204,7 +207,7 @@
                     { 
                         data: null, 
                         orderable: false, 
-                        className: "text-center ps-3 align-middle",
+                        className: "text-center ps-md-3 align-middle",
                         render: function(data, type, row) {
                             let imgSrc = row.foto ? row.foto : "https://ui-avatars.com/api/?name=" + encodeURIComponent(row.nombre) + "&background=620900&color=fff";
                             return '<div class="d-flex align-items-center gap-3">' + 
@@ -215,7 +218,7 @@
                     },
                     { 
                         data: "nombreCompleto",
-                        className: "align-middle",
+                        className: "align-middle py-3",
                         render: function(data, type, row) {
                             return '<div class="d-none d-md-block fw-bold fs-6 mb-2" style="color: var(--brand-dark); font-family: var(--font-titulos);">' + data + '</div>' +
                                    '<div class="text-muted small d-flex flex-wrap gap-2">' +

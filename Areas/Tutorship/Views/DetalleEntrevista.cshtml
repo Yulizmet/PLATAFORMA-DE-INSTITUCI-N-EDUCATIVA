@@ -2,8 +2,6 @@
 
 @{
     ViewData["Title"] = "Resultados de Entrevista";
-    
-    int roleId = ViewBag.RoleId ?? 0;
 
     string nombreAlumno = Model?.Student?.Person != null
         ? $"{Model.Student.Person.FirstName} {Model.Student.Person.LastNamePaternal} {Model.Student.Person.LastNameMaternal}"
@@ -19,127 +17,133 @@
     string grupo = ViewBag.Grupo as string ?? "";
 }
 
+<div class="container-fluid px-3 px-md-4 mt-4 mb-5">
 
-
-<div class="container-fluid mt-4 mb-5">
-
-    <div class="position-relative mb-4 text-center">
-        <div class="position-absolute top-50 start-0 translate-middle-y">
-            <button type="button" onclick="history.back()" class="btn btn-sm btn-outline-secondary fw-bold shadow-sm px-3" style="border-radius: 20px;">
+    <div class="row align-items-center mb-4 mt-3">
+        <div class="col-12 col-md-3 text-start mb-3 mb-md-0">
+            <button type="button" onclick="history.back()" class="btn btn-sm btn-outline-secondary fw-bold shadow-sm px-3" style="border-radius: var(--radius-pill);">
                 <i class="bi bi-arrow-left me-1"></i> Regresar
             </button>
         </div>
-
-        <h2 class="fw-bold m-0" style="color: var(--brand-dark);">Resultados de Entrevista</h2>
+        <div class="col-12 col-md-6 text-center">
+            <h2 class="fw-bold m-0" style="color: var(--brand-dark); font-family: var(--font-titulos);">Resultados de Entrevista</h2>
+        </div>
+        <div class="col-12 col-md-3 d-none d-md-block"></div>
     </div>
-    <div class="card border-0 shadow-sm mb-4" style="border-radius: 10px;">
-        <div class="card-body p-4 d-flex align-items-center flex-wrap gap-4">
-            
-            <div class="flex-shrink-0">
-                <img src="@imgSrc" alt="Foto de @nombreAlumno" class="rounded-circle shadow-sm border border-2" style="width: 100px; height: 100px; object-fit: cover; border-color: #eee !important;">
-            </div>
-            
-            <div class="flex-grow-1">
-                <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
-                    <div>
-                        <h3 class="fw-bold mb-1" style="color: var(--brand-dark);">@nombreAlumno</h3>
-                        <div class="d-flex gap-2 mt-2">
-                            @if (!string.IsNullOrEmpty(matricula))
-                            {
-                                <span class="badge shadow-sm" style="background-color: var(--brand-white); color: var(--brand-black)"><i class="bi bi-person-badge me-1"></i> @matricula</span>
-                            }
-                            @if (!string.IsNullOrEmpty(grupo))
-                            {
-                                <span class="badge shadow-sm" style="background-color: var(--brand-secondary); color: var(--brand-white);"><i class="bi bi-people-fill me-1"></i> @grupo</span>
-                            }
-                            <span class="badge shadow-sm" style="background-color: var(--btn-crear); color: var(--brand-black);"><i class="bi bi-check-circle-fill me-1"></i> Estado: @Model?.Status</span>
-                        </div>
-                    </div>
-                    
-                    @if (Model != null)
-                    {
-                        <div class="text-end text-muted">
-                            <small class="fw-bold text-uppercase" style="letter-spacing: 0.5px;">Fecha de Entrevista</small><br />
-                            <span class="fs-5 fw-bold text-dark">
-                                <i class="bi bi-calendar-event me-1" style="color: var(--brand-dark);"></i> @Model.DateCompleted.ToString("dd / MM / yyyy")
-                            </span>
-                        </div>
-                    }
+
+    <div class="card border-0 shadow-soft mb-4" style="border-radius: var(--radius-md); background-color: var(--surface-card);">
+        <div class="card-body p-4">
+            <div class="d-flex flex-column flex-md-row align-items-center gap-4">
+                
+                <div class="flex-shrink-0">
+                    <img src="@imgSrc" alt="Foto de @nombreAlumno" class="rounded-circle shadow-sm border border-4 border-white" style="width: 110px; height: 110px; object-fit: cover;">
                 </div>
+                
+                <div class="flex-grow-1 text-center text-md-start">
+                    <h3 class="fw-bold mb-1" style="color: var(--brand-dark); font-family: var(--font-titulos);">@nombreAlumno</h3>
+                    <div class="d-flex flex-wrap justify-content-center justify-content-md-start gap-2 mt-2">
+                        @if (!string.IsNullOrEmpty(matricula))
+                        {
+                            <span class="badge shadow-sm px-3 py-2" style="background-color: var(--surface-muted); color: var(--brand-black); border: 1px solid var(--border-soft);"><i class="bi bi-person-badge me-1"></i> @matricula</span>
+                        }
+                        @if (!string.IsNullOrEmpty(grupo))
+                        {
+                            <span class="badge shadow-sm px-3 py-2" style="background-color: var(--brand-secondary); color: var(--brand-white);"><i class="bi bi-people-fill me-1"></i> @grupo</span>
+                        }
+                        <span class="badge shadow-sm px-3 py-2" style="background-color: var(--btn-crear); color: var(--brand-black);"><i class="bi bi-check-circle-fill me-1"></i> @Model?.Status</span>
+                    </div>
+                </div>
+
+                @if (Model != null)
+                {
+                    <div class="text-center text-md-end border-md-start ps-md-4 text-muted">
+                        <small class="fw-bold text-uppercase" style="letter-spacing: 0.5px; font-size: 0.7rem;">Fecha Completada</small><br />
+                        <span class="fs-5 fw-bold text-dark">
+                            <i class="bi bi-calendar-event me-1" style="color: var(--brand-primary);"></i> @Model.DateCompleted.ToString("dd/MM/yyyy")
+                        </span>
+                    </div>
+                }
             </div>
         </div>
     </div>
 
     @if (Model == null || Model.Answers == null || !Model.Answers.Any())
     {
-        <div class="text-center p-5 bg-white rounded shadow-sm border mt-4">
+        <div class="text-center p-5 rounded shadow-soft border mt-4" style="background-color: var(--surface-card);">
             <i class="bi bi-journal-x" style="font-size: 3rem; color: var(--brand-secondary);"></i>
-            <h4 class="mt-3 text-dark fw-bold">Expediente Vacío</h4>
-            <p class="text-muted mb-0">La entrevista de este alumno aún no ha sido completada o no se encontraron respuestas guardadas en el sistema.</p>
-            <div class="mt-4">
-                <a href="javascript:history.back()" class="btn btn-secondary-brand shadow-sm fw-bold px-4">
-                    <i class="bi bi-arrow-left me-2"></i> Regresar
-                </a>
-            </div>
+            <h4 class="mt-3 fw-bold" style="color: var(--brand-dark);">Expediente Vacío</h4>
+            <p class="text-muted mb-0">No se encontraron respuestas guardadas para este alumno.</p>
         </div>
     }
     else
     {
-        <div class="card shadow-sm border-0" style="border-radius: 10px; overflow: hidden;">
-            <div class="card-header text-white py-3" style="background-color: var(--brand-dark);">
+        <div class="card border-0 shadow-soft" style="border-radius: var(--radius-md); overflow: hidden;">
+            <div class="card-header py-3 px-4" style="background-color: var(--brand-dark);">
                 <h5 class="mb-0 fw-bold text-white"><i class="bi bi-card-checklist me-2"></i> Detalles del Expediente</h5>
             </div>
             
             <div class="card-body p-0">
-                <div class="container-fluid px-0">
-                    @foreach (var answer in Model.Answers)
-                    {
-                        <div class="row m-0 border-bottom py-3 px-4 pregunta-row align-items-center">
-                            
-                            <div class="col-md-8 col-sm-12 fw-bold text-secondary mb-2 mb-md-0" style="font-size: 0.95rem;">
-                                @answer.QuestionText
-                            </div>
-                            
-                            <div class="col-md-4 col-sm-12 text-md-end text-sm-start fw-bold" style="color: #333;">
-                                @if (answer.AnswerText == "No" || answer.AnswerText == "Ninguna")
-                                {
-                                    <span class="badge border text-secondary" style="background-color: #f4f4f4; font-size: 0.9rem;">
-                                        <i class="bi bi-dash-circle me-1"></i> @answer.AnswerText
-                                    </span>
-                                }
-                                else if (answer.AnswerText == "Sí" || answer.AnswerText == "Si")
-                                {
-                                    <span class="badge text-white shadow-sm" style="background-color: var(--brand-secondary); font-size: 0.9rem;">
-                                        <i class="bi bi-exclamation-circle-fill me-1"></i> @answer.AnswerText
-                                    </span>
-                                }
-                                else
-                                {
-                                    <span class="text-dark">@answer.AnswerText</span>
-                                }
-                            </div>
+                @foreach (var answer in Model.Answers)
+                {
+                    <div class="row m-0 border-bottom py-3 px-4 align-items-center" style="transition: background 0.2s;">
+                        <div class="col-12 col-md-8 fw-bold mb-1 mb-md-0" style="color: var(--brand-black); font-size: 0.95rem;">
+                            @answer.QuestionText
                         </div>
-                    }
-                </div>
+                        
+                        <div class="col-12 col-md-4 text-md-end fw-bold">
+                            @if (answer.AnswerText == "No" || answer.AnswerText == "Ninguna" || answer.AnswerText == "N/A")
+                            {
+                                <span class="badge border text-muted" style="background-color: var(--surface-muted); font-size: 0.9rem;">
+                                    <i class="bi bi-dash-circle me-1"></i> @answer.AnswerText
+                                </span>
+                            }
+                            else if (answer.AnswerText == "Sí" || answer.AnswerText == "Si")
+                            {
+                                <span class="badge shadow-sm text-white" style="background-color: var(--brand-primary); font-size: 0.9rem;">
+                                    <i class="bi bi-exclamation-circle-fill me-1"></i> @answer.AnswerText
+                                </span>
+                            }
+                            else
+                            {
+                                <span style="color: var(--brand-dark);">@answer.AnswerText</span>
+                            }
+                        </div>
+                    </div>
+                }
             </div>
             
-            <div class="card-footer bg-light p-3 text-end">
-                @if (roleId == 2)
-                {
-                    <a asp-area="Gestion" asp-controller="Alumnos" asp-action="ListaDeAlumnos" class="btn btn-secondary-brand shadow-sm fw-bold px-4">
-                        <i class="bi bi-arrow-left me-2"></i> Volver al Directorio
-                    </a>
-                }
-                else
-                {
-                    <a asp-area="Gestion" asp-controller="Alumnos" asp-action="Controlador" class="btn btn-secondary-brand shadow-sm fw-bold px-4">
-                        <i class="bi bi-arrow-left me-2"></i> Volver al Panel
-                    </a>
-                }
-                <button onclick="window.print()" class="btn btn-action-seguimiento shadow-sm fw-bold px-4 ms-2">
-                    <i class="bi bi-printer-fill me-2"></i> Imprimir
-                </button>
+            <div class="card-footer p-3 p-md-4" style="background-color: var(--surface-muted);">
+                <div class="d-flex flex-column flex-sm-row justify-content-end gap-2">
+                    @if (User.IsInRole("Teacher"))
+                    {
+                        <a asp-area="Gestion" asp-controller="Alumnos" asp-action="ListaDeAlumnos" class="btn btn-outline-secondary fw-bold px-4 order-2 order-sm-1">
+                            <i class="bi bi-arrow-left me-2"></i> Volver al Directorio
+                        </a>
+                    }
+                    else
+                    {
+                        <a asp-area="Gestion" asp-controller="Alumnos" asp-action="Controlador" class="btn btn-outline-secondary fw-bold px-4 order-2 order-sm-1">
+                            <i class="bi bi-arrow-left me-2"></i> Volver al Panel
+                        </a>
+                    }
+                    @* <button onclick="window.print()" class="btn text-white fw-bold px-4 order-1 order-sm-2 shadow-sm" style="background-color: var(--brand-dark);">
+                        <i class="bi bi-printer-fill me-2"></i> Imprimir
+                    </button> *@
+                </div>
             </div>
         </div>
     }
 </div>
+
+<style>
+    .border-bottom:hover {
+        background-color: rgba(0,0,0,0.01);
+    }
+
+    @@media print {
+        .btn, header, nav, footer, .col-md-3 { display: none !important; }
+        .container-fluid { margin-top: 0 !important; }
+        .card { border: 1px solid #ddd !important; box-shadow: none !important; }
+        .card-header { background-color: #620900 !important; color: white !important; -webkit-print-color-adjust: exact; }
+    }
+</style>
